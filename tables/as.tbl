@@ -1,3 +1,5 @@
+#-display-name: Assamese braille
+
 #+locale:as
 #+type:literary
 #+grade:1

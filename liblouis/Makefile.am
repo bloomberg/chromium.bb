@@ -12,6 +12,7 @@ nodist_liblouisinclude_HEADERS = \
 lib_LTLIBRARIES = liblouis.la
 
 AM_CPPFLAGS = 						\
+	$(WARN_CFLAGS)					\
 	-DTABLESDIR=\""$(datadir)"/liblouis/tables\"	\
 	-I$(top_srcdir)/gnulib				\
 	-I$(top_builddir)/gnulib
@@ -35,12 +36,11 @@ liblouis_la_SOURCES =				\
 	lou_translateString.c			\
 	lou_backTranslateString.c		\
 	commonTranslationFunctions.c		\
-	findTable.h 				\
-	findTable.c 				\
+	metadata.c 				\
 	pattern.c				\
 	logging.c				\
-	wrappers.c				\
-	utils.c
+	utils.c				\
+	maketable.c
 
 # Don't include liblouis.h in dist, this will break subdir builds
 # when dist is configured with a different ucs-option than the build,
@@ -48,3 +48,8 @@ liblouis_la_SOURCES =				\
 nodist_liblouis_la_SOURCES = \
 	liblouis.h
 
+if HAVE_SOURCE_FORMATTER
+format-sources-local:
+	for file in $(SOURCES); do $(SOURCE_FORMATTER) -i $$file; done
+	$(SOURCE_FORMATTER) -i liblouis.h.in
+endif

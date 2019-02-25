@@ -43,3 +43,19 @@ flags: {testmode: backward}
 tests:
   - - fu
     - foo
+
+# Converted from pass2.c
+table: |
+  uplow       Ee  15
+  uplow       Nn  1345
+  uplow       Rr  1235
+  uplow       Oo  135
+  uplow       Xx  1346
+  punctuation ' 6
+  noback pass2 @135   @6-135
+  noback pass2 @1346  ?
+tests:
+  # First check a plain word to see if the table works 
+  - [Rene, rene]
+  # then try a word which uses pass2
+  - [Reno, "ren'o"]

@@ -1,3 +1,5 @@
+#-display-name: Icelandic braille
+
 #+locale:is
 #+type:literary
 #+dots:6

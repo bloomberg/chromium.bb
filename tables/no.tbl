@@ -1,3 +1,6 @@
+#-name: Norsk litterær punktskrift, 6-punkt, kortskrift nivå 3
+#-display-name: Norwegian grade 3 contracted braille
+#
 #+locale:no
 #+type:literary
 #+direction:both
@@ -5,9 +8,6 @@
 #+contraction:full
 #+grade:3
 #+hyphenation:yes
-#
-#-name: Norsk litterær punktskrift, 6-punkt, kortskrift nivå 3
-#-display-name: Norwegian literary braille, 6-dot, contracted level 3
 #
 #-copyright: 2005, ViewPlus Technologies, Inc.
 #-copyright: 2009, Lars Bjørndal
@@ -22,7 +22,7 @@
 #-author-url: https://github.com/larsbjorndal
 #
 # Official norwegian braille specifications are collected here:
-# https://github.com/liblouis/braille-specs/blob/master/norwegian/README.md
+# http://liblouis.org/braille-specs/norwegian
 # This specific table is based on the document "Kortskrift i norsk punktskrift - KS04".
 
 include no-no-g3.ctb

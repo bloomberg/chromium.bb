@@ -1,14 +1,12 @@
 # liblouis: Norwegian computer braille, 8-dot
 #
-# -----------
+#-name: Norsk datapunktskrift, 8-punkt
+#-display-name: Norwegian computer braille
+#
 #+locale:no
 #+type:computer
-#+contraction:no
 #+dots:8
 #+grade:0
-#
-#-name: Norsk datapunktskrift, 8-punkt
-#-display-name: Norwegian computer braille, 8-dot
 #
 #-copyright: 1995-2004, The BRLTTY Team
 #-copyright: 2004-2006, ViewPlus Technologies, Inc. www.viewplus.com
@@ -34,7 +32,6 @@
 # Offentlig Utvalg for Blindeskrift (Public Commission for Braille)
 # translation table for Windows 1252.
 # Updated January 2008.
-# -----------
 #
 #  This file is part of liblouis.
 #

@@ -3,7 +3,8 @@
 table_files = \
 	afr-za-g1.ctb \
 	ar-ar-g1.utb \
-	ar-fa.utb \
+	ar-ar-g2.ctb \
+	ar-ar-comp8.utb \
 	ar.tbl \
 	as-in-g1.utb \
 	as.tbl \
@@ -36,49 +37,45 @@ table_files = \
 	corrections.cti \
 	countries.cti \
 	cs-chardefs.cti \
+	cs-comp8.utb \
 	cs-g1.ctb \
+	cs-letterDef8Dots.uti \
 	cs.tbl \
 	cs-translation.cti \
 	cy-cy-g1.utb \
 	cy-cy-g2.ctb \
 	cy.tbl \
-	Cz-Cz-g1.utb \
-		da-dk-6miscChars.cti \
+	da-dk-6miscChars.cti \
 	da-dk.dis \
 	da-dk-g08.ctb \
 	da-dk-g16.ctb \
 	da-dk-g16-lit.ctb \
 	da-dk-g18.ctb \
 	da-dk-g26.ctb \
-	da-dk-g26-lit.ctb \
 	da-dk-g26l.ctb \
+	da-dk-g26-lit.ctb \
 	da-dk-g26l-lit.ctb \
 	da-dk-g28.ctb \
 	da-dk-g28l.ctb \
 	da-dk-octobraille.dis \
 	da-lt.ctb \
-	da.tbl \
-	de-ch-accents.cti \
+	de-accents.cti \
+	de-accents-detailed.cti \
 	de-chardefs6.cti \
 	de-chardefs8.cti \
 	de-chess.ctb \
-	de-ch-g0.utb \
-	de-ch-g1.ctb \
-	de-ch-g2.ctb \
-	de_CH.tbl \
-	de-de-accents.cti \
 	de-de-comp8.ctb \
 	de-de.dis \
-	de-de-g0.utb \
-	de-de-g1.ctb \
-	de-de-g2.ctb \
-	de_DE.tbl \
 	de-eurobrl6.dis \
 	de-eurobrl6u.dis \
 	de-g0-core.uti \
+	de-g0.utb \
 	de-g1-core.cti \
+	de-g1-core-patterns.dic \
+	de-g1.ctb \
 	de-g2-core.cti \
-	de.tbl \
+	de-g2-core-patterns.dic \
+	de-g2.ctb \
 	devanagari.cti \
 	digits6DotsPlusDot6.uti \
 	digits6Dots.uti \
@@ -87,7 +84,6 @@ table_files = \
 	dra.tbl \
 	el.ctb \
 	el.tbl \
-	en_AS.tbl \
 	en_CA.ctb \
 	en_CA.tbl \
 	en-chess.ctb \
@@ -96,7 +92,6 @@ table_files = \
 	en-GB-g2.ctb \
 	en_GB.tbl \
 	en-in-g1.ctb \
-	en.tbl \
 	en-ueb-chardefs.uti \
 	en-ueb-g1.ctb \
 	en-ueb-g2.ctb \
@@ -117,12 +112,11 @@ table_files = \
 	eo.tbl \
 	es-chardefs.cti \
 	Es-Es-G0.utb \
-	Es-Es-g1.utb \
 	es-g1.ctb \
+	es-g2.ctb \
 	es-new.dis \
 	es-old.dis \
 	es.tbl \
-	es-translation.cti \
 	et.ctb \
 	et-g0.utb \
 	ethio-g1.ctb \
@@ -136,18 +130,10 @@ table_files = \
 	fi-fi.ctb \
 	fi.tbl \
 	fi.utb \
-	fr-2007.ctb \
 	fr-bfu-comp68.cti \
 	fr-bfu-comp6.utb \
 	fr-bfu-comp8.utb \
 	fr-bfu-g2.ctb \
-	fr-ca-g1.utb \
-	Fr-Ca-g2.ctb \
-	fr_CA.tbl \
-	fr-fr-g1.utb \
-	Fr-Fr-g2.ctb \
-	fr_FR.tbl \
-	fr.tbl \
 	ga-g1.utb \
 	ga-g2.ctb \
 	ga.tbl \
@@ -167,8 +153,13 @@ table_files = \
 	he.tbl \
 	hi-in-g1.utb \
 	hi.tbl \
-	hr.ctb \
-	hr.tbl \
+	hr-chardefs.cti \
+	hr-comp8.tbl \
+	hr-comp8.utb \
+	hr-digits.uti \
+	hr-g1.ctb \
+	hr-g1.tbl \
+	hr-translation.cti \
 	hu-backtranslate-correction.dis \
 	hu-chardefs.cti \
 	hu-exceptionwords.cti \
@@ -196,6 +187,7 @@ table_files = \
 	hyph_ru.dic \
 	hyph_sv_SE.dic \
 	hy.tbl \
+	IPA-unicode-range.uti \
 	IPA.utb \
 	is-chardefs6.cti \
 	is-chardefs8.cti \
@@ -232,19 +224,21 @@ table_files = \
 	loweredDigits8Dots.uti \
 	lt.ctb \
 	lt.tbl \
+	lt-6dot.utb \
+	lt-6dot.tbl \
 	Lv-Lv-g1.utb \
 	lv.tbl \
 	malayalam.cti \
 	mao-nz-g1.ctb \
-	marburg.ctb \
-	marburg_edit.ctb \
 	marburg_single_cell_defs.cti \
 	marburg_unicode_defs.cti \
 	ml-in-g1.utb \
 	ml.tbl \
 	mn-in-g1.utb \
 	mni.tbl \
-	mn-MN.utb \
+	mn-MN-common.cti \
+	mn-MN-g1.utb \
+	mn-MN-g2.ctb \
 	mr-in-g1.utb \
 	mr.tbl \
 	mt.ctb \
@@ -254,9 +248,7 @@ table_files = \
 	mwr.ctb \
 	mwr.tbl \
 	ne.ctb \
-	nemeth.ctb \
 	nemethdefs.cti \
-	nemeth_edit.ctb \
 	ne.tbl \
 	nl-BE.dis \
 	nl-BE-g0.utb \
@@ -264,10 +256,10 @@ table_files = \
 	nl-chardefs.uti \
 	nl-g0.uti \
 	nl-NL-g0.utb \
-	nl_NL.tbl \
 	nl.tbl \
 	no-no-8dot-fallback-6dot-g0.utb \
 	no-no-8dot.utb \
+	no-no-braillo-047-01.dis \
 	no-no-chardefs6.uti \
 	no-no-comp8.ctb \
 	no-no.dis \
@@ -304,6 +296,7 @@ table_files = \
 	ru-litbrl.ctb \
 	ru-ru.dis \
 	ru-ru-g1.utb \
+	ru-unicode.dis \
 	ru.tbl \
 	sa-in-g1.utb \
 	sa.tbl \
@@ -341,13 +334,12 @@ table_files = \
 	text_nabcc.dis \
 	tr.ctb \
 	tr-g1.ctb \
+	tr-g2.ctb \
+	tr-g2.tbl \
 	tr.tbl \
 	tsn-za-g1.ctb \
-	UEBC-g1.utb \
-	UEBC-g2.ctb \
+	uk.utb \
 	ukchardefs.cti \
-	ukmaths.ctb \
-	ukmaths_edit.ctb \
 	ukmaths_single_cell_defs.cti \
 	ukmaths_unicode_defs.cti \
 	unicode-braille.utb \
@@ -361,10 +353,10 @@ table_files = \
 	vi-g1.ctb \
 	vi.tbl \
 	wiskunde-chardefs.cti \
-	wiskunde.ctb \
-	wiskunde-translation.cti \
 	zh-chn.ctb \
 	zh_CHN.tbl \
+	zhcn-g1.ctb \
+	zhcn-g2.ctb \
 	zh-hk.ctb \
 	zh_HK.tbl \
 	zh-tw.ctb \

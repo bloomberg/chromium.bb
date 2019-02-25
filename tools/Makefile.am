@@ -1,16 +1,20 @@
-SUBDIRS = gnulib
+SUBDIRS = gnulib lou_maketable.d
 
 AM_CPPFLAGS =					\
+	$(WARN_CFLAGS)				\
 	-I$(top_srcdir)/liblouis		\
 	-I$(top_srcdir)/tools/gnulib		\
 	-I$(top_builddir)/tools/gnulib
 
 lou_checkyaml_CPPFLAGS = $(AM_CPPFLAGS) $(YAML_CFLAGS)
 
+# ignore warnings for lou_compare
+lou_compare_CPPFLAGS = $(AM_CPPFLAGS) -w
+
 LDADD =							\
 	$(top_builddir)/liblouis/liblouis.la		\
 	$(top_builddir)/tools/gnulib/libgnutools.la	\
-	$(top_builddir)/tools/libbrlcheck.la		\
+	libbrlcheck.la		\
 	$(LTLIBINTL)
 
 # libbrlcheck is a convenience library that contains functionality to
@@ -40,7 +44,8 @@ bin_PROGRAMS =					\
 	lou_debug				\
 	lou_translate				\
 	lou_trace				\
-	lou_compare
+	lou_compare				\
+	lou_tableinfo
 
 # install lou_checkyaml only if libyaml is found
 if WITH_YAML
@@ -57,3 +62,26 @@ lou_translate_SOURCES =	lou_translate.c
 lou_trace_SOURCES = lou_trace.c
 lou_compare_SOURCES = lou_compare.c
 lou_checkyaml_SOURCES =	lou_checkyaml.c
+lou_tableinfo_SOURCES =	lou_tableinfo.c
+
+if !CROSS_COMPILING
+dist_bin_SCRIPTS = \
+	lou_maketable.d/lou_maketable
+nobase_dist_bin_SCRIPTS = \
+	lou_maketable.d/export_chunked_words.py \
+	lou_maketable.d/generate_alphabet.py    \
+	lou_maketable.d/lou_maketable.mk        \
+	lou_maketable.d/make_suggestions.py     \
+	lou_maketable.d/submit_rows.py          \
+	lou_maketable.d/submit_rows.sh          \
+	lou_maketable.d/submit_rules.py         \
+	lou_maketable.d/submit_rules.sh         \
+	lou_maketable.d/substrings.pl           \
+	lou_maketable.d/utils.py                \
+	lou_maketable.d/wrap_patgen.sh
+endif
+
+if HAVE_SOURCE_FORMATTER
+format-sources-local:
+	for file in $(SOURCES); do $(SOURCE_FORMATTER) -i $$file; done
+endif

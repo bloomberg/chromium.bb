@@ -1,3 +1,5 @@
+#-display-name: Armenian computer braille
+
 #+locale:hy
 #+type:computer
 #+dots:8

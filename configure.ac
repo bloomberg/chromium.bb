@@ -1,16 +1,17 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.68)
-AC_INIT([Liblouis], [3.2.0], [liblouis-liblouisxml@freelists.org], [liblouis], [http://www.liblouis.org])
+AC_INIT([Liblouis], [3.8.0], [liblouis-liblouisxml@freelists.org], [liblouis], [http://www.liblouis.org])
 AC_CONFIG_SRCDIR([liblouis/lou_backTranslateString.c])
 AM_CONFIG_HEADER(liblouis/config.h)
 
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([-Wall dist-zip])
 
 # Checks for programs.
-AC_PROG_CC
+# Try to compile using C99
+AC_PROG_CC_C99
 
 # gnulib for the library
 gl_EARLY
@@ -24,6 +25,7 @@ gl_tools_INIT
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
+AM_PROG_AR
 
 # Checks for libraries.
 AC_CHECK_LIB([yaml], [yaml_parser_initialize])
@@ -51,7 +53,7 @@ AH_BOTTOM([
 ])
 
 # increment if the interface has additions, changes, removals.
-LIBLOUIS_CURRENT=14
+LIBLOUIS_CURRENT=17
 
 # increment any time the source changes; set to 0 if you increment
 # CURRENT
@@ -75,6 +77,27 @@ AC_HEADER_STDC
 AC_LIBTOOL_WIN32_DLL
 AC_PROG_LIBTOOL
 
+# catch as many warnings as possible with the help of the gnulib manywarnings module
+gl_MANYWARN_ALL_GCC([warnings])
+# Set up the list of the pointless, undesired warnings.
+nw=
+nw="$nw -Wsystem-headers"       # Don't let system headers trigger warnings
+nw="$nw -Wsuggest-attribute=pure"   # ignore recommendations to use
+nw="$nw -Wsuggest-attribute=format" # attributes, most of these only
+nw="$nw -Wsuggest-attribute=const"  # work in gcc
+nw="$nw -Wsuggest-attribute=noreturn"
+# Enable all GCC warnings not in this list.
+gl_MANYWARN_COMPLEMENT([warnings], [$warnings], [$nw])
+for w in $warnings; do
+  gl_WARN_ADD([$w])
+done
+
+# define an additional recursive make target to format the sources.
+# Also check if clang-format is installed
+AM_EXTRA_RECURSIVE_TARGETS([format-sources])
+AC_CHECK_PROG([SOURCE_FORMATTER], [clang-format], [clang-format])
+AM_CONDITIONAL([HAVE_SOURCE_FORMATTER], [test x$SOURCE_FORMATTER = xclang-format])
+
 # GNU help2man creates man pages from --help output; in many cases,
 # this is sufficient, and obviates the need to maintain man pages
 # separately. However, some developers do not have it so we do not
@@ -97,7 +120,7 @@ if test x"${MAKEINFO_FOUND}" = xyes
 then
   MAKEINFO_VERSION_REQ=5
   AC_MSG_CHECKING([for makeinfo version >= $MAKEINFO_VERSION_REQ])
-  MAKEINFO_VERSION=`makeinfo --version | sed -ne 's/^\(makeinfo\|texi2any\) .* \([[0-9]][[0-9]]*\)\.[[0-9]][[0-9]]*$/\2/p'`
+  MAKEINFO_VERSION=`makeinfo --version | sed -ne 's/^\(makeinfo\|texi2any\) .* \([[0-9]][[0-9]]*\)\.[[0-9]][[0-9]]*.*$/\2/p'`
   if test x$MAKEINFO_VERSION = x -o 0$MAKEINFO_VERSION -lt $MAKEINFO_VERSION_REQ
   then
     AC_MSG_RESULT([no])
@@ -156,33 +179,45 @@ case $host in
   ;;
 esac
 
+AC_CANONICAL_HOST
+build_macosx=no
+case $host_os in
+  darwin*)
+    build_macosx=yes
+  ;;
+esac
+AM_CONDITIONAL([OSX], [test "$build_macosx" = "yes"])
+
 AC_CONFIG_FILES([
 	Makefile
-        doc/Makefile
-        man/Makefile
-        liblouis/Makefile
-        liblouis/liblouis.h
+	doc/Makefile
+	man/Makefile
+	liblouis/Makefile
+	liblouis/liblouis.h
 	windows/Makefile
 	windows/include/Makefile
-        tables/Makefile
+	windows/utils/Makefile
+	tables/Makefile
 	liblouis.pc
-        tests/Makefile
-        tests/resolve_table.h
-        tests/tables/Makefile
-        tests/tables/emphclass/Makefile
-        tests/tables/moreTables/Makefile
-        tests/tables/resolve_table/Makefile
-        tests/tables/resolve_table/dir_1/Makefile
-        tests/tables/resolve_table/dir_1/dir_1.1/Makefile
-        tests/tables/resolve_table/dir_2/Makefile
+	tests/Makefile
+	tests/braille-specs/Makefile
+	tests/resolve_table.h
+	tests/tables/Makefile
+	tests/tables/emphclass/Makefile
+	tests/tables/moreTables/Makefile
+	tests/tables/resolve_table/Makefile
+	tests/tables/resolve_table/dir_1/Makefile
+	tests/tables/resolve_table/dir_1/dir_1.1/Makefile
+	tests/tables/resolve_table/dir_2/Makefile
 	tests/tablesWithMetadata/Makefile
-        tests/ueb_test_data/Makefile
-        tests/yaml/Makefile
+	tests/ueb_test_data/Makefile
+	tests/yaml/Makefile
 	python/Makefile
 	python/setup.py
 	python/louis/Makefile
-        tools/Makefile
-        tools/gnulib/Makefile
+	tools/Makefile
+	tools/gnulib/Makefile
+	tools/lou_maketable.d/Makefile
+	tools/lou_maketable.d/lou_maketable
 	gnulib/Makefile])
 AC_OUTPUT
-

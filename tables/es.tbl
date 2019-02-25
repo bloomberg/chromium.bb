@@ -1,5 +1,8 @@
+#-display-name: Spanish uncontracted braille
+
 #+locale:es
 #+type:literary
+#+contraction:no
 #+grade:1
 #+hyphenation:yes
 

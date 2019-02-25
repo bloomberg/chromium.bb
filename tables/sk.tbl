@@ -1,3 +1,5 @@
+#-display-name: Slovak braille
+
 #+locale:sk
 #+type:literary
 #+grade:1
@@ -11,5 +13,5 @@
 # the implemented braille code. Preferably submit the documents
 # to https://github.com/liblouis/braille-specs.
 
-include sk-sk-g1.utb
+include sk-g1.ctb
 include braille-patterns.cti

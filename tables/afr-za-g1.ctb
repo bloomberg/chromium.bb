@@ -2,6 +2,24 @@
 
 # liblouis: Afrikaans Braille Code (Grade 1)
 #
+# ------------
+#-name: Afrikaans ongekontrakteerde
+#-display-name: Afrikaans braille
+#
+#+locale:af
+#+type:literary
+#+contraction:no
+#+grade:1
+#
+# TODO: Please correct the metadata above. It is not meant to be
+# accurate nor complete. It hasn't been verified by the table
+# author yet. It is merely an attempt by the liblouis maintainers
+# to get some sensible initial values in place.
+# ------------
+#
+# Based on World Braille Usage 2013
+# <http://liblouis.org/braille-specs/world-braille-usage-third-edition.pdf>.
+#
 # Copyright (C) 2014, Greg Kearney <gkearney@gmail.com>
 #
 # Based on English UEB Grade 1

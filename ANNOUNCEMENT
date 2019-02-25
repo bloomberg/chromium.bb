@@ -1,7 +1,7 @@
-liblouis 3.2.0 has been released
+liblouis 3.8.0 has been released
 
 The liblouis developer team is proud to announce the liblouis release
-3.2.0. The release is available for download at:
+3.8.0. The release is available for download at:
 
     https://github.com/liblouis/liblouis/releases
 
@@ -18,103 +18,112 @@ project liblouisutdml[2] deals with formatting of braille.
 Changes in this release
 =======================
 
-Aside from the usual improvements to Braille tables this release
-focuses on improving the internal infrastructure. Numerous bugs have
-been fixed, the CI infrastructure also checks mingw builds now and
-MSVC compatibility has been massively improved. For a detailed list of
-all the changes refer to
+The major focus of this release is on braille table updates. There are
+major updates to German, Arabic, Chinese, Turkish, Dutch, Czech,
+Latvian, Spanish and Ethiopic. Some of these new tables have only been
+possible because Bert Frees fixed some nasty long standing bugs behind
+the scene. Also there is the usual assortment of code improvements and
+cleanups.
 
-    https://github.com/liblouis/liblouis/milestone/10?closed=1
+For a detailed list of all the changes refer to the list of closed
+issues[3].
+
+New features
+~~~~~~~~~~~~
+
+- None
 
 Bug fixes
 ~~~~~~~~~
 
-  - Fix capsnocont opcode. Also mark capital letters with capsletter
-    symbol when capsnocont is defined but no begcapsword indicator is
-    defined. Thanks to Bue Vester-Andersen.
-  - Fix the syllable opcode. It had been broken under some circumstances
-    since 3.0. Thanks to Bert Frees and Christian Egli.
-
-Other changes
-~~~~~~~~~~~~~
-
-  - Fix building of Python bindings when cross-compiling. Thanks to
-    Chris Brannon
-  - lou_checkyaml is now only installed if libyaml is available. Thanks
-    to Christian Egli
-  - Major internal changes to improve MSVC compatibility. Thanks to Davy
-    Kager
-  - Enhance documentation on usage of display tables in particular in
-    conjunction with Unicode dot patterns. Thanks to Bert Frees
+- Fix support more than 4 classes thanks to Bert Frees.
+- Fix capitalization of words that match `nocont' rules thanks to Bert
+  Frees.
 
 Braille table improvements
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  - Improvements to the Swedish 8-dots table (`se-se.ctb') thanks to
-    Kevin Derome
-  - Improvements to the Simplified-Chinese Braille table thanks to
-    Roshanson
-  - Fixes for the International Phonetic Alphabet Braille table thanks
-    to Ludovic Oger
-  - Added more Unicode symbols (fractions and not equal) to the UEB
-    tables. Thanks to Paul Wood and James Bowden.
-  - Fixes to UEB grade 2 (en-ueb-g2.ctb) thanks to Mike Gray.
-  - Vastly improved Danish tables thanks to Bue Vester-Andersen.
-    - New literary tables for 6 dots, mainly for embossing (no
-      back-translation).
-    - Improved back-translation in 6 dots tables, all grades.
-    - New support for many Unicode characters in all 6 dots tables.
-    - Strengthened internal tests to prevent breaking of tables due to
-      changes in the code.
-    - Fixed 8 dots tables which were broken in the previous version.
-  - New Braille tables for Sinhala script thanks to Ashoka Bandula
-    Weerawardhana.
-  - New Hungarian grade 2 Braille table thanks to Attila Hammer.
-  - Improvements to UEB in particular to symbols specified mostly on the
-    Appendix 3 (Symbols List) from the Rules of Unified English Braille
-    Second Edition 2013 document thanks to Victor Montalvão.
-  - Improvements to Persian 8 dot computer Braille table thanks to
-    Mohammadreza Rashad.
+- Defined the undefined character for the Czech tables thanks to Jan
+  Hegr.
+- Improvements to Unified English braille thanks to Mike Gray
+- Updated the Dutch table to the new 2017.1 braille standard thanks to
+  Davy Kager.
+- Improvements to the Polish grade 1 table, to make back-translations
+  of diacritics working
+- Fixes to Latvian braille table thanks to Gatis Grintals and Artis
+  Raugulis.
+- Improvements to traditional Mainland Chinese braille and two-cell
+  Chinese Braille thanks to Sunian Loomee.
+- Update Bopomofo-based Chinese Braille to version 2018-11 thanks to
+  Bo-Cheng Jhan
+  - Correct the default braille pattern of many Chinese characters
+  - Add various Chinese phrases involving exceptions of braille
+    patterns
+  - Modify dot patterns of dashes for readability reasons
+- Added a table for Turkish grade 2 thanks to Uğur Gürbüz and Simon
+  Aittamaa
+- Major upgrade to the German tables. They have been upgraded to /Das
+  System der deutschen Brailleschrift/ (2018). They are much smaller
+  now as they are based on `lou_maketable'. As they now work for any
+  locale (be it Switzerland or Germany) they have been merged into one
+  set of tables for the different grades. Thanks to Christian
+  Waldvogel.
+- New table for Arabic contracted braille thanks to Ikrami Ahmad.
+- New table for Arabic computer braille thanks to Ikrami Ahmad.
+- Improvements to Ethiopic thanks to Tamru E. Belay.
+- New table for Spanish contracted braille thanks to Juan Pablo Bello.
+
+Other changes
+~~~~~~~~~~~~~
+
+- Updated the `lou_allround' and `lou_trace' test tools to include all
+  the mode flags described in the documentation of the
+  `lou_translateString()' function, thanks to Bue Vester-Andersen
+
+Deprecation notice
+~~~~~~~~~~~~~~~~~~
+
+- None
 
 Backwards incompatible changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  - The old Greek table gr-gr-g1.utb is gone. Use el.ctb instead
-  - The doctests are gone. They have been superseded by the YAML tests.
+- The `pass1Only' flag has been deprecated for a while and is now
+  removed from the code, thanks to Bue Vester-Andersen.
 
 New, renamed or removed tables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 New
 ---
-  - sin.cti
-  - sin.utb
-  - hu-hu-g2.ctb (new)
-  - da-dk-6miscChars.cti (new)
-  - da-dk-g16-lit.ctb (new)
-  - da-dk-g26-lit.ctb (new)
-  - da-dk-g26l-lit.ctb (new)
 
+  - tr-g2.ctb
+  - ar-ar-g2.ctb
+  - ar-ar-comp8.utb
+  - es-g2.ctb
 
 Renamed
 -------
-  - gr-gr-g1.utb (removed and replaced by el.ctb)
 
+  - de-de-accents.cti -> de-accents.cti
+  - de-de-g0.utb -> de-g0.utb
+  - de-de-g1.ctb -> de-g1.ctb
+  - de-de-g2.ctb -> de-g2.ctb
+  - de-ch-g0.utb -> de-g0.utb
+  - de-ch-g1.ctb -> de-g1.ctb
+  - de-ch-g2.ctb -> de-g2.ctb
 
 Removed
 -------
-  - da-chardefs6.cti
-  - da-dk-common6.uti
-  - da-dk-g26-patches.cti
-  - da-dk-g2core.cti
-  - da-dk-nocaps.uti
 
+  - ar-fa.utb
+  - Es-Es-g1.utb
 
 Next release
 ============
 
-The next release will be published on September 4 2017 so please keep
-up the excellent work and keep those improvements coming.
+The next release will be published on March 4 2019 so please keep up
+the excellent work and keep those improvements coming.
 
 Share and Enjoy!
 
@@ -123,7 +132,7 @@ Share and Enjoy!
 Footnotes
 =========
 
-[1]  See https://github.com/liblouis/liblouis/tree/master/tables
-[2]  See https://github.com/liblouis/liblouisutdml
-[3]  See https://github.com/liblouis/liblouis/wiki/Emphasis-Opcodes#upgrade-from-previous-versions
-[4]  See https://github.com/liblouis/liblouis/wiki/Licensing-of-liblouis-tables
+[1]  https://github.com/liblouis/liblouis/tree/master/tables
+[2]  https://github.com/liblouis/liblouisutdml
+[3]  https://github.com/liblouis/liblouis/milestone/18?closed=1
+

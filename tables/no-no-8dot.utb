@@ -1,14 +1,13 @@
 # liblouis: Norwegian literary braille, 8-dot
 #
-# -----------
+#-name: Norsk litterær punktskrift, 8-punkt
+#-display-name: Norwegian 8-dot uncontracted braille
+#
 #+locale:no
 #+type:literary
 #+contraction:no
 #+dots:8
 #+grade:0
-#
-#-name: Norsk litterær punktskrift, 8-punkt
-#-display-name: Norwegian literary braille, 8-dot
 #
 #-copyright: 2015, Norwegian library of talking books and braille (NLB)
 #-license: LGPLv2.1
@@ -24,9 +23,8 @@
 #-author-url: https://github.com/usama49
 #
 # Official norwegian braille specifications are collected here:
-# https://github.com/liblouis/braille-specs/blob/master/norwegian/README.md
+# http://liblouis.org/braille-specs/norwegian
 # This specific table is based on the document "Punkttabell for JAWS".
-# -----------
 #
 #  Copyright (C) 2015 NLB Norwegian library of talking books and braille, http://www.nlb.no/
 #

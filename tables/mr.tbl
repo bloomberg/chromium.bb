@@ -1,3 +1,5 @@
+#-display-name: Marathi braille
+
 #+locale:mr
 #+type:literary
 #+grade:1

@@ -1,3 +1,5 @@
+#-display-name: Canadian English computer braille
+
 #+locale:en-CA
 #+type:computer
 #+dots:8

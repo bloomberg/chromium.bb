@@ -22,6 +22,9 @@
 
 ### Table Metadata
 
+#-name: Dansk forkortet 6-punkt
+#-display-name: Danish 6-dot fully contracted braille
+
 #+locale: da
 #+type: literary
 #+contraction: full
@@ -123,8 +126,13 @@ math \x00f7 45-256 DIVISION SIGN
 # Misc unicode characters
 include da-dk-6miscChars.cti
 
+# Extra chars for private use:
+space \xf800 234f # Used to force a hidden word boundary
+letter \xf801 123f # Used to prevent word contractions in certain cases
+
 # Litdigits
 include litdigits6Dots.uti
+midendnumericmodechars /,.:^
 
 undefined 26
 
@@ -161,13 +169,10 @@ endemphword underline 56
 
 capsletter 46
 begcapsword 456
-endcapsword 68 # Used during back-translation to stop overflow of capsword
+endcapsword 6
 multind 6-46 letsign capsletter
 multind 46-6 capsletter letsign
 multind 6-456 letsign begcapsword
-multind 68-6-46 endcapsword letsign capsletter
-multind 68-6-456 endcapsword letsign begcapsword
-multind 68-6 endcapsword letsign
 
 numsign 3456
 multind 6-3456 letsign numsign
@@ -222,29 +227,30 @@ nofor correct "\x28a0" ? # Extraneous endcaps signs
 #nofor correct "\x2820" ?
 nofor correct "~\\456/" "|"
 
+#ensure \xf800\xf801 between a digit and a letter
+noback correct $dy[]$l "\xf800\xf801"
+noback correct $dy$Spm.[]$l "\xf800\xf801"
 ### Pass 1 - Forward and backward
 
 # Punctuations, math and numbers
-midnum , 2
-midnum . 3
+#midnum , 2
+#midnum . 3
 #midnum - 36
 endnum - 36
-midnum / 34
-midnum : 25
+#midnum / 34
+#midnum : 25
 nofor midnum ^ 346
 nofor midnum ^ 45-346
 
 midnum ^ 45-346
-midnum \x00d7 45-3-3456
+midnum \x00d7 45-3
 
 # various back rules for math signs etc.
 nofor midnum % 0-245-356-0-3456
 nofor endnum % 0-245-356
 nofor endnum \x2030 0-245-356-356
-nofor midnum \s 3456
-nofor midnum \x00d7 45-3-3456
 nofor midnum \x00d7 45-3
-nofor midnum \x00d7 3-3456
+#nofor midnum \x00d7 3
 
 # Punctuation
 prepunc " 2356
@@ -278,7 +284,6 @@ always ) 6-356
 
 # extra back rules for ")"
 nofor after punctuation always ) 356
-nofor after punctuation always ) 68-356
 nofor always \x00b0 4-356
 nofor always ') 4-6-356
 nofor always ") 2356-356
@@ -631,8 +636,8 @@ word til 2345
 
 word under 12345
 
-word var- =
-word var. =
+sufword var- =
+sufword var. =
 word var 36
 word ve 3456
 word ved 1236
@@ -671,177 +676,6 @@ nocross te 1256
 # Numsign/"ve", special case when back-translating
 noback nocross ve 3456
 
-#ve special case
-nofor midendword ve 3456
-
-# nondigletters covers small letters from k + various part word contractions with dots 5 or 6. Necesary to ensure correct back-translation.
-class nondigletter klmnopqrstuvwxyzæøå\x017e\x00e0\x00e7\x00e8\x00e9\x00ea\x00eb\x00ee\x00ef\x00f4\x00f9\x00fb\x00fc\x283f\x2829\x282b\x2837
-nofor before nondigletter begword ve 3456
-nofor sufword veade 3456-1-1456
-nofor sufword veader 3456-1-23456
-nofor sufword veage 3456-1-12456
-
-# veb
-nofor before nondigletter begword veb 3456-12
-nofor before nondigletter begword veba 3456-12-1
-nofor before nondigletter begword vebb 3456-12-12
-nofor before nondigletter begword vebe 3456-12-15
-nofor before nondigletter begword vebi 3456-12-24
-
-# vec
-nofor before nondigletter begword vec 3456-14
-
-# ved
-nofor before nondigletter begword ved 3456-145
-nofor before nondigletter begword veda 3456-145-1
-nofor before nondigletter begword vedb 3456-145-12
-nofor sufword vedben 3456-145-12-126
-nofor sufword vedbend 3456-145-12-15-12345
-nofor sufword vedbenden 3456-145-12-126-12346
-nofor before nondigletter begword vedc 3456-145-14
-nofor before nondigletter begword vedd 3456-145-145
-nofor sufword vedde 3456-145-1456
-nofor sufword veddet 3456-145-2346
-nofor sufword vede 3456-1456
-nofor sufword veden 3456-12346
-nofor sufword veder 3456-23456
-nofor sufword vedet 3456-2346
-nofor before nondigletter begword vedf 3456-145-124
-nofor before nondigletter begword vedfa 3456-145-124-1
-nofor before nondigletter begword vedfe 3456-145-124-15
-nofor before nondigletter begword vedfi 3456-145-124-24
-nofor before nondigletter begword vedg 3456-145-1245
-nofor before nondigletter begword vedga 3456-145-1245-1
-nofor sufword vedge 3456-145-12456
-nofor before nondigletter begword vedgi 3456-145-1245-24
-nofor before nondigletter begword vedh 3456-145-125
-nofor before nondigletter begword vedha 3456-145-125-1
-nofor before nondigletter begword vedhe 3456-145-125-15
-nofor before nondigletter begword vedhi 3456-145-125-24
-nofor before nondigletter begword vedi 3456-145-24
-nofor before nondigletter begword vedj 3456-145-245
-
-# vee
-nofor before nondigletter begword vee 3456-15
-nofor sufword veen 3456-126
-nofor sufword veer 3456-156
-nofor sufword veet 3456-346
-
-# vef
-nofor before nondigletter begword vef 3456-124
-nofor before nondigletter begword vefa 3456-124-1
-nofor before nondigletter begword vefe 3456-124-15
-nofor before nondigletter begword vefi 3456-124-24
-
-# veg
-nofor before nondigletter begword veg 3456-1245
-nofor before nondigletter begword vega 3456-1245-1
-nofor sufword vege 3456-12456
-nofor sufword vegen 3456-1245-126
-nofor word veget 3456-1245-346
-nofor sufword vegger 3456-1245-1245-156
-nofor before nondigletter begword vegi 3456-1245-24
-
-# veh
-nofor before nondigletter begword veh 3456-125
-nofor before nondigletter begword veha 3456-125-1
-nofor sufword vehage 3456-125-1-23456
-nofor before nondigletter begword vehe 3456-125-15
-nofor before nondigletter begword vehi 3456-125-24
-
-# vei
-nofor before nondigletter begword vei 3456-24
-nofor sufword veide 3456-24-1456
-nofor sufword veige 3456-24-12456
-
-# vej
-nofor before nondigletter begword vej 3456-245
-nofor before nondigletter begword veja 3456-245-1
-nofor before nondigletter begword vejaf 3456-245-1-124
-nofor sufword vejafde 3456-245-1-124-1456
-nofor before nondigletter begword vejafgif 3456-245-1-124-1245-24-124
-nofor before nondigletter begword vejb 3456-245-12
-nofor before nondigletter begword vejba 3456-245-12-1
-nofor before nondigletter begword vejbe 3456-245-12-15
-nofor before nondigletter begword vejbi 3456-245-12-24
-nofor before nondigletter begword vejc 3456-245-14
-nofor before nondigletter begword vejd 3456-245-145
-nofor before nondigletter begword vejda 3456-245-145-1
-nofor sufword vejde 3456-245-1456
-nofor before nondigletter begword vejdi 3456-245-145-24
-nofor before nondigletter begword veje 3456-245-15
-nofor before nondigletter begword vejeb 3456-245-15-12
-nofor before nondigletter begword vejed 3456-245-15-145
-nofor sufword vejede 3456-245-15-1456
-nofor before nondigletter begword vejef 3456-245-15-124
-nofor before nondigletter begword vejeg 3456-245-15-1245
-nofor sufword vejege 3456-245-15-12456
-nofor sufword vejen 3456-245-126
-nofor sufword vejene 3456-245-15-1246
-nofor sufword vejer 3456-245-156
-nofor word vejet 3456-245-346
-nofor before nondigletter begword vejf 3456-245-124
-nofor before nondigletter begword vejfa 3456-245-124-1
-nofor before nondigletter begword vejfe 3456-245-124-15
-nofor before nondigletter begword vejfi 3456-245-124-24
-nofor before nondigletter begword vejg 3456-245-1245
-nofor before nondigletter begword vejga 3456-245-1245-1
-nofor sufword vejge 3456-245-12456
-nofor before nondigletter begword vejgi 3456-245-1245-24
-nofor before nondigletter begword vejh 3456-245-125
-nofor before nondigletter begword vejha 3456-245-125-1
-nofor before nondigletter begword vejhe 3456-245-125-15
-nofor before nondigletter begword vejhi 3456-245-125-24
-nofor before nondigletter begword vejhj 3456-245-125-245
-nofor before nondigletter begword veji 3456-245-24
-nofor before nondigletter begword vejid 3456-245-24-145
-nofor before nondigletter begword vejj 3456-245-245
-nofor before nondigletter begword vejja 3456-245-245-1
-nofor before nondigletter begword vejje 3456-245-245-15
-nofor before nondigletter begword vejji 3456-245-245-24
-nofor always vend 3456-12345
-nofor always veor 3456-1346
-nofor always vest 3456-1356
-
-# combinations to handle Danish regression rules
-nocross dend 1456-12345
-nocross end 15-12345
-nocross gend 12456-12345
-nocross gen 1245-126
-nocross ger 1245-156
-nocross get 1245-346
-nocross hven 2456-126
-nocross hver 2456-156
-nocross hvet 2456-346
-nocross hve 2456-15
-nocross mend 146-12345
-nocross men 134-126
-nocross mer 134-156
-nocross met 134-346
-nocross nden 1345-12346
-nocross nder 1345-23456
-nocross ndet 1345-2346
-nocross nend 1246-12345
-nocross nen 1345-126
-nocross ner 1345-156
-nocross net 1345-346
-nocross rend 12356-12345
-nocross ren 1235-126
-nocross rer 1235-156
-nocross ret 1235-346
-nocross sten 1356-126
-nocross ster 1356-156
-nocross stet 1356-346
-nocross ste 1356-15
-nocross tend 1256-12345
-nocross ten 2345-126
-nocross ter 2345-156
-nocross tet 2345-346
-nocross vend 3456-12345
-nocross ven 1236-126
-nocross ver 1236-156
-nocross vet 1236-346
-
 # Additional words containing "hvor"
 # these are made explicit in 6-dots to handle / better
 
@@ -861,31 +695,206 @@ word hvorudfra 34-136-145-124-1235-1
 word hvorvidt 34-1236-24-145-2345
 word ihvorvel 24-34-3456-123
 
+# Rules and corrections for back-translation
+
+#ve special case
+nofor midendword ve 3456
+
+# nondigletters covers small letters from k + various part word contractions with dots 5 or 6. Necesary to ensure correct back-translation.
+class nondigletter klmnopqrstuvwxyzæøå\x017e\x00e0\x00e7\x00e8\x00e9\x00ea\x00eb\x00ee\x00ef\x00f4\x00f9\x00fb\x00fc\x283f\x2829\x282b\x2837
+nofor before nondigletter begword ve 3456
+nofor before nondigletter begword vea 3456-1
+nofor sufword veade 3456-1-1456
+nofor sufword veader 3456-1-23456
+nofor sufword veage 3456-1-12456
+nofor before nondigletter begword veag 3456-1-1245
+
+# veb
+nofor before nondigletter begword veb 3456-12
+nofor before nondigletter begword veba 3456-12-1
+nofor before nondigletter begword vebb 3456-12-12
+nofor sufword vebbest 3456-12-12-15-1356
+nofor before nondigletter begword vebe 3456-12-15
+nofor before nondigletter begword vebi 3456-12-24
+
+# vec
+nofor before nondigletter begword vec 3456-14
+nofor before nondigletter begword vecchi 3456-14-14-125-24
+
+# ved
+nofor before nondigletter begword ved 3456-145
+nofor before nondigletter begword veda 3456-145-1
+nofor sufword vedaer 3456-145-1-156
+nofor before nondigletter begword vedb 3456-145-12
+nofor sufword vedben 3456-145-12-126
+nofor sufword vedbend 3456-145-12-15-12345
+nofor sufword vedbenden 3456-145-12-126-12346
+nofor before nondigletter begword vedc 3456-145-14
+nofor before nondigletter begword vedd 3456-145-145
+nofor before nondigletter begword vedda 3456-145-145-1
+nofor sufword vedde 3456-145-1456
+nofor sufword veddet 3456-145-2346
+nofor sufword vede 3456-1456
+nofor sufword veden 3456-12346
+nofor sufword veder 3456-23456
+nofor sufword vedet 3456-2346
+nofor before nondigletter begword vedf 3456-145-124
+nofor before nondigletter begword vedfa 3456-145-124-1
+nofor before nondigletter begword vedfe 3456-145-124-15
+nofor before nondigletter begword vedfi 3456-145-124-24
+nofor before nondigletter begword vedg 3456-145-1245
+nofor before nondigletter begword vedga 3456-145-1245-1
+nofor sufword vedge 3456-145-12456
+nofor before nondigletter begword vedgi 3456-145-1245-24
+nofor before nondigletter begword vedh 3456-145-125
+nofor before nondigletter begword vedha 3456-145-125-1
+nofor before nondigletter begword vedhe 3456-145-125-15
+nofor before nondigletter begword vedhef 3456-145-125-15-124
+nofor sufword vedhefte 3456-145-125-15-124-1256
+nofor before nondigletter begword vedhi 3456-145-125-24
+nofor before nondigletter begword vedi 3456-145-24
+nofor before nondigletter begword vedj 3456-145-245
+nofor sufword vedst 3456-145-1356
+nofor sufword vedte 3456-145-1256
+
+# vee
+nofor before nondigletter begword vee 3456-15
+nofor before nondigletter begword veeb 3456-15-12
+nofor sufword veen 3456-126
+nofor sufword veer 3456-156
+nofor sufword veet 3456-346
+
+# vef
+nofor before nondigletter begword vef 3456-124
+nofor before nondigletter begword vefa 3456-124-1
+nofor before nondigletter begword vefe 3456-124-15
+nofor before nondigletter begword vefi 3456-124-24
+
+# veg
+nofor before nondigletter begword veg 3456-1245
+nofor before nondigletter begword vega 3456-1245-1
+nofor sufword vege 3456-12456
+nofor sufword vegen 3456-1245-126
+nofor word veget 3456-1245-346
+nofor sufword vegger 3456-1245-1245-156
+nofor before nondigletter begword vegi 3456-1245-24
+nofor sufword vegst 3456-1245-1356
+
+# veh
+nofor before nondigletter begword veh 3456-125
+nofor before nondigletter begword veha 3456-125-1
+nofor sufword vehand 3456-125-1-12345
+nofor sufword vehage 3456-125-1-23456
+nofor before nondigletter begword vehe 3456-125-15
+nofor before nondigletter begword vehi 3456-125-24
+
+# vei
+nofor before nondigletter begword vei 3456-24
+nofor before nondigletter begword veibe 3456-24-12-15
+nofor sufword veide 3456-24-1456
+nofor sufword veien 3456-24-126
+nofor sufword veige 3456-24-12456
+nofor before nondigletter begword veij 3456-24-245
+nofor sufword veind 3456-24-12345
+
+# vej
+nofor before nondigletter begword vej 3456-245
+nofor before nondigletter begword veja 3456-245-1
+nofor before nondigletter begword vejadga 3456-245-1-145-1245-1
+nofor before nondigletter begword vejaf 3456-245-1-124
+nofor sufword vejafde 3456-245-1-124-1456
+nofor before nondigletter begword vejafgif 3456-245-1-124-1245-24-124
+nofor before nondigletter begword vejb 3456-245-12
+nofor before nondigletter begword vejba 3456-245-12-1
+nofor before nondigletter begword vejbe 3456-245-12-15
+nofor before nondigletter begword vejbi 3456-245-12-24
+nofor before nondigletter begword vejbid 3456-245-12-24-145
+nofor before nondigletter begword vejc 3456-245-14
+nofor before nondigletter begword vejd 3456-245-145
+nofor before nondigletter begword vejda 3456-245-145-1
+nofor sufword vejde 3456-245-1456
+nofor before nondigletter begword vejdi 3456-245-145-24
+nofor before nondigletter begword veje 3456-245-15
+nofor before nondigletter begword vejea 3456-245-15-1
+nofor before nondigletter begword vejeb 3456-245-15-12
+nofor before nondigletter begword vejed 3456-245-15-145
+nofor before nondigletter begword vejeda 3456-245-15-145-1
+nofor sufword vejede 3456-245-15-1456
+nofor before nondigletter begword vejef 3456-245-15-124
+nofor before nondigletter begword vejeg 3456-245-15-1245
+nofor sufword vejege 3456-245-15-12456
+nofor sufword vejen 3456-245-126
+nofor sufword vejene 3456-245-15-1246
+nofor sufword vejer 3456-245-156
+nofor word vejet 3456-245-346
+nofor before nondigletter begword vejf 3456-245-124
+nofor before nondigletter begword vejfa 3456-245-124-1
+nofor before nondigletter begword vejfe 3456-245-124-15
+nofor sufword vejfest 3456-245-124-15-1356
+nofor before nondigletter begword vejfi 3456-245-124-24
+nofor begword vejfor 3456-245-124-1346
+nofor before nondigletter begword vejg 3456-245-1245
+nofor before nondigletter begword vejga 3456-245-1245-1
+nofor before nondigletter begword vejgaa 3456-245-1245-1-1
+nofor sufword vejge 3456-245-12456
+nofor before nondigletter begword vejgi 3456-245-1245-24
+nofor before nondigletter begword vejh 3456-245-125
+nofor before nondigletter begword vejha 3456-245-125-1
+nofor before nondigletter begword vejhe 3456-245-125-15
+nofor before nondigletter begword vejhi 3456-245-125-24
+nofor sufword vejhist 3456-245-125-24-1356
+nofor before nondigletter begword vejhj 3456-245-125-245
+nofor before nondigletter begword veji 3456-245-24
+nofor before nondigletter begword vejid 3456-245-24-145
+nofor before nondigletter begword vejj 3456-245-245
+nofor before nondigletter begword vejja 3456-245-245-1
+nofor before nondigletter begword vejje 3456-245-245-15
+nofor before nondigletter begword vejji 3456-245-245-24
+nofor sufword vejor 3456-245-1346
+nofor begword vejst 3456-245-1356
+
+nofor always vend 3456-12345
+nofor always veor 3456-1346
+nofor always vest 3456-1356
+nofor always vete 3456-1256
+
+# Corrections of letters with accents
+nofor sufword aïda 1-5-24-145-1
+nofor sufword anaïs 1-1345-1-5-24-234
+nofor sufword barsebäck 12-1-1235-234-15-12-345-14-13
+nofor sufword bohè 12-135-125-5-15
+nofor sufword château 14-125-5-1-1256-1-136
+nofor sufword citroën 14-24-2345-1235-135-5-15-1345
+nofor sufword däniken 145-345-1345-24-13-126
+nofor word fór 124-5-135-1235
+nofor sufword göran 1245-246-1235-1-1345
+nofor sufword göring 1245-246-1235-24-1345-1245
+nofor word händel 125-345-1345-1456-123
+nofor word händels 125-345-1345-1456-123-234
+nofor sufword lagerlöf 123-1-1245-156-123-246-124
+nofor sufword márquez 134-5-1-1235-6-12345-136-15-6-1356
+nofor sufword miró 134-24-1235-5-135
+nofor sufword moliè 134-135-123-24-5-15
+nofor sufword norröna 1345-1346-1235-246-1345-1
+nofor sufword tannhäus 2345-1-1345-1345-125-345-136-234
+nofor sufword tórshavn 2345-5-135-1235-234-125-1-1236-1345
+ nofor sufword václav 1236-5-1-14-123-1-1236
+nofor sufword verän 1236-156-345-1345
+nofor sufword weizsäck 6-2456-15-24-6-1356-234-345-14-13
+
 # Common combinations of one word contractions with slash
 word af/på 356-34-1234
-word af/på 356-34-68-1234
 word du/i 145-34-24
-word du/i 145-34-68-24
 word eller/og 15-34-14
-word eller/og 15-34-68-14
 word fra/til 235-34-2345
-word fra/til 235-34-68-2345
 word han/hun 13456-34-136
-word han/hun 13456-34-68-136
 word hun/han 136-34-13456
-word hun/han 136-34-68-13456
 word i/du 24-34-145
-word i/du 24-34-68-145
 word og/eller 14-34-15
-word og/eller 14-34-68-15
 word over/under 1346-34-12345
-word over/under 1346-34-68-12345
 word på/af 1234-34-356
-word på/af 1234-34-68-356
 word til/fra 2345-34-235
-word til/fra 2345-34-68-235
 word under/over 12345-34-1346
-word under/over 12345-34-68-1346
 
 # no backtrans of ^1 and `2. use contractions
 nofor always eta 346-1
@@ -995,6 +1004,7 @@ noback context `["!"] @6-235
 
 # Ensure two dashes where appropriate.
 noback context $w["-"]$w @36
+noback context $sw["-"]"\xf800\xf801" @36
 noback context $sw["-"]$sw @36-36
 noback context `["-"]$sw @36-36
 noback context $sw["-"]~ @36-36
@@ -1004,22 +1014,6 @@ noback context `["-"]~ @36-36
 # Ensure letsign between letter and numsign
 noback context $l[]$D @6
 
-# No "nd", "hv", "or", or "st" after a digit and a letsign
-noback context $dy["hv"] @6-125-1236
-noback context $dy$Spm["hv"] @6-125-1236
-noback context $dy["nd"] @6-1345-145
-noback context $dy$Spm["nd"] @6-1345-145
-noback context $dy["or"] @6-135-1235
-noback context $dy$Spm["or"] @6-135-1235
-noback context $dy["st"] @6-234-2345
-noback context $dy$Spm["st"] @6-234-2345
-noback context $dy["te"] @6-2345-15
-noback context $dy$Spm["te"] @6-2345-15
-
-
-#ensure dot 6 between a digit and a letter
-noback context $dy[]$u @6
-noback context $dy$Spm.[]$u @6
 
 ### context - backward translation
 
@@ -1035,6 +1029,18 @@ nofor context `@36-36~ "-"
 
 ### Pass 2 - forward translation
 
+# No "nd", "hv", "or", or "st" after a digit and a letsign
+noback pass2 @234f-123f-2456 @6-125-1236
+noback pass2 @234f-123f-12345 @6-1345-145
+noback pass2 @234f-123f-1346 @6-135-1235
+noback pass2 @234f-123f-1356 @6-234-2345
+noback pass2 @234f-123f-1256 @6-2345-15
+# extra lines to correct hyphenation errors caused by \xf801
+noback pass2 @234f-123f-135-3456-1235 @6-135-1236-156
+noback pass2 @234f-123f-3456 @6-1236-15
+
+noback pass2 @234f-123f @6
+
 # Correct chars defined as 8 dots because they include letsign
 noback pass2 @467 @45-6
 noback pass2 @4568 @45-456
@@ -1044,10 +1050,8 @@ noback pass2 @13467 @6-1346
 noback pass2 @13567 @6-1356
 noback pass2 @12567 @6-1256
 
-# Show endcapsword as dot 6 (letsign)
-noback pass2 @68 @6
-
 noback pass2 @6-46-5 @46-5 # no letsign before cap letters with accent
+noback pass2 @234f-123f-46-5 @46-5 # no letsign before cap letters with accent
 noback pass2 _$D[@6-46-6] *
 noback pass2 _$D[@6-46] *
 noback pass2 @6-46-6 @46-6 # Ensure correct order and no double letsign
@@ -1056,45 +1060,23 @@ noback pass2 @6-46 @46-6 # Ensure correct order
  ### Pass 2 - backward
 
 # Insert letsign between number (with extra punctuation) and capsletter sign
-nofor pass2 @3456$l.$Spm$l.@3$l.@3[]@46 @68-6
-nofor pass2 @3456$l.$Spm$l.@3[]@46 @68-6
-nofor pass2 @3456$l.$Spm$Spm[]@46 @68-6
-nofor pass2 @3456$l.$Spm[]@46 @68-6
+#nofor pass2 @3456$l.$Spm$l.@3$l.@3[]@46 @6
+#nofor pass2 @3456$l.$Spm$l.@3[]@46 @6
+#nofor pass2 @3456$l.$Spm$Spm[]@46 @6
+#nofor pass2 @3456$l.$Spm[]@46 @6
 
 # Insert letsign between number (with extra punctuation) and capsword sign
-nofor pass2 @3456$l.$Spm$l.@3$l.@3[]@456 @6
-nofor pass2 @3456$l.$Spm$l.@34$l.@34[]@456 @6
-nofor pass2 @3456$l.$Spm$l.@36$l.@36[]@456 @6
-nofor pass2 @3456$l.$Spm$l.@3[]@456 @6
-nofor pass2 @3456$l.$Spm$l.@34[]@456 @6
-nofor pass2 @3456$l.$Spm$l.@36[]@456 @6
-nofor pass2 @3456$l.$Spm$Spm[]@456 @6
-nofor pass2 @3456$l.$Spm[]@456 @6
-nofor pass2 @3456$l.[]@456 @6
+#nofor pass2 @3456$l.$Spm$l.@3$l.@3[]@456 @6
+#nofor pass2 @3456$l.$Spm$l.@34$l.@34[]@456 @6
+#nofor pass2 @3456$l.$Spm$l.@36$l.@36[]@456 @6
+#nofor pass2 @3456$l.$Spm$l.@3[]@456 @6
+#nofor pass2 @3456$l.$Spm$l.@34[]@456 @6
+#nofor pass2 @3456$l.$Spm$l.@36[]@456 @6
+#nofor pass2 @3456$l.$Spm$Spm[]@456 @6
+#nofor pass2 @3456$l.$Spm[]@456 @6
+#nofor pass2 @3456$l.[]@456 @6
 
-# Place endcaps in connection to all the following Braille patterns:
-nofor pass2 $l[@45-3] @45-3-68
-nofor pass2 $l[@468] @468-68
-nofor pass2 $l[@6] @68-6 # Must come before letsign
-nofor pass2 $l[@36] @36-68
-nofor pass2 $l[@34] @34-68
-nofor pass2 $l[@2356] @2356-68
-nofor pass2 $l[@45-36] @45-36-68
-nofor pass2 $l[@4-356] @4-356-68
-nofor pass2 $l[@245-356] @245-356-68
-nofor pass2 $l[@4] @4-68
-nofor pass2 $l[@235] @235-68
-nofor pass2 $l[@45-1] @45-1-68
-nofor pass2 $l[@236] @236-68
-nofor pass2 $l[@356-356] @356-356-68
-nofor pass2 $l[@356] @356-68
-nofor pass2 $l[@3] @3-68
-nofor pass2 $l[@2] @2-68
-nofor pass2 $l[@26] @26-68
-nofor pass2 $l[@25] @25-68
-nofor pass2 $l[@12346] @12346-68
-
-nofor pass2 $l[]@46 @68-6
+#nofor pass2 $l[]@46 @6
 #nofor pass2 $a[]@456 @6
 
 ### Pass 3 - forward translation
@@ -1106,10 +1088,10 @@ nofor pass2 $l[]@46 @68-6
 ### Pass 3 - backward translation
 
 # Save letters that have been defined with letsign as part of their definitions
-nofor pass3 @6-12345 @6-123457
-nofor pass3 @6-2456 @6-24567
-nofor pass3 @6-1346 @6-13467
-nofor pass3 @6-1356 @6-13567
+nofor pass3 @6-12345 @123457
+nofor pass3 @6-2456 @24567
+nofor pass3 @6-1346 @13467
+nofor pass3 @6-1356 @13567
 nofor pass3 @6-1256 @6-12567
 
 # save ~ and |  before inserting extra letsigns and endcapsword in pass 2.

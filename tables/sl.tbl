@@ -1,3 +1,5 @@
+#-display-name: Slovenian braille
+
 #+locale:sl
 #+type:literary
 #+grade:1

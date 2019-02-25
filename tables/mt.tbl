@@ -1,3 +1,5 @@
+#-display-name: Maltese computer braille
+
 #+locale:mt
 #+type:computer
 #+dots:8
