@@ -42,7 +42,6 @@ static_library("test_support") {
     "mock_access_token_fetcher.h",
     "refresh_token_store.cc",
     "refresh_token_store.h",
-    "remote_application_details.h",
     "remote_connection_observer.h",
     "remote_host_info.cc",
     "remote_host_info.h",
