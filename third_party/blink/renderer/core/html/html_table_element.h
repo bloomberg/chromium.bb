@@ -132,7 +132,7 @@ class CORE_EXPORT HTMLTableElement final : public HTMLElement {
   // otherwise).
   TableRules rules_attr_;
 
-  unsigned short padding_;
+  uint16_t padding_;
   Member<CSSPropertyValueSet> shared_cell_style_;
 };
 
