@@ -1752,6 +1752,9 @@ void BookmarkBarView::ShowDropFolderForNode(const BookmarkNode* node) {
       browser_, page_navigator_, GetWidget(), node, start_index, true);
   bookmark_drop_menu_->set_observer(this);
   bookmark_drop_menu_->RunMenuAt(this);
+
+  for (BookmarkBarViewObserver& observer : observers_)
+    observer.OnDropMenuShown();
 }
 
 void BookmarkBarView::StopShowFolderDropMenuTimer() {
