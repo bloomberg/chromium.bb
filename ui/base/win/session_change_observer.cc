@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/views/win/windows_session_change_observer.h"
+#include "ui/base/win/session_change_observer.h"
 
 #include <wtsapi32.h>
 
@@ -18,30 +18,37 @@
 #include "base/task/post_task.h"
 #include "ui/gfx/win/singleton_hwnd.h"
 #include "ui/gfx/win/singleton_hwnd_observer.h"
-#include "ui/views/views_delegate.h"
 
-namespace views {
+namespace ui {
 
-class WindowsSessionChangeObserver::WtsRegistrationNotificationManager {
+class SessionChangeObserver::WtsRegistrationNotificationManager {
  public:
   static WtsRegistrationNotificationManager* GetInstance() {
     return base::Singleton<WtsRegistrationNotificationManager>::get();
   }
 
   WtsRegistrationNotificationManager() {
-    AddSingletonHwndObserver();
+    DCHECK(!singleton_hwnd_observer_);
+    singleton_hwnd_observer_.reset(new gfx::SingletonHwndObserver(
+        base::BindRepeating(&WtsRegistrationNotificationManager::OnWndProc,
+                            base::Unretained(this))));
+
+    base::OnceClosure wts_register = base::BindOnce(
+        base::IgnoreResult(&WTSRegisterSessionNotification),
+        gfx::SingletonHwnd::GetInstance()->hwnd(), NOTIFY_FOR_THIS_SESSION);
+
+    base::CreateCOMSTATaskRunnerWithTraits({})->PostTask(
+        FROM_HERE, std::move(wts_register));
   }
 
-  ~WtsRegistrationNotificationManager() {
-    RemoveSingletonHwndObserver();
-  }
+  ~WtsRegistrationNotificationManager() { RemoveSingletonHwndObserver(); }
 
-  void AddObserver(WindowsSessionChangeObserver* observer) {
+  void AddObserver(SessionChangeObserver* observer) {
     DCHECK(singleton_hwnd_observer_);
     observer_list_.AddObserver(observer);
   }
 
-  void RemoveObserver(WindowsSessionChangeObserver* observer) {
+  void RemoveObserver(SessionChangeObserver* observer) {
     observer_list_.RemoveObserver(observer);
   }
 
@@ -52,33 +59,12 @@ class WindowsSessionChangeObserver::WtsRegistrationNotificationManager {
   void OnWndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
     switch (message) {
       case WM_WTSSESSION_CHANGE:
-        for (WindowsSessionChangeObserver& observer : observer_list_)
+        for (SessionChangeObserver& observer : observer_list_)
           observer.OnSessionChange(wparam);
         break;
       case WM_DESTROY:
         RemoveSingletonHwndObserver();
         break;
-    }
-  }
-
-  void AddSingletonHwndObserver() {
-    DCHECK(!singleton_hwnd_observer_);
-    singleton_hwnd_observer_.reset(new gfx::SingletonHwndObserver(
-        base::Bind(&WtsRegistrationNotificationManager::OnWndProc,
-                   base::Unretained(this))));
-
-    base::OnceClosure wts_register = base::BindOnce(
-        base::IgnoreResult(&WTSRegisterSessionNotification),
-        gfx::SingletonHwnd::GetInstance()->hwnd(), NOTIFY_FOR_THIS_SESSION);
-
-    // This should probably always be async but it wasn't async in the absence
-    // of a ViewsDelegate prior to the migration to TaskScheduler and making it
-    // async breaks many unrelated views unittests.
-    if (ViewsDelegate::GetInstance()) {
-      base::CreateCOMSTATaskRunnerWithTraits({})->PostTask(
-          FROM_HERE, std::move(wts_register));
-    } else {
-      std::move(wts_register).Run();
     }
   }
 
@@ -94,37 +80,35 @@ class WindowsSessionChangeObserver::WtsRegistrationNotificationManager {
     // Under both cases we are in shutdown, which means no other worker threads
     // can be running.
     WTSUnRegisterSessionNotification(gfx::SingletonHwnd::GetInstance()->hwnd());
-    for (WindowsSessionChangeObserver& observer : observer_list_)
+    for (SessionChangeObserver& observer : observer_list_)
       observer.ClearCallback();
   }
 
-  base::ObserverList<WindowsSessionChangeObserver, true>::Unchecked
-      observer_list_;
+  base::ObserverList<SessionChangeObserver, true>::Unchecked observer_list_;
   std::unique_ptr<gfx::SingletonHwndObserver> singleton_hwnd_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(WtsRegistrationNotificationManager);
 };
 
-WindowsSessionChangeObserver::WindowsSessionChangeObserver(
-    const WtsCallback& callback)
+SessionChangeObserver::SessionChangeObserver(const WtsCallback& callback)
     : callback_(callback) {
   DCHECK(!callback_.is_null());
   WtsRegistrationNotificationManager::GetInstance()->AddObserver(this);
 }
 
-WindowsSessionChangeObserver::~WindowsSessionChangeObserver() {
+SessionChangeObserver::~SessionChangeObserver() {
   ClearCallback();
 }
 
-void WindowsSessionChangeObserver::OnSessionChange(WPARAM wparam) {
+void SessionChangeObserver::OnSessionChange(WPARAM wparam) {
   callback_.Run(wparam);
 }
 
-void WindowsSessionChangeObserver::ClearCallback() {
+void SessionChangeObserver::ClearCallback() {
   if (!callback_.is_null()) {
     callback_.Reset();
     WtsRegistrationNotificationManager::GetInstance()->RemoveObserver(this);
   }
 }
 
-}  // namespace views
+}  // namespace ui

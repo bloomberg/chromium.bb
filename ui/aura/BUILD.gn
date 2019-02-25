@@ -221,6 +221,10 @@ jumbo_component("aura") {
     ]
   }
 
+  if (is_win) {
+    libs = [ "wtsapi32.lib" ]
+  }
+
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
     public += [ "screen_ozone.h" ]

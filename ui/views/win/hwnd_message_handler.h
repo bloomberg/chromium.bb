@@ -44,13 +44,13 @@ class AXSystemCaretWin;
 class InputMethod;
 class TextInputClient;
 class ViewProp;
+class SessionChangeObserver;
 }  // namespace ui
 
 namespace views {
 
 class FullscreenHandler;
 class HWNDMessageHandlerDelegate;
-class WindowsSessionChangeObserver;
 
 // These two messages aren't defined in winuser.h, but they are sent to windows
 // with captions. They appear to paint the window caption and frame.
@@ -708,8 +708,7 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   uint32_t current_window_size_message_ = 0;
 
   // Manages observation of Windows Session Change messages.
-  std::unique_ptr<WindowsSessionChangeObserver>
-      windows_session_change_observer_;
+  std::unique_ptr<ui::SessionChangeObserver> session_change_observer_;
 
   // Some assistive software need to track the location of the caret.
   std::unique_ptr<ui::AXSystemCaretWin> ax_system_caret_;

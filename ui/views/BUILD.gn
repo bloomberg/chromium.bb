@@ -566,7 +566,6 @@ jumbo_component("views") {
       "win/hwnd_util.h",
       "win/pen_event_processor.h",
       "win/scoped_fullscreen_visibility.h",
-      "win/windows_session_change_observer.h",
     ]
     sources += [
       "widget/widget_hwnd_utils.cc",
@@ -575,14 +574,12 @@ jumbo_component("views") {
       "win/hwnd_util_aurawin.cc",
       "win/pen_event_processor.cc",
       "win/scoped_fullscreen_visibility.cc",
-      "win/windows_session_change_observer.cc",
     ]
     libs = [
       "dwmapi.lib",
       "imm32.lib",
       "oleacc.lib",
       "uiautomationcore.lib",
-      "wtsapi32.lib",
     ]
     ldflags = [ "/DELAYLOAD:user32.dll" ]
     deps += [
