@@ -13,9 +13,6 @@ extern const int kSearchFieldBackgroundColor;
 
 extern const CGFloat kHintTextScale;
 
-// Returns the maximum number of tiles fitting in |availableWidth|, limited to
-// 4.
-NSUInteger numberOfTilesForWidth(CGFloat availableWidth);
 // Returns the spacing between tiles, based on the device.
 CGFloat horizontalSpacingBetweenTiles();
 CGFloat verticalSpacingBetweenTiles();

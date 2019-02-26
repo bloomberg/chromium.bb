@@ -217,36 +217,6 @@ TEST_F(ContentSuggestionsCollectionUtilsTest, heightForLogoHeaderIPhone) {
   EXPECT_EQ(276, heightForLogoHeader(YES, NO, NO, 0));
 }
 
-TEST_F(ContentSuggestionsCollectionUtilsTest, SizeIPhone6) {
-  // Setup.
-  SetAsIPhone();
-
-  // Test.
-  EXPECT_EQ(4U, numberOfTilesForWidth(360));
-}
-
-TEST_F(ContentSuggestionsCollectionUtilsTest, SizeIPhone5) {
-  // Setup.
-  SetAsIPhone();
-
-  // Test.
-  EXPECT_EQ(4U, numberOfTilesForWidth(320));
-}
-
-// Test for iPad portrait and iPhone landscape.
-TEST_F(ContentSuggestionsCollectionUtilsTest, SizeLarge) {
-  // Test.
-  EXPECT_EQ(4U, numberOfTilesForWidth(720));
-}
-
-TEST_F(ContentSuggestionsCollectionUtilsTest, SizeIPadSplit) {
-  // Setup.
-  SetAsIPad();
-
-  // Test.
-  EXPECT_EQ(4U, numberOfTilesForWidth(360));
-}
-
 TEST_F(ContentSuggestionsCollectionUtilsTest, NearestAncestor) {
   // Setup.
   // The types of the view has no meaning.

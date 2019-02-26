@@ -180,8 +180,6 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
 }
 
 - (void)updateConstraints {
-  [self.collectionUpdater
-      updateMostVisitedForSize:self.collectionView.bounds.size];
   [self.headerSynchronizer
       updateFakeOmniboxOnNewWidth:self.collectionView.bounds.size.width];
   [self.headerSynchronizer updateConstraints];
@@ -294,8 +292,6 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
        withTransitionCoordinator:
            (id<UIViewControllerTransitionCoordinator>)coordinator {
   [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
-  [self.collectionUpdater updateMostVisitedForSize:size];
-  [self.collectionView reloadData];
 
   void (^alongsideBlock)(id<UIViewControllerTransitionCoordinatorContext>) =
       ^(id<UIViewControllerTransitionCoordinatorContext> context) {
