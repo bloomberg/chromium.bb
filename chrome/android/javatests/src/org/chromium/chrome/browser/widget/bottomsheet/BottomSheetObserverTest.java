@@ -40,7 +40,7 @@ public class BottomSheetObserverTest {
         mBottomSheetTestRule.startMainActivityOnBottomSheet(BottomSheet.SheetState.PEEK);
         ThreadUtils.runOnUiThreadBlocking(() -> {
             mBottomSheetTestRule.getBottomSheet().showContent(new TestBottomSheetContent(
-                    mBottomSheetTestRule.getActivity(), BottomSheet.ContentPriority.HIGH));
+                    mBottomSheetTestRule.getActivity(), BottomSheet.ContentPriority.HIGH, false));
         });
         mObserver = mBottomSheetTestRule.getObserver();
     }
@@ -223,7 +223,7 @@ public class BottomSheetObserverTest {
         int callCount = callbackHelper.getCallCount();
         ThreadUtils.runOnUiThreadBlocking(() -> {
             bottomSheet.showContent(new TestBottomSheetContent(
-                    mBottomSheetTestRule.getActivity(), BottomSheet.ContentPriority.HIGH) {
+                    mBottomSheetTestRule.getActivity(), BottomSheet.ContentPriority.HIGH, false) {
                 private final ViewGroup mContentView;
 
                 {

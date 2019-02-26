@@ -123,7 +123,7 @@ public class ScrimTest {
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
             mBottomSheet.showContent(new TestBottomSheetContent(
-                    mActivityTestRule.getActivity(), BottomSheet.ContentPriority.HIGH));
+                    mActivityTestRule.getActivity(), BottomSheet.ContentPriority.HIGH, false));
             mBottomSheet.setSheetState(BottomSheet.SheetState.HALF, false);
         });
 
