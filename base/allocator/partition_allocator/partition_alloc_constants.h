@@ -10,6 +10,8 @@
 #include "base/allocator/partition_allocator/page_allocator_constants.h"
 #include "base/logging.h"
 
+#include "build/build_config.h"
+
 namespace base {
 
 // Allocation granularity of sizeof(void*) bytes.
@@ -35,6 +37,8 @@ static const size_t kBucketShift = (kAllocationGranularity == 8) ? 3 : 2;
 
 #if defined(_MIPS_ARCH_LOONGSON)
 static const size_t kPartitionPageShift = 16;  // 64 KiB
+#elif defined(ARCH_CPU_PPC64)
+static const size_t kPartitionPageShift = 18;  // 256 KiB
 #else
 static const size_t kPartitionPageShift = 14;  // 16 KiB
 #endif
