@@ -452,6 +452,11 @@
       "content_script"
     ]
   },
+  "runtime.onConnectNative": {
+    "dependencies": ["permission:nativeMessaging"],
+    "channel": "trunk",
+    "contexts": ["blessed_extension"]
+  },
   "runtime.onMessage": {
     "contexts": [
       "blessed_extension",

@@ -33,9 +33,10 @@ MessagingEndpoint MessagingEndpoint::ForWebPage() {
 }
 
 // static
-MessagingEndpoint MessagingEndpoint::ForNativeApp() {
+MessagingEndpoint MessagingEndpoint::ForNativeApp(std::string native_app_name) {
   MessagingEndpoint messaging_endpoint;
   messaging_endpoint.type = MessagingEndpoint::Type::kNativeApp;
+  messaging_endpoint.native_app_name = std::move(native_app_name);
   return messaging_endpoint;
 }
 

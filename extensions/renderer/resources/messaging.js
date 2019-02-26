@@ -182,8 +182,8 @@
 
   // Helper function for dispatchOnConnect
   function dispatchOnRequest(portId, channelName, sender,
-                             sourceExtensionId, targetExtensionId, sourceUrl,
-                             isExternal) {
+                             sourceExtensionId, targetExtensionId, sourceUrl) {
+    var isExternal = sourceExtensionId != targetExtensionId;
     var isSendMessage = channelName == kMessageChannel;
     var requestEvent = null;
     if (isSendMessage) {
@@ -297,6 +297,7 @@
                                  guestProcessId,
                                  guestRenderFrameRoutingId,
                                  sourceExtensionId,
+                                 sourceNativeAppName,
                                  targetExtensionId,
                                  sourceUrl,
                                  tlsChannelId) {
@@ -310,13 +311,11 @@
     // the right extension.
     logging.CHECK(targetExtensionId == extensionId);
 
-    // Determine whether this is coming from another extension, so we can use
-    // the right event.
-    var isExternal = sourceExtensionId != extensionId;
-
     var sender = {};
     if (sourceExtensionId != '')
       sender.id = sourceExtensionId;
+    if (sourceNativeAppName != '')
+      sender.nativeApplication = sourceNativeAppName;
     if (sourceUrl)
       sender.url = sourceUrl;
     if (sourceTab)
@@ -338,15 +337,19 @@
 
     // Special case for sendRequest/onRequest and sendMessage/onMessage.
     if (channelName == kRequestChannel || channelName == kMessageChannel) {
+      logging.CHECK(sourceNativeAppName == '');
       return dispatchOnRequest(portId, channelName, sender,
-                               sourceExtensionId, targetExtensionId, sourceUrl,
-                               isExternal);
+                               sourceExtensionId, targetExtensionId, sourceUrl);
     }
 
     var connectEvent = null;
     if (chrome.runtime) {
-      connectEvent = isExternal ? chrome.runtime.onConnectExternal
-                                : chrome.runtime.onConnect;
+      if (sourceNativeAppName != '')
+        connectEvent = chrome.runtime.onConnectNative;
+      else if (sourceExtensionId == targetExtensionId)
+        connectEvent = chrome.runtime.onConnect;
+      else
+        connectEvent = chrome.runtime.onConnectExternal;
     }
     if (!connectEvent)
       return false;
@@ -358,12 +361,20 @@
     if (processNatives.manifestVersion < 2)
       port.tab = port.sender.tab;
 
-    var eventName = (isExternal ?
-        "runtime.onConnectExternal" : "runtime.onConnect");
+    var eventName;
+    var eventArguments;
+    if (sourceNativeAppName != '') {
+      eventName = "runtime.onConnectNative";
+      eventArguments = [sourceNativeAppName];
+    } else if (sourceExtensionId == targetExtensionId) {
+      eventName = "runtime.onConnect";
+      eventArguments = [sourceExtensionId];
+    } else {
+      eventName = "runtime.onConnectExternal";
+      eventArguments = [sourceExtensionId];
+    }
     connectEvent.dispatch(port);
-    logActivity.LogEvent(targetExtensionId,
-                         eventName,
-                         [sourceExtensionId]);
+    logActivity.LogEvent(targetExtensionId, eventName, eventArguments);
     return true;
   };
 

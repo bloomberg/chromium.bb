@@ -36,6 +36,7 @@ enum BadMessageReason {
   WVG_PARTITION_ID_NOT_UTF8 = 10,
   ESWMF_BAD_EVENT_ACK = 11,
   MHVG_INVALID_PLUGIN_FRAME_ID = 12,
+  EMF_INVALID_CHANNEL_SOURCE_TYPE = 13,
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. ExtensionHost becomes EH) plus a unique description of the
   // reason. After making changes, you MUST update histograms.xml by running:

@@ -12,6 +12,7 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/api/messaging/message.h"
+#include "extensions/common/api/messaging/messaging_endpoint.h"
 #include "extensions/common/api/messaging/port_id.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_handlers/externally_connectable.h"
@@ -83,6 +84,7 @@ void JSRendererMessagingService::DispatchOnConnectToListeners(
 
   v8::Local<v8::String> v8_channel_name;
   v8::Local<v8::String> v8_source_extension_id;
+  v8::Local<v8::String> v8_source_native_app_name;
   v8::Local<v8::String> v8_target_extension_id;
   v8::Local<v8::String> v8_source_url_spec;
   if (!ToV8String(isolate, channel_name.c_str(), &v8_channel_name) ||
@@ -91,6 +93,11 @@ void JSRendererMessagingService::DispatchOnConnectToListeners(
                       ? *info.source_endpoint.extension_id
                       : ExtensionId(),
                   &v8_source_extension_id) ||
+      !ToV8String(isolate,
+                  info.source_endpoint.native_app_name
+                      ? *info.source_endpoint.native_app_name
+                      : std::string(),
+                  &v8_source_native_app_name) ||
       !ToV8String(isolate, target_extension_id.c_str(),
                   &v8_target_extension_id) ||
       !ToV8String(isolate, source_url_spec.c_str(), &v8_source_url_spec)) {
@@ -113,6 +120,8 @@ void JSRendererMessagingService::DispatchOnConnectToListeners(
       guest_render_frame_routing_id,
       // sourceExtensionId
       v8_source_extension_id,
+      // sourceNativeAppName
+      v8_source_native_app_name,
       // targetExtensionId
       v8_target_extension_id,
       // sourceUrl

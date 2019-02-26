@@ -218,6 +218,7 @@ IPC_STRUCT_END()
 IPC_STRUCT_TRAITS_BEGIN(extensions::MessagingEndpoint)
   IPC_STRUCT_TRAITS_MEMBER(type)
   IPC_STRUCT_TRAITS_MEMBER(extension_id)
+  IPC_STRUCT_TRAITS_MEMBER(native_app_name)
 IPC_STRUCT_TRAITS_END()
 
 // Struct containing the data for external connections to extensions. Used to
