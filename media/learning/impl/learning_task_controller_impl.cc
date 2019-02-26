@@ -5,9 +5,9 @@
 #include "media/learning/impl/learning_task_controller_impl.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "media/learning/impl/extra_trees_trainer.h"
 #include "media/learning/impl/lookup_table_trainer.h"
 
@@ -20,9 +20,12 @@ LearningTaskControllerImpl::LearningTaskControllerImpl(
     SequenceBoundFeatureProvider feature_provider)
     : task_(task),
       training_data_(std::make_unique<TrainingData>()),
-      feature_provider_(std::move(feature_provider)),
       reporter_(std::move(reporter)),
-      task_runner_(base::SequencedTaskRunnerHandle::Get()) {
+      helper_(std::make_unique<LearningTaskControllerHelper>(
+          task,
+          base::BindRepeating(&LearningTaskControllerImpl::AddFinishedExample,
+                              AsWeakPtr()),
+          std::move(feature_provider))) {
   switch (task_.model) {
     case LearningTask::Model::kExtraTrees:
       trainer_ = std::make_unique<ExtraTreesTrainer>();
@@ -35,40 +38,9 @@ LearningTaskControllerImpl::LearningTaskControllerImpl(
 
 LearningTaskControllerImpl::~LearningTaskControllerImpl() = default;
 
-void LearningTaskControllerImpl::AddExample(const LabelledExample& example) {
-  if (feature_provider_) {
-    // TODO(liberato): SequenceBound should make this easier.
-    feature_provider_.Post(
-        FROM_HERE, &FeatureProvider::AddFeatures, example.features,
-        base::BindOnce(&LearningTaskControllerImpl::OnFeaturesReadyTrampoline,
-                       task_runner_, AsWeakPtr(), example));
-  } else {
-    AddFinishedExample(example);
-  }
-}
-
-// static
-void LearningTaskControllerImpl::OnFeaturesReadyTrampoline(
-    scoped_refptr<base::SequencedTaskRunner> task_runner,
-    base::WeakPtr<LearningTaskControllerImpl> weak_this,
-    LabelledExample example,
-    FeatureVector features) {
-  if (!task_runner->RunsTasksInCurrentSequence()) {
-    task_runner->PostTask(
-        FROM_HERE, base::BindOnce(&LearningTaskControllerImpl::OnFeaturesReady,
-                                  std::move(weak_this), std::move(example),
-                                  std::move(features)));
-    return;
-  }
-
-  if (weak_this)
-    weak_this->OnFeaturesReady(std::move(example), std::move(features));
-}
-
-void LearningTaskControllerImpl::OnFeaturesReady(LabelledExample example,
-                                                 FeatureVector features) {
-  example.features = std::move(features);
-  AddFinishedExample(example);
+LearningTaskController::SetTargetValueCB
+LearningTaskControllerImpl::BeginObservation(const FeatureVector& features) {
+  return helper_->BeginObservation(features);
 }
 
 void LearningTaskControllerImpl::AddFinishedExample(LabelledExample example) {

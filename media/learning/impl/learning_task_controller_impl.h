@@ -10,10 +10,10 @@
 #include "base/callback.h"
 #include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
+#include "media/learning/common/learning_task_controller.h"
 #include "media/learning/impl/distribution_reporter.h"
 #include "media/learning/impl/feature_provider.h"
-#include "media/learning/impl/learning_task_controller.h"
+#include "media/learning/impl/learning_task_controller_helper.h"
 #include "media/learning/impl/random_number_generator.h"
 #include "media/learning/impl/training_algorithm.h"
 
@@ -22,6 +22,15 @@ namespace learning {
 
 class LearningTaskControllerImplTest;
 
+// Controller for a single learning task.  Takes training examples, and forwards
+// them to the learner(s).  Responsible for things like:
+//  - Managing underlying learner(s) based on the learning task
+//  - Feature subset selection
+//  - UMA reporting on accuracy / feature importance
+//
+// The idea is that one can create a LearningTask, give it to an LTCI, and the
+// LTCI will do the work of building / evaluating the model based on training
+// examples that are provided to it.
 class COMPONENT_EXPORT(LEARNING_IMPL) LearningTaskControllerImpl
     : public LearningTaskController,
       public HasRandomNumberGenerator,
@@ -35,23 +44,9 @@ class COMPONENT_EXPORT(LEARNING_IMPL) LearningTaskControllerImpl
   ~LearningTaskControllerImpl() override;
 
   // LearningTaskController
-  void AddExample(const LabelledExample& example) override;
+  SetTargetValueCB BeginObservation(const FeatureVector& features) override;
 
  private:
-  // Trampoline method for receiving examples from |feature_provider_|.  Will
-  // chain directly to OnExampleReady if we're on |task_runner| and |weak_this|
-  // is non-null, else it will post to |task_runner|.
-  static void OnFeaturesReadyTrampoline(
-      scoped_refptr<base::SequencedTaskRunner> task_runner,
-      base::WeakPtr<LearningTaskControllerImpl> weak_this,
-      LabelledExample example,
-      FeatureVector features);
-
-  // Called when a new feature vector has been finished by |feature_provider_|,
-  // if needed, to actually add the example.  |features| will replace the ones
-  // in |example|.
-  void OnFeaturesReady(LabelledExample example, FeatureVector features);
-
   // Add |example| to the training data, and process it.
   void AddFinishedExample(LabelledExample example);
 
@@ -78,13 +73,11 @@ class COMPONENT_EXPORT(LEARNING_IMPL) LearningTaskControllerImpl
   // Training algorithm that we'll use.
   std::unique_ptr<TrainingAlgorithm> trainer_;
 
-  // Optional feature provider.
-  SequenceBoundFeatureProvider feature_provider_;
-
   // Optional reporter for training accuracy.
   std::unique_ptr<DistributionReporter> reporter_;
 
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  // Helper that we use to handle deferred examples.
+  std::unique_ptr<LearningTaskControllerHelper> helper_;
 
   friend class LearningTaskControllerImplTest;
 };
