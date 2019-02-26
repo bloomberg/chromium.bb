@@ -288,15 +288,16 @@ class CrosCheckout(object):
     """Returns VersionInfo for the current checkout."""
     return manifest_version.VersionInfo.from_repo(self.root, **kwargs)
 
-  def BumpVersion(self, which, branch, message, dry_run=True):
+  def BumpVersion(self, which, branch, message, dry_run=True, fetch=False):
     """Increment version in chromeos_version.sh and commit it.
 
     Args:
       which: Which version should be incremented. One of
           'chrome_branch', 'build', 'branch, 'patch'.
-      branch: The branch to bump version on.
+      branch: The branch to push to.
       message: The commit message for the version bump.
       dry_run: Whether to use git --dry-run.
+      fetch: Whether to fetch and checkout to the given branch.
     """
     logging.info(message)
 
@@ -305,16 +306,10 @@ class CrosCheckout(object):
     remote = chromiumos_overlay.Remote().GitName()
     ref = git.NormalizeRef(branch)
 
-    # Check if we need to fetch the branch.
-    needs_fetch = not git.DoesCommitExistInRepo(
-        self.AbsoluteProjectPath(chromiumos_overlay), ref)
-    if needs_fetch:
+    if fetch:
       self.RunGit(chromiumos_overlay, ['fetch', remote, ref])
+      self.RunGit(chromiumos_overlay, ['checkout', '-B', branch, 'FETCH_HEAD'])
 
-    # Checkout the branch.
-    self.RunGit(chromiumos_overlay, ['checkout', branch])
-
-    # Do the push.
     new_version = self.ReadVersion(incr_type=which)
     new_version.IncrementVersion()
     remote_ref = git.RemoteRef(remote, ref)
@@ -456,17 +451,6 @@ class Branch(object):
             'Branch %s exists for %s. '
             'Please rerun with --force to proceed.' % (branch, project.name))
 
-  def _CreateLocalBranches(self, branches):
-    """Create git branches for all branchable projects in the local checkout.
-
-    The branch uses the HEAD commit as the branch point.
-
-    Args:
-      branches: List of ProjectBranches to create.
-    """
-    for project, branch in branches:
-      self.checkout.RunGit(project, ['checkout', '-B', branch])
-
   def _RepairManifestRepositories(self, branches):
     """Repair all manifests in all manifest repositories on current branch.
 
@@ -499,9 +483,8 @@ class Branch(object):
     for project, branch in branches:
       branch = git.NormalizeRef(branch)
 
-      # We push the local branch to the same ref on the remote.
-      # So the refspec should look like 'refs/heads/branch:refs/heads/branch'.
-      refspec = '%s:%s' % (branch, branch)
+      # The refspec should look like 'HEAD:refs/heads/branch'.
+      refspec = 'HEAD:%s' % branch
       remote = project.Remote().GitName()
 
       cmd = ['push', remote, refspec]
@@ -540,7 +523,6 @@ class Branch(object):
     if not force:
       self._ValidateBranches(branches)
 
-    self._CreateLocalBranches(branches)
     self._RepairManifestRepositories(branches)
     self._PushBranchesToRemote(branches, dry_run=not push, force=force)
 
@@ -568,7 +550,6 @@ class Branch(object):
     if not force:
       self._ValidateBranches(new_branches)
 
-    self._CreateLocalBranches(new_branches)
     self._RepairManifestRepositories(new_branches)
     self._PushBranchesToRemote(new_branches, dry_run=not push, force=force)
 
@@ -637,7 +618,8 @@ class ReleaseBranch(StandardBranch):
         'chrome_branch',
         'master',
         'Bump milestone after creating release branch %s.' % self.name,
-        dry_run=not push)
+        dry_run=not push,
+        fetch=True)
 
 
 class FactoryBranch(StandardBranch):
@@ -665,18 +647,10 @@ class StabilizeBranch(StandardBranch):
 class BranchCommand(command.CliCommand):
   """Create, delete, or rename a branch of chromiumos.
 
-  Branch creation implies branching all git repositories under chromiumos and
-  then updating metadata on the new branch and occassionally on master.
-
-  Metadata is updated as follows:
-    1. The new branch's manifest is repaired to point to the new branch.
-    2. Chrome OS version increments on new branch (e.g., 4230.0.0 -> 4230.1.0).
-    3. If the new branch is a release branch, Chrome major version increments
-       the on source branch (e.g., R70 -> R71).
+  For details on what this tool does, see go/cros-branch.
 
   Performing any of these operations remotely requires special permissions.
   Please see go/cros-release-faq for details on obtaining those permissions.
-  For details on what this tool does, see go/cros-branch.
   """
 
   EPILOG = """
@@ -689,12 +663,12 @@ Create example: release branch 'release-R70-11030.B'
 Create example: custom branch 'my-branch'
   cros branch --push create --version 11030.0.0 --custom my-branch
 
-Create example: local minibranch 'stabilize-test-11030.B'
+Create example: minibranch dry-run 'stabilize-test-11030.B'
   cros branch create --version 11030.0.0 --descriptor test --stabilize
 
 Rename Examples:
   cros branch rename release-R70-10509.B release-R70-10508.B
-  cros branch --force --push rename release-R70-10509.B release-R70-10508.B
+  cros branch --push rename release-R70-10509.B release-R70-10508.B
 
 Delete Examples:
   cros branch delete release-R70-10509.B
