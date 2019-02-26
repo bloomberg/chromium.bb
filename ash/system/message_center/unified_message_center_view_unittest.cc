@@ -21,6 +21,7 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/views/message_view.h"
 #include "ui/views/controls/scroll_view.h"
+#include "ui/views/widget/widget.h"
 
 using message_center::MessageCenter;
 using message_center::MessageView;
@@ -30,6 +31,7 @@ namespace ash {
 
 namespace {
 
+constexpr int kDefaultTrayMenuWidth = 360;
 constexpr int kDefaultMaxHeight = 500;
 
 class DummyEvent : public ui::Event {
@@ -105,6 +107,7 @@ class UnifiedMessageCenterViewTest : public AshTestBase,
         std::make_unique<TestUnifiedMessageCenterView>(model_.get());
     message_center_view_->AddObserver(this);
     message_center_view_->SetMaxHeight(max_height);
+    message_center_view_->set_owned_by_client();
     OnViewPreferredSizeChanged(message_center_view_.get());
     size_changed_count_ = 0;
   }
@@ -162,7 +165,7 @@ class UnifiedMessageCenterViewTest : public AshTestBase,
       return nullptr;
 
     message_center::MessageView* focused_message_view = nullptr;
-    const int max_focus_toggles = 30;
+    const int max_focus_toggles = 5 * GetMessageListView()->child_count();
     for (int i = 0; i < max_focus_toggles; ++i) {
       focus_manager->AdvanceFocus(reverse);
       auto* focused_view = focus_manager->GetFocusedView();
@@ -176,13 +179,13 @@ class UnifiedMessageCenterViewTest : public AshTestBase,
     return focused_message_view;
   }
 
-  TestUnifiedMessageCenterView* message_center_view() {
-    return message_center_view_.get();
-  }
-
   void EnableNotificationStackingBarRedesign() {
     scoped_feature_list_.InitAndEnableFeature(
         features::kNotificationStackingBarRedesign);
+  }
+
+  TestUnifiedMessageCenterView* message_center_view() {
+    return message_center_view_.get();
   }
 
   int size_changed_count() const { return size_changed_count_; }
@@ -654,6 +657,66 @@ TEST_F(UnifiedMessageCenterViewTest,
   message_center_view()->OnMessageCenterScrolled();
 
   EXPECT_EQ(0, message_center_view()->rect_below_scroll().height());
+}
+
+TEST_F(UnifiedMessageCenterViewTest, FocusClearedAfterNotificationRemoval) {
+  CreateMessageCenterView();
+
+  // We need to create a widget in order to initialize a FocusManager.
+  auto widget = CreateTestWidget();
+  widget->GetRootView()->AddChildView(message_center_view());
+  widget->Show();
+
+  // Add notifications and focus on a child view in the last notification.
+  AddNotification();
+  auto id1 = AddNotification();
+
+  // Toggle focus to the last notification MessageView.
+  auto* focused_message_view =
+      ToggleFocusToMessageView(1 /* index */, true /* reverse */);
+  ASSERT_TRUE(focused_message_view);
+  EXPECT_EQ(id1, focused_message_view->notification_id());
+
+  // Remove the notification and observe that the focus is cleared.
+  MessageCenter::Get()->RemoveNotification(id1, true /* by_user */);
+  AnimateUntilIdle();
+  EXPECT_FALSE(message_center_view()->GetFocusManager()->GetFocusedView());
+
+  widget->GetRootView()->RemoveChildView(message_center_view());
+}
+
+TEST_F(UnifiedMessageCenterViewTest, FocusChangeUpdatesStackingBar) {
+  CreateMessageCenterView();
+
+  // We need to create a widget in order to initialize a FocusManager.
+  auto widget = CreateTestWidget();
+  widget->GetRootView()->AddChildView(message_center_view());
+  widget->SetSize(gfx::Size(kDefaultTrayMenuWidth, kDefaultMaxHeight));
+  widget->Show();
+
+  // Add notifications such that the stacking counter is shown.
+  std::string first_notification_id = AddNotification();
+  for (int i = 0; i < 6; ++i)
+    AddNotification();
+  std::string last_notification_id = AddNotification();
+
+  // The ListView should be taller than the MessageCenterView so we can scroll
+  // and show the stacking counter.
+  EXPECT_GT(GetMessageListView()->bounds().height(),
+            message_center_view()->bounds().height());
+  EXPECT_TRUE(GetStackingCounter()->visible());
+
+  // Advancing focus causes list to scroll to the top, which hides the counter.
+  auto* message_view =
+      ToggleFocusToMessageView(0 /* index */, false /* reverse */);
+  EXPECT_EQ(first_notification_id, message_view->notification_id());
+  EXPECT_FALSE(GetStackingCounter()->visible());
+
+  // Reversing the focus more scrolls the list to the bottom, reshowing the
+  // counter.
+  message_view = ToggleFocusToMessageView(7 /* index */, false /* reverse */);
+  EXPECT_EQ(last_notification_id, message_view->notification_id());
+  EXPECT_TRUE(GetStackingCounter()->visible());
 }
 
 }  // namespace ash
