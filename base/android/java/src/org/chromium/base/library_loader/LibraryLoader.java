@@ -33,7 +33,8 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.compat.ApiHelperForM;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 
 import java.io.File;
 import java.io.IOException;
@@ -338,9 +339,10 @@ public class LibraryLoader {
         }
     }
 
-    /** Prefetches the native libraries in a background thread.
+    /**
+     * Prefetches the native libraries in a background thread.
      *
-     * Launches an AsyncTask that, through a short-lived forked process, reads a
+     * Launches a task that, through a short-lived forked process, reads a
      * part of each page of the native library.  This is done to warm up the
      * page cache, turning hard page faults into soft ones.
      *
@@ -358,40 +360,28 @@ public class LibraryLoader {
         // skew the results.
         if (coldStart && CommandLine.getInstance().hasSwitch("log-native-library-residency")) {
             // nativePeriodicallyCollectResidency() sleeps, run it on another thread,
-            // and not on the AsyncTask thread pool.
+            // and not on the thread pool.
             new Thread(LibraryLoader::nativePeriodicallyCollectResidency).start();
             return;
         }
 
-        new LibraryPrefetchTask(coldStart).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-    }
-
-    private static class LibraryPrefetchTask extends AsyncTask<Void> {
-        private final boolean mColdStart;
-
-        public LibraryPrefetchTask(boolean coldStart) {
-            mColdStart = coldStart;
-        }
-
-        @Override
-        protected Void doInBackground() {
+        PostTask.postTask(TaskTraits.USER_BLOCKING, () -> {
             int percentage = nativePercentageOfResidentNativeLibraryCode();
             try (TraceEvent e = TraceEvent.scoped("LibraryLoader.asyncPrefetchLibrariesToMemory",
                          Integer.toString(percentage))) {
                 // Arbitrary percentage threshold. If most of the native library is already
                 // resident (likely with monochrome), don't bother creating a prefetch process.
-                boolean prefetch = mColdStart && percentage < 90;
+                boolean prefetch = coldStart && percentage < 90;
                 if (prefetch) {
                     nativeForkAndPrefetchNativeLibrary();
                 }
                 if (percentage != -1) {
                     String histogram = "LibraryLoader.PercentageOfResidentCodeBeforePrefetch"
-                            + (mColdStart ? ".ColdStartup" : ".WarmStartup");
+                            + (coldStart ? ".ColdStartup" : ".WarmStartup");
                     RecordHistogram.recordPercentageHistogram(histogram, percentage);
                 }
             }
-            return null;
-        }
+        });
     }
 
     // Helper for loadAlreadyLocked(). Load a native shared library with the Chromium linker.
@@ -646,29 +636,26 @@ public class LibraryLoader {
                 && PLATFORM_REQUIRES_NATIVE_FALLBACK_EXTRACTION) {
             // Perform the detection and deletion of obsolete native libraries on a background
             // background thread.
-            AsyncTask.THREAD_POOL_EXECUTOR.execute(new Runnable() {
-                @Override
-                public void run() {
-                    final String suffix = BuildInfo.getInstance().extractedFileSuffix;
-                    final File[] files = getLibraryDir().listFiles();
-                    if (files == null) return;
+            PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
+                final String suffix = BuildInfo.getInstance().extractedFileSuffix;
+                final File[] files = getLibraryDir().listFiles();
+                if (files == null) return;
 
-                    for (File file : files) {
-                        // NOTE: Do not simply look for <suffix> at the end of the file.
-                        //
-                        // Extracted library files have names like 'libfoo.so<suffix>', but
-                        // extractFileIfStale() will use FileUtils.copyFileStreamAtomicWithBuffer()
-                        // to create them, and this method actually uses a transient temporary file
-                        // named like 'libfoo.so<suffix>.tmp' to do that. These temporary files, if
-                        // detected here, should be preserved; hence the reason why contains() is
-                        // used below.
-                        if (!file.getName().contains(suffix)) {
-                            String fileName = file.getName();
-                            if (!file.delete()) {
-                                Log.w(TAG, "Unable to remove %s", fileName);
-                            } else {
-                                Log.i(TAG, "Removed obsolete file %s", fileName);
-                            }
+                for (File file : files) {
+                    // NOTE: Do not simply look for <suffix> at the end of the file.
+                    //
+                    // Extracted library files have names like 'libfoo.so<suffix>', but
+                    // extractFileIfStale() will use FileUtils.copyFileStreamAtomicWithBuffer()
+                    // to create them, and this method actually uses a transient temporary file
+                    // named like 'libfoo.so<suffix>.tmp' to do that. These temporary files, if
+                    // detected here, should be preserved; hence the reason why contains() is
+                    // used below.
+                    if (!file.getName().contains(suffix)) {
+                        String fileName = file.getName();
+                        if (!file.delete()) {
+                            Log.w(TAG, "Unable to remove %s", fileName);
+                        } else {
+                            Log.i(TAG, "Removed obsolete file %s", fileName);
                         }
                     }
                 }

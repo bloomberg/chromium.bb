@@ -11,7 +11,6 @@ import android.os.Looper;
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
 
-import org.chromium.base.task.AsyncTask;
 import org.chromium.chromoting.base.OAuthTokenFetcher;
 
 import java.io.IOException;
@@ -95,33 +94,29 @@ public class OAuthTokenConsumer {
      *                 callback.
      */
     public void revokeLatestToken(final OAuthTokenFetcher.Callback callback) {
-        new AsyncTask<Void>() {
-            @Override
-            protected Void doInBackground() {
-                try {
-                    GoogleAuthUtil.clearToken(mContext, mLatestToken);
-                    mLatestToken = null;
-                    if (callback != null) {
-                        new Handler(Looper.getMainLooper()).post(new Runnable() {
-                            @Override
-                            public void run() {
-                                callback.onTokenFetched(null);
-                            }
-                        });
-                    }
-                } catch (GoogleAuthException e) {
-                    if (callback != null) {
-                        handleErrorOnMainThread(callback, OAuthTokenFetcher.Error.UNEXPECTED);
-                        callback.onError(OAuthTokenFetcher.Error.UNEXPECTED);
-                    }
-                } catch (IOException e) {
-                    if (callback != null) {
-                        handleErrorOnMainThread(callback, OAuthTokenFetcher.Error.NETWORK);
-                    }
+        OAuthTokenFetcher.TASK_RUNNER.postTask(() -> {
+            try {
+                GoogleAuthUtil.clearToken(mContext, mLatestToken);
+                mLatestToken = null;
+                if (callback != null) {
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            callback.onTokenFetched(null);
+                        }
+                    });
                 }
-                return null;
+            } catch (GoogleAuthException e) {
+                if (callback != null) {
+                    handleErrorOnMainThread(callback, OAuthTokenFetcher.Error.UNEXPECTED);
+                    callback.onError(OAuthTokenFetcher.Error.UNEXPECTED);
+                }
+            } catch (IOException e) {
+                if (callback != null) {
+                    handleErrorOnMainThread(callback, OAuthTokenFetcher.Error.NETWORK);
+                }
             }
-        }.executeOnTaskRunner(OAuthTokenFetcher.TASK_RUNNER);
+        });
     }
 
     private void handleErrorOnMainThread(final OAuthTokenFetcher.Callback callback,

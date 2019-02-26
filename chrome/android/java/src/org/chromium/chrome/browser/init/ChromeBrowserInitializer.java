@@ -27,6 +27,8 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.memory.MemoryPressureUma;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeLocalizationUtils;
@@ -214,16 +216,11 @@ public class ChromeBrowserInitializer {
      */
     private void warmUpSharedPrefs() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            new AsyncTask<Void>() {
-                @Override
-                protected Void doInBackground() {
-                    DocumentTabModelImpl.warmUpSharedPrefs(mApplication);
-                    ActivityAssigner.warmUpSharedPrefs(mApplication);
-                    DownloadManagerService.warmUpSharedPrefs();
-                    return null;
-                }
-            }
-                    .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
+                DocumentTabModelImpl.warmUpSharedPrefs(mApplication);
+                ActivityAssigner.warmUpSharedPrefs(mApplication);
+                DownloadManagerService.warmUpSharedPrefs();
+            });
         } else {
             DocumentTabModelImpl.warmUpSharedPrefs(mApplication);
             ActivityAssigner.warmUpSharedPrefs(mApplication);

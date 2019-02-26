@@ -16,6 +16,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.BackgroundOnlyAsyncTask;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
@@ -546,7 +547,7 @@ public class WebappDataStorage {
         if (pendingUpdateFilePath == null) return;
 
         mPreferences.edit().remove(KEY_PENDING_UPDATE_FILE_PATH).apply();
-        new AsyncTask<Void>() {
+        new BackgroundOnlyAsyncTask<Void>() {
             @Override
             protected Void doInBackground() {
                 if (!new File(pendingUpdateFilePath).delete()) {
@@ -554,8 +555,7 @@ public class WebappDataStorage {
                 }
                 return null;
             }
-        }
-                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /**

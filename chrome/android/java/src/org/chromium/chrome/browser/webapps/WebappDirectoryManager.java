@@ -22,6 +22,7 @@ import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.BackgroundOnlyAsyncTask;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.metrics.WebApkUma;
 
@@ -65,7 +66,7 @@ public class WebappDirectoryManager {
     public void cleanUpDirectories(final Context context, final String currentWebappId) {
         if (mCleanupTask != null) return;
 
-        mCleanupTask = new AsyncTask<Void>() {
+        mCleanupTask = new BackgroundOnlyAsyncTask<Void>() {
             @Override
             protected final Void doInBackground() {
                 recordNumberOfStaleWebApkUpdateRequestFiles();

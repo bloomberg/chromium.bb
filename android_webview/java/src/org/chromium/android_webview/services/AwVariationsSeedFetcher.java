@@ -18,6 +18,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.compat.ApiHelperForN;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.BackgroundOnlyAsyncTask;
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.variations.firstrun.VariationsSeedFetcher;
 import org.chromium.components.variations.firstrun.VariationsSeedFetcher.SeedInfo;
@@ -107,7 +108,7 @@ public class AwVariationsSeedFetcher extends JobService {
         }
     }
 
-    private class FetchTask extends AsyncTask<Void> {
+    private class FetchTask extends BackgroundOnlyAsyncTask<Void> {
         private JobParameters mParams;
 
         FetchTask(JobParameters params) {

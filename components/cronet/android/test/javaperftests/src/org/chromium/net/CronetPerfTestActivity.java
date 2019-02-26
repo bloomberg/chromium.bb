@@ -17,6 +17,7 @@ import org.json.JSONObject;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.BackgroundOnlyAsyncTask;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -555,7 +556,7 @@ public class CronetPerfTestActivity extends Activity {
         }
     }
 
-    private class BenchmarkTask extends AsyncTask<Void> {
+    private class BenchmarkTask extends BackgroundOnlyAsyncTask<Void> {
         @Override
         protected Void doInBackground() {
             JSONObject results = new JSONObject();

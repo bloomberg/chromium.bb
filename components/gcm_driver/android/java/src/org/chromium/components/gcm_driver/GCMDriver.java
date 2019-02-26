@@ -13,6 +13,8 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 
 import java.io.IOException;
 import java.util.Set;
@@ -70,7 +72,7 @@ public class GCMDriver {
             long duration = SystemClock.elapsedRealtime() - time;
             // Call RecordHistogram.recordTimesHistogram() on a background thread to avoid expensive
             // JNI calls in the critical path.
-            AsyncTask.THREAD_POOL_EXECUTOR.execute(() -> {
+            PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
                 RecordHistogram.recordTimesHistogram(
                         "PushMessaging.TimeToReadPersistedMessages", duration);
             });

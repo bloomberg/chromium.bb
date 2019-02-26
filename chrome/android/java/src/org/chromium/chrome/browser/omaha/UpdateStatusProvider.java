@@ -280,8 +280,6 @@ public class UpdateStatusProvider implements ActivityStateListener {
 
         @Override
         protected void onPostExecute(UpdateStatus result) {
-            super.onPostExecute(result);
-
             mStatus = result;
             mHandler.post(mCallback);
         }

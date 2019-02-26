@@ -18,6 +18,7 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.preferences.developer.TracingPreferences;
 import org.chromium.content_public.browser.TracingControllerAndroid;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -92,7 +93,19 @@ public class TracingController {
 
     private TracingController() {
         // Check for old chrome-trace temp files and delete them.
-        new DeleteOldTempFilesTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
+            File cacheDir =
+                    new File(ContextUtils.getApplicationContext().getCacheDir() + TEMP_FILE_DIR);
+            File[] files = cacheDir.listFiles();
+            if (files != null) {
+                long maxTime = System.currentTimeMillis() - DELETE_AFTER_SHARE_TIMEOUT_MILLIS;
+                for (File f : files) {
+                    if (f.lastModified() <= maxTime) {
+                        f.delete();
+                    }
+                }
+            }
+        });
     }
 
     /**
@@ -305,8 +318,8 @@ public class TracingController {
         // also check for old files when TraceController is created.
         File tracingTempFile = mTracingTempFile;
         PostTask.postDelayedTask(UiThreadTaskTraits.DEFAULT, () -> {
-            new DeleteTempFileTask(tracingTempFile)
-                    .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK,
+                    new TracingTempFileDeletion(mTracingTempFile));
         }, DELETE_AFTER_SHARE_TIMEOUT_MILLIS);
 
         mTracingTempFile = null;
@@ -319,8 +332,8 @@ public class TracingController {
         if (mState == State.IDLE) {
             TracingNotificationManager.dismissNotification();
             if (mTracingTempFile != null) {
-                new DeleteTempFileTask(mTracingTempFile)
-                        .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK,
+                        new TracingTempFileDeletion(mTracingTempFile));
                 mTracingTempFile = null;
             }
 
@@ -333,35 +346,16 @@ public class TracingController {
         }
     }
 
-    private class DeleteTempFileTask extends AsyncTask<Void> {
-        private File mTracingTempFile;
+    private static class TracingTempFileDeletion implements Runnable {
+        private File mTempFile;
 
-        public DeleteTempFileTask(File tracingTempFile) {
-            mTracingTempFile = tracingTempFile;
+        public TracingTempFileDeletion(File file) {
+            mTempFile = file;
         }
 
         @Override
-        protected Void doInBackground() {
-            mTracingTempFile.delete();
-            return null;
-        }
-    }
-
-    private class DeleteOldTempFilesTask extends AsyncTask<Void> {
-        @Override
-        protected Void doInBackground() {
-            File cacheDir =
-                    new File(ContextUtils.getApplicationContext().getCacheDir() + TEMP_FILE_DIR);
-            File[] files = cacheDir.listFiles();
-            if (files != null) {
-                long maxTime = System.currentTimeMillis() - DELETE_AFTER_SHARE_TIMEOUT_MILLIS;
-                for (File f : files) {
-                    if (f.lastModified() <= maxTime) {
-                        f.delete();
-                    }
-                }
-            }
-            return null;
+        public void run() {
+            mTempFile.delete();
         }
     }
 

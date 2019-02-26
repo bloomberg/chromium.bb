@@ -18,6 +18,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.BackgroundOnlyAsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.content_public.browser.BrowserStartupController;
@@ -84,7 +85,7 @@ public final class DefaultBrowserInfo {
     public static void initBrowserFetcher() {
         synchronized (sDirCreationLock) {
             if (sDefaultBrowserFetcher == null) {
-                sDefaultBrowserFetcher = new AsyncTask<ArrayList<String>>() {
+                sDefaultBrowserFetcher = new BackgroundOnlyAsyncTask<ArrayList<String>>() {
                     @Override
                     protected ArrayList<String> doInBackground() {
                         Context context = ContextUtils.getApplicationContext();

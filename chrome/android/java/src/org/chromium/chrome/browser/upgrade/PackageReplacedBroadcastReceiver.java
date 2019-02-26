@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.os.Build;
 
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.BackgroundOnlyAsyncTask;
 import org.chromium.chrome.browser.notifications.channels.ChannelsUpdater;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 
@@ -41,14 +42,13 @@ public final class PackageReplacedBroadcastReceiver extends BroadcastReceiver {
         if (!ChannelsUpdater.getInstance().shouldUpdateChannels()) return;
 
         final PendingResult result = goAsync();
-        new AsyncTask<Void>() {
+        new BackgroundOnlyAsyncTask<Void>() {
             @Override
             protected Void doInBackground() {
                 ChannelsUpdater.getInstance().updateChannels();
                 result.finish();
                 return null;
             }
-        }
-                .executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 }

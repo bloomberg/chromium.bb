@@ -17,7 +17,8 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.invalidation.InvalidationClientService;
 import org.chromium.components.signin.ChromeSigninController;
@@ -194,16 +195,11 @@ public class InvalidationController implements ApplicationStatus.ApplicationStat
     private void ensureGcmIsInitialized() {
         if (mGcmInitialized) return;
         mGcmInitialized = true;
-        new AsyncTask<Void>() {
-            @Override
-            protected Void doInBackground() {
-                boolean useGcmUpstream = true;
-                AndroidGcmController.get(ContextUtils.getApplicationContext())
-                        .initializeGcm(useGcmUpstream);
-                return null;
-            }
-        }
-                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
+            boolean useGcmUpstream = true;
+            AndroidGcmController.get(ContextUtils.getApplicationContext())
+                    .initializeGcm(useGcmUpstream);
+        });
     }
 
     @VisibleForTesting
