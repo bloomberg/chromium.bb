@@ -160,8 +160,8 @@ class PlatformAppPathLauncher
         FROM_HERE,
         {base::TaskPriority::USER_VISIBLE, base::MayBlock(),
          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-        base::Bind(&PlatformAppPathLauncher::MakePathAbsolute, this,
-                   current_directory));
+        base::BindOnce(&PlatformAppPathLauncher::MakePathAbsolute, this,
+                       current_directory));
   }
 
  private:
@@ -184,7 +184,7 @@ class PlatformAppPathLauncher
 
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
-        base::Bind(&PlatformAppPathLauncher::Launch, this));
+        base::BindOnce(&PlatformAppPathLauncher::Launch, this));
   }
 
   void OnFilesValid(std::unique_ptr<std::set<base::FilePath>> directory_paths) {
