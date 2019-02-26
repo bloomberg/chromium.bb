@@ -126,7 +126,8 @@ class SharedWorkerHostTest : public testing::Test {
                 std::move(main_script_loader_factory),
                 std::move(main_script_load_params),
                 std::move(subresource_loader_factories),
-                std::move(subresource_loader_params));
+                nullptr /* controller */,
+                nullptr /* controller_service_worker_object_host */);
   }
 
   MessagePortChannel AddClient(SharedWorkerHost* host,

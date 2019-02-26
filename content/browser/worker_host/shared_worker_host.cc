@@ -20,7 +20,6 @@
 #include "content/browser/worker_host/shared_worker_content_settings_proxy_impl.h"
 #include "content/browser/worker_host/shared_worker_instance.h"
 #include "content/browser/worker_host/shared_worker_service_impl.h"
-#include "content/common/navigation_subresource_loader_params.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -171,7 +170,9 @@ void SharedWorkerHost::Start(
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factories,
-    base::Optional<SubresourceLoaderParams> subresource_loader_params) {
+    blink::mojom::ControllerServiceWorkerInfoPtr controller,
+    base::WeakPtr<ServiceWorkerObjectHost>
+        controller_service_worker_object_host) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   AdvanceTo(Phase::kStarted);
 
@@ -190,17 +191,19 @@ void SharedWorkerHost::Start(
     // S13nServiceWorker (non-NetworkService):
     DCHECK(service_worker_provider_info);
     DCHECK(main_script_loader_factory);
+    DCHECK(!main_script_load_params);
     DCHECK(subresource_loader_factories);
     DCHECK(subresource_loader_factories->default_factory_info());
-    DCHECK(!subresource_loader_params);
-    DCHECK(!main_script_load_params);
+    DCHECK(!controller);
+    DCHECK(!controller_service_worker_object_host);
   } else {
     // Legacy case (to be deprecated):
     DCHECK(!service_worker_provider_info);
     DCHECK(!main_script_loader_factory);
-    DCHECK(!subresource_loader_factories);
-    DCHECK(!subresource_loader_params);
     DCHECK(!main_script_load_params);
+    DCHECK(!subresource_loader_factories);
+    DCHECK(!controller);
+    DCHECK(!controller_service_worker_object_host);
   }
 #endif  // DCHECK_IS_ON()
 
@@ -255,24 +258,20 @@ void SharedWorkerHost::Start(
   }
 
   // NetworkService (PlzWorker):
-  // Prepare the controller service worker info to pass to the renderer. This is
-  // only provided if NetworkService is enabled. In the non-NetworkService case,
-  // the controller is sent in SetController IPCs during the request for the
-  // shared worker script.
-  blink::mojom::ControllerServiceWorkerInfoPtr controller;
-  blink::mojom::ServiceWorkerObjectAssociatedPtrInfo remote_object;
-  blink::mojom::ServiceWorkerState sent_state;
-  if (subresource_loader_params &&
-      subresource_loader_params->controller_service_worker_info) {
+  // Prepare the controller service worker info to pass to the renderer.
+  // |controller| is only provided if NetworkService is enabled. In the
+  // non-NetworkService case, the controller is sent in SetController IPCs
+  // during the request for the shared worker script.
+  // |object_info| can be nullptr when the service worker context or the service
+  // worker version is gone during shared worker startup.
+  blink::mojom::ServiceWorkerObjectAssociatedPtrInfo
+      service_worker_remote_object;
+  blink::mojom::ServiceWorkerState service_worker_sent_state;
+  if (controller && controller->object_info) {
     DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
-    controller =
-        std::move(subresource_loader_params->controller_service_worker_info);
-    // |object_info| can be nullptr when the service worker context or the
-    // service worker version is gone during shared worker startup.
-    if (controller->object_info) {
-      controller->object_info->request = mojo::MakeRequest(&remote_object);
-      sent_state = controller->object_info->state;
-    }
+    controller->object_info->request =
+        mojo::MakeRequest(&service_worker_remote_object);
+    service_worker_sent_state = controller->object_info->state;
   }
 
   // Send the CreateSharedWorker message.
@@ -289,17 +288,19 @@ void SharedWorkerHost::Start(
       std::move(interface_provider));
 
   // NetworkService (PlzWorker):
-  // |remote_object| is an associated interface ptr, so calls can't be made on
-  // it until its request endpoint is sent. Now that the request endpoint was
-  // sent, it can be used, so add it to ServiceWorkerObjectHost.
-  if (remote_object.is_valid()) {
+  // |service_worker_remote_object| is an associated interface ptr, so calls
+  // can't be made on it until its request endpoint is sent. Now that the
+  // request endpoint was sent, it can be used, so add it to
+  // ServiceWorkerObjectHost.
+  if (service_worker_remote_object.is_valid()) {
     DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &ServiceWorkerObjectHost::AddRemoteObjectPtrAndUpdateState,
-            subresource_loader_params->controller_service_worker_object_host,
-            std::move(remote_object), sent_state));
+            controller_service_worker_object_host,
+            std::move(service_worker_remote_object),
+            service_worker_sent_state));
   }
 
   // Monitor the lifetime of the worker.

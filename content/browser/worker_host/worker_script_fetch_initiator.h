@@ -15,6 +15,7 @@
 #include "content/public/common/url_loader_throttle.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/worker/worker_main_script_load_params.mojom.h"
 
@@ -33,6 +34,7 @@ class AppCacheNavigationHandleCore;
 class BrowserContext;
 class ResourceContext;
 class ServiceWorkerContextWrapper;
+class ServiceWorkerObjectHost;
 class StoragePartitionImpl;
 class URLLoaderFactoryGetter;
 struct SubresourceLoaderParams;
@@ -47,7 +49,8 @@ class WorkerScriptFetchInitiator {
       network::mojom::URLLoaderFactoryAssociatedPtrInfo,
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>,
       blink::mojom::WorkerMainScriptLoadParamsPtr,
-      base::Optional<SubresourceLoaderParams>,
+      blink::mojom::ControllerServiceWorkerInfoPtr,
+      base::WeakPtr<ServiceWorkerObjectHost>,
       bool)>;
 
   // Creates a worker script fetcher and starts it. Must be called on the UI

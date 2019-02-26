@@ -15,7 +15,6 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/websockets/websocket_manager.h"
 #include "content/browser/worker_host/worker_script_fetch_initiator.h"
-#include "content/common/navigation_subresource_loader_params.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -127,7 +126,9 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
           subresource_loader_factories,
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
-      base::Optional<SubresourceLoaderParams> subresource_loader_params,
+      blink::mojom::ControllerServiceWorkerInfoPtr controller,
+      base::WeakPtr<ServiceWorkerObjectHost>
+          controller_service_worker_object_host,
       bool success) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(blink::features::IsPlzDedicatedWorkerEnabled());
@@ -153,21 +154,15 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
         std::move(default_factory_info);
 
     // Prepare the controller service worker info to pass to the renderer.
-    blink::mojom::ControllerServiceWorkerInfoPtr controller;
+    // |object_info| can be nullptr when the service worker context or the
+    // service worker version is gone during dedicated worker startup.
     blink::mojom::ServiceWorkerObjectAssociatedPtrInfo
         service_worker_remote_object;
     blink::mojom::ServiceWorkerState service_worker_state;
-    if (subresource_loader_params &&
-        subresource_loader_params->controller_service_worker_info) {
-      controller =
-          std::move(subresource_loader_params->controller_service_worker_info);
-      // |object_info| can be nullptr when the service worker context or the
-      // service worker version is gone during dedicated worker startup.
-      if (controller->object_info) {
-        controller->object_info->request =
-            mojo::MakeRequest(&service_worker_remote_object);
-        service_worker_state = controller->object_info->state;
-      }
+    if (controller && controller->object_info) {
+      controller->object_info->request =
+          mojo::MakeRequest(&service_worker_remote_object);
+      service_worker_state = controller->object_info->state;
     }
 
     client->OnScriptLoadStarted(std::move(service_worker_provider_info),
@@ -179,12 +174,12 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
     // can't be made on it until its request endpoint is sent. Now that the
     // request endpoint was sent, it can be used, so add it to
     // ServiceWorkerObjectHost.
-    if (service_worker_remote_object.is_valid()) {
+    if (service_worker_remote_object) {
       base::PostTaskWithTraits(
           FROM_HERE, {BrowserThread::IO},
           base::BindOnce(
               &ServiceWorkerObjectHost::AddRemoteObjectPtrAndUpdateState,
-              subresource_loader_params->controller_service_worker_object_host,
+              controller_service_worker_object_host,
               std::move(service_worker_remote_object), service_worker_state));
     }
   }
