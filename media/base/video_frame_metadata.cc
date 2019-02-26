@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/value_conversions.h"
 
 namespace media {
 
@@ -77,6 +78,13 @@ void VideoFrameMetadata::SetTimeTicks(Key key, const base::TimeTicks& value) {
   SetTimeValue(key, value, &dictionary_);
 }
 
+void VideoFrameMetadata::SetUnguessableToken(
+    Key key,
+    const base::UnguessableToken& value) {
+  dictionary_.SetKey(ToInternalKey(key),
+                     base::CreateUnguessableTokenValue(value));
+}
+
 void VideoFrameMetadata::SetValue(Key key, std::unique_ptr<base::Value> value) {
   dictionary_.SetWithoutPathExpansion(ToInternalKey(key), std::move(value));
 }
@@ -138,6 +146,15 @@ bool VideoFrameMetadata::GetTimeDelta(Key key, base::TimeDelta* value) const {
 bool VideoFrameMetadata::GetTimeTicks(Key key, base::TimeTicks* value) const {
   const base::Value* const binary_value = GetBinaryValue(key);
   return binary_value && ToTimeValue(*binary_value, value);
+}
+
+bool VideoFrameMetadata::GetUnguessableToken(
+    Key key,
+    base::UnguessableToken* value) const {
+  const base::Value* internal_value = dictionary_.FindKey(ToInternalKey(key));
+  if (!internal_value)
+    return false;
+  return base::GetValueAsUnguessableToken(*internal_value, value);
 }
 
 const base::Value* VideoFrameMetadata::GetValue(Key key) const {

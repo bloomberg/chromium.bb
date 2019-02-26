@@ -71,7 +71,8 @@ class VideoOverlayFactory::Texture {
 
 VideoOverlayFactory::VideoOverlayFactory(
     GpuVideoAcceleratorFactories* gpu_factories)
-    : gpu_factories_(gpu_factories) {}
+    : overlay_plane_id_(base::UnguessableToken::Create()),
+      gpu_factories_(gpu_factories) {}
 
 VideoOverlayFactory::~VideoOverlayFactory() = default;
 
@@ -108,6 +109,8 @@ scoped_refptr<VideoFrame> VideoOverlayFactory::CreateFrame(
   // video frame in its place.
   frame->metadata()->SetBoolean(VideoFrameMetadata::PROTECTED_VIDEO, true);
   frame->metadata()->SetBoolean(VideoFrameMetadata::HW_PROTECTED, true);
+  frame->metadata()->SetUnguessableToken(VideoFrameMetadata::OVERLAY_PLANE_ID,
+                                         overlay_plane_id_);
   return frame;
 }
 

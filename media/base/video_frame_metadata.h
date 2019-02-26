@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "base/unguessable_token.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "media/base/media_export.h"
@@ -118,6 +119,11 @@ class MEDIA_EXPORT VideoFrameMetadata {
     // PROTECTED_VIDEO is also set to true.
     HW_PROTECTED,
 
+    // An UnguessableToken that identifies VideoOverlayFactory that created
+    // this VideoFrame. It's used by Cast to help with video hole punch.
+    // Use Get/SetUnguessableToken() for this key.
+    OVERLAY_PLANE_ID,
+
     // Whether this frame was decoded in a power efficient way.
     POWER_EFFICIENT,
 
@@ -151,6 +157,7 @@ class MEDIA_EXPORT VideoFrameMetadata {
   void SetString(Key key, const std::string& value);
   void SetTimeDelta(Key key, const base::TimeDelta& value);
   void SetTimeTicks(Key key, const base::TimeTicks& value);
+  void SetUnguessableToken(Key key, const base::UnguessableToken& value);
   void SetValue(Key key, std::unique_ptr<base::Value> value);
 
   // Getters.  Returns true if |key| is present, and its value has been set.
@@ -161,6 +168,8 @@ class MEDIA_EXPORT VideoFrameMetadata {
   bool GetString(Key key, std::string* value) const WARN_UNUSED_RESULT;
   bool GetTimeDelta(Key key, base::TimeDelta* value) const WARN_UNUSED_RESULT;
   bool GetTimeTicks(Key key, base::TimeTicks* value) const WARN_UNUSED_RESULT;
+  bool GetUnguessableToken(Key key, base::UnguessableToken* value) const
+      WARN_UNUSED_RESULT;
 
   // Returns null if |key| was not present.
   const base::Value* GetValue(Key key) const WARN_UNUSED_RESULT;

@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/unguessable_token.h"
 #include "media/base/media_export.h"
 
 namespace gfx {
@@ -28,11 +29,16 @@ class MEDIA_EXPORT VideoOverlayFactory {
   ~VideoOverlayFactory();
 
   scoped_refptr<::media::VideoFrame> CreateFrame(const gfx::Size& size);
+  const base::UnguessableToken& overlay_plane_id() const {
+    return overlay_plane_id_;
+  }
 
  private:
   class Texture;
   Texture* GetTexture();
 
+  // |overlay_plane_id_| identifies the instances of VideoOverlayFactory.
+  const base::UnguessableToken overlay_plane_id_;
   ::media::GpuVideoAcceleratorFactories* gpu_factories_;
   std::unique_ptr<Texture> texture_;
 
