@@ -22,8 +22,6 @@ import org.chromium.content_public.browser.WebContents;
  */
 class ContextualSuggestionsSourceImpl
         extends EmptySuggestionsSource implements ContextualSuggestionsSource {
-    private static final String CACHED_IMAGE_FETCHER_UMA_CLIENT_NAME = "ContextualSuggestions";
-
     private ContextualSuggestionsBridge mBridge;
     private CachedImageFetcher mCachedImageFetcher;
 
@@ -46,7 +44,8 @@ class ContextualSuggestionsSourceImpl
     @Override
     public void fetchSuggestionImage(SnippetArticle suggestion, Callback<Bitmap> callback) {
         String url = mBridge.getImageUrl(suggestion);
-        mCachedImageFetcher.fetchImage(url, CACHED_IMAGE_FETCHER_UMA_CLIENT_NAME, callback);
+        mCachedImageFetcher.fetchImage(
+                url, CachedImageFetcher.CONTEXTUAL_SUGGESTIONS_UMA_CLIENT_NAME, callback);
     }
 
     @Override
@@ -58,7 +57,8 @@ class ContextualSuggestionsSourceImpl
             return;
         }
 
-        mCachedImageFetcher.fetchImage(url, CACHED_IMAGE_FETCHER_UMA_CLIENT_NAME, callback);
+        mCachedImageFetcher.fetchImage(
+                url, CachedImageFetcher.CONTEXTUAL_SUGGESTIONS_UMA_CLIENT_NAME, callback);
     }
 
     @Override
@@ -70,8 +70,9 @@ class ContextualSuggestionsSourceImpl
             return;
         }
 
-        mCachedImageFetcher.fetchImage(
-                url, CACHED_IMAGE_FETCHER_UMA_CLIENT_NAME, desiredSizePx, desiredSizePx, callback);
+        mCachedImageFetcher.fetchImage(url,
+                CachedImageFetcher.CONTEXTUAL_SUGGESTIONS_UMA_CLIENT_NAME, desiredSizePx,
+                desiredSizePx, callback);
     }
 
     @Override

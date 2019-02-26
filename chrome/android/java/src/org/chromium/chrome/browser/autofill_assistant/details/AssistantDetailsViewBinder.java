@@ -48,8 +48,6 @@ import java.util.Set;
 class AssistantDetailsViewBinder
         implements PropertyModelChangeProcessor.ViewBinder<AssistantDetailsModel,
                 AssistantDetailsViewBinder.ViewHolder, PropertyKey> {
-    private static final String CACHED_IMAGE_FETCHER_UMA_CLIENT_NAME = "AssistantDetails";
-
     private static final int IMAGE_BORDER_RADIUS = 4;
     private static final int PULSING_DURATION_MS = 1_000;
     private static final String DETAILS_TIME_FORMAT = "H:mma";
@@ -144,8 +142,8 @@ class AssistantDetailsViewBinder
 
         // Download image and then set it in the model.
         if (!details.getImageUrl().isEmpty()) {
-            CachedImageFetcher.getInstance().fetchImage(
-                    details.getImageUrl(), CACHED_IMAGE_FETCHER_UMA_CLIENT_NAME, image -> {
+            CachedImageFetcher.getInstance().fetchImage(details.getImageUrl(),
+                    CachedImageFetcher.ASSISTANT_DETAILS_UMA_CLIENT_NAME, image -> {
                         if (image != null) {
                             viewHolder.mImageView.setImageDrawable(getRoundedImage(image));
                         }
