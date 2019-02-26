@@ -5,6 +5,7 @@
 #include "fuchsia/runners/common/web_content_runner.h"
 
 #include <fuchsia/sys/cpp/fidl.h>
+#include <lib/fdio/util.h>
 #include <lib/fidl/cpp/binding_set.h>
 #include <utility>
 
@@ -26,17 +27,18 @@ chromium::web::ContextPtr WebContentRunner::CreateDefaultWebContext() {
       base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
           ->ConnectToService<chromium::web::ContextProvider>();
 
-  chromium::web::CreateContextParams create_params;
+  chromium::web::CreateContextParams2 create_params;
 
   // Clone /svc to the context.
-  create_params.service_directory =
-      zx::channel(base::fuchsia::GetHandleFromFile(
-          base::File(base::FilePath("/svc"),
-                     base::File::FLAG_OPEN | base::File::FLAG_READ)));
+  fidl::InterfaceHandle<fuchsia::io::Directory> directory;
+  zx_status_t result = fdio_service_connect(
+      "/svc", directory.NewRequest().TakeChannel().release());
+  ZX_CHECK(result == ZX_OK, result) << "Failed to open /svc";
+  create_params.set_service_directory(std::move(directory));
 
   chromium::web::ContextPtr web_context;
-  web_context_provider->Create(std::move(create_params),
-                               web_context.NewRequest());
+  web_context_provider->Create2(std::move(create_params),
+                                web_context.NewRequest());
   web_context.set_error_handler([](zx_status_t status) {
     // If the browser instance died, then exit everything and do not attempt
     // to recover. appmgr will relaunch the runner when it is needed again.
