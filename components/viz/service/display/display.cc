@@ -33,7 +33,6 @@
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_manager.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "gpu/vulkan/buildflags.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -304,12 +303,6 @@ void Display::InitializeRenderer(bool enable_shared_images) {
     renderer_ = std::make_unique<GLRenderer>(&settings_, output_surface_.get(),
                                              resource_provider_.get(),
                                              current_task_runner_);
-#if BUILDFLAG(ENABLE_VULKAN)
-  } else if (output_surface_->vulkan_context_provider()) {
-    renderer_ = std::make_unique<SkiaRenderer>(
-        &settings_, output_surface_.get(), resource_provider_.get(),
-        nullptr /* skia_output_surface */, SkiaRenderer::DrawMode::VULKAN);
-#endif
   } else {
     auto renderer = std::make_unique<SoftwareRenderer>(
         &settings_, output_surface_.get(), resource_provider_.get());

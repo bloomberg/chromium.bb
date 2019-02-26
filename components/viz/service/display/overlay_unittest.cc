@@ -208,12 +208,6 @@ class OverlayOutputSurface : public OutputSurface {
                bool has_alpha,
                bool use_stencil) override {}
   void SwapBuffers(OutputSurfaceFrame frame) override {}
-#if BUILDFLAG(ENABLE_VULKAN)
-  gpu::VulkanSurface* GetVulkanSurface() override {
-    NOTREACHED();
-    return nullptr;
-  }
-#endif
   uint32_t GetFramebufferCopyTextureFormat() override {
     // TestContextProvider has no real framebuffer, just use RGB.
     return GL_RGB;

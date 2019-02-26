@@ -158,14 +158,6 @@ void SkiaOutputSurfaceImplNonDDL::ApplyExternalStencil() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
-#if BUILDFLAG(ENABLE_VULKAN)
-gpu::VulkanSurface* SkiaOutputSurfaceImplNonDDL::GetVulkanSurface() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-#endif
-
 unsigned SkiaOutputSurfaceImplNonDDL::UpdateGpuFence() {
   return 0;
 }

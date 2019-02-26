@@ -74,9 +74,6 @@ class FakeOutputSurface : public OutputSurface {
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
   gfx::BufferFormat GetOverlayBufferFormat() const override;
-#if BUILDFLAG(ENABLE_VULKAN)
-  gpu::VulkanSurface* GetVulkanSurface() override;
-#endif
   unsigned UpdateGpuFence() override;
 
   void set_framebuffer(GLint framebuffer, GLenum format) {

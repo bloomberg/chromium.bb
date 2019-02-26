@@ -38,9 +38,6 @@ class PixelTestOutputSurface : public viz::OutputSurface {
   unsigned GetOverlayTextureId() const override;
   gfx::BufferFormat GetOverlayBufferFormat() const override;
   uint32_t GetFramebufferCopyTextureFormat() override;
-#if BUILDFLAG(ENABLE_VULKAN)
-  gpu::VulkanSurface* GetVulkanSurface() override;
-#endif
   unsigned UpdateGpuFence() override;
 
   void set_has_external_stencil_test(bool has_test) {

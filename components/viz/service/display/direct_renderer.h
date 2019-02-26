@@ -193,7 +193,6 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   // return that quad, otherwise return null.
   static const TileDrawQuad* CanPassBeDrawnDirectly(
       const RenderPass* pass,
-      bool is_using_vulkan,
       DisplayResourceProvider* const resource_provider);
   virtual const TileDrawQuad* CanPassBeDrawnDirectly(const RenderPass* pass);
   virtual void FinishDrawingQuadList() {}

@@ -2049,12 +2049,6 @@ class MockOutputSurface : public OutputSurface {
   MOCK_METHOD0(GetFramebufferCopyTextureFormat, GLenum());
   MOCK_METHOD1(SwapBuffers_, void(OutputSurfaceFrame& frame));  // NOLINT
   void SwapBuffers(OutputSurfaceFrame frame) override { SwapBuffers_(frame); }
-#if BUILDFLAG(ENABLE_VULKAN)
-  gpu::VulkanSurface* GetVulkanSurface() override {
-    NOTREACHED();
-    return nullptr;
-  }
-#endif
   MOCK_CONST_METHOD0(GetOverlayCandidateValidator,
                      OverlayCandidateValidator*());
   MOCK_CONST_METHOD0(IsDisplayedAsOverlayPlane, bool());

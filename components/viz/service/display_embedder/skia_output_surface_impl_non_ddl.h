@@ -63,9 +63,6 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImplNonDDL
   gfx::BufferFormat GetOverlayBufferFormat() const override;
   bool HasExternalStencilTest() const override;
   void ApplyExternalStencil() override;
-#if BUILDFLAG(ENABLE_VULKAN)
-  gpu::VulkanSurface* GetVulkanSurface() override;
-#endif
   unsigned UpdateGpuFence() override;
   void SetNeedsSwapSizeNotifications(
       bool needs_swap_size_notifications) override;

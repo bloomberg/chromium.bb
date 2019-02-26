@@ -458,13 +458,6 @@ class AndroidOutputSurface : public viz::OutputSurface {
     }
   }
 
-#if BUILDFLAG(ENABLE_VULKAN)
-  gpu::VulkanSurface* GetVulkanSurface() override {
-    NOTIMPLEMENTED();
-    return nullptr;
-  }
-#endif
-
   void BindToClient(viz::OutputSurfaceClient* client) override {
     DCHECK(client);
     DCHECK(!client_);

@@ -168,7 +168,6 @@ gfx::Rect DirectRenderer::MoveFromDrawToWindowSpace(
 // static
 const TileDrawQuad* DirectRenderer::CanPassBeDrawnDirectly(
     const RenderPass* pass,
-    bool is_using_vulkan,
     DisplayResourceProvider* const resource_provider) {
 #if defined(OS_MACOSX)
   // On Macs, this path can sometimes lead to all black output.
@@ -210,14 +209,12 @@ const TileDrawQuad* DirectRenderer::CanPassBeDrawnDirectly(
   // Tile quad features not supported in render pass shaders.
   if (tile_quad->swizzle_contents || tile_quad->nearest_neighbor)
     return nullptr;
-  if (!is_using_vulkan) {
-    // BUG=skia:3868, Skia currently doesn't support texture rectangle inputs.
-    // See also the DCHECKs about GL_TEXTURE_2D in DrawRenderPassQuad.
-    GLenum target =
-        resource_provider->GetResourceTextureTarget(tile_quad->resource_id());
-    if (target != GL_TEXTURE_2D)
-      return nullptr;
-  }
+  // BUG=skia:3868, Skia currently doesn't support texture rectangle inputs.
+  // See also the DCHECKs about GL_TEXTURE_2D in DrawRenderPassQuad.
+  GLenum target =
+      resource_provider->GetResourceTextureTarget(tile_quad->resource_id());
+  if (target != GL_TEXTURE_2D)
+    return nullptr;
 
   return tile_quad;
 }
