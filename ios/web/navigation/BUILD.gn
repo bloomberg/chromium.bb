@@ -9,6 +9,7 @@ source_set("navigation") {
     ":core",
     "//base",
     "//ios/web:core",
+    "//ios/web/navigation:wk_navigation_util",
     "//ios/web/public",
     "//ios/web/web_state:session_certificate_policy_cache",
     "//ios/web/web_state:web_state_impl_header",
@@ -48,6 +49,7 @@ source_set("core") {
   deps = [
     "//base",
     "//components/url_formatter:url_formatter",
+    "//ios/web/navigation:wk_navigation_util",
     "//ios/web/public",
     "//ui/base",
   ]
@@ -60,10 +62,37 @@ source_set("core") {
     "navigation_manager_delegate.h",
     "navigation_manager_impl.h",
     "navigation_manager_impl.mm",
-    "navigation_manager_util.h",
-    "navigation_manager_util.mm",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("wk_navigation_util") {
+  deps = [
+    "//base",
+    "//ios/web/public",
+    "//url",
+  ]
+
+  sources = [
     "wk_navigation_util.h",
     "wk_navigation_util.mm",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("navigation_manager_util") {
+  deps = [
+    "//base",
+    "//ios/web/navigation:core",
+    "//ios/web/public",
+    "//ios/web/web_state:navigation_context",
+  ]
+
+  sources = [
+    "navigation_manager_util.h",
+    "navigation_manager_util.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]

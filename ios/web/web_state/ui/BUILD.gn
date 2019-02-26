@@ -27,6 +27,8 @@ source_set("ui") {
     "//ios/web/interstitials",
     "//ios/web/navigation",
     "//ios/web/navigation:core",
+    "//ios/web/navigation:navigation_manager_util",
+    "//ios/web/navigation:wk_navigation_util",
     "//ios/web/net:net",
     "//ios/web/public",
     "//ios/web/public/download",
@@ -82,6 +84,7 @@ source_set("crw_wk_script_message_router") {
   deps = [
     "//base",
     "//ios/web/navigation:core",
+    "//ios/web/navigation:wk_navigation_util",
     "//net",
   ]
 

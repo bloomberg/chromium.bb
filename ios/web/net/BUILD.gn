@@ -10,6 +10,8 @@ source_set("net") {
     "//ios/net",
     "//ios/web:core",
     "//ios/web/navigation:core",
+    "//ios/web/navigation:navigation_manager_util",
+    "//ios/web/navigation:wk_navigation_util",
     "//ios/web/public",
     "//ios/web/web_state:wk_web_view_security_util",
     "//net",
