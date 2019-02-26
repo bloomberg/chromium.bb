@@ -147,6 +147,7 @@
     wooten-paladin
 
 == firmware ==
+  firmware-atlas-11827.B-firmwarebranch
   firmware-auron-6301.B-firmwarebranch
   firmware-banjo-5216.334.B-firmwarebranch
   firmware-buddy-6301.202.B-firmwarebranch
@@ -1688,6 +1689,7 @@
   falco_li-tot-chrome-pfq-informational-tryjob
   falco_li-tot-chromium-pfq-informational-tryjob
   falco_li-unittest-stress
+  firmware-atlas-11827.B-firmwarebranch-tryjob
   firmware-auron-6301.B-firmwarebranch-tryjob
   firmware-banjo-5216.334.B-firmwarebranch-tryjob
   firmware-buddy-6301.202.B-firmwarebranch-tryjob
