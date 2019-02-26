@@ -226,7 +226,7 @@ FileChooserWindows::~FileChooserWindows() {
   if (process_.IsValid()) {
     process_.Terminate(0, false);
   }
-};
+}
 
 }  // namespace
 

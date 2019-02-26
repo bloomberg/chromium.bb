@@ -58,7 +58,7 @@ struct InternalThunk {
 };
 #pragma pack(pop)
 
-};  // namespace
+}  // namespace
 
 namespace sandbox {
 
