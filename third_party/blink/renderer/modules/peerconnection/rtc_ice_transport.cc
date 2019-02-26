@@ -169,19 +169,19 @@ String RTCIceTransport::role() const {
 
 String RTCIceTransport::state() const {
   switch (state_) {
-    case RTCIceTransportState::kNew:
+    case webrtc::IceTransportState::kNew:
       return "new";
-    case RTCIceTransportState::kChecking:
+    case webrtc::IceTransportState::kChecking:
       return "checking";
-    case RTCIceTransportState::kConnected:
+    case webrtc::IceTransportState::kConnected:
       return "connected";
-    case RTCIceTransportState::kCompleted:
+    case webrtc::IceTransportState::kCompleted:
       return "completed";
-    case RTCIceTransportState::kDisconnected:
+    case webrtc::IceTransportState::kDisconnected:
       return "disconnected";
-    case RTCIceTransportState::kFailed:
+    case webrtc::IceTransportState::kFailed:
       return "failed";
-    case RTCIceTransportState::kClosed:
+    case webrtc::IceTransportState::kClosed:
       return "closed";
   }
   NOTREACHED();
@@ -352,7 +352,7 @@ void RTCIceTransport::start(RTCIceParameters* remote_parameters,
     // Calling start() for the first time.
     role_ = role;
     if (remote_candidates_.size() > 0) {
-      state_ = RTCIceTransportState::kChecking;
+      state_ = webrtc::IceTransportState::kChecking;
     }
     std::vector<cricket::Candidate> initial_remote_candidates;
     for (RTCIceCandidate* remote_candidate : remote_candidates_) {
@@ -368,7 +368,7 @@ void RTCIceTransport::start(RTCIceParameters* remote_parameters,
     }
   } else {
     remote_candidates_.clear();
-    state_ = RTCIceTransportState::kNew;
+    state_ = webrtc::IceTransportState::kNew;
     proxy_->HandleRemoteRestart(ConvertIceParameters(remote_parameters));
   }
 
@@ -397,7 +397,7 @@ void RTCIceTransport::addRemoteCandidate(RTCIceCandidate* remote_candidate,
   remote_candidates_.push_back(remote_candidate);
   if (remote_parameters_) {
     proxy_->AddRemoteCandidate(*converted_remote_candidate);
-    state_ = RTCIceTransportState::kChecking;
+    state_ = webrtc::IceTransportState::kChecking;
   }
 }
 
@@ -433,30 +433,12 @@ void RTCIceTransport::OnCandidateGathered(
       event_type_names::kIcecandidate, event_init));
 }
 
-static RTCIceTransportState ConvertIceTransportState(
-    cricket::IceTransportState state) {
-  switch (state) {
-    case cricket::IceTransportState::STATE_INIT:
-      return RTCIceTransportState::kNew;
-    case cricket::IceTransportState::STATE_CONNECTING:
-      return RTCIceTransportState::kChecking;
-    case cricket::IceTransportState::STATE_COMPLETED:
-      return RTCIceTransportState::kConnected;
-    case cricket::IceTransportState::STATE_FAILED:
-      return RTCIceTransportState::kFailed;
-    default:
-      NOTREACHED();
-      return RTCIceTransportState::kClosed;
-  }
-}
-
-void RTCIceTransport::OnStateChanged(cricket::IceTransportState new_state) {
-  RTCIceTransportState local_new_state = ConvertIceTransportState(new_state);
-  if (local_new_state == state_) {
+void RTCIceTransport::OnStateChanged(webrtc::IceTransportState new_state) {
+  if (new_state == state_) {
     return;
   }
-  state_ = local_new_state;
-  if (state_ == RTCIceTransportState::kFailed) {
+  state_ = new_state;
+  if (state_ == webrtc::IceTransportState::kFailed) {
     selected_candidate_pair_ = nullptr;
   }
   DispatchEvent(*Event::Create(event_type_names::kStatechange));
@@ -476,13 +458,13 @@ void RTCIceTransport::OnSelectedCandidatePairChanged(
 }
 
 void RTCIceTransport::Close(CloseReason reason) {
-  DCHECK_NE(state_, RTCIceTransportState::kClosed);
+  DCHECK_NE(state_, webrtc::IceTransportState::kClosed);
   if (HasConsumer()) {
     consumer_->OnIceTransportClosed(reason);
   }
   // Notifying the consumer that we're closing should cause it to disconnect.
   DCHECK(!HasConsumer());
-  state_ = RTCIceTransportState::kClosed;
+  state_ = webrtc::IceTransportState::kClosed;
   selected_candidate_pair_ = nullptr;
   proxy_.reset();
 }

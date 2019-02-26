@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_candidate_pair.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_parameters.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
+#include "third_party/webrtc/api/transport/enums.h"
 
 namespace blink {
 
@@ -21,16 +22,6 @@ class RTCIceCandidate;
 class RTCIceGatherOptions;
 class IceTransportAdapterCrossThreadFactory;
 class RTCQuicTransport;
-
-enum class RTCIceTransportState {
-  kNew,
-  kChecking,
-  kConnected,
-  kCompleted,
-  kDisconnected,
-  kFailed,
-  kClosed
-};
 
 // Blink bindings for the RTCIceTransport JavaScript object.
 //
@@ -78,7 +69,7 @@ class MODULES_EXPORT RTCIceTransport final
   cricket::IceRole GetRole() const { return role_; }
 
   // Returns true if the RTCIceTransport is in a terminal state.
-  bool IsClosed() const { return state_ == RTCIceTransportState::kClosed; }
+  bool IsClosed() const { return state_ == webrtc::IceTransportState::kClosed; }
 
   // An RTCQuicTransport can be connected to this RTCIceTransport. Only one can
   // be connected at a time. The consumer will be automatically disconnected
@@ -130,7 +121,7 @@ class MODULES_EXPORT RTCIceTransport final
   // IceTransportProxy::Delegate overrides.
   void OnGatheringStateChanged(cricket::IceGatheringState new_state) override;
   void OnCandidateGathered(const cricket::Candidate& candidate) override;
-  void OnStateChanged(cricket::IceTransportState new_state) override;
+  void OnStateChanged(webrtc::IceTransportState new_state) override;
   void OnSelectedCandidatePairChanged(
       const std::pair<cricket::Candidate, cricket::Candidate>&
           selected_candidate_pair) override;
@@ -147,7 +138,7 @@ class MODULES_EXPORT RTCIceTransport final
   bool RaiseExceptionIfClosed(ExceptionState& exception_state) const;
 
   cricket::IceRole role_ = cricket::ICEROLE_UNKNOWN;
-  RTCIceTransportState state_ = RTCIceTransportState::kNew;
+  webrtc::IceTransportState state_ = webrtc::IceTransportState::kNew;
   cricket::IceGatheringState gathering_state_ = cricket::kIceGatheringNew;
 
   HeapVector<Member<RTCIceCandidate>> local_candidates_;
