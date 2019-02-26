@@ -68,8 +68,7 @@ class SigninHeaderHelperTest : public testing::Test {
         &request_adapter, GURL(), account_id, account_consistency_,
         cookie_settings_.get(), PROFILE_MODE_DEFAULT);
     AppendOrRemoveDiceRequestHeader(&request_adapter, GURL(), account_id,
-                                    sync_enabled_, sync_has_auth_error_,
-                                    account_consistency_,
+                                    sync_enabled_, account_consistency_,
                                     cookie_settings_.get(), device_id_);
     return url_request;
   }
@@ -115,7 +114,6 @@ class SigninHeaderHelperTest : public testing::Test {
   base::test::ScopedTaskEnvironment task_environment_;
 
   bool sync_enabled_ = false;
-  bool sync_has_auth_error_ = false;
   std::string device_id_ = kTestDeviceId;
   AccountConsistencyMethod account_consistency_ =
       AccountConsistencyMethod::kDisabled;

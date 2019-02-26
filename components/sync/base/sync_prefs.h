@@ -82,9 +82,6 @@ class SyncPrefs : public CryptoSyncPrefs,
   bool IsFirstSetupComplete() const;
   void SetFirstSetupComplete();
 
-  bool SyncHasAuthError() const;
-  void SetSyncAuthError(bool error);
-
   bool IsSyncRequested() const;
   void SetSyncRequested(bool is_requested);
 
@@ -239,6 +236,7 @@ class SyncPrefs : public CryptoSyncPrefs,
 void MigrateSessionsToProxyTabsPrefs(PrefService* pref_service);
 void ClearObsoleteUserTypePrefs(PrefService* pref_service);
 void ClearObsoleteClearServerDataPrefs(PrefService* pref_service);
+void ClearObsoleteAuthErrorPrefs(PrefService* pref_service);
 
 }  // namespace syncer
 

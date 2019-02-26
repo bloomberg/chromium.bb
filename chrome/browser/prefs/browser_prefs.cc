@@ -971,4 +971,5 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 
   // Added 2/2019.
   syncer::ClearObsoleteClearServerDataPrefs(profile_prefs);
+  syncer::ClearObsoleteAuthErrorPrefs(profile_prefs);
 }

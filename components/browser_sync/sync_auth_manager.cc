@@ -53,18 +53,15 @@ constexpr net::BackoffEntry::Policy kRequestAccessTokenBackoffPolicy = {
 }  // namespace
 
 SyncAuthManager::SyncAuthManager(
-    syncer::SyncPrefs* sync_prefs,
     identity::IdentityManager* identity_manager,
     const AccountStateChangedCallback& account_state_changed,
     const CredentialsChangedCallback& credentials_changed)
-    : sync_prefs_(sync_prefs),
-      identity_manager_(identity_manager),
+    : identity_manager_(identity_manager),
       account_state_changed_callback_(account_state_changed),
       credentials_changed_callback_(credentials_changed),
       registered_for_auth_notifications_(false),
       request_access_token_backoff_(&kRequestAccessTokenBackoffPolicy),
       weak_ptr_factory_(this) {
-  DCHECK(sync_prefs_);
   // |identity_manager_| can be null if local Sync is enabled.
 }
 
@@ -426,7 +423,6 @@ void SyncAuthManager::AccessTokenFetched(
   switch (error.state()) {
     case GoogleServiceAuthError::NONE:
       partial_token_status_.token_receive_time = base::Time::Now();
-      sync_prefs_->SetSyncAuthError(false);
       last_auth_error_ = GoogleServiceAuthError::AuthErrorNone();
       break;
     case GoogleServiceAuthError::CONNECTION_FAILED:
@@ -441,7 +437,6 @@ void SyncAuthManager::AccessTokenFetched(
       ScheduleAccessTokenRequest();
       break;
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
-      sync_prefs_->SetSyncAuthError(true);
       last_auth_error_ = error;
       break;
     default:

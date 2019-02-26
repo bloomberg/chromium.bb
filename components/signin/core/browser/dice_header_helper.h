@@ -21,8 +21,7 @@ extern const char kDiceProtocolVersion[];
 // SigninHeaderHelper implementation managing the Dice header.
 class DiceHeaderHelper : public SigninHeaderHelper {
  public:
-  explicit DiceHeaderHelper(bool signed_in_with_auth_error,
-                            AccountConsistencyMethod account_consistency);
+  explicit DiceHeaderHelper(AccountConsistencyMethod account_consistency);
   ~DiceHeaderHelper() override {}
 
   // Returns the parameters contained in the X-Chrome-ID-Consistency-Response
@@ -53,7 +52,6 @@ class DiceHeaderHelper : public SigninHeaderHelper {
   // SigninHeaderHelper implementation:
   bool IsUrlEligibleForRequestHeader(const GURL& url) override;
 
-  bool signed_in_with_auth_error_;
   AccountConsistencyMethod account_consistency_;
 
   DISALLOW_COPY_AND_ASSIGN(DiceHeaderHelper);

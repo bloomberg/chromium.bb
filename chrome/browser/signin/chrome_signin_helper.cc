@@ -523,8 +523,8 @@ void FixAccountConsistencyRequestHeader(ChromeRequestAdapter* request,
   // Dice header:
   bool dice_header_added = AppendOrRemoveDiceRequestHeader(
       request, redirect_url, account_id, io_data->IsSyncEnabled(),
-      io_data->SyncHasAuthError(), account_consistency,
-      io_data->GetCookieSettings(), io_data->GetSigninScopedDeviceId());
+      account_consistency, io_data->GetCookieSettings(),
+      io_data->GetSigninScopedDeviceId());
 
   // Block the AccountReconcilor while the Dice requests are in flight. This
   // allows the DiceReponseHandler to process the response before the reconcilor

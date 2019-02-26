@@ -27,6 +27,9 @@ const char kSyncPassphraseEncryptionTransitionInProgress[] =
 const char kSyncNigoriStateForPassphraseTransition[] =
     "sync.nigori_state_for_passphrase_transition";
 
+// Obsolete pref that used to store a bool on whether Sync has an auth error.
+const char kSyncHasAuthError[] = "sync.has_auth_error";
+
 // Groups of prefs that always have the same value as a "master" pref.
 // For example, the APPS group has {APP_LIST, APP_SETTINGS}
 // (as well as APPS, but that is implied), so
@@ -172,7 +175,7 @@ void SyncPrefs::RegisterProfilePrefs(
   registry->RegisterStringPref(prefs::kSyncSpareBootstrapToken, "");
 #endif
 
-  registry->RegisterBooleanPref(prefs::kSyncHasAuthError, false);
+  registry->RegisterBooleanPref(kSyncHasAuthError, false);
   registry->RegisterBooleanPref(prefs::kSyncPassphrasePrompted, false);
   registry->RegisterIntegerPref(prefs::kSyncMemoryPressureWarningCount, -1);
   registry->RegisterBooleanPref(prefs::kSyncShutdownCleanly, false);
@@ -226,16 +229,6 @@ bool SyncPrefs::IsFirstSetupComplete() const {
 void SyncPrefs::SetFirstSetupComplete() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   pref_service_->SetBoolean(prefs::kSyncFirstSetupComplete, true);
-}
-
-bool SyncPrefs::SyncHasAuthError() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return pref_service_->GetBoolean(prefs::kSyncHasAuthError);
-}
-
-void SyncPrefs::SetSyncAuthError(bool error) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  pref_service_->SetBoolean(prefs::kSyncHasAuthError, error);
 }
 
 bool SyncPrefs::IsSyncRequested() const {
@@ -641,6 +634,10 @@ void ClearObsoleteUserTypePrefs(PrefService* pref_service) {
 void ClearObsoleteClearServerDataPrefs(PrefService* pref_service) {
   pref_service->ClearPref(kSyncPassphraseEncryptionTransitionInProgress);
   pref_service->ClearPref(kSyncNigoriStateForPassphraseTransition);
+}
+
+void ClearObsoleteAuthErrorPrefs(PrefService* pref_service) {
+  pref_service->ClearPref(kSyncHasAuthError);
 }
 
 }  // namespace syncer

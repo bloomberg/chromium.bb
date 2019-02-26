@@ -27,7 +27,6 @@ class AccessTokenFetcher;
 
 namespace syncer {
 struct SyncCredentials;
-class SyncPrefs;
 }  // namespace syncer
 
 namespace browser_sync {
@@ -47,11 +46,9 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
   // added/changed/removed. Call GetCredentials to get the new state.
   using CredentialsChangedCallback = base::RepeatingClosure;
 
-  // |sync_prefs| must not be null and must outlive this.
   // |identity_manager| may be null (this is the case if local Sync is enabled),
   // but if non-null, must outlive this object.
-  SyncAuthManager(syncer::SyncPrefs* sync_prefs,
-                  identity::IdentityManager* identity_manager,
+  SyncAuthManager(identity::IdentityManager* identity_manager,
                   const AccountStateChangedCallback& account_state_changed,
                   const CredentialsChangedCallback& credentials_changed);
   ~SyncAuthManager() override;
@@ -135,7 +132,6 @@ class SyncAuthManager : public identity::IdentityManager::Observer {
   void AccessTokenFetched(GoogleServiceAuthError error,
                           identity::AccessTokenInfo access_token_info);
 
-  syncer::SyncPrefs* const sync_prefs_;
   identity::IdentityManager* const identity_manager_;
 
   const AccountStateChangedCallback account_state_changed_callback_;

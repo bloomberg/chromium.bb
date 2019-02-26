@@ -49,11 +49,8 @@ DiceAction GetDiceActionFromHeader(const std::string& value) {
 
 }  // namespace
 
-DiceHeaderHelper::DiceHeaderHelper(bool signed_in_with_auth_error,
-                                   AccountConsistencyMethod account_consistency)
-    : SigninHeaderHelper("Dice"),
-      signed_in_with_auth_error_(signed_in_with_auth_error),
-      account_consistency_(account_consistency) {}
+DiceHeaderHelper::DiceHeaderHelper(AccountConsistencyMethod account_consistency)
+    : SigninHeaderHelper("Dice"), account_consistency_(account_consistency) {}
 
 // static
 DiceResponseParams DiceHeaderHelper::BuildDiceSigninResponseParams(
@@ -199,8 +196,6 @@ bool DiceHeaderHelper::IsUrlEligibleForRequestHeader(const GURL& url) {
 std::string DiceHeaderHelper::BuildRequestHeader(
     const std::string& sync_account_id,
     const std::string& device_id) {
-  DCHECK(!(sync_account_id.empty() && signed_in_with_auth_error_));
-
   std::vector<std::string> parts;
   parts.push_back(base::StringPrintf("version=%s", kDiceProtocolVersion));
   parts.push_back("client_id=" +

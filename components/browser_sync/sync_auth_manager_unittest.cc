@@ -10,11 +10,9 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
-#include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine/connection_status.h"
 #include "components/sync/engine/sync_credentials.h"
-#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "net/base/net_errors.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -32,10 +30,7 @@ class SyncAuthManagerTest : public testing::Test {
   using CredentialsChangedCallback =
       SyncAuthManager::CredentialsChangedCallback;
 
-  SyncAuthManagerTest() : identity_env_(&test_url_loader_factory_) {
-    syncer::SyncPrefs::RegisterProfilePrefs(pref_service_.registry());
-    sync_prefs_ = std::make_unique<syncer::SyncPrefs>(&pref_service_);
-  }
+  SyncAuthManagerTest() : identity_env_(&test_url_loader_factory_) {}
 
   ~SyncAuthManagerTest() override {}
 
@@ -46,14 +41,14 @@ class SyncAuthManagerTest : public testing::Test {
   std::unique_ptr<SyncAuthManager> CreateAuthManager(
       const AccountStateChangedCallback& account_state_changed,
       const CredentialsChangedCallback& credentials_changed) {
-    return std::make_unique<SyncAuthManager>(
-        sync_prefs_.get(), identity_env_.identity_manager(),
-        account_state_changed, credentials_changed);
+    return std::make_unique<SyncAuthManager>(identity_env_.identity_manager(),
+                                             account_state_changed,
+                                             credentials_changed);
   }
 
   std::unique_ptr<SyncAuthManager> CreateAuthManagerForLocalSync() {
-    return std::make_unique<SyncAuthManager>(
-        sync_prefs_.get(), nullptr, base::DoNothing(), base::DoNothing());
+    return std::make_unique<SyncAuthManager>(nullptr, base::DoNothing(),
+                                             base::DoNothing());
   }
 
   identity::IdentityTestEnvironment* identity_env() { return &identity_env_; }
@@ -62,8 +57,6 @@ class SyncAuthManagerTest : public testing::Test {
   base::test::ScopedTaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   identity::IdentityTestEnvironment identity_env_;
-  sync_preferences::TestingPrefServiceSyncable pref_service_;
-  std::unique_ptr<syncer::SyncPrefs> sync_prefs_;
 };
 
 TEST_F(SyncAuthManagerTest, ProvidesNothingInLocalSyncMode) {
