@@ -18,6 +18,8 @@ issues]].
 - Major extension of the German 8 dot computer braille table thanks to
   Ali-Riza Ciftcioglu. For example the Euro sign or quote characters
   are finally defined.
+- Fix a few issues with hungarian grade1 and grade2 Braille thanks to
+  Attila Hammer.
 
 ** Other changes
 
