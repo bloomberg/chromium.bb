@@ -78,11 +78,13 @@ class MessageService : public BrowserContextKeyedAPI,
 
   // Given an extension's ID, opens a channel between the given renderer "port"
   // and every listening context owned by that extension. |channel_name| is
-  // an optional identifier for use by extension developers.
+  // an optional identifier for use by extension developers. |opener_port| is an
+  // optional pre-opened port that should be attached to the opened channel.
   void OpenChannelToExtension(int source_process_id,
                               int source_routing_id,
                               const PortId& source_port_id,
                               const MessagingEndpoint& source_endpoint,
+                              std::unique_ptr<MessagePort> opener_port,
                               const std::string& target_extension_id,
                               const GURL& source_url,
                               const std::string& channel_name);
@@ -113,6 +115,10 @@ class MessageService : public BrowserContextKeyedAPI,
                  int process_id,
                  int routing_id,
                  bool force_close);
+
+  base::WeakPtr<MessagePort::ChannelDelegate> GetChannelDelegate() {
+    return weak_factory_.GetWeakPtr();
+  }
 
  private:
   friend class MockMessageService;
@@ -226,6 +232,8 @@ class MessageService : public BrowserContextKeyedAPI,
   static const bool kServiceRedirectedInIncognito = true;
   static const bool kServiceIsCreatedWithBrowserContext = false;
   static const bool kServiceIsNULLWhileTesting = true;
+
+  content::BrowserContext* const context_;
 
   // Delegate for embedder-specific messaging, e.g. for Chrome tabs.
   // Owned by the ExtensionsAPIClient and guaranteed to outlive |this|.

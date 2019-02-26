@@ -31,6 +31,7 @@ extern const char kOnRequestEvent[];
 extern const char kOnRequestExternalEvent[];
 extern const char kOnConnectEvent[];
 extern const char kOnConnectExternalEvent[];
+extern const char kOnConnectNativeEvent[];
 
 extern const int kNoFrameId;
 

@@ -455,6 +455,7 @@ enum HistogramValue {
   AUTOFILL_PRIVATE_ON_SERVER_CREDIT_CARD_LIST_CHANGED = 434,
   ACCESSIBILITY_PRIVATE_ON_ANNOUNCE_FOR_ACCESSIBILITY = 435,
   MIME_HANDLER_PRIVATE_SAVE = 436,
+  RUNTIME_ON_CONNECT_NATIVE = 437,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

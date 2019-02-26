@@ -11,6 +11,7 @@
 #include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/api/messaging/message_service.h"
+#include "extensions/browser/bad_message.h"
 #include "extensions/browser/blob_holder.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/event_router_factory.h"
@@ -388,10 +389,18 @@ void ExtensionMessageFilter::OnOpenChannelToExtension(
     const std::string& channel_name,
     const PortId& port_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (info.source_endpoint.type == MessagingEndpoint::Type::kNativeApp) {
+    // Requests for channels initiated by native applications don't originate
+    // from renderer processes.
+    bad_message::ReceivedBadMessage(
+        this, bad_message::EMF_INVALID_CHANNEL_SOURCE_TYPE);
+    return;
+  }
   if (browser_context_) {
     MessageService::Get(browser_context_)
         ->OpenChannelToExtension(render_process_id_, routing_id, port_id,
-                                 info.source_endpoint, info.target_id,
+                                 info.source_endpoint,
+                                 nullptr /* opener_port */, info.target_id,
                                  info.source_url, channel_name);
   }
 }

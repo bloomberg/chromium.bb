@@ -104,9 +104,6 @@ NativeMessagePort::~NativeMessagePort() {
 bool NativeMessagePort::IsValidPort() {
   // The native message port is immediately connected after construction, so it
   // is not possible to invalidate the port between construction and connection.
-  // The return value doesn't matter since native messaging follows a code path
-  // where IsValidPort() is never called.
-  NOTREACHED();
   return true;
 }
 
