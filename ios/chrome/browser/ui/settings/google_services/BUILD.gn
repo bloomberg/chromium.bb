@@ -34,6 +34,7 @@ source_set("google_services") {
     "resources:google_services_sync_error",
     "//base",
     "//components/browser_sync",
+    "//components/google/core/common",
     "//components/metrics",
     "//components/prefs",
     "//components/strings",
