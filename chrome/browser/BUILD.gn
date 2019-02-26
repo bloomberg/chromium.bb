@@ -1197,8 +1197,6 @@ jumbo_split_static_library("browser") {
     "policy/network_prediction_policy_handler.h",
     "policy/policy_conversions.cc",
     "policy/policy_conversions.h",
-    "policy/policy_helpers.cc",
-    "policy/policy_helpers.h",
     "policy/profile_policy_connector.cc",
     "policy/profile_policy_connector.h",
     "policy/profile_policy_connector_factory.cc",

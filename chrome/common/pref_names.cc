@@ -2304,10 +2304,6 @@ const char kRecoveryComponentNeedsElevation[] =
 const char kRegisteredSupervisedUserWhitelists[] =
     "supervised_users.whitelists";
 
-// Boolean that specifies whether the cloud policy will override conflicting
-// machine policy.
-const char kCloudPolicyOverridesMachinePolicy[] = "policy.cloud_override";
-
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 // Boolean that indicates whether Chrome enterprise cloud reporting is enabled
 // or not.

@@ -181,6 +181,8 @@ void BrowserPolicyConnector::RegisterPrefs(PrefRegistrySimple* registry) {
       policy_prefs::kMachineLevelUserCloudPolicyEnrollmentToken, std::string());
   registry->RegisterBooleanPref(
       policy_prefs::kCloudManagementEnrollmentMandatory, false);
+  registry->RegisterBooleanPref(
+      policy_prefs::kCloudPolicyOverridesMachinePolicy, false);
 }
 
 }  // namespace policy
