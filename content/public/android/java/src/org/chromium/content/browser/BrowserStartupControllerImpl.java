@@ -349,6 +349,7 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
         mAsyncStartupCallbacks.clear();
 
         executeServiceManagerCallbacks(startupResult);
+        recordStartupUma();
     }
 
     private void executeServiceManagerCallbacks(int startupResult) {

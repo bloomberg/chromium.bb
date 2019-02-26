@@ -108,6 +108,6 @@ public class ServicificationStartupUma {
 
     private void recordStartupMode(@ServicificationStartup int startupMode) {
         RecordHistogram.recordEnumeratedHistogram(
-                "Servicification.Startup", startupMode, ServicificationStartup.NUM_ENTRIES);
+                "Servicification.Startup2", startupMode, ServicificationStartup.NUM_ENTRIES);
     }
 }
