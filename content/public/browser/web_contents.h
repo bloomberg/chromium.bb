@@ -529,18 +529,15 @@ class WebContents : public PageNavigator,
   // potential discard without causing the dialog to appear.
   virtual void DispatchBeforeUnload(bool auto_cancel) = 0;
 
-  // Returns true if it is safe for this WebContents to attach to the outer
-  // WebContents associated with |render_frame_host| using the method
-  // AttachToOuterWebContentsFrame. If a frame belongs to |this| WebContents or
-  // is in loading state or not in the same SiteInstance as its parent frame it
-  // should not be used for attaching.
-  virtual bool CanAttachToOuterContentsFrame(
-      RenderFrameHost* outer_contents_frame) = 0;
-
   // Attaches |current_web_contents|, which should be the same as |this|
   // WebContents, to its container frame |outer_contents_frame|, which should be
   // in the outer WebContents. The |current_web_contents| is pointer is needed
-  // for passing ownership of the inner WebContents to the otuer WebContents.
+  // for passing ownership of the inner WebContents to the outer WebContents.
+  // Note: |outer_contents_frame| will be swapped out and destroyed during the
+  // process. Generally a frame same-process with its parent is the right choice
+  // but ideally it should be "about:blank" to avoid problems with beforeunload.
+  // To ensure sane usage of this API users first should call the async API
+  // RenderFrameHost::PrepareForInnerWebContentsAttach first.
   // TODO(lfg): This API should be moved so that it is called on the outer
   // WebContents.
   virtual void AttachToOuterWebContentsFrame(

@@ -253,10 +253,15 @@ class CONTENT_EXPORT RenderFrameHostManager
   // which one so we tell both.
   void SetIsLoading(bool is_loading);
 
-  // Confirms whether we should close the page. This is called before a
-  // tab/window is closed to allow the appropriate renderer to approve or deny
-  // the request.  |proceed| indicates whether the user chose to proceed.
-  // |proceed_time| is the time when the request was allowed to proceed.
+  // Confirms whether we should close the page. |proceed| indicates whether the
+  // user chose to proceed. |proceed_time| is the time when the request was
+  // allowed to proceed. This is called in one of the two *distinct* scenarios
+  // below:
+  //   1- The tab/window is closed after allowing the appropriate renderer to
+  //      show the beforeunload prompt.
+  //   2- The FrameTreeNode is being prepared for attaching an inner Delegate,
+  //      in which case beforeunload is triggered in the current frame. This
+  //      only happens for child frames.
   void OnBeforeUnloadACK(bool proceed, const base::TimeTicks& proceed_time);
 
   // Determines whether a navigation to |dest_url| may be completed using an
@@ -501,6 +506,24 @@ class CONTENT_EXPORT RenderFrameHostManager
   // Helper to initialize the RenderFrame if it's not initialized.
   void InitializeRenderFrameIfNecessary(RenderFrameHostImpl* render_frame_host);
 
+  // Prepares the FrameTreeNode for attaching an inner WebContents. This step
+  // may involve replacing |current_frame_host()| with a new RenderFrameHost
+  // in the same SiteInstance as the parent frame. Calling this method will
+  // dispatch beforeunload event if necessary.
+  void PrepareForInnerDelegateAttach(
+      RenderFrameHost::PrepareForInnerWebContentsAttachCallback callback);
+
+  // When true the FrameTreeNode is preparing a RenderFrameHost for attaching an
+  // inner Delegate. During this phase new navigation requests are ignored.
+  bool is_attaching_inner_delegate() const {
+    return attach_to_inner_delegate_state_ != AttachToInnerDelegateState::NONE;
+  }
+
+  // Called by the delegate at the end of the attaching process.
+  void set_attach_complete() {
+    attach_to_inner_delegate_state_ = AttachToInnerDelegateState::ATTACHED;
+  }
+
  private:
   friend class NavigatorTestWithBrowserSideNavigation;
   friend class RenderFrameHostManagerTest;
@@ -512,6 +535,16 @@ class CONTENT_EXPORT RenderFrameHostManager
     UNRELATED,
     // A SiteInstance in the same browsing instance as the current.
     RELATED,
+  };
+
+  enum class AttachToInnerDelegateState {
+    // There is no inner delegate attached through FrameTreeNode and no
+    // attaching is in progress.
+    NONE,
+    // A frame is being prepared for attaching.
+    PREPARE_FRAME,
+    // An inner delegate attached to the delegate of this manager.
+    ATTACHED
   };
 
   // Stores information regarding a SiteInstance targeted at a specific URL to
@@ -748,6 +781,18 @@ class CONTENT_EXPORT RenderFrameHostManager
   // RenderWidget know about page focus.
   void EnsureRenderFrameHostPageFocusConsistent();
 
+  // When current RenderFrameHost is not in its parent SiteInstance, this method
+  // will destroy the frame and replace it with a new RenderFrameHost in the
+  // parent frame's SiteInstance. Either way, this will eventually invoke
+  // |attach_inner_delegate_callback_| with a pointer to |render_frame_host_|
+  // which is then safe for use with WebContents::AttachToOuterWebContentsFrame.
+  void CreateNewFrameForInnerDelegateAttachIfNecessary();
+
+  // Called when the result of preparing the FrameTreeNode for attaching an
+  // inner delegate is known. When successful, |render_frame_host_| can be used
+  // for attaching the inner Delegate.
+  void NotifyPrepareForInnerDelegateAttachComplete(bool success);
+
   // For use in creating RenderFrameHosts.
   FrameTreeNode* frame_tree_node_;
 
@@ -775,6 +820,13 @@ class CONTENT_EXPORT RenderFrameHostManager
   // the final URL's SiteInstance isn't compatible with the one used to create
   // it.
   std::unique_ptr<RenderFrameHostImpl> speculative_render_frame_host_;
+
+  // This callback is used when attaching an inner Delegate to |delegate_|
+  // through |frame_tree_node_|.
+  RenderFrameHost::PrepareForInnerWebContentsAttachCallback
+      attach_inner_delegate_callback_;
+  AttachToInnerDelegateState attach_to_inner_delegate_state_ =
+      AttachToInnerDelegateState::NONE;
 
   base::WeakPtrFactory<RenderFrameHostManager> weak_factory_;
 

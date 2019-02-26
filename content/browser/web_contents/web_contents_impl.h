@@ -359,8 +359,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   Visibility GetVisibility() override;
   bool NeedToFireBeforeUnload() override;
   void DispatchBeforeUnload(bool auto_cancel) override;
-  bool CanAttachToOuterContentsFrame(
-      RenderFrameHost* outer_contents_frame) final;
   void AttachToOuterWebContentsFrame(
       std::unique_ptr<WebContents> current_web_contents,
       RenderFrameHost* outer_contents_frame) override;
