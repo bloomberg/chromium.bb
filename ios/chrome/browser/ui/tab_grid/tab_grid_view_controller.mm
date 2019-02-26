@@ -910,25 +910,19 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
       // There are duplicate metrics below that correspond to the previous
       // separate implementations for iPhone and iPad. Having both allow for
       // comparisons to the previous implementations.
-      // TODO(crbug.com/856965) : Consolidate and rename metrics.
       base::RecordAction(
-          base::UserMetricsAction("MobileStackViewIncognitoMode"));
-      base::RecordAction(base::UserMetricsAction(
-          "MobileTabSwitcherHeaderViewSelectIncognitoPanel"));
+          base::UserMetricsAction("MobileTabGridSelectIncognitoPanel"));
       break;
     case TabGridPageRegularTabs:
       // There are duplicate metrics below that correspond to the previous
       // separate implementations for iPhone and iPad. Having both allow for
       // comparisons to the previous implementations.
-      // TODO(crbug.com/856965) : Consolidate and rename metrics.
-      base::RecordAction(base::UserMetricsAction("MobileStackViewNormalMode"));
-      base::RecordAction(base::UserMetricsAction(
-          "MobileTabSwitcherHeaderViewSelectNonIncognitoPanel"));
+      base::RecordAction(
+          base::UserMetricsAction("MobileTabGridSelectRegularPanel"));
       break;
     case TabGridPageRemoteTabs:
-      // TODO(crbug.com/856965) : Rename metrics.
-      base::RecordAction(base::UserMetricsAction(
-          "MobileTabSwitcherHeaderViewSelectDistantSessionPanel"));
+      base::RecordAction(
+          base::UserMetricsAction("MobileTabGridSelectRemotePanel"));
       break;
   }
   switch (self.pageChangeInteraction) {
@@ -960,18 +954,10 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     case TabGridPageIncognitoTabs:
       [self.incognitoTabsViewController prepareForDismissal];
       [self.incognitoTabsDelegate addNewItem];
-      // Record when new incognito tab is created.
-      // TODO(crbug.com/856965) : Rename metrics.
-      base::RecordAction(
-          base::UserMetricsAction("MobileTabSwitcherCreateIncognitoTab"));
       break;
     case TabGridPageRegularTabs:
       [self.regularTabsViewController prepareForDismissal];
       [self.regularTabsDelegate addNewItem];
-      // Record when new regular tab is created.
-      // TODO(crbug.com/856965) : Rename metrics.
-      base::RecordAction(
-          base::UserMetricsAction("MobileTabSwitcherCreateNonIncognitoTab"));
       break;
     case TabGridPageRemoteTabs:
       NOTREACHED() << "It is invalid to have an active tab in remote tabs.";
@@ -985,19 +971,30 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 // Creates and shows a new regular tab.
 - (void)openNewRegularTabForKeyboardCommand {
   [self openNewTabInPage:TabGridPageRegularTabs focusOmnibox:YES];
+  base::RecordAction(
+      base::UserMetricsAction("MobileTabGridCreateRegularTabKeyboard"));
 }
 
 // Creates and shows a new incognito tab.
 - (void)openNewIncognitoTabForKeyboardCommand {
   [self openNewTabInPage:TabGridPageIncognitoTabs focusOmnibox:YES];
+  base::RecordAction(
+      base::UserMetricsAction("MobileTabGridCreateIncognitoTabKeyboard"));
 }
 
 // Creates and shows a new tab in the current page.
 - (void)openNewTabInCurrentPageForKeyboardCommand {
-  // Tabs cannot be opened with ⌘-t from the remote tabs page.
-  if (self.currentPage == TabGridPageRemoteTabs)
-    return;
-  [self openNewTabInPage:self.currentPage focusOmnibox:YES];
+  switch (self.currentPage) {
+    case TabGridPageIncognitoTabs:
+      [self openNewIncognitoTabForKeyboardCommand];
+      break;
+    case TabGridPageRegularTabs:
+      [self openNewRegularTabForKeyboardCommand];
+      break;
+    case TabGridPageRemoteTabs:
+      // Tabs cannot be opened with ⌘-t from the remote tabs page.
+      break;
+  }
 }
 
 // Broadcasts whether incognito tabs are showing.
@@ -1046,15 +1043,12 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   if (gridViewController == self.regularTabsViewController) {
     [self.regularTabsDelegate selectItemWithID:itemID];
     // Record when a regular tab is opened.
-    // TODO(crbug.com/856965) : Rename metrics.
-    base::RecordAction(
-        base::UserMetricsAction("MobileTabSwitcherOpenNonIncognitoTab"));
+    base::RecordAction(base::UserMetricsAction("MobileTabGridOpenRegularTab"));
   } else if (gridViewController == self.incognitoTabsViewController) {
     [self.incognitoTabsDelegate selectItemWithID:itemID];
     // Record when an incognito tab is opened.
-    // TODO(crbug.com/856965) : Rename metrics.
     base::RecordAction(
-        base::UserMetricsAction("MobileTabSwitcherOpenIncognitoTab"));
+        base::UserMetricsAction("MobileTabGridOpenIncognitoTab"));
   }
   self.activePage = self.currentPage;
   [self.tabPresentationDelegate showActiveTabInPage:self.currentPage
@@ -1067,15 +1061,12 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   if (gridViewController == self.regularTabsViewController) {
     [self.regularTabsDelegate closeItemWithID:itemID];
     // Record when a regular tab is closed.
-    // TODO(crbug.com/856965) : Rename metrics.
-    base::RecordAction(
-        base::UserMetricsAction("MobileTabSwitcherCloseNonIncognitoTab"));
+    base::RecordAction(base::UserMetricsAction("MobileTabGridCloseRegularTab"));
   } else if (gridViewController == self.incognitoTabsViewController) {
     [self.incognitoTabsDelegate closeItemWithID:itemID];
     // Record when an incognito tab is closed.
-    // TODO(crbug.com/856965) : Rename metrics.
     base::RecordAction(
-        base::UserMetricsAction("MobileTabSwitcherCloseIncognitoTab"));
+        base::UserMetricsAction("MobileTabGridCloseIncognitoTab"));
   }
 }
 
@@ -1144,9 +1135,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
                                          focusOmnibox:NO];
     // Record when users exit the tab grid to return to the current foreground
     // tab.
-    // TODO(crbug.com/856965) : Rename metrics.
-    base::RecordAction(
-        base::UserMetricsAction("MobileTabReturnedToCurrentTab"));
+    base::RecordAction(base::UserMetricsAction("MobileTabGridDone"));
   }
 }
 
@@ -1180,9 +1169,20 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 - (void)newTabButtonTapped:(id)sender {
   [self openNewTabInPage:self.currentPage focusOmnibox:NO];
-  // Record only when a new tab is created through the + button.
-  // TODO(crbug.com/856965) : Rename metrics.
-  base::RecordAction(base::UserMetricsAction("MobileToolbarStackViewNewTab"));
+  // Record metrics for button taps
+  switch (self.currentPage) {
+    case TabGridPageIncognitoTabs:
+      base::RecordAction(
+          base::UserMetricsAction("MobileTabGridCreateIncognitoTab"));
+      break;
+    case TabGridPageRegularTabs:
+      base::RecordAction(
+          base::UserMetricsAction("MobileTabGridCreateRegularTab"));
+      break;
+    case TabGridPageRemoteTabs:
+      // No-op.
+      break;
+  }
 }
 
 - (void)pageControlChangedValue:(id)sender {
