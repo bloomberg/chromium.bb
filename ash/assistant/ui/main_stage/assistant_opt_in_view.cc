@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/assistant/ui/assistant_ui_constants.h"
+#include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
@@ -32,6 +33,15 @@ views::StyledLabel::RangeStyleInfo CreateStyleInfo(
                           .DeriveWithWeight(weight);
   style.override_color = SK_ColorWHITE;
   return style;
+}
+
+base::string16 GetAction(mojom::ConsentStatus consent_status) {
+  if (consent_status == mojom::ConsentStatus::kUnauthorized) {
+    return l10n_util::GetStringUTF16(
+        IDS_ASH_ASSISTANT_OPT_IN_ASK_ADMINISTRATOR);
+  } else {
+    return l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_OPT_IN_GET_STARTED);
+  }
 }
 
 // AssistantOptInContainer -----------------------------------------------------
@@ -77,11 +87,15 @@ class AssistantOptInContainer : public views::Button {
 
 // AssistantOptInView ----------------------------------------------------------
 
-AssistantOptInView::AssistantOptInView() {
+AssistantOptInView::AssistantOptInView(AssistantViewDelegate* delegate)
+    : delegate_(delegate) {
   InitLayout();
+  delegate_->AddVoiceInteractionControllerObserver(this);
 }
 
-AssistantOptInView::~AssistantOptInView() = default;
+AssistantOptInView::~AssistantOptInView() {
+  delegate_->RemoveVoiceInteractionControllerObserver(this);
+}
 
 const char* AssistantOptInView::GetClassName() const {
   return "AssistantOptInView";
@@ -107,37 +121,42 @@ void AssistantOptInView::InitLayout() {
       views::BoxLayout::MainAxisAlignment::MAIN_AXIS_ALIGNMENT_CENTER);
 
   // Container.
-  AssistantOptInContainer* container =
-      new AssistantOptInContainer(/*listener=*/this);
+  container_ = new AssistantOptInContainer(/*listener=*/this);
 
   layout_manager =
-      container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal,
           gfx::Insets(0, kPaddingDip)));
 
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
 
-  AddChildView(container);
+  AddChildView(container_);
 
   // Label.
   label_ = new views::StyledLabel(base::string16(), /*listener=*/nullptr);
   label_->set_auto_color_readability_enabled(false);
   label_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_CENTER);
 
+  container_->AddChildView(label_);
+  container_->SetFocusForPlatform();
+
+  UpdateLabel(delegate_->GetConsentStatus());
+}
+
+void AssistantOptInView::UpdateLabel(mojom::ConsentStatus consent_status) {
   // First substitution string: "Unlock more Assistant features."
   const base::string16 unlock_features =
       l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_OPT_IN_UNLOCK_MORE_FEATURES);
 
-  // Second substitution string: "Get Started".
-  const base::string16 get_started =
-      l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_OPT_IN_GET_STARTED);
+  // Second substitution string specifies the action to be taken.
+  const base::string16 action = GetAction(consent_status);
 
   // Set the text, having replaced placeholders in the opt in prompt with
   // substitution strings and caching their offset positions for styling.
   std::vector<size_t> offsets;
   auto label_text = l10n_util::GetStringFUTF16(
-      IDS_ASH_ASSISTANT_OPT_IN_PROMPT, unlock_features, get_started, &offsets);
+      IDS_ASH_ASSISTANT_OPT_IN_PROMPT, unlock_features, action, &offsets);
   label_->SetText(label_text);
 
   // Style the first substitution string.
@@ -147,19 +166,20 @@ void AssistantOptInView::InitLayout() {
 
   // Style the second substitution string.
   label_->AddStyleRange(
-      gfx::Range(offsets.at(1), offsets.at(1) + get_started.length()),
+      gfx::Range(offsets.at(1), offsets.at(1) + action.length()),
       CreateStyleInfo(gfx::Font::Weight::BOLD));
 
-  container->AddChildView(label_);
-
-  container->SetFocusForPlatform();
-  container->SetAccessibleName(label_text);
+  container_->SetAccessibleName(label_text);
 }
 
 void AssistantOptInView::ButtonPressed(views::Button* sender,
                                        const ui::Event& event) {
-  if (delegate_)
-    delegate_->OnOptInButtonPressed();
+  delegate_->GetOptInDelegate()->OnOptInButtonPressed();
+}
+
+void AssistantOptInView::OnVoiceInteractionConsentStatusUpdated(
+    mojom::ConsentStatus consent_status) {
+  UpdateLabel(consent_status);
 }
 
 }  // namespace ash
