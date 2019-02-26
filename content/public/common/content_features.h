@@ -153,11 +153,6 @@ CONTENT_EXPORT extern const base::Feature
     kBackgroundMediaRendererHasModerateBinding;
 CONTENT_EXPORT extern const base::Feature kHideIncorrectlySizedFullscreenFrames;
 CONTENT_EXPORT extern const base::Feature kWebNfc;
-CONTENT_EXPORT extern const base::Feature kWebXrRenderPath;
-CONTENT_EXPORT extern const char kWebXrRenderPathParamName[];
-CONTENT_EXPORT extern const char kWebXrRenderPathParamValueClientWait[];
-CONTENT_EXPORT extern const char kWebXrRenderPathParamValueGpuFence[];
-CONTENT_EXPORT extern const char kWebXrRenderPathParamValueSharedBuffer[];
 #endif  // defined(OS_ANDROID)
 
 #if !defined(OS_ANDROID)

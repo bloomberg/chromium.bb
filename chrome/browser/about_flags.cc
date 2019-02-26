@@ -951,29 +951,6 @@ const FeatureEntry::FeatureVariation kMarkHttpAsFeatureVariations[] = {
      kMarkHttpAsWarningAndDangerousOnFormEdits,
      base::size(kMarkHttpAsWarningAndDangerousOnFormEdits), nullptr}};
 
-#if defined(OS_ANDROID) && BUILDFLAG(ENABLE_VR)
-const FeatureEntry::FeatureParam kWebXrRenderPathChoiceClientWait[] = {
-    {features::kWebXrRenderPathParamName,
-     features::kWebXrRenderPathParamValueClientWait}};
-const FeatureEntry::FeatureParam kWebXrRenderPathChoiceGpuFence[] = {
-    {features::kWebXrRenderPathParamName,
-     features::kWebXrRenderPathParamValueGpuFence}};
-const FeatureEntry::FeatureParam kWebXrRenderPathChoiceSharedBuffer[] = {
-    {features::kWebXrRenderPathParamName,
-     features::kWebXrRenderPathParamValueSharedBuffer}};
-
-const FeatureEntry::FeatureVariation kWebXrRenderPathVariations[] = {
-    {flag_descriptions::kWebXrRenderPathChoiceClientWaitDescription,
-     kWebXrRenderPathChoiceClientWait,
-     base::size(kWebXrRenderPathChoiceClientWait), nullptr},
-    {flag_descriptions::kWebXrRenderPathChoiceGpuFenceDescription,
-     kWebXrRenderPathChoiceGpuFence, base::size(kWebXrRenderPathChoiceGpuFence),
-     nullptr},
-    {flag_descriptions::kWebXrRenderPathChoiceSharedBufferDescription,
-     kWebXrRenderPathChoiceSharedBuffer,
-     base::size(kWebXrRenderPathChoiceSharedBuffer), nullptr}};
-#endif  // defined(OS_ANDROID) && BUILDFLAG(ENABLE_VR)
-
 const FeatureEntry::FeatureParam kSimplifyHttpsIndicatorEvToSecure[] = {
     {OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterName,
      OmniboxFieldTrial::kSimplifyHttpsIndicatorParameterEvToSecure}};
@@ -2077,13 +2054,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebXrOrientationSensorDeviceName,
      flag_descriptions::kWebXrOrientationSensorDeviceDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(device::kWebXrOrientationSensorDevice)},
-#if defined(OS_ANDROID)
-    {"webxr-render-path", flag_descriptions::kWebXrRenderPathName,
-     flag_descriptions::kWebXrRenderPathDescription, kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kWebXrRenderPath,
-                                    kWebXrRenderPathVariations,
-                                    "WebXrRenderPath")},
-#endif  // OS_ANDROID
 #if BUILDFLAG(ENABLE_OCULUS_VR)
     {"oculus-vr", flag_descriptions::kOculusVRName,
      flag_descriptions::kOculusVRDescription, kOsWin,

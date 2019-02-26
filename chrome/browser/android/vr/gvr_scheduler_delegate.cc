@@ -209,36 +209,21 @@ GvrSchedulerDelegate::GetWebXrFrameTransportOptions(
   webxr_use_shared_buffer_draw_ = false;
   webxr_use_gpu_fence_ = false;
 
-  std::string render_path_string = base::GetFieldTrialParamValueByFeature(
-      features::kWebXrRenderPath, features::kWebXrRenderPathParamName);
-  DVLOG(1) << __func__ << ": WebXrRenderPath=" << render_path_string;
-  if (render_path_string == features::kWebXrRenderPathParamValueClientWait) {
-    // Use the baseline kClientWait.
-  } else if (render_path_string ==
-             features::kWebXrRenderPathParamValueGpuFence) {
-    // Use GpuFence if available. If not, fall back to kClientWait.
-    if (gl::GLFence::IsGpuFenceSupported()) {
-      webxr_use_gpu_fence_ = true;
-
+  // Use SharedBuffer if supported, otherwise fall back to GpuFence or
+  // ClientWait.
+  if (gl::GLFence::IsGpuFenceSupported()) {
+    webxr_use_gpu_fence_ = true;
+    if (base::AndroidHardwareBufferCompat::IsSupportAvailable() &&
+        !options->use_legacy_webvr_render_path) {
+      // Currently, SharedBuffer mode is only supported for WebXR via
+      // XRWebGlDrawingBuffer, WebVR 1.1 doesn't use that.
+      webxr_use_shared_buffer_draw_ = true;
+      render_path = MetricsUtilAndroid::XRRenderPath::kSharedBuffer;
+    } else {
       render_path = MetricsUtilAndroid::XRRenderPath::kGpuFence;
     }
-  } else {
-    // Default aka features::kWebXrRenderPathParamValueSharedBuffer.
-    // Use that if supported, otherwise fall back to GpuFence or
-    // ClientWait.
-    if (gl::GLFence::IsGpuFenceSupported()) {
-      webxr_use_gpu_fence_ = true;
-      if (base::AndroidHardwareBufferCompat::IsSupportAvailable() &&
-          !options->use_legacy_webvr_render_path) {
-        // Currently, SharedBuffer mode is only supported for WebXR via
-        // XRWebGlDrawingBuffer, WebVR 1.1 doesn't use that.
-        webxr_use_shared_buffer_draw_ = true;
-        render_path = MetricsUtilAndroid::XRRenderPath::kSharedBuffer;
-      } else {
-        render_path = MetricsUtilAndroid::XRRenderPath::kGpuFence;
-      }
-    }
   }
+
   DVLOG(1) << __func__ << ": render_path=" << static_cast<int>(render_path);
   MetricsUtilAndroid::LogXrRenderPathUsed(render_path);
 
