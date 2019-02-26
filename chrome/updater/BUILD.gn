@@ -29,9 +29,12 @@ source_set("common") {
 
   deps = [
     "//base",
+    "//components/services/patch/public/cpp:manifest",
+    "//components/services/unzip/public/cpp:manifest",
     "//components/update_client",
     "//components/version_info",
     "//mojo/core/embedder",
+    "//services/service_manager",
     "//url",
   ]
 }

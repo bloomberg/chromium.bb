@@ -4,6 +4,7 @@
 
 #include "chrome/updater/configurator.h"
 
+#include <utility>
 #include "base/version.h"
 #include "build/build_config.h"
 #include "components/update_client/network.h"
@@ -29,7 +30,9 @@ const char kUpdaterJSONDefaultUrl[] =
 
 namespace updater {
 
-Configurator::Configurator() = default;
+Configurator::Configurator(
+    std::unique_ptr<service_manager::Connector> connector_prototype)
+    : connector_prototype_(std::move(connector_prototype)) {}
 Configurator::~Configurator() = default;
 
 int Configurator::InitialDelay() const {
@@ -104,7 +107,7 @@ Configurator::GetNetworkFetcherFactory() {
 
 std::unique_ptr<service_manager::Connector>
 Configurator::CreateServiceManagerConnector() const {
-  return nullptr;
+  return connector_prototype_->Clone();
 }
 
 bool Configurator::EnabledDeltas() const {
