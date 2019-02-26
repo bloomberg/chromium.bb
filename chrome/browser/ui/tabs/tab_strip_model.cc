@@ -1126,6 +1126,9 @@ bool TabStripModel::IsContextMenuCommandEnabled(
     case CommandTogglePinned:
       return true;
 
+    case CommandFocusMode:
+      return true;
+
     case CommandSendToMyDevices:
       return true;
 
@@ -1246,6 +1249,11 @@ void TabStripModel::ExecuteContextMenuCommand(int context_index,
       break;
     }
 
+    case CommandFocusMode: {
+      // TODO(yiningwang) (936096): Add Implementation.
+      break;
+    }
+
     case CommandToggleTabAudioMuted: {
       std::vector<int> indices = GetIndicesForCommand(context_index);
       const bool mute = WillContextMenuMute(context_index);
@@ -1352,6 +1360,9 @@ bool TabStripModel::ContextMenuCommandToBrowserCommand(int cmd_id,
       break;
     case CommandRestoreTab:
       *browser_cmd = IDC_RESTORE_TAB;
+      break;
+    case CommandFocusMode:
+      *browser_cmd = IDC_FOCUS_THIS_TAB;
       break;
     case CommandBookmarkAllTabs:
       *browser_cmd = IDC_BOOKMARK_ALL_TABS;

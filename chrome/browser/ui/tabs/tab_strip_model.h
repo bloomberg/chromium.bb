@@ -379,6 +379,7 @@ class TabStripModel {
     CommandCloseTabsToRight,
     CommandRestoreTab,
     CommandTogglePinned,
+    CommandFocusMode,
     CommandToggleTabAudioMuted,
     CommandToggleSiteMuted,
     CommandSendToMyDevices,
