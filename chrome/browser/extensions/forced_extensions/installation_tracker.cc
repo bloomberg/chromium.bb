@@ -103,10 +103,20 @@ void InstallationTracker::ReportResults(bool succeeded) {
             reason = InstallationFailures::Get(profile_, extension_id);
         UMA_HISTOGRAM_ENUMERATION("Extensions.ForceInstalledFailureReason",
                                   reason.first);
+        // TODO(burunduk): Remove VLOGs after resolving crbug/917700 and
+        // crbug/904600.
         if (reason.second) {
           CrxInstallErrorDetail detail = reason.second.value();
           UMA_HISTOGRAM_ENUMERATION(
               "Extensions.ForceInstalledFailureCrxInstallError", detail);
+          VLOG(2) << "Forced extension " << extension_id
+                  << " failed to install with reason="
+                  << static_cast<int>(reason.first)
+                  << " and detail=" << static_cast<int>(detail);
+        } else {
+          VLOG(2) << "Forced extension " << extension_id
+                  << " failed to install with reason="
+                  << static_cast<int>(reason.first);
         }
       }
     }
