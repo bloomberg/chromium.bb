@@ -11,6 +11,7 @@
 #include <string>
 #include <utility>
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -456,6 +457,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
   enum DeferState { NOT_DEFERRING, SHOULD_DEFER };
   DeferState defers_loading_;
   int request_id_;
+  bool in_two_phase_read_ = false;
 
   // Used when ResponseLoadViaDataPipe is enabled and
   // |pass_response_pipe_to_client_| is false.
@@ -564,6 +566,11 @@ void WebURLLoaderImpl::Context::Cancel() {
 
   if (body_stream_writer_)
     body_stream_writer_->Fail();
+
+  if (!in_two_phase_read_) {
+    body_handle_.reset();
+    body_watcher_.Cancel();
+  }
 
   // Do not make any further calls to the client.
   client_ = nullptr;
@@ -997,7 +1004,7 @@ void WebURLLoaderImpl::Context::OnBodyAvailable(
   scoped_refptr<Context> protect(this);
   uint32_t read_bytes = 0;
   // |client_| is nullptr when the request is canceled.
-  while (client_ && defers_loading_ == NOT_DEFERRING) {
+  while (client_ && defers_loading_ == NOT_DEFERRING && !in_two_phase_read_) {
     const void* buffer = nullptr;
     uint32_t available_bytes = 0;
     MojoResult rv = body_handle_->BeginReadData(&buffer, &available_bytes,
@@ -1012,11 +1019,6 @@ void WebURLLoaderImpl::Context::OnBodyAvailable(
       MaybeCompleteRequest();
       return;
     }
-    if (rv == MOJO_RESULT_BUSY) {
-      // It's in the two phase read. It means that the ReceivedData hasn't been
-      // consumed yet.
-      return;
-    }
     if (rv != MOJO_RESULT_OK) {
       body_handle_.reset();
       body_watcher_.Cancel();
@@ -1024,6 +1026,7 @@ void WebURLLoaderImpl::Context::OnBodyAvailable(
       MaybeCompleteRequest();
       return;
     }
+    in_two_phase_read_ = true;
     DCHECK_EQ(MOJO_RESULT_OK, rv);
     DCHECK_LE(read_bytes, URLResponseBodyConsumer::kMaxNumConsumedBytesInTask);
     available_bytes = std::min(
@@ -1033,6 +1036,7 @@ void WebURLLoaderImpl::Context::OnBodyAvailable(
       // We've already read kMaxNumConsumedBytesInTask bytes of the body in this
       // task. Defer the remaining to the next task.
       rv = body_handle_->EndReadData(0);
+      in_two_phase_read_ = false;
       DCHECK_EQ(MOJO_RESULT_OK, rv);
       body_watcher_.ArmOrNotify();
       return;
@@ -1044,8 +1048,15 @@ void WebURLLoaderImpl::Context::OnBodyAvailable(
 }
 
 void WebURLLoaderImpl::Context::OnBodyHasBeenRead(uint32_t read_bytes) {
+  DCHECK(in_two_phase_read_);
   MojoResult rv = body_handle_->EndReadData(read_bytes);
   DCHECK_EQ(MOJO_RESULT_OK, rv);
+  in_two_phase_read_ = false;
+  if (!client_) {
+    // The request has been cancelled.
+    body_handle_.reset();
+    body_watcher_.Cancel();
+  }
   if (defers_loading_ == NOT_DEFERRING)
     body_watcher_.ArmOrNotify();
 }
