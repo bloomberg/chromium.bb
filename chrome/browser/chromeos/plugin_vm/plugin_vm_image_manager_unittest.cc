@@ -39,19 +39,24 @@ const char kHash2[] =
 const char kPluginVmImageUnzipped[] = "plugin_vm_image_unzipped";
 const char kPluginVmImageFile1[] = "plugin_vm_image_file_1";
 const char kContent1[] = "This is content #1.";
+const int kContent1Size = strlen(kContent1);
 const char kPluginVmImageFile2[] = "plugin_vm_image_file_2";
 const char kContent2[] = "This is content #2.";
+const int kContent2Size = strlen(kContent2);
+const int kContentSize = kContent1Size + kContent2Size;
 
 }  // namespace
 
 class MockObserver : public PluginVmImageManager::Observer {
  public:
   MOCK_METHOD0(OnDownloadStarted, void());
-  MOCK_METHOD1(OnProgressUpdated,
-               void(base::Optional<double> fraction_complete));
+  MOCK_METHOD2(OnDownloadProgressUpdated,
+               void(uint64_t bytes_downloaded, int64_t content_length));
   MOCK_METHOD0(OnDownloadCompleted, void());
   MOCK_METHOD0(OnDownloadCancelled, void());
   MOCK_METHOD0(OnDownloadFailed, void());
+  MOCK_METHOD2(OnUnzippingProgressUpdated,
+               void(int64_t unzipped_bytes, int64_t plugin_vm_image_size));
   MOCK_METHOD0(OnUnzipped, void());
   MOCK_METHOD0(OnUnzippingFailed, void());
 };
@@ -148,6 +153,10 @@ class PluginVmImageManagerTest : public testing::Test {
 
 TEST_F(PluginVmImageManagerTest, DownloadPluginVmImageParamsTest) {
   EXPECT_CALL(*download_observer_, OnDownloadCompleted());
+  EXPECT_CALL(*download_observer_,
+              OnUnzippingProgressUpdated(kContent1Size, kContentSize));
+  EXPECT_CALL(*download_observer_,
+              OnUnzippingProgressUpdated(kContentSize, kContentSize));
   EXPECT_CALL(*download_observer_, OnUnzipped());
 
   manager_->StartDownload();
@@ -171,6 +180,10 @@ TEST_F(PluginVmImageManagerTest, DownloadPluginVmImageParamsTest) {
 
 TEST_F(PluginVmImageManagerTest, OnlyOneImageIsProcessedTest) {
   EXPECT_CALL(*download_observer_, OnDownloadCompleted());
+  EXPECT_CALL(*download_observer_,
+              OnUnzippingProgressUpdated(kContent1Size, kContentSize));
+  EXPECT_CALL(*download_observer_,
+              OnUnzippingProgressUpdated(kContentSize, kContentSize));
   EXPECT_CALL(*download_observer_, OnUnzipped());
 
   manager_->StartDownload();
@@ -191,6 +204,12 @@ TEST_F(PluginVmImageManagerTest, OnlyOneImageIsProcessedTest) {
 
 TEST_F(PluginVmImageManagerTest, CanProceedWithANewImageWhenSucceededTest) {
   EXPECT_CALL(*download_observer_, OnDownloadCompleted()).Times(2);
+  EXPECT_CALL(*download_observer_,
+              OnUnzippingProgressUpdated(kContent1Size, kContentSize))
+      .Times(2);
+  EXPECT_CALL(*download_observer_,
+              OnUnzippingProgressUpdated(kContentSize, kContentSize))
+      .Times(2);
   EXPECT_CALL(*download_observer_, OnUnzipped()).Times(2);
 
   ProcessImage();
@@ -205,6 +224,10 @@ TEST_F(PluginVmImageManagerTest, CanProceedWithANewImageWhenSucceededTest) {
 TEST_F(PluginVmImageManagerTest, CanProceedWithANewImageWhenFailedTest) {
   EXPECT_CALL(*download_observer_, OnDownloadFailed());
   EXPECT_CALL(*download_observer_, OnDownloadCompleted());
+  EXPECT_CALL(*download_observer_,
+              OnUnzippingProgressUpdated(kContent1Size, kContentSize));
+  EXPECT_CALL(*download_observer_,
+              OnUnzippingProgressUpdated(kContentSize, kContentSize));
   EXPECT_CALL(*download_observer_, OnUnzipped());
 
   manager_->StartDownload();
@@ -230,6 +253,10 @@ TEST_F(PluginVmImageManagerTest, CancelledDownloadTest) {
 
 TEST_F(PluginVmImageManagerTest, UnzipDownloadedImageTest) {
   EXPECT_CALL(*download_observer_, OnDownloadCompleted());
+  EXPECT_CALL(*download_observer_,
+              OnUnzippingProgressUpdated(kContent1Size, kContentSize));
+  EXPECT_CALL(*download_observer_,
+              OnUnzippingProgressUpdated(kContentSize, kContentSize));
   EXPECT_CALL(*download_observer_, OnUnzipped());
 
   ProcessImage();

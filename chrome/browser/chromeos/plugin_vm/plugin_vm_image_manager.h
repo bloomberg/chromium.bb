@@ -14,11 +14,6 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "third_party/zlib/google/zip_reader.h"
 
-namespace base {
-template <typename T>
-class Optional;
-}  // namespace base
-
 namespace download {
 class DownloadService;
 struct CompletionInfo;
@@ -46,12 +41,14 @@ class PluginVmImageManager : public KeyedService {
    public:
     virtual ~Observer() = default;
     virtual void OnDownloadStarted() = 0;
-    virtual void OnProgressUpdated(
-        base::Optional<double> fraction_complete) = 0;
+    virtual void OnDownloadProgressUpdated(uint64_t bytes_downloaded,
+                                           int64_t content_length) = 0;
     virtual void OnDownloadCompleted() = 0;
     virtual void OnDownloadCancelled() = 0;
     // TODO(https://crbug.com/904851): Add failure reasons.
     virtual void OnDownloadFailed() = 0;
+    virtual void OnUnzippingProgressUpdated(int64_t bytes_unzipped,
+                                            int64_t plugin_vm_image_size) = 0;
     virtual void OnUnzipped() = 0;
     virtual void OnUnzippingFailed() = 0;
   };
@@ -82,11 +79,13 @@ class PluginVmImageManager : public KeyedService {
 
   // Called by PluginVmImageDownloadClient.
   void OnDownloadStarted();
-  void OnProgressUpdated(base::Optional<double> fraction_complete);
+  void OnDownloadProgressUpdated(uint64_t bytes_downloaded,
+                                 int64_t content_length);
   void OnDownloadCompleted(const download::CompletionInfo& info);
   void OnDownloadCancelled();
   void OnDownloadFailed();
 
+  void OnUnzippingProgressUpdated(int new_bytes_unzipped);
   // Finishes the processing of PluginVm image. Deletes downloaded PluginVm
   // image archive. In case |success| is false also deletes PluginVm image.
   void OnUnzipped(bool success);
@@ -110,6 +109,9 @@ class PluginVmImageManager : public KeyedService {
   std::string current_download_guid_;
   base::FilePath downloaded_plugin_vm_image_archive_;
   base::FilePath plugin_vm_image_dir_;
+  // -1 when is not yet determined.
+  int64_t plugin_vm_image_size_ = -1;
+  int64_t plugin_vm_image_bytes_unzipped_ = 0;
 
   class PluginVmImageWriterDelegate : public zip::WriterDelegate {
    public:
@@ -140,6 +142,7 @@ class PluginVmImageManager : public KeyedService {
                        download::DownloadParams::StartResult start_result);
   bool IsDownloading();
 
+  void CalculatePluginVmImageSize();
   bool UnzipDownloadedPluginVmImageArchive();
   bool IsUnzippingCancelled();
   // Callback arguments for unzipping function.

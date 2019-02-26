@@ -11,7 +11,6 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/guid.h"
-#include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
@@ -21,6 +20,8 @@
 #include "components/download/public/background_service/download_metadata.h"
 #include "components/download/public/background_service/download_service.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "third_party/zlib/google/zip.h"
 
@@ -83,10 +84,10 @@ void PluginVmImageManager::OnDownloadStarted() {
     observer_->OnDownloadStarted();
 }
 
-void PluginVmImageManager::OnProgressUpdated(
-    base::Optional<double> fraction_complete) {
+void PluginVmImageManager::OnDownloadProgressUpdated(uint64_t bytes_downloaded,
+                                                     int64_t content_length) {
   if (observer_)
-    observer_->OnProgressUpdated(fraction_complete);
+    observer_->OnDownloadProgressUpdated(bytes_downloaded, content_length);
 }
 
 void PluginVmImageManager::OnDownloadCompleted(
@@ -119,6 +120,32 @@ void PluginVmImageManager::OnDownloadFailed() {
   processing_image_ = false;
   if (observer_)
     observer_->OnDownloadFailed();
+}
+
+void PluginVmImageManager::OnUnzippingProgressUpdated(int new_unzipped_bytes) {
+  plugin_vm_image_bytes_unzipped_ += new_unzipped_bytes;
+  if (observer_)
+    observer_->OnUnzippingProgressUpdated(plugin_vm_image_bytes_unzipped_,
+                                          plugin_vm_image_size_);
+}
+
+void PluginVmImageManager::OnUnzipped(bool success) {
+  unzipping_cancelled_ = false;
+  plugin_vm_image_size_ = -1;
+  plugin_vm_image_bytes_unzipped_ = 0;
+  RemoveTemporaryPluginVmImageArchiveIfExists();
+  if (!success) {
+    if (observer_)
+      observer_->OnUnzippingFailed();
+    RemovePluginVmImageDirectoryIfExists();
+    processing_image_ = false;
+    return;
+  }
+  if (observer_)
+    observer_->OnUnzipped();
+  processing_image_ = false;
+  // TODO(okalitova): Populate necessary preferences with information about
+  // PluginVm image that has been successfully downloaded and extracted.
 }
 
 void PluginVmImageManager::SetDownloadServiceForTesting(
@@ -223,12 +250,40 @@ bool PluginVmImageManager::VerifyDownload(
                                           downloaded_archive_hash);
 }
 
+void PluginVmImageManager::CalculatePluginVmImageSize() {
+  plugin_vm_image_size_ = 0;
+
+  zip::ZipReader reader;
+  if (!reader.Open(downloaded_plugin_vm_image_archive_)) {
+    LOG(ERROR) << downloaded_plugin_vm_image_archive_.value()
+               << " cannot be opened by ZipReader";
+    plugin_vm_image_size_ = -1;
+    return;
+  }
+
+  while (reader.HasMore()) {
+    if (!reader.OpenCurrentEntryInZip()) {
+      LOG(ERROR) << "One of zip entries cannot be opened";
+      plugin_vm_image_size_ = -1;
+      return;
+    }
+    plugin_vm_image_size_ += reader.current_entry_info()->original_size();
+    if (!reader.AdvanceToNextEntry()) {
+      LOG(ERROR) << "ZipReader failed to advance to the next entry";
+      plugin_vm_image_size_ = -1;
+      return;
+    }
+  }
+}
+
 bool PluginVmImageManager::UnzipDownloadedPluginVmImageArchive() {
   if (!EnsureDirectoryForPluginVmImageIsPresent() ||
       !EnsureDownloadedPluginVmImageArchiveIsPresent()) {
     LOG(ERROR) << "Unzipping of PluginVm image couldn't be proceeded";
     return false;
   }
+
+  CalculatePluginVmImageSize();
 
   base::File file(downloaded_plugin_vm_image_archive_,
                   base::File::FLAG_OPEN | base::File::FLAG_READ);
@@ -238,6 +293,7 @@ bool PluginVmImageManager::UnzipDownloadedPluginVmImageArchive() {
     return false;
   }
 
+  plugin_vm_image_bytes_unzipped_ = 0;
   bool success = zip::UnzipWithFilterAndWriters(
       file.GetPlatformFile(),
       base::BindRepeating(
@@ -275,8 +331,14 @@ bool PluginVmImageManager::PluginVmImageWriterDelegate::PrepareOutput() {
 bool PluginVmImageManager::PluginVmImageWriterDelegate::WriteBytes(
     const char* data,
     int num_bytes) {
-  return !manager_->IsUnzippingCancelled() &&
-         num_bytes == output_file_.WriteAtCurrentPos(data, num_bytes);
+  bool success = num_bytes == output_file_.WriteAtCurrentPos(data, num_bytes);
+  if (success) {
+    base::PostTaskWithTraits(
+        FROM_HERE, {content::BrowserThread::UI},
+        base::BindOnce(&PluginVmImageManager::OnUnzippingProgressUpdated,
+                       base::Unretained(manager_), num_bytes));
+  }
+  return !manager_->IsUnzippingCancelled() && success;
 }
 
 void PluginVmImageManager::PluginVmImageWriterDelegate::SetTimeModified(
@@ -299,23 +361,6 @@ bool PluginVmImageManager::CreateDirectory(const base::FilePath& entry_path) {
 bool PluginVmImageManager::FilterFilesInPluginVmImageArchive(
     const base::FilePath& file) {
   return true;
-}
-
-void PluginVmImageManager::OnUnzipped(bool success) {
-  unzipping_cancelled_ = false;
-  RemoveTemporaryPluginVmImageArchiveIfExists();
-  if (!success) {
-    if (observer_)
-      observer_->OnUnzippingFailed();
-    RemovePluginVmImageDirectoryIfExists();
-    processing_image_ = false;
-    return;
-  }
-  if (observer_)
-    observer_->OnUnzipped();
-  processing_image_ = false;
-  // TODO(okalitova): Populate necessary preferences with information about
-  // PluginVm image that has been successfully downloaded and extracted.
 }
 
 bool PluginVmImageManager::EnsureDownloadedPluginVmImageArchiveIsPresent() {

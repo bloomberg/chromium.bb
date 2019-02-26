@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_image_download_client.h"
 
 #include "base/bind.h"
-#include "base/optional.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_image_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_image_manager_factory.h"
@@ -58,7 +57,7 @@ void PluginVmImageDownloadClient::OnDownloadUpdated(const std::string& guid,
                                                     uint64_t bytes_downloaded) {
   VLOG(1) << __func__ << " called";
   VLOG(1) << bytes_downloaded << " bytes downloaded";
-  GetManager()->OnProgressUpdated(GetFractionComplete(bytes_downloaded));
+  GetManager()->OnDownloadProgressUpdated(bytes_downloaded, content_length_);
 }
 
 void PluginVmImageDownloadClient::OnDownloadFailed(
@@ -114,16 +113,6 @@ void PluginVmImageDownloadClient::GetUploadData(
   VLOG(1) << __func__ << " called";
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), nullptr));
-}
-
-base::Optional<double> PluginVmImageDownloadClient::GetFractionComplete(
-    int64_t bytes_downloaded) {
-  if (content_length_ == -1 || content_length_ == 0)
-    return base::nullopt;
-  if (bytes_downloaded > content_length_)
-    return base::nullopt;
-  return base::make_optional(static_cast<double>(bytes_downloaded) /
-                             content_length_);
 }
 
 }  // namespace plugin_vm

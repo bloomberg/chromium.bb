@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_image_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_image_manager_factory.h"
@@ -27,6 +28,17 @@
 namespace {
 
 PluginVmLauncherView* g_plugin_vm_launcher_view = nullptr;
+
+base::Optional<double> GetFractionComplete(int64_t bytes_processed,
+                                           int64_t bytes_to_be_processed) {
+  if (bytes_to_be_processed == -1 || bytes_to_be_processed == 0)
+    return base::nullopt;
+  double fraction_complete =
+      static_cast<double>(bytes_processed) / bytes_to_be_processed;
+  if (fraction_complete < 0.0 || fraction_complete > 1.0)
+    return base::nullopt;
+  return base::make_optional(fraction_complete);
+}
 
 }  // namespace
 
@@ -153,9 +165,12 @@ PluginVmLauncherView::~PluginVmLauncherView() {
 
 void PluginVmLauncherView::OnDownloadStarted() {}
 
-void PluginVmLauncherView::OnProgressUpdated(
-    base::Optional<double> fraction_complete) {
+void PluginVmLauncherView::OnDownloadProgressUpdated(uint64_t bytes_downloaded,
+                                                     int64_t content_length) {
   DCHECK_EQ(state_, State::DOWNLOADING);
+
+  base::Optional<double> fraction_complete =
+      GetFractionComplete(bytes_downloaded, content_length);
   if (fraction_complete.has_value())
     progress_bar_->SetValue(fraction_complete.value());
   else
@@ -175,6 +190,18 @@ void PluginVmLauncherView::OnDownloadCancelled() {}
 void PluginVmLauncherView::OnDownloadFailed() {
   state_ = State::ERROR;
   OnStateUpdated();
+}
+
+void PluginVmLauncherView::OnUnzippingProgressUpdated(
+    int64_t bytes_unzipped,
+    int64_t plugin_vm_image_size) {
+  DCHECK_EQ(state_, State::UNZIPPING);
+  base::Optional<double> fraction_complete =
+      GetFractionComplete(bytes_unzipped, plugin_vm_image_size);
+  if (fraction_complete.has_value())
+    progress_bar_->SetValue(fraction_complete.value());
+  else
+    progress_bar_->SetValue(-1);
 }
 
 void PluginVmLauncherView::OnUnzipped() {
