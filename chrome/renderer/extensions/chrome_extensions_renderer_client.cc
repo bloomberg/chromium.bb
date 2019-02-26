@@ -315,12 +315,10 @@ bool ChromeExtensionsRendererClient::MaybeCreateMimeHandlerView(
     const blink::WebElement& plugin_element,
     const GURL& resource_url,
     const std::string& mime_type,
-    const content::WebPluginInfo& plugin_info,
-    int32_t element_instance_id) {
+    const content::WebPluginInfo& plugin_info) {
   CHECK(content::MimeHandlerViewMode::UsesCrossProcessFrame());
   return extensions::MimeHandlerViewFrameContainer::Create(
-      plugin_element, resource_url, mime_type, plugin_info,
-      element_instance_id);
+      plugin_element, resource_url, mime_type, plugin_info);
 }
 
 v8::Local<v8::Object> ChromeExtensionsRendererClient::GetScriptableObject(

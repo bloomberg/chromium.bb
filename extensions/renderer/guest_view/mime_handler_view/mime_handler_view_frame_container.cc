@@ -58,8 +58,7 @@ bool MimeHandlerViewFrameContainer::Create(
     const blink::WebElement& plugin_element,
     const GURL& resource_url,
     const std::string& mime_type,
-    const content::WebPluginInfo& plugin_info,
-    int32_t element_instance_id) {
+    const content::WebPluginInfo& plugin_info) {
   if (plugin_info.type != content::WebPluginInfo::PLUGIN_TYPE_BROWSER_PLUGIN) {
     // TODO(ekaramad): Rename this plugin type once https://crbug.com/659750 is
     // fixed. We only create a MHVFC for the plugin types of BrowserPlugin
@@ -72,8 +71,7 @@ bool MimeHandlerViewFrameContainer::Create(
   // Life time is managed by the class itself: when the MimeHandlerViewGuest
   // is destroyed an IPC is sent to renderer to cleanup this instance.
   return new MimeHandlerViewFrameContainer(plugin_element, resource_url,
-                                           mime_type, plugin_info,
-                                           element_instance_id);
+                                           mime_type, plugin_info);
 }
 
 v8::Local<v8::Object> MimeHandlerViewFrameContainer::GetScriptableObject(
@@ -97,15 +95,14 @@ MimeHandlerViewFrameContainer::MimeHandlerViewFrameContainer(
     const blink::WebElement& plugin_element,
     const GURL& resource_url,
     const std::string& mime_type,
-    const content::WebPluginInfo& plugin_info,
-    int32_t element_instance_id)
+    const content::WebPluginInfo& plugin_info)
     : MimeHandlerViewContainerBase(content::RenderFrame::FromWebFrame(
                                        plugin_element.GetDocument().GetFrame()),
                                    plugin_info,
                                    mime_type,
                                    resource_url),
       plugin_element_(plugin_element),
-      element_instance_id_(element_instance_id),
+      element_instance_id_(content::RenderThread::Get()->GenerateRoutingID()),
       render_frame_lifetime_observer_(
           new RenderFrameLifetimeObserver(GetEmbedderRenderFrame(), this)) {
   is_embedded_ = true;

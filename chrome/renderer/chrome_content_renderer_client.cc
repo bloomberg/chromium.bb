@@ -630,8 +630,7 @@ bool ChromeContentRendererClient::MaybeCreateMimeHandlerView(
     content::RenderFrame* render_frame,
     const blink::WebElement& plugin_element,
     const GURL& original_url,
-    const std::string& mime_type,
-    int32_t instance_id_to_use) {
+    const std::string& mime_type) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   DCHECK(plugin_element.HasHTMLTagName("object") ||
          plugin_element.HasHTMLTagName("embed"));
@@ -649,7 +648,7 @@ bool ChromeContentRendererClient::MaybeCreateMimeHandlerView(
   if (plugin_info->status == chrome::mojom::PluginStatus::kNotFound ||
       !ChromeExtensionsRendererClient::MaybeCreateMimeHandlerView(
           plugin_element, original_url, plugin_info->actual_mime_type,
-          plugin_info->plugin, instance_id_to_use)) {
+          plugin_info->plugin)) {
     return false;
   }
   return true;

@@ -92,8 +92,7 @@ class CONTENT_EXPORT ContentRendererClient {
       RenderFrame* embedder_frame,
       const blink::WebElement& plugin_element,
       const GURL& original_url,
-      const std::string& original_mime_type,
-      int32_t instance_id_to_use);
+      const std::string& original_mime_type);
 
   // Returns a scriptable object which implements custom javascript API for the
   // given element. This is used for MimeHandlerView in providing API such as
