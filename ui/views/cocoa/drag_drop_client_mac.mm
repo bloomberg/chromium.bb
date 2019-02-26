@@ -32,7 +32,7 @@ void DragDropClientMac::StartDragAndDrop(
   // TODO(avi): Why must this data be cloned?
   exchange_data_ =
       std::make_unique<ui::OSExchangeData>(data.provider().Clone());
-  operation_ = operation;
+  source_operation_ = operation;
   is_drag_source_ = true;
 
   const ui::OSExchangeDataProviderMac& provider_mac =
@@ -84,7 +84,7 @@ void DragDropClientMac::StartDragAndDrop(
 
   // Since Drag and drop is asynchronous on Mac, we need to spin a nested run
   // loop for consistency with other platforms.
-  base::RunLoop run_loop;
+  base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
   quit_closure_ = run_loop.QuitClosure();
   run_loop.Run();
 }
@@ -94,13 +94,14 @@ NSDragOperation DragDropClientMac::DragUpdate(id<NSDraggingInfo> sender) {
     exchange_data_ = std::make_unique<OSExchangeData>(
         ui::OSExchangeDataProviderMac::CreateProviderWrappingPasteboard(
             [sender draggingPasteboard]));
-    operation_ = ui::DragDropTypes::NSDragOperationToDragOperation(
+    source_operation_ = ui::DragDropTypes::NSDragOperationToDragOperation(
         [sender draggingSourceOperationMask]);
   }
 
-  int drag_operation = drop_helper_.OnDragOver(
-      *exchange_data_, LocationInView([sender draggingLocation]), operation_);
-  return ui::DragDropTypes::DragOperationToNSDragOperation(drag_operation);
+  last_operation_ = drop_helper_.OnDragOver(
+      *exchange_data_, LocationInView([sender draggingLocation]),
+      source_operation_);
+  return ui::DragDropTypes::DragOperationToNSDragOperation(last_operation_);
 }
 
 NSDragOperation DragDropClientMac::Drop(id<NSDraggingInfo> sender) {
@@ -108,7 +109,8 @@ NSDragOperation DragDropClientMac::Drop(id<NSDraggingInfo> sender) {
   std::unique_ptr<ui::OSExchangeData> exchange_data = std::move(exchange_data_);
 
   int drag_operation = drop_helper_.OnDrop(
-      *exchange_data, LocationInView([sender draggingLocation]), operation_);
+      *exchange_data, LocationInView([sender draggingLocation]),
+      last_operation_);
   return ui::DragDropTypes::DragOperationToNSDragOperation(drag_operation);
 }
 
