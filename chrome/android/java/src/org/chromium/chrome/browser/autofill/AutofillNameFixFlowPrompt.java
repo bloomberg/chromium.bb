@@ -82,6 +82,8 @@ public class AutofillNameFixFlowPrompt implements TextWatcher, ModalDialogProper
                                .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT,
                                        context.getResources(), R.string.cancel)
                                .with(ModalDialogProperties.CANCEL_ON_TOUCH_OUTSIDE, true)
+                               .with(ModalDialogProperties.POSITIVE_BUTTON_DISABLED,
+                                       inferredName.isEmpty())
                                .build();
 
         // Hitting the "submit" button on the software keyboard should submit.
