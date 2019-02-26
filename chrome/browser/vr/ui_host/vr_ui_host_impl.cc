@@ -86,8 +86,7 @@ void VRUiHostImpl::SetWebXRWebContents(content::WebContents* contents) {
       metrics_helper->SetVRActive(false);
     }
     if (contents) {
-      auto* metrics_helper =
-          SessionMetricsHelper::FromWebContents(web_contents_);
+      auto* metrics_helper = SessionMetricsHelper::FromWebContents(contents);
       if (!metrics_helper) {
         metrics_helper = SessionMetricsHelper::CreateForWebContents(
             contents, Mode::kWebXrVrPresentation);
