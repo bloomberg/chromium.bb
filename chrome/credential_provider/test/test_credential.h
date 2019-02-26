@@ -45,6 +45,7 @@ class DECLSPEC_UUID("3710aa3a-13c7-44c2-bc38-09ba137804d8") ITestCredential
   virtual bool STDMETHODCALLTYPE IsWindowsPasswordValidForStoredUser() = 0;
   virtual void STDMETHODCALLTYPE
   SetWindowsPassword(const CComBSTR& windows_password) = 0;
+  virtual bool STDMETHODCALLTYPE IsGlsRunning() = 0;
 };
 
 // Test implementation of an ICredentialProviderCredential backed by a Gaia
@@ -79,6 +80,7 @@ class ATL_NO_VTABLE CTestCredentialBase : public T, public ITestCredential {
   bool STDMETHODCALLTYPE IsWindowsPasswordValidForStoredUser() override;
   void STDMETHODCALLTYPE
   SetWindowsPassword(const CComBSTR& windows_password) override;
+  bool STDMETHODCALLTYPE IsGlsRunning() override;
 
   void SignalGlsCompletion();
 
@@ -203,6 +205,11 @@ template <class T>
 void CTestCredentialBase<T>::SetWindowsPassword(
     const CComBSTR& windows_password) {
   this->set_current_windows_password(windows_password);
+}
+
+template <class T>
+bool CTestCredentialBase<T>::IsGlsRunning() {
+  return this->IsGaiaLogonStubRunning();
 }
 
 template <class T>

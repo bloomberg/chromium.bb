@@ -25,6 +25,7 @@
 #include "base/values.h"
 #include "base/win/current_module.h"
 #include "base/win/registry.h"
+#include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_handle.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/auth_utils.h"
@@ -532,10 +533,7 @@ HRESULT CGaiaCredentialBase::OnDllUnregisterServer() {
   return S_OK;
 }
 
-CGaiaCredentialBase::CGaiaCredentialBase()
-    : logon_ui_process_(INVALID_HANDLE_VALUE),
-      result_status_(STATUS_SUCCESS),
-      result_substatus_(STATUS_SUCCESS) {}
+CGaiaCredentialBase::CGaiaCredentialBase() {}
 
 CGaiaCredentialBase::~CGaiaCredentialBase() {}
 
@@ -595,8 +593,8 @@ void CGaiaCredentialBase::ResetInternalState() {
   password_.Empty();
   current_windows_password_.Empty();
   authentication_results_.reset();
-  needs_to_update_windows_password_ = false;
   needs_windows_password_ = false;
+  result_status_ = STATUS_SUCCESS;
 
   TerminateLogonProcess();
 
@@ -714,29 +712,23 @@ HRESULT CGaiaCredentialBase::HandleAutologon(
   // using the old password. If it isn't, return S_FALSE to state that the
   // login is not complete.
   if (needs_windows_password_) {
-    HRESULT windows_cred_hr =
-        IsWindowsPasswordValidForStoredUser(current_windows_password_);
-    if (windows_cred_hr == S_OK) {
-      if (needs_to_update_windows_password_) {
-        OSUserManager* manager = OSUserManager::Get();
-        HRESULT changepassword_hr = manager->ChangeUserPassword(
-            domain_, username_, current_windows_password_, password_);
-        if (FAILED(changepassword_hr)) {
-          if (changepassword_hr != HRESULT_FROM_WIN32(ERROR_ACCESS_DENIED)) {
-            LOGFN(ERROR) << "ChangeUserPassword hr="
-                         << putHR(changepassword_hr);
-            return changepassword_hr;
-          }
-          LOGFN(ERROR) << "Access was denied to ChangeUserPassword.";
-          password_ = current_windows_password_;
+    HRESULT hr = IsWindowsPasswordValidForStoredUser(current_windows_password_);
+    if (hr == S_OK) {
+      OSUserManager* manager = OSUserManager::Get();
+      hr = manager->ChangeUserPassword(domain_, username_,
+                                       current_windows_password_, password_);
+      if (FAILED(hr)) {
+        if (hr != HRESULT_FROM_WIN32(ERROR_ACCESS_DENIED)) {
+          LOGFN(ERROR) << "ChangeUserPassword hr=" << putHR(hr);
+          return hr;
         }
-      } else {
+        LOGFN(ERROR) << "Access was denied to ChangeUserPassword.";
         password_ = current_windows_password_;
       }
     } else {
       if (current_windows_password_.Length() && events_) {
         UINT pasword_message_id = IDS_INVALID_PASSWORD_BASE;
-        if (windows_cred_hr == HRESULT_FROM_WIN32(ERROR_ACCOUNT_LOCKED_OUT)) {
+        if (hr == HRESULT_FROM_WIN32(ERROR_ACCOUNT_LOCKED_OUT)) {
           pasword_message_id = IDS_ACCOUNT_LOCKED_BASE;
           LOGFN(ERROR) << "Account is locked.";
         }
@@ -1019,7 +1011,7 @@ HRESULT CGaiaCredentialBase::GetSerialization(
       *cpgsr = CPGSR_NO_CREDENTIAL_NOT_FINISHED;
 
       // Warn that password needs update.
-      if (needs_to_update_windows_password_)
+      if (needs_windows_password_)
         *status_icon = CPSI_WARNING;
 
       hr = S_OK;
@@ -1120,7 +1112,23 @@ HRESULT CGaiaCredentialBase::CreateAndRunLogonStub() {
                                          puiprocinfo, 0, &wait_thread_id);
   if (wait_thread != 0) {
     LOGFN(INFO) << "Started wait thread id=" << wait_thread_id;
-    ::CloseHandle((HANDLE)wait_thread);
+
+    // CreateAndRunLogonStub() is called from GetSerialization().  Winlogon
+    // will block the UI and show a spinner until the latter returns.  In most
+    // cases GetSerialization() should return immediately so that users don't
+    // get blocked out of the winlogon UX.  For example users could decide to
+    // sign in with another user or another credential provider.  However, in
+    // case where enrollment to Google MDM is required, the UI should be
+    // blocked until the enrollment either succeeds or fails.  To perform this
+    // CreateAndRunLogonStub() waits for WaitForLoginUI() to complete.
+    wchar_t mdm_url[256];
+    ULONG mdm_length = base::size(mdm_url);
+    hr = credential_provider::GetGlobalFlag(credential_provider::kRegMdmUrl,
+                                            mdm_url, &mdm_length);
+    if (SUCCEEDED(hr) && mdm_length > 0)
+      ::WaitForSingleObject(reinterpret_cast<HANDLE>(wait_thread), INFINITE);
+
+    ::CloseHandle(reinterpret_cast<HANDLE>(wait_thread));
   } else {
     HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
     LOGFN(ERROR) << "Unable to start wait thread hr=" << putHR(hr);
@@ -1225,7 +1233,7 @@ HRESULT CGaiaCredentialBase::ForkGaiaLogonStub(
       uiprocinfo->logon_token, command_line, startupinfo.GetInfo(),
       &uiprocinfo->procinfo);
   if (FAILED(hr)) {
-    LOGFN(ERROR) << "CreateProcessWithTokenW hr=" << putHR(hr);
+    LOGFN(ERROR) << "process_manager->CreateProcessWithToken hr=" << putHR(hr);
     return hr;
   }
 
@@ -1303,7 +1311,7 @@ HRESULT CGaiaCredentialBase::ForkSaveAccountInfoStub(
   hr = OSProcessManager::Get()->CreateRunningProcess(
       command_line, startupinfo.GetInfo(), &procinfo);
   if (FAILED(hr)) {
-    LOGFN(ERROR) << "CreateProcessWithTokenW hr=" << putHR(hr);
+    LOGFN(ERROR) << "OSProcessManager::CreateRunningProcess hr=" << putHR(hr);
     *status_text = AllocErrorString(IDS_INTERNAL_ERROR_BASE);
     return hr;
   }
@@ -1334,6 +1342,16 @@ unsigned __stdcall CGaiaCredentialBase::WaitForLoginUI(void* param) {
   std::unique_ptr<UIProcessInfo> uiprocinfo(
       reinterpret_cast<UIProcessInfo*>(param));
 
+  // Make sure COM is initialized in this thread. This thread must be
+  // initialized as an MTA or the call to enroll with MDM causes a crash in COM.
+  base::win::ScopedCOMInitializer com_initializer(
+      base::win::ScopedCOMInitializer::kMTA);
+  if (!com_initializer.Succeeded()) {
+    HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
+    LOGFN(ERROR) << "ScopedCOMInitializer failed hr=" << putHR(hr);
+    return hr;
+  }
+
   CComBSTR status_text;
   std::string json_result;
   HRESULT hr =
@@ -1361,9 +1379,8 @@ unsigned __stdcall CGaiaCredentialBase::WaitForLoginUI(void* param) {
     // error message to display.
     DCHECK(sts == STATUS_SUCCESS || status_text != nullptr);
     hr = uiprocinfo->credential->ReportError(sts, STATUS_SUCCESS, status_text);
-    if (FAILED(hr)) {
+    if (FAILED(hr))
       LOGFN(ERROR) << "uiprocinfo->credential->ReportError hr=" << putHR(hr);
-    }
   }
 
   LOGFN(INFO) << "done";
@@ -1439,6 +1456,7 @@ HRESULT CGaiaCredentialBase::ReportResult(
     if (FAILED(hr))
       LOGFN(ERROR) << "ForkSaveAccountInfoStub hr=" << putHR(hr);
   }
+
   *ppszOptionalStatusText = nullptr;
   *pcpsiOptionalStatusIcon = CPSI_NONE;
   ResetInternalState();
@@ -1571,6 +1589,13 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
     return hr;
   }
 
+  hr = credential_provider::EnrollToGoogleMdmIfNeeded(*dict);
+  if (FAILED(hr)) {
+    LOGFN(ERROR) << "EnrollToGoogleMdmIfNeeded hr=" << putHR(hr);
+    *status_text = AllocErrorString(IDS_MDM_ENROLLMENT_FAILED_BASE);
+    return hr;
+  }
+
   // The value in |dict| is now known to contain everything that is needed
   // from the GLS. Try to validate the user that wants to sign in and then
   // add additional information into |dict| as needed.
@@ -1586,10 +1611,6 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
   password_ = ::SysAllocString(
       GetDictString(authentication_results_, kKeyPassword).c_str());
 
-  result_status_ = STATUS_SUCCESS;
-  result_substatus_ = STATUS_SUCCESS;
-  result_status_text_.clear();
-
   // Disable the submit button. Either the signon will succeed with the given
   // credentials or a password update will be needed and that flow will handle
   // re-enabling the submit button in HandleAutoLogon.
@@ -1599,10 +1620,11 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
   // Check if the credentials are valid for the user. If they aren't show the
   // password update prompt and continue without authenticating on the provider.
   if (!AreCredentialsValid()) {
-    needs_to_update_windows_password_ = true;
     DisplayPasswordField(IDS_PASSWORD_UPDATE_NEEDED_BASE);
     return S_FALSE;
   }
+
+  result_status_ = STATUS_SUCCESS;
 
   // When this function returns, winlogon will be told to logon to the newly
   // created account.  This is important, as the save account info process
@@ -1619,10 +1641,6 @@ HRESULT CGaiaCredentialBase::ReportError(LONG status,
   LOGFN(INFO);
 
   result_status_ = status;
-  result_substatus_ = substatus;
-
-  if (status_text != nullptr)
-    result_status_text_.assign(OLE2CW(status_text));
 
   // If the user cancelled out of the logon, the process may be already
   // terminated, but if the handle to the process is still valid the

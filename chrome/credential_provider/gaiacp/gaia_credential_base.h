@@ -100,12 +100,18 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   // with the current credentials.
   bool CanAttemptWindowsLogon() const;
 
-  // Returns true if the specific password credential is valid for |username_|.
+  // Returns S_OK if the specific password credential is valid for |username_|,
+  // S_FALSE if not, and a FAILED hr otherwise.
   HRESULT IsWindowsPasswordValidForStoredUser(BSTR password) const;
 
   // Updates the UI so that the password field is displayed and also sets the
   // state of the credential to wait for a password.
   void DisplayPasswordField(int password_message);
+
+  // Returns true if GLS is running.
+  bool IsGaiaLogonStubRunning() {
+    return logon_ui_process_ != INVALID_HANDLE_VALUE;
+  }
 
   // IGaiaCredential
   IFACEMETHODIMP Initialize(IGaiaCredentialProvider* provider) override;
@@ -256,11 +262,10 @@ class ATL_NO_VTABLE CGaiaCredentialBase
                                BSTR* error_text);
 
   CComPtr<ICredentialProviderCredentialEvents> events_;
+  CComPtr<IGaiaCredentialProvider> provider_;
 
   // Handle to the logon UI process.
-  HANDLE logon_ui_process_;
-
-  CComPtr<IGaiaCredentialProvider> provider_;
+  HANDLE logon_ui_process_ = INVALID_HANDLE_VALUE;
 
   // Information about the just created or re-auth-ed user.
   CComBSTR username_;
@@ -268,18 +273,21 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   CComBSTR password_;
   CComBSTR user_sid_;
 
+  // Indicates that the Windows password does not match the Gaia password and
+  // the user must be enter the former.  For example this is used to properly
+  // handle the password change case.
   bool needs_windows_password_ = false;
-  bool needs_to_update_windows_password_ = false;
 
   // The password entered into the FID_CURRENT_PASSWORD_FIELD to update the
   // Windows password with the gaia password.
   CComBSTR current_windows_password_;
 
+  // Contains the information about the Gaia account that signed in.  See the
+  // kKeyXXX constants for the data that is stored here.
   std::unique_ptr<base::DictionaryValue> authentication_results_;
-  // Whether success or failure, these members hold information about result.
-  NTSTATUS result_status_;
-  NTSTATUS result_substatus_;
-  base::string16 result_status_text_;
+
+  // Holds information about the success or failure of the sign in.
+  NTSTATUS result_status_ = STATUS_SUCCESS;
 };
 
 }  // namespace credential_provider

@@ -170,7 +170,7 @@ HRESULT CGaiaCredentialProvider::OnUserAuthenticated(
   return hr;
 }
 
-// ICredentialProvider ////////////////////////////////////////////////////////
+// ICredentialProviderSetUserArray ////////////////////////////////////////////
 
 HRESULT CGaiaCredentialProvider::SetUserArray(
     ICredentialProviderUserArray* users) {
