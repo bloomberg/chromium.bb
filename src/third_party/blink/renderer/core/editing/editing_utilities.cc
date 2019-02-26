@@ -676,12 +676,17 @@ PositionTemplate<Strategy> FirstEditablePositionAfterPositionInRootAlgorithm(
       !editable_position.AnchorNode()->IsDescendantOf(&highest_root))
     return PositionTemplate<Strategy>();
 
+  // blpwtk2: Revert fix for http://crbug.com/571420
+#if 0
+
   // If |editablePosition| has the non-editable child skipped, get the next
   // sibling position. If not, we can't get the next paragraph in
   // InsertListCommand::doApply's while loop. See http://crbug.com/571420
   if (non_editable_node &&
       non_editable_node->IsDescendantOf(editable_position.AnchorNode()))
     editable_position = NextVisuallyDistinctCandidate(editable_position);
+#endif
+
   return editable_position;
 }
 
