@@ -23,10 +23,6 @@ public class AssistantHeaderModel extends PropertyModel {
     public static final WritableBooleanPropertyKey FEEDBACK_VISIBLE =
             new WritableBooleanPropertyKey();
 
-    // TODO(crbug.com/806868): Change visibility to package-private once this is only set through
-    // native calls.
-    public static final WritableBooleanPropertyKey CLOSE_VISIBLE = new WritableBooleanPropertyKey();
-
     static final WritableIntPropertyKey PROGRESS = new WritableIntPropertyKey();
 
     static final WritableBooleanPropertyKey PROGRESS_PULSING = new WritableBooleanPropertyKey();
@@ -34,13 +30,9 @@ public class AssistantHeaderModel extends PropertyModel {
     static final WritableObjectPropertyKey<Runnable> FEEDBACK_BUTTON_CALLBACK =
             new WritableObjectPropertyKey<>();
 
-    @VisibleForTesting
-    public static final WritableObjectPropertyKey<Runnable> CLOSE_BUTTON_CALLBACK =
-            new WritableObjectPropertyKey<>();
-
     public AssistantHeaderModel() {
-        super(STATUS_MESSAGE, FEEDBACK_VISIBLE, CLOSE_VISIBLE, PROGRESS, PROGRESS_PULSING,
-                FEEDBACK_BUTTON_CALLBACK, CLOSE_BUTTON_CALLBACK);
+        super(STATUS_MESSAGE, FEEDBACK_VISIBLE, PROGRESS, PROGRESS_PULSING,
+                FEEDBACK_BUTTON_CALLBACK);
     }
 
     @CalledByNative
@@ -61,6 +53,5 @@ public class AssistantHeaderModel extends PropertyModel {
     @CalledByNative
     private void setDelegate(AssistantHeaderDelegate delegate) {
         set(FEEDBACK_BUTTON_CALLBACK, delegate::onFeedbackButtonClicked);
-        set(CLOSE_BUTTON_CALLBACK, delegate::onCloseButtonClicked);
     }
 }

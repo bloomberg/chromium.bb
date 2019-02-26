@@ -26,6 +26,12 @@ class AssistantPaymentRequestDelegate {
       const base::android::JavaParamRef<jstring>& jpayer_email,
       jboolean jis_terms_and_services_accepted);
 
+  // TODO(crbug.com/806868): Remove this once PR is using the actions carousel
+  // to show its buttons.
+  void OnCancelButtonClicked(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller);
+
   base::android::ScopedJavaGlobalRef<jobject> GetJavaObject();
 
  private:

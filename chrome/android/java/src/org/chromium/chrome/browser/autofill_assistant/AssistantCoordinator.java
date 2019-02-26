@@ -99,9 +99,7 @@ class AssistantCoordinator {
      * otherwise.
      */
     public void showOnboarding(Runnable onAccept) {
-        // Hide header buttons.
         mModel.getHeaderModel().set(AssistantHeaderModel.FEEDBACK_VISIBLE, false);
-        mModel.getHeaderModel().set(AssistantHeaderModel.CLOSE_VISIBLE, false);
 
         // Show overlay to prevent user from interacting with the page during onboarding.
         mModel.getOverlayModel().set(AssistantOverlayModel.STATE, AssistantOverlayState.FULL);
@@ -117,9 +115,7 @@ class AssistantCoordinator {
                         return;
                     }
 
-                    // Show header buttons.
                     mModel.getHeaderModel().set(AssistantHeaderModel.FEEDBACK_VISIBLE, true);
-                    mModel.getHeaderModel().set(AssistantHeaderModel.CLOSE_VISIBLE, true);
 
                     // Hide overlay.
                     mModel.getOverlayModel().set(

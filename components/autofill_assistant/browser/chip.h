@@ -27,7 +27,7 @@ struct Chip {
   enum Type {
     CHIP_ASSISTIVE = 0,
     BUTTON_FILLED_BLUE = 1,
-    BUTTON_TEXT = 2,
+    BUTTON_HAIRLINE = 2,
   };
 
   // The type of the chip.

@@ -58,6 +58,7 @@ public class AutofillAssistantPaymentRequest {
 
     private final WebContents mWebContents;
     private final AssistantPaymentRequestOptions mPaymentOptions;
+    private final AssistantPaymentRequestDelegate mDelegate;
     private final CardEditor mCardEditor;
     private final AddressEditor mAddressEditor;
     private final Map<String, PaymentMethodData> mMethodData;
@@ -68,7 +69,6 @@ public class AutofillAssistantPaymentRequest {
     private SectionInformation mPaymentMethodsSection;
     private SectionInformation mShippingAddressesSection;
     private ContactDetailsSection mContactSection;
-    private Callback<SelectedPaymentInformation> mCallback;
 
     /** The class to return payment information. */
     public class SelectedPaymentInformation {
@@ -97,19 +97,21 @@ public class AutofillAssistantPaymentRequest {
     /**
      * Constructor of AutofillAssistantPaymentRequest.
      *
-     * @webContents                The web contents of the payment request associated with.
-     * @paymentOptions             The options to request payment information.
-     * @title                      The title to display in the payment request.
+     * @webContents The web contents of the payment request associated with.
+     * @paymentOptions The options to request payment information.
+     * @title The title to display in the payment request.
      * @supportedBasicCardNetworks Optional array of supported basic card networks (see {@link
-     *                             BasicCardUtils}). If non-empty, only the specified card networks
-     *                             will be available for the basic-card payment method.
-     * @defaultEmail               Optional email. When provided Profiles with this email will be
-     *                             shown on top.
+     * BasicCardUtils}). If non-empty, only the specified card networks
+     * will be available for the basic-card payment method.
+     * @defaultEmail Optional email. When provided Profiles with this email will be
+     * shown on top.
      */
-    public AutofillAssistantPaymentRequest(
-            WebContents webContents, AssistantPaymentRequestOptions paymentOptions) {
+    public AutofillAssistantPaymentRequest(WebContents webContents,
+            AssistantPaymentRequestOptions paymentOptions,
+            AssistantPaymentRequestDelegate delegate) {
         mWebContents = webContents;
         mPaymentOptions = paymentOptions;
+        mDelegate = delegate;
 
         // This feature should only works in non-incognito mode.
         mAddressEditor = new AddressEditor(/* emailFieldIncluded= */ true, /* saveToDisk= */ true);
@@ -147,14 +149,11 @@ public class AutofillAssistantPaymentRequest {
      * closed.
      *
      * @param container View to replace with the payment request.
-     * @param callback The callback to return payment information.
      */
-    public void show(View container, Callback<SelectedPaymentInformation> callback) {
+    public void show(View container) {
         // Do not expect calling show multiple times.
-        assert mCallback == null;
         assert mUI == null;
 
-        mCallback = callback;
         buildUI(ChromeActivity.fromWebContents(mWebContents));
 
         mUI.show(container);
@@ -261,9 +260,6 @@ public class AutofillAssistantPaymentRequest {
             mUI.close();
             mUI = null;
         }
-
-        // Do not call callback if closed by caller.
-        mCallback = null;
     }
 
     public void getDefaultPaymentInformation(Callback<PaymentInformation> callback) {
@@ -492,47 +488,42 @@ public class AutofillAssistantPaymentRequest {
     public boolean onPayClicked(EditableOption selectedShippingAddress,
             EditableOption selectedShippingOption, EditableOption selectedPaymentMethod,
             boolean isTermsAndConditionsAccepted) {
-        if (mCallback != null) {
-            SelectedPaymentInformation selectedPaymentInformation =
-                    new SelectedPaymentInformation();
+        SelectedPaymentInformation selectedPaymentInformation = new SelectedPaymentInformation();
 
-            selectedPaymentInformation.isTermsAndConditionsAccepted = isTermsAndConditionsAccepted;
-            selectedPaymentInformation.card =
-                    ((AutofillPaymentInstrument) selectedPaymentMethod).getCard();
-            if (mPaymentOptions.mRequestShipping && selectedShippingAddress != null) {
-                selectedPaymentInformation.address =
-                        ((AutofillAddress) selectedShippingAddress).getProfile();
-            }
-            if (mPaymentOptions.mRequestPayerName || mPaymentOptions.mRequestPayerPhone
-                    || mPaymentOptions.mRequestPayerEmail) {
-                EditableOption selectedContact =
-                        mContactSection != null ? mContactSection.getSelectedItem() : null;
-                if (selectedContact != null) {
-                    selectedPaymentInformation.payerName =
-                            ((AutofillContact) selectedContact).getPayerName();
-                    selectedPaymentInformation.payerPhone =
-                            ((AutofillContact) selectedContact).getPayerPhone();
-                    selectedPaymentInformation.payerEmail =
-                            ((AutofillContact) selectedContact).getPayerEmail();
-                }
-            }
-            selectedPaymentInformation.succeed = true;
-            mCallback.onResult(selectedPaymentInformation);
-            mCallback = null;
+        selectedPaymentInformation.isTermsAndConditionsAccepted = isTermsAndConditionsAccepted;
+        selectedPaymentInformation.card =
+                ((AutofillPaymentInstrument) selectedPaymentMethod).getCard();
+        if (mPaymentOptions.mRequestShipping && selectedShippingAddress != null) {
+            selectedPaymentInformation.address =
+                    ((AutofillAddress) selectedShippingAddress).getProfile();
         }
-
+        if (mPaymentOptions.mRequestPayerName || mPaymentOptions.mRequestPayerPhone
+                || mPaymentOptions.mRequestPayerEmail) {
+            EditableOption selectedContact =
+                    mContactSection != null ? mContactSection.getSelectedItem() : null;
+            if (selectedContact != null) {
+                selectedPaymentInformation.payerName =
+                        ((AutofillContact) selectedContact).getPayerName();
+                selectedPaymentInformation.payerPhone =
+                        ((AutofillContact) selectedContact).getPayerPhone();
+                selectedPaymentInformation.payerEmail =
+                        ((AutofillContact) selectedContact).getPayerEmail();
+            }
+        }
+        selectedPaymentInformation.succeed = true;
+        mDelegate.onPaymentInformationSelected(selectedPaymentInformation);
         return false;
     }
 
     public void onDismiss() {
-        if (mCallback != null) {
-            SelectedPaymentInformation selectedPaymentInformation =
-                    new SelectedPaymentInformation();
-            selectedPaymentInformation.succeed = false;
-            mCallback.onResult(selectedPaymentInformation);
-            mCallback = null;
-        }
+        SelectedPaymentInformation selectedPaymentInformation = new SelectedPaymentInformation();
+        selectedPaymentInformation.succeed = false;
+        mDelegate.onPaymentInformationSelected(selectedPaymentInformation);
         close();
+    }
+
+    public void onCancelButtonClicked() {
+        mDelegate.onCancelButtonClicked();
     }
 
     public void onCardAndAddressSettingsClicked() {

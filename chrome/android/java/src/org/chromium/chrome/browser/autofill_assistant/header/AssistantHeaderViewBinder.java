@@ -27,7 +27,6 @@ class AssistantHeaderViewBinder
         final TextView mStatusMessage;
         final AnimatedProgressBar mProgressBar;
         final View mFeedbackButton;
-        final View mCloseButton;
 
         public ViewHolder(Context context, View headerView) {
             mStatusMessage = headerView.findViewById(R.id.status_message);
@@ -35,7 +34,6 @@ class AssistantHeaderViewBinder
                     context.getResources().getColor(R.color.modern_blue_600),
                     context.getResources().getColor(R.color.modern_blue_600_alpha_38_opaque));
             mFeedbackButton = headerView.findViewById(R.id.feedback_button);
-            mCloseButton = headerView.findViewById(R.id.close_button);
         }
     }
 
@@ -48,9 +46,6 @@ class AssistantHeaderViewBinder
         } else if (AssistantHeaderModel.FEEDBACK_VISIBLE == propertyKey) {
             view.mFeedbackButton.setVisibility(
                     model.get(AssistantHeaderModel.FEEDBACK_VISIBLE) ? View.VISIBLE : View.GONE);
-        } else if (AssistantHeaderModel.CLOSE_VISIBLE == propertyKey) {
-            view.mCloseButton.setVisibility(
-                    model.get(AssistantHeaderModel.CLOSE_VISIBLE) ? View.VISIBLE : View.GONE);
         } else if (AssistantHeaderModel.PROGRESS == propertyKey) {
             view.mProgressBar.setProgress(model.get(AssistantHeaderModel.PROGRESS));
         } else if (AssistantHeaderModel.PROGRESS_PULSING == propertyKey) {
@@ -62,9 +57,6 @@ class AssistantHeaderViewBinder
         } else if (AssistantHeaderModel.FEEDBACK_BUTTON_CALLBACK == propertyKey) {
             Runnable listener = model.get(AssistantHeaderModel.FEEDBACK_BUTTON_CALLBACK);
             view.mFeedbackButton.setOnClickListener(unusedView -> listener.run());
-        } else if (AssistantHeaderModel.CLOSE_BUTTON_CALLBACK == propertyKey) {
-            Runnable listener = model.get(AssistantHeaderModel.CLOSE_BUTTON_CALLBACK);
-            view.mCloseButton.setOnClickListener(unusedView -> listener.run());
         } else {
             assert false : "Unhandled property detected in AssistantHeaderViewBinder!";
         }

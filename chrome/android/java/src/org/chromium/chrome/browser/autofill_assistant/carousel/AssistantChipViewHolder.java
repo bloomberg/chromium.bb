@@ -34,7 +34,7 @@ class AssistantChipViewHolder extends ViewHolder {
             case AssistantChipType.BUTTON_FILLED_BLUE:
                 resId = R.layout.autofill_assistant_button_filled;
                 break;
-            case AssistantChipType.BUTTON_TEXT:
+            case AssistantChipType.BUTTON_HAIRLINE:
                 resId = R.layout.autofill_assistant_button_hairline;
                 break;
             default:

@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.autofill_assistant.details;
 
 import android.content.Context;
-import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 
@@ -17,8 +16,6 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
  * Coordinator responsible for showing details.
  */
 public class AssistantDetailsCoordinator {
-    @Nullable
-    private Runnable mOnVisibilityChanged;
     private final View mView;
 
     public AssistantDetailsCoordinator(Context context, AssistantDetailsModel model) {
@@ -57,21 +54,8 @@ public class AssistantDetailsCoordinator {
      */
     private void setVisible(boolean visible) {
         int visibility = visible ? View.VISIBLE : View.GONE;
-        boolean changed = mView.getVisibility() != visibility;
-        if (changed) {
+        if (mView.getVisibility() != visibility) {
             mView.setVisibility(visibility);
-            if (mOnVisibilityChanged != null) {
-                mOnVisibilityChanged.run();
-            }
         }
     }
-
-    /**
-     * Set the listener that should be triggered when changing the listener of this coordinator
-     * view.
-     */
-    public void setVisibilityChangedListener(Runnable listener) {
-        mOnVisibilityChanged = listener;
-    }
-
 }

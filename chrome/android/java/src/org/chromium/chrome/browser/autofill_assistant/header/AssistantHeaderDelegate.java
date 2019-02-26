@@ -26,17 +26,10 @@ class AssistantHeaderDelegate {
         }
     }
 
-    void onCloseButtonClicked() {
-        if (mNativeAssistantHeaderDelegate != 0) {
-            nativeOnCloseButtonClicked(mNativeAssistantHeaderDelegate);
-        }
-    }
-
     @CalledByNative
     private void clearNativePtr() {
         mNativeAssistantHeaderDelegate = 0;
     }
 
     private native void nativeOnFeedbackButtonClicked(long nativeAssistantHeaderDelegate);
-    private native void nativeOnCloseButtonClicked(long nativeAssistantHeaderDelegate);
 }

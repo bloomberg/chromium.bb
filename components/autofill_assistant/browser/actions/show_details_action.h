@@ -23,9 +23,8 @@ class ShowDetailsAction : public Action {
   // Overrides Action:
   void InternalProcessAction(ActionDelegate* delegate,
                              ProcessActionCallback callback) override;
-  void OnUserResponse(ActionDelegate* delegate,
-                      const std::string& old_status_message,
-                      bool can_continue);
+  void OnUserConfirmation(ActionDelegate* delegate,
+                          const std::string& old_status_message);
   void OnActionProcessed(ProcessedActionStatusProto status);
 
   ProcessActionCallback callback_;

@@ -145,27 +145,66 @@ void Controller::SetProgress(int progress) {
   GetUiController()->OnProgressChanged(progress);
 }
 
-const std::vector<Chip>& Controller::GetChips() const {
-  static const base::NoDestructor<std::vector<Chip>> no_chips_;
-  return chips_ ? *chips_ : *no_chips_;
+const std::vector<Chip>& Controller::GetSuggestions() const {
+  static const base::NoDestructor<std::vector<Chip>> no_suggestions_;
+  return suggestions_ ? *suggestions_ : *no_suggestions_;
+}
+
+const std::vector<Chip>& Controller::GetActions() const {
+  static const base::NoDestructor<std::vector<Chip>> no_actions_;
+  return actions_ ? *actions_ : *no_actions_;
 }
 
 void Controller::SetChips(std::unique_ptr<std::vector<Chip>> chips) {
-  if (!chips || chips->empty()) {
-    chips_.reset();
-  } else {
-    chips_ = std::move(chips);
+  // We split the chips into suggestions and actions, that are displayed in
+  // different carousels.
+  actions_.reset();
+  suggestions_.reset();
+
+  if (chips && !chips->empty()) {
+    for (auto iter = chips->begin(); iter != chips->end(); iter++) {
+      if (iter->type == Chip::Type::CHIP_ASSISTIVE) {
+        if (!suggestions_) {
+          suggestions_ = std::make_unique<std::vector<Chip>>();
+        }
+
+        suggestions_->emplace_back(std::move(*iter));
+      } else {
+        if (!actions_) {
+          actions_ = std::make_unique<std::vector<Chip>>();
+        }
+
+        actions_->emplace_back(std::move(*iter));
+      }
+    }
   }
-  GetUiController()->OnChipsChanged(GetChips());
+
+  GetUiController()->OnSuggestionsChanged(GetSuggestions());
+  GetUiController()->OnActionsChanged(GetActions());
 }
 
-void Controller::SelectChip(int chip_index) {
-  if (!chips_ || chip_index < 0 ||
-      static_cast<size_t>(chip_index) >= chips_->size()) {
+void Controller::SelectSuggestion(int index) {
+  SelectChip(suggestions_.get(), index);
+}
+
+void Controller::SelectAction(int index) {
+  SelectChip(actions_.get(), index);
+}
+
+void Controller::SelectChip(std::vector<Chip>* chips, int chip_index) {
+  if (!chips || chip_index < 0 ||
+      static_cast<size_t>(chip_index) >= chips->size()) {
     NOTREACHED() << "Invalid chip index: " << chip_index;
     return;
   }
-  auto callback = std::move((*chips_)[chip_index].callback);
+
+  if (!(*chips)[chip_index].callback) {
+    return;
+  }
+
+  // If the button clicked is not the Cancel button, then we clear the
+  // current chips and run the callback.
+  auto callback = std::move((*chips)[chip_index].callback);
   SetChips(nullptr);
   std::move(callback).Run();
 }
@@ -586,7 +625,7 @@ void Controller::OnRunnableScriptsChanged(
   Chip::Type non_highlight_type = Chip::Type::CHIP_ASSISTIVE;
   for (const auto& script : runnable_scripts) {
     if (!script.autostart && !script.name.empty() && script.highlight) {
-      non_highlight_type = Chip::Type::BUTTON_TEXT;
+      non_highlight_type = Chip::Type::BUTTON_HAIRLINE;
       break;
     }
   }

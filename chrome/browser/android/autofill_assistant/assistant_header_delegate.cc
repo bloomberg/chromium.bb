@@ -29,12 +29,6 @@ void AssistantHeaderDelegate::OnFeedbackButtonClicked(
   ui_controller_->OnFeedbackButtonClicked();
 }
 
-void AssistantHeaderDelegate::OnCloseButtonClicked(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jcaller) {
-  ui_controller_->OnCloseButtonClicked();
-}
-
 base::android::ScopedJavaGlobalRef<jobject>
 AssistantHeaderDelegate::GetJavaObject() {
   return java_assistant_header_delegate_;

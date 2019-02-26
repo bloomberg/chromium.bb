@@ -30,6 +30,8 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.autofill_assistant.R;
+import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarouselCoordinator;
+import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarouselModel;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChipType;
 import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetails;
@@ -110,9 +112,7 @@ public class AutofillAssistantUiTest {
 
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(createMinimalCustomTabIntent());
         AssistantCoordinator assistantCoordinator = ThreadUtils.runOnUiThreadBlocking(
-                ()
-                        -> new AssistantCoordinator(getActivity(),
-                                mCoordinatorDelegateMock));
+                () -> new AssistantCoordinator(getActivity(), mCoordinatorDelegateMock));
 
         // Bottom sheet is shown when creating the AssistantCoordinator.
         View bottomSheet = findViewByIdInMainCoordinator(R.id.autofill_assistant);
@@ -144,23 +144,12 @@ public class AutofillAssistantUiTest {
         View overlay = bottomSheet.findViewById(R.id.touch_event_filter);
         Assert.assertTrue(overlay.isShown());
 
-        // Show chips.
-        List<AssistantChip> chips = Arrays.asList(
-                new AssistantChip(
-                        AssistantChipType.CHIP_ASSISTIVE, "chip 0", () -> {/* do nothing */}),
-                new AssistantChip(AssistantChipType.CHIP_ASSISTIVE, "chip 1", mRunnableMock));
-        ThreadUtils.runOnUiThreadBlocking(
-                ()
-                        -> assistantCoordinator.getModel().getCarouselModel().getChipsModel().set(
-                                chips));
-        RecyclerView chipsViewContainer =
-                assistantCoordinator.getBottomBarCoordinator().getCarouselCoordinator().getView();
-        Assert.assertEquals(2, chipsViewContainer.getAdapter().getItemCount());
+        // Test suggestions and actions carousels.
+        testChips(inOrder, assistantCoordinator.getModel().getSuggestionsModel(),
+                assistantCoordinator.getBottomBarCoordinator().getSuggestionsCoordinator());
 
-        // Choose the second chip.
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> { chipsViewContainer.getChildAt(1).performClick(); });
-        inOrder.verify(mRunnableMock).run();
+        testChips(inOrder, assistantCoordinator.getModel().getActionsModel(),
+                assistantCoordinator.getBottomBarCoordinator().getActionsCoordinator());
 
         // Show movie details.
         String movieTitle = "testTitle";
@@ -187,12 +176,21 @@ public class AutofillAssistantUiTest {
 
         // Progress bar must be shown.
         Assert.assertTrue(bottomSheet.findViewById(R.id.progress_bar).isShown());
+    }
 
-        // Click 'X' button runs the AssistantHeaderModel.CLOSE_BUTTON_CALLBACK.
-        AssistantHeaderModel headerModel = assistantCoordinator.getModel().getHeaderModel();
-        headerModel.set(AssistantHeaderModel.CLOSE_BUTTON_CALLBACK, mRunnableMock);
+    private void testChips(InOrder inOrder, AssistantCarouselModel carouselModel,
+            AssistantCarouselCoordinator carouselCoordinator) {
+        List<AssistantChip> chips = Arrays.asList(
+                new AssistantChip(
+                        AssistantChipType.CHIP_ASSISTIVE, "chip 0", () -> {/* do nothing */}),
+                new AssistantChip(AssistantChipType.CHIP_ASSISTIVE, "chip 1", mRunnableMock));
+        ThreadUtils.runOnUiThreadBlocking(() -> carouselModel.getChipsModel().set(chips));
+        RecyclerView chipsViewContainer = carouselCoordinator.getView();
+        Assert.assertEquals(2, chipsViewContainer.getAdapter().getItemCount());
+
+        // Choose the second chip.
         ThreadUtils.runOnUiThreadBlocking(
-                () -> { bottomSheet.findViewById(R.id.close_button).performClick(); });
+                () -> { chipsViewContainer.getChildAt(1).performClick(); });
         inOrder.verify(mRunnableMock).run();
     }
 }

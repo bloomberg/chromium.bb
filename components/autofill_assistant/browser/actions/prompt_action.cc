@@ -79,7 +79,7 @@ std::unique_ptr<std::vector<Chip>> PromptAction::CreateChips() {
   Chip::Type non_highlight_type = Chip::Type::CHIP_ASSISTIVE;
   for (const auto& choice_proto : proto_.prompt().choices()) {
     if (!choice_proto.name().empty() && choice_proto.highlight()) {
-      non_highlight_type = Chip::Type::BUTTON_TEXT;
+      non_highlight_type = Chip::Type::BUTTON_HAIRLINE;
       break;
     }
   }

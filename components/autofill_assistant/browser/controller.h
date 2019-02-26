@@ -98,8 +98,10 @@ class Controller : public ScriptExecutorDelegate,
   void OnUserInteractionInsideTouchableArea() override;
   const Details* GetDetails() const override;
   int GetProgress() const override;
-  const std::vector<Chip>& GetChips() const override;
-  void SelectChip(int chip_index) override;
+  const std::vector<Chip>& GetSuggestions() const override;
+  void SelectSuggestion(int index) override;
+  const std::vector<Chip>& GetActions() const override;
+  void SelectAction(int index) override;
   std::string GetDebugContext() override;
   const PaymentRequestOptions* GetPaymentRequestOptions() const override;
   void SetPaymentInformation(
@@ -166,6 +168,8 @@ class Controller : public ScriptExecutorDelegate,
 
   void OnTouchableAreaChanged(const std::vector<RectF>& areas);
 
+  void SelectChip(std::vector<Chip>* chips, int chip_index);
+
   ElementArea* touchable_element_area();
   ScriptTracker* script_tracker();
 
@@ -212,8 +216,11 @@ class Controller : public ScriptExecutorDelegate,
   // Current progress.
   int progress_ = 0;
 
-  // Current set of chips. May be null, but never empty.
-  std::unique_ptr<std::vector<Chip>> chips_;
+  // Current set of suggestions. May be null, but never empty.
+  std::unique_ptr<std::vector<Chip>> suggestions_;
+
+  // Current set of actions. May be null, but never empty.
+  std::unique_ptr<std::vector<Chip>> actions_;
 
   // Flag indicates whether it is ready to fetch and execute scripts.
   bool started_ = false;

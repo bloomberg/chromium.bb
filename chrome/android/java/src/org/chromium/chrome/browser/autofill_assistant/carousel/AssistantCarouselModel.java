@@ -4,57 +4,35 @@
 
 package org.chromium.chrome.browser.autofill_assistant.carousel;
 
-import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.JNINamespace;
+import android.support.annotation.IntDef;
+
 import org.chromium.ui.modelutil.ListModel;
 import org.chromium.ui.modelutil.PropertyModel;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * State for the carousel of the Autofill Assistant.
  */
-@JNINamespace("autofill_assistant")
 public class AssistantCarouselModel extends PropertyModel {
-    static final WritableBooleanPropertyKey REVERSE_LAYOUT = new WritableBooleanPropertyKey();
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({Alignment.START, Alignment.CENTER, Alignment.END})
+    public @interface Alignment {
+        int START = 0;
+        int CENTER = 1;
+        int END = 2;
+    }
+
+    public static final WritableIntPropertyKey ALIGNMENT = new WritableIntPropertyKey();
 
     private final ListModel<AssistantChip> mChipsModel = new ListModel<>();
 
     public AssistantCarouselModel() {
-        super(REVERSE_LAYOUT);
+        super(ALIGNMENT);
     }
 
     public ListModel<AssistantChip> getChipsModel() {
         return mChipsModel;
-    }
-
-    @CalledByNative
-    private void setChips(int[] types, String[] texts, AssistantCarouselDelegate delegate) {
-        assert types.length == texts.length;
-        List<AssistantChip> chips = new ArrayList<>();
-        boolean reverseLayout = false;
-        for (int i = 0; i < types.length; i++) {
-            int index = i;
-            int type = types[i];
-
-            if (type != AssistantChipType.CHIP_ASSISTIVE) {
-                reverseLayout = true;
-            }
-
-            chips.add(new AssistantChip(type, texts[i], () -> {
-                clearChips();
-                delegate.onChipSelected(index);
-            }));
-        }
-
-        mChipsModel.set(chips);
-        set(REVERSE_LAYOUT, reverseLayout);
-    }
-
-    @CalledByNative
-    public void clearChips() {
-        mChipsModel.set(Collections.emptyList());
     }
 }

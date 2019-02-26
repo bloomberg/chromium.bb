@@ -12,6 +12,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.TypedValue;
 import android.view.View;
 
+import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.ui.modelutil.ListObservable;
 import org.chromium.ui.modelutil.ListObservable.ListObserver;
 import org.chromium.ui.modelutil.RecyclerViewAdapter;
@@ -23,13 +24,11 @@ import org.chromium.ui.modelutil.SimpleRecyclerViewMcp;
 public class AssistantCarouselCoordinator {
     // TODO(crbug.com/806868): Get those from XML.
     private static final int CHIPS_INNER_SPACING_DP = 16;
-    private static final int CHIPS_OUTER_SPACING_DP = 24;
-
-    @Nullable
-    private Runnable mOnVisibilityChanged;
 
     private final LinearLayoutManager mLayoutManager;
     private final RecyclerView mView;
+
+    private boolean mCentered;
 
     public AssistantCarouselCoordinator(Context context, AssistantCarouselModel model) {
         mLayoutManager = new LinearLayoutManager(
@@ -51,8 +50,21 @@ public class AssistantCarouselCoordinator {
 
         // Listen for changes on REVERSE_LAYOUT.
         model.addObserver((source, propertyKey) -> {
-            if (AssistantCarouselModel.REVERSE_LAYOUT == propertyKey) {
-                mLayoutManager.setReverseLayout(model.get(AssistantCarouselModel.REVERSE_LAYOUT));
+            if (AssistantCarouselModel.ALIGNMENT == propertyKey) {
+                switch (model.get(AssistantCarouselModel.ALIGNMENT)) {
+                    case AssistantCarouselModel.Alignment.START:
+                        mLayoutManager.setReverseLayout(false);
+                        mCentered = false;
+                        break;
+                    case AssistantCarouselModel.Alignment.CENTER:
+                        mCentered = true;
+                        mView.invalidateItemDecorations();
+                        break;
+                    case AssistantCarouselModel.Alignment.END:
+                        mLayoutManager.setReverseLayout(true);
+                        mCentered = false;
+                        break;
+                }
             } else {
                 assert false : "Unhandled property detected in AssistantCarouselCoordinator!";
             }
@@ -90,26 +102,13 @@ public class AssistantCarouselCoordinator {
     }
 
     /**
-     * Show or hide this carousel within its parent and call the {@code mOnVisibilityChanged}
-     * listener.
+     * Show or hide this carousel within its parent.
      */
     private void setVisible(boolean visible) {
         int visibility = visible ? View.VISIBLE : View.GONE;
-        boolean changed = mView.getVisibility() != visibility;
-        if (changed) {
+        if (mView.getVisibility() != visibility) {
             mView.setVisibility(visibility);
-            if (mOnVisibilityChanged != null) {
-                mOnVisibilityChanged.run();
-            }
         }
-    }
-
-    /**
-     * Set the listener that should be triggered when changing the listener of this coordinator
-     * view.
-     */
-    public void setVisibilityChangedListener(Runnable listener) {
-        mOnVisibilityChanged = listener;
     }
 
     private class SpaceItemDecoration extends RecyclerView.ItemDecoration {
@@ -119,13 +118,29 @@ public class AssistantCarouselCoordinator {
         SpaceItemDecoration(Context context) {
             mInnerSpacePx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                     CHIPS_INNER_SPACING_DP / 2, context.getResources().getDisplayMetrics());
-            mOuterSpacePx = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                    CHIPS_OUTER_SPACING_DP, context.getResources().getDisplayMetrics());
+            mOuterSpacePx = context.getResources().getDimensionPixelSize(
+                    R.dimen.autofill_assistant_bottombar_horizontal_spacing);
         }
 
         @Override
         public void getItemOffsets(
                 Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+            if (mCentered && parent.getAdapter().getItemCount() == 1) {
+                // We have one view and want it horizontally centered. By this time the parent
+                // measured width is correct (as it matches its parent), but we need to explicitly
+                // measure how big the chip view wants to be.
+                int availableWidth = parent.getMeasuredWidth();
+                view.measure(
+                        View.MeasureSpec.makeMeasureSpec(availableWidth, View.MeasureSpec.AT_MOST),
+                        View.MeasureSpec.makeMeasureSpec(
+                                parent.getMeasuredHeight(), View.MeasureSpec.AT_MOST));
+
+                int margin = (availableWidth - view.getMeasuredWidth()) / 2;
+                outRect.left = margin;
+                outRect.right = margin;
+                return;
+            }
+
             int position = parent.getChildAdapterPosition(view);
             int left;
             int right;
