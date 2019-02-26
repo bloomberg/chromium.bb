@@ -1543,8 +1543,10 @@ void ExtensionWebRequestEventRouter::DispatchEventToListeners(
     // it's still there.
     const EventListener* listener =
         FindEventListenerInContainer(id, event_listeners);
+    bool crosses_incognito = false;
     if (!listener && cross_event_listeners) {
       listener = FindEventListenerInContainer(id, *cross_event_listeners);
+      crosses_incognito = true;
     }
     if (!listener)
       continue;
@@ -1554,7 +1556,6 @@ void ExtensionWebRequestEventRouter::DispatchEventToListeners(
 
     // Filter out the optional keys that this listener didn't request.
     std::unique_ptr<base::ListValue> args_filtered(new base::ListValue);
-    void* cross_browser_context = GetCrossBrowserContext(browser_context);
 
     // In Public Sessions we want to restrict access to security or privacy
     // sensitive data. Data is filtered for *all* listeners, not only extensions
@@ -1571,7 +1572,7 @@ void ExtensionWebRequestEventRouter::DispatchEventToListeners(
     }
     args_filtered->Append(custom_event_details->GetFilteredDict(
         listener->extra_info_spec, extension_info_map,
-        listener->id.extension_id, (cross_browser_context != 0)));
+        listener->id.extension_id, crosses_incognito));
 
     EventRouter::DispatchEventToSender(
         listener->ipc_sender.get(), browser_context, listener->id.extension_id,

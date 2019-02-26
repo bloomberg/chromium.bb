@@ -594,10 +594,7 @@ runTests([
 
     const imgUrl1 = getURLAuthRequired(realm, '1');
     const imgUrl2 = getURLAuthRequired(realm, '2');
-    // TODO(https://crbug.com/934398): We incorrectly filter out the initiator
-    // for requests from incognito contexts for split mode extensions.
-    const initiator =
-        tabIsIncognito ? undefined : getServerDomain(initiators.WEB_INITIATED);
+    const initiator = getServerDomain(initiators.WEB_INITIATED);
     const parallelAuthRequestsUrl = getServerURL(
         'extensions/api_test/webrequest/auth_parallel?img1=' +
         encodeURIComponent(imgUrl1) + '&img2=' + encodeURIComponent(imgUrl2));
