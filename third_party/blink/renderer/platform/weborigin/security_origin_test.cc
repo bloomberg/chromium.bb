@@ -460,8 +460,8 @@ TEST_F(SecurityOriginTest, PunycodeNotUnicode) {
 
 TEST_F(SecurityOriginTest, PortAndEffectivePortMethod) {
   struct TestCase {
-    unsigned short port;
-    unsigned short effective_port;
+    uint16_t port;
+    uint16_t effective_port;
     const char* origin;
   } cases[] = {
       {0, 80, "http://example.com"},

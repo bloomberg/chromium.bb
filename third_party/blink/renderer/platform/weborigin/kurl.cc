@@ -356,7 +356,7 @@ String KURL::Host() const {
   return ComponentString(parsed_.host);
 }
 
-unsigned short KURL::Port() const {
+uint16_t KURL::Port() const {
   if (!is_valid_ || parsed_.port.len <= 0)
     return 0;
   DCHECK(!string_.IsNull());
@@ -366,7 +366,7 @@ unsigned short KURL::Port() const {
   DCHECK_NE(port, url::PORT_UNSPECIFIED);  // Checked port.len <= 0 already.
   DCHECK_NE(port, url::PORT_INVALID);      // Checked is_valid_ already.
 
-  return static_cast<unsigned short>(port);
+  return static_cast<uint16_t>(port);
 }
 
 // TODO(csharrison): Migrate pass() and user() to return a StringView. Most
@@ -517,7 +517,7 @@ void KURL::SetPort(const String& port) {
   SetPort(parsed_port.ToUInt());
 }
 
-void KURL::SetPort(unsigned short port) {
+void KURL::SetPort(uint16_t port) {
   if (IsDefaultPortForProtocol(port, Protocol())) {
     RemovePort();
     return;
