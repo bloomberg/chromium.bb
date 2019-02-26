@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
-#include "third_party/blink/renderer/core/layout/layout_list_marker.h"
 #include "third_party/blink/renderer/core/layout/layout_table.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_border_edges.h"
@@ -24,7 +23,6 @@
 #include "third_party/blink/renderer/core/paint/background_image_geometry.h"
 #include "third_party/blink/renderer/core/paint/box_decoration_data.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
-#include "third_party/blink/renderer/core/paint/list_marker_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_fieldset_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_inline_box_fragment_painter.h"
@@ -808,43 +806,8 @@ void NGBoxFragmentPainter::PaintTextChild(const NGPaintFragment& text_fragment,
       return;
   }
 
-  // The text clip phase already has a DrawingRecorder. Text clips are initiated
-  // only in BoxPainterBase::PaintFillLayer, which is already within a
-  // DrawingRecorder.
-  base::Optional<DrawingRecorder> recorder;
-  if (paint_info.phase != PaintPhase::kTextClip) {
-    if (DrawingRecorder::UseCachedDrawingIfPossible(
-            paint_info.context, text_fragment, paint_info.phase))
-      return;
-    recorder.emplace(paint_info.context, text_fragment, paint_info.phase);
-  }
-
-  const NGPhysicalTextFragment& physical_text_fragment =
-      ToNGPhysicalTextFragment(text_fragment.PhysicalFragment());
-  if (physical_text_fragment.TextType() ==
-      NGPhysicalTextFragment::kSymbolMarker) {
-    // The NGInlineItem of marker might be Split(). So PaintSymbol only if the
-    // StartOffset is 0, or it might be painted several times.
-    if (!physical_text_fragment.StartOffset())
-      PaintSymbol(text_fragment, paint_info, paint_offset);
-  } else {
-    NGTextFragmentPainter text_painter(text_fragment);
-    text_painter.Paint(paint_info, paint_offset);
-  }
-}
-
-void NGBoxFragmentPainter::PaintSymbol(const NGPaintFragment& fragment,
-                                       const PaintInfo& paint_info,
-                                       const LayoutPoint& paint_offset) {
-  const ComputedStyle& style = fragment.Style();
-  LayoutRect marker_rect =
-      LayoutListMarker::RelativeSymbolMarkerRect(style, fragment.Size().width);
-  marker_rect.MoveBy(fragment.Offset().ToLayoutPoint());
-  marker_rect.MoveBy(paint_offset);
-  IntRect rect = PixelSnappedIntRect(marker_rect);
-
-  ListMarkerPainter::PaintSymbol(paint_info, fragment.GetLayoutObject(), style,
-                                 rect);
+  NGTextFragmentPainter text_painter(text_fragment);
+  text_painter.Paint(paint_info, paint_offset);
 }
 
 void NGBoxFragmentPainter::PaintAtomicInline(const PaintInfo& paint_info) {

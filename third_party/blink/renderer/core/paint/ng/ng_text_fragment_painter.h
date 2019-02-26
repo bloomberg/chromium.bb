@@ -27,6 +27,9 @@ class NGTextFragmentPainter {
   void Paint(const PaintInfo&, const LayoutPoint& paint_offset);
 
  private:
+  void PaintSymbol(const PaintInfo& paint_info,
+                   const LayoutPoint& paint_offset);
+
   const NGPaintFragment& fragment_;
 };
 
