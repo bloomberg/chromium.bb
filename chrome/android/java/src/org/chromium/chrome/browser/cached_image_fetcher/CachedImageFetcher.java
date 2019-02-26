@@ -14,6 +14,11 @@ import org.chromium.base.ThreadUtils;
  * will need to be changed when supporting multi-profile.
  */
 public interface CachedImageFetcher {
+    // All UMA client names collected here to prevent duplicates.
+    public static final String ASSISTANT_DETAILS_UMA_CLIENT_NAME = "AssistantDetails";
+    public static final String CONTEXTUAL_SUGGESTIONS_UMA_CLIENT_NAME = "ContextualSuggestions";
+    public static final String FEED_UMA_CLIENT_NAME = "Feed";
+
     static CachedImageFetcher getInstance() {
         ThreadUtils.assertOnUiThread();
         return CachedImageFetcherImpl.getInstance();
