@@ -740,15 +740,14 @@ class ManifestVersionedSyncStage(SyncStage):
     Args:
       master_id: Our master build id.
     """
-    _, db = self._run.GetCIDBHandle()
     if self.buildstore.AreClientsReady() and master_id:
       assert not self._run.options.force_version
       master_build_status = self.buildstore.GetBuildStatuses(
           build_ids=[master_id])[0]
-      latest = db.GetBuildHistory(
+      latest = self.buildstore.GetBuildHistory(
           master_build_status['build_config'],
           1,
-          milestone_version=master_build_status['milestone_version'])
+          branch=self._run.options.branch_name)
       if latest and latest[0]['id'] != master_id:
         raise failures_lib.MasterSlaveVersionMismatchFailure(
             'This slave\'s master (id=%s) has been supplanted by a newer '
@@ -915,13 +914,13 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
       e.g. MilestoneVersion(milestone='44', platform='7072.0.0-rc4')
       or None if failed to retrieve milestone and platform versions.
     """
-    build_identifier, db = self._run.GetCIDBHandle()
+    build_identifier, _ = self._run.GetCIDBHandle()
     build_id = build_identifier.cidb_id
 
-    if db is None:
+    if not self.buildstore.AreClientsReady():
       return None
 
-    builds = db.GetBuildHistory(
+    builds = self.buildstore.GetBuildHistory(
         build_config=self._run.config.name,
         num_results=self.MAX_BUILD_HISTORY_LENGTH,
         ignore_build_id=build_id)

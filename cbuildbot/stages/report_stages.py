@@ -383,19 +383,19 @@ class BuildReexecutionFinishedStage(generic_stages.BuilderStage,
 
   category = constants.CI_INFRA_STAGE
 
-  def _AbortPreviousHWTestSuites(self, milestone):
+  def _AbortPreviousHWTestSuites(self):
     """Abort any outstanding synchronous hwtest suites from this builder."""
     # Only try to clean up previous HWTests if this is really running on one of
     # our builders in a non-trybot build.
     debug = (self._run.options.remote_trybot or
              (not self._run.options.buildbot) or
              self._run.options.debug)
-    build_identifier, db = self._run.GetCIDBHandle()
+    build_identifier, _ = self._run.GetCIDBHandle()
     build_id = build_identifier.cidb_id
-    if db:
-      builds = db.GetBuildHistory(self._run.config.name, 2,
-                                  milestone_version=milestone,
-                                  ignore_build_id=build_id)
+    if self.buildstore.AreClientsReady():
+      builds = self.buildstore.GetBuildHistory(
+          self._run.config.name, 2, branch=self._run.options.branch_name,
+          ignore_build_id=build_id)
       for build in builds:
         old_version = build['full_version']
         if old_version is None:
@@ -536,7 +536,7 @@ class BuildReexecutionFinishedStage(generic_stages.BuilderStage,
     # Abort previous hw test suites. This happens after reexecution as it
     # requires chromite/third_party/swarming.client, which is not available
     # untill after reexecution.
-    self._AbortPreviousHWTestSuites(version['milestone'])
+    self._AbortPreviousHWTestSuites()
 
 
 class ConfigDumpStage(generic_stages.BuilderStage):

@@ -523,18 +523,15 @@ class SlaveCQSyncTest(BaseCQTestCase):
     with self.assertRaises(failures_lib.MasterSlaveVersionMismatchFailure):
       self.sync_stage.PerformStage()
 
-  def testSupplantedMasterDifferentMilestone(self):
-    """Test that master supplanting logic respects milestone.
+  def testSupplantedMasterDifferentBranch(self):
+    """Test that master supplanting logic respects branch.
 
     The master-was-supplanted logic should ignore masters for different
     milestone version.
     """
-    new_master_build_id = self.buildstore.InsertBuild(
-        'master builder name', 2, 'master-paladin', 'bot hostname')
-    self.fake_db.UpdateMetadata(new_master_build_id,
-                                {'version': {
-                                    'milestone': 'foo'
-                                }})
+    self.buildstore.InsertBuild(
+        'master builder name', 2, 'master-paladin', 'bot hostname',
+        branch='foo')
     self.sync_stage.PerformStage()
 
 

@@ -36,6 +36,7 @@ from chromite.lib import patch as cros_patch
 from chromite.lib import timeout_util
 from chromite.lib import tree_status
 from chromite.lib import triage_lib
+from chromite.lib.buildstore import BuildStore
 
 
 PRE_CQ = constants.PRE_CQ
@@ -226,6 +227,7 @@ class ValidationPool(object):
         kwarg listed.
     """
     self.build_root = build_root
+    self.buildstore = BuildStore()
 
     # These instances can be instantiated via both older, or newer pickle
     # dumps.  Thus we need to assert the given args since we may be getting
@@ -538,14 +540,14 @@ class ValidationPool(object):
     tree throttled validation pool logic.
     """
     # TODO(sosa): Remove Google Storage Fail Streak Counter.
-    build_identifier, db = self._run.GetCIDBHandle()
+    build_identifier, _ = self._run.GetCIDBHandle()
     build_id = build_identifier.cidb_id
-    if not db:
+    if not self.buildstore.AreClientsReady():
       return 0
 
-    builds = db.GetBuildHistory(self._run.config.name,
-                                ValidationPool.CQ_SEARCH_HISTORY,
-                                ignore_build_id=build_id)
+    builds = self.buildstore.GetBuildHistory(self._run.config.name,
+                                             ValidationPool.CQ_SEARCH_HISTORY,
+                                             ignore_build_id=build_id)
     number_of_failures = 0
     # Iterate through the ordered list of builds until you get one that is
     # passed.

@@ -46,9 +46,8 @@ def FetchBuildStatuses(buildstore, options):
   elif options.build_config:
     start_date = options.start_date or options.date
     end_date = options.end_date or options.date
-    db = buildstore.GetCIDBHandle()
-    return db.GetBuildHistory(
-        options.build_config, db.NUM_RESULTS_NO_LIMIT,
+    return buildstore.GetBuildHistory(
+        options.build_config, buildstore.NUM_RESULTS_NO_LIMIT,
         start_date=start_date, end_date=end_date)
   else:
     cros_build_lib.Die('You must specify which builds.')

@@ -1342,10 +1342,10 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
   @minimum_schema(65)
   def GetBuildHistory(self, build_config, num_results,
                       ignore_build_id=None, start_date=None, end_date=None,
-                      milestone_version=None, platform_version=None,
-                      starting_build_id=None, ending_build_id=None,
-                      waterfall=None, buildbot_generation=None, final=False,
-                      reverse=False):
+                      branch=None, milestone_version=None,
+                      platform_version=None, starting_build_id=None,
+                      ending_build_id=None, waterfall=None,
+                      buildbot_generation=None, final=False, reverse=False):
     """Returns basic information about most recent builds for build config.
 
     By default this function returns the most recent builds. Some arguments can
@@ -1363,6 +1363,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
           after this date.
       end_date: (Optional, type:datetime.date) Get builds that occured on or
           before this date.
+      branch: (Optional) Return only results for this branch.
       milestone_version: (Optional) Return only results for this
           milestone_version.
       platform_version: (Optional) Return only results for this
@@ -1386,7 +1387,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     return self.GetBuildsHistory(
         [build_config], num_results,
         ignore_build_id=ignore_build_id, start_date=start_date,
-        end_date=end_date,
+        end_date=end_date, branch=branch,
         milestone_version=milestone_version, platform_version=platform_version,
         starting_build_id=starting_build_id, ending_build_id=ending_build_id,
         waterfall=waterfall, buildbot_generation=buildbot_generation,
@@ -1395,10 +1396,10 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
   @minimum_schema(65)
   def GetBuildsHistory(self, build_configs, num_results,
                        ignore_build_id=None, start_date=None, end_date=None,
-                       milestone_version=None, platform_version=None,
-                       starting_build_id=None, ending_build_id=None,
-                       waterfall=None, buildbot_generation=None, final=False,
-                       reverse=False):
+                       branch=None, milestone_version=None,
+                       platform_version=None, starting_build_id=None,
+                       ending_build_id=None, waterfall=None,
+                       buildbot_generation=None, final=False, reverse=False):
     """Returns basic information about most recent builds for build configs.
 
     By default this function returns the most recent builds. Some arguments can
@@ -1417,6 +1418,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
           after this date.
       end_date: (Optional, type:datetime.date) Get builds that occured on or
           before this date.
+      branch: (Optional) Return only results for this branch.
       milestone_version: (Optional) Return only results for this
           milestone_version.
       platform_version: (Optional) Return only results for this
@@ -1453,6 +1455,8 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       where_clauses.append('id <= %d' % ending_build_id)
     if ignore_build_id is not None:
       where_clauses.append('id != %d' % ignore_build_id)
+    if branch is not None:
+      where_clauses.append('branch = "%s"' % branch)
     if milestone_version is not None:
       where_clauses.append('milestone_version = "%s"' % milestone_version)
     if platform_version is not None:

@@ -411,7 +411,7 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
     manifest_version.CreateSymlink(m1, os.path.join(
         for_build, 'pass', CHROME_BRANCH, os.path.basename(m2)))
 
-    self.manager.db.GetBuildHistory.return_value = None
+    self.manager.buildstore.fake_cidb.GetBuildHistory.return_value = None
     self.manager.InitializeManifestVariables(info)
     self.assertEqual(self.manager.latest_unprocessed, '1.2.5')
     self.assertIsNone(self.manager._latest_build)
@@ -435,7 +435,8 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
     latest_builds = [{'build_config': self.build_names[0],
                       'status':'pass',
                       'platform_version':'1.2.5'}]
-    self.manager.db.GetBuildHistory.return_value = latest_builds
+    self.manager.buildstore.fake_cidb.GetBuildHistory.return_value = (
+        latest_builds)
     self.manager.InitializeManifestVariables(info)
     self.assertIsNone(self.manager.latest_unprocessed)
     self.assertEqual(self.manager._latest_build, latest_builds[0])

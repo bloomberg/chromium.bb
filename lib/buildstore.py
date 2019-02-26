@@ -41,6 +41,8 @@ class BuildIdentifier(object):
 class BuildStore(object):
   """BuildStore class to handle all DB calls."""
 
+  NUM_RESULTS_NO_LIMIT = -1
+
   def __init__(self, _read_from_bb=False, _write_to_bb=True,
                _write_to_cidb=True, cidb_creds=None, for_service=None):
     """Get an instance of the BuildStore.
@@ -208,6 +210,49 @@ class BuildStore(object):
     if not self._read_from_bb:
       return self.cidb_conn.GetBuildMessages(build_id, message_type,
                                              message_subtype)
+
+  def GetBuildHistory(
+      self, build_config, num_results,
+      ignore_build_id=None, start_date=None, end_date=None, branch=None,
+      platform_version=None, starting_build_id=None, ending_build_id=None):
+    """Returns basic information about most recent builds for build config.
+
+    By default this function returns the most recent builds. Some arguments can
+    restrict the result to older builds.
+
+    Args:
+      build_config: config name of the build to get history.
+      num_results: Number of builds to search back. Set this to
+          CIDBConnection.NUM_RESULTS_NO_LIMIT to request no limit on the number
+          of results.
+      ignore_build_id: (Optional) Ignore a specific build. This is most useful
+          to ignore the current build when querying recent past builds from a
+          build in flight.
+      start_date: (Optional, type: datetime.date) Get builds that occured on or
+          after this date.
+      end_date: (Optional, type:datetime.date) Get builds that occured on or
+          before this date.
+      branch: (Optional) Return only results for this branch.
+      platform_version: (Optional) Return only results for this
+          platform_version.
+      starting_build_id: (Optional) The minimum build_id for which data should
+          be retrieved.
+      ending_build_id: (Optional) The maximum build_id for which data should
+          be retrieved.
+
+    Returns:
+      A sorted list of dicts containing up to |number| dictionaries for
+      build statuses in descending order (if |reverse| is True, ascending
+      order).
+    """
+    if not self.InitializeClients():
+      raise BuildStoreException('BuildStore clients could not be initialized.')
+    if not self._read_from_bb:
+      return self.cidb_conn.GetBuildHistory(
+          build_config, num_results, ignore_build_id=ignore_build_id,
+          start_date=start_date, end_date=end_date, branch=branch,
+          platform_version=platform_version,
+          starting_build_id=starting_build_id, ending_build_id=ending_build_id)
 
   def InsertBuildStage(self,
                        build_id,
@@ -438,6 +483,7 @@ class BuildStore(object):
         return []
 
 
+#pylint: disable=unused-argument
 class FakeBuildStore(object):
   """Fake BuildStore class to be used only in unittests."""
 
@@ -478,6 +524,15 @@ class FakeBuildStore(object):
         platform_version, start_time, build_type, branch)
     return build_id
 
+  def GetBuildHistory(
+      self, build_config, num_results, ignore_build_id=None, start_date=None,
+      end_date=None, branch=None, platform_version=None, starting_build_id=None,
+      ending_build_id=None):
+    return self.fake_cidb.GetBuildHistory(
+        build_config, num_results, ignore_build_id=ignore_build_id,
+        start_date=start_date, end_date=end_date,
+        platform_version=platform_version, starting_build_id=starting_build_id)
+
   def InsertBuildStage(self,
                        build_id,
                        name,
@@ -494,14 +549,11 @@ class FakeBuildStore(object):
                                         exception_message, exception_category,
                                         outer_failure_id, extra_info)
 
-  #pylint: disable=unused-argument
-
   def GetSlaveStatuses(self, master_build_id, buildbucket_ids=None):
     return self.fake_cidb.GetSlaveStatuses(master_build_id, buildbucket_ids)
 
   def FinishBuild(self, build_id, status=None, summary=None, metadata_url=None,
                   strict=True):
-    #pylint: disable=unused-argument
     return
 
   def StartBuildStage(self, build_stage_id):
@@ -511,10 +563,9 @@ class FakeBuildStore(object):
     return build_stage_id
 
   def FinishBuildStage(self, build_stage_id, status):
-    #pylint: disable=unused-argument
     return build_stage_id
 
-  def UpdateMetadata(self, build_id, metadata): #pylint: disable=unused-argument
+  def UpdateMetadata(self, build_id, metadata):
     return
 
   def GetBuildsFailures(self, buildbucket_ids=None):
@@ -531,7 +582,7 @@ class FakeBuildStore(object):
     else:
       return []
 
-  def ExtendDeadline(self, build_id, timeout): #pylint: disable=unused-argument
+  def ExtendDeadline(self, build_id, timeout):
     return
 
   def GetBuildStatuses(self, buildbucket_ids=None, build_ids=None):

@@ -463,10 +463,12 @@ class FakeCIDBConnection(object):
 
     return build_stages
 
+  #pylint: disable=unused-argument
   def GetBuildHistory(self, build_config, num_results,
                       ignore_build_id=None, start_date=None, end_date=None,
-                      milestone_version=None, platform_version=None,
-                      starting_build_id=None, final=False, reverse=False):
+                      branch=None, milestone_version=None,
+                      platform_version=None, starting_build_id=None,
+                      ending_build_id=None, final=False, reverse=False):
     """Returns the build history for the given |build_config|."""
     return self.GetBuildsHistory(
         build_configs=[build_config], num_results=num_results,

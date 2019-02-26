@@ -145,7 +145,6 @@ class UprevChromeCommand(command.CliCommand):
       InvalidPFQBuildIdExcpetion when pfq_build is invalid.
     """
     pfq_info = buildstore.GetBuildStatuses([pfq_build])[0]
-    db = buildstore.GetCIDBHandle()
 
     # Return False if it's not a master_chromium_pfq build.
     if pfq_info['build_config'] != constants.PFQ_MASTER:
@@ -166,9 +165,9 @@ class UprevChromeCommand(command.CliCommand):
     # Get all the pfq builds which were started after
     # the given pfq build_id. If one build passed after this
     # pfq run, should not uprev or overwrite the uprevs.
-    build_infos = db.GetBuildHistory(constants.PFQ_MASTER,
-                                     self.NUM_RESULTS_NO_LIMIT,
-                                     starting_build_id=pfq_info['id'])
+    build_infos = buildstore.GetBuildHistory(constants.PFQ_MASTER,
+                                             self.NUM_RESULTS_NO_LIMIT,
+                                             starting_build_id=pfq_info['id'])
 
     for build_info in build_infos:
       if build_info['status'] == 'pass':

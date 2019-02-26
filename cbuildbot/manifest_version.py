@@ -657,8 +657,6 @@ class BuildSpecsManager(object):
     self.master = False if config is None else config.master
     self.metadata = metadata
     self.buildstore = buildstore
-    self.db = (buildstore.GetCIDBHandle() if buildstore.AreClientsReady()
-               else None)
     self.buildbucket_client = buildbucket_client
 
     # Directories and specifications are set once we load the specs.
@@ -750,8 +748,8 @@ class BuildSpecsManager(object):
       self.latest = self._LatestSpecFromDir(version_info, self.all_specs_dir)
       if self.latest is not None:
         latest_builds = None
-        if self.db is not None:
-          latest_builds = self.db.GetBuildHistory(
+        if self.buildstore.AreClientsReady():
+          latest_builds = self.buildstore.GetBuildHistory(
               self.build_names[0], 1, platform_version=self.latest)
         if not latest_builds:
           self.latest_unprocessed = self.latest
