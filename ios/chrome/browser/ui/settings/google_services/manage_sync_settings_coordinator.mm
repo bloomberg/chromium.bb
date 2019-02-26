@@ -5,20 +5,29 @@
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_coordinator.h"
 
 #include "base/logging.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/google/core/common/google_util.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/signin/authentication_service.h"
+#import "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_command_handler.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_mediator.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync/sync_encryption_passphrase_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync/sync_encryption_table_view_controller.h"
+#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/public/provider/chrome/browser/signin/chrome_identity_browser_opener.h"
+#include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
+#import "net/base/mac/url_conversions.h"
 #import "services/identity/public/objc/identity_manager_observer_bridge.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -26,6 +35,7 @@
 #endif
 
 @interface ManageSyncSettingsCoordinator () <
+    ChromeIdentityBrowserOpener,
     IdentityManagerObserverBridgeDelegate,
     ManageSyncSettingsCommandHandler,
     ManageSyncSettingsTableViewControllerPresentationDelegate> {
@@ -39,6 +49,9 @@
     ManageSyncSettingsTableViewController* viewController;
 // Mediator.
 @property(nonatomic, strong) ManageSyncSettingsMediator* mediator;
+// Web and app activity view controller.
+@property(nonatomic, weak)
+    UINavigationController* webAndAppSettingDetailsController;
 
 @end
 
@@ -68,6 +81,15 @@
       new identity::IdentityManagerObserverBridge(identityManager, self));
 }
 
+#pragma mark - Private
+
+// Called by the close button of the Web and app activity view controller.
+- (void)closeGoogleActivitySettings:(id)sender {
+  DCHECK(self.webAndAppSettingDetailsController);
+  [self.navigationController dismissViewControllerAnimated:YES completion:nil];
+  self.webAndAppSettingDetailsController = nil;
+}
+
 #pragma mark - ManageSyncSettingsTableViewControllerPresentationDelegate
 
 - (void)manageSyncSettingsTableViewControllerWasPopped:
@@ -81,10 +103,25 @@
 - (void)onPrimaryAccountCleared:
     (const CoreAccountInfo&)previousPrimaryAccountInfo {
   if (self.viewController.navigationController) {
+    if (self.webAndAppSettingDetailsController) {
+      [self.navigationController dismissViewControllerAnimated:NO
+                                                    completion:nil];
+      self.webAndAppSettingDetailsController = nil;
+    }
     [self.navigationController popToViewController:self.viewController
                                           animated:NO];
     [self.navigationController popViewControllerAnimated:YES];
   }
+}
+
+#pragma mark - ChromeIdentityBrowserOpener
+
+- (void)openURL:(NSURL*)url
+              view:(UIView*)view
+    viewController:(UIViewController*)viewController {
+  OpenNewTabCommand* command =
+      [OpenNewTabCommand commandWithURLFromChrome:net::GURLWithNSURL(url)];
+  [self.dispatcher closeSettingsUIAndOpenURL:command];
 }
 
 #pragma mark - ManageSyncSettingsCommandHandler
@@ -108,6 +145,26 @@
 }
 
 - (void)openWebAppActivityDialog {
+  AuthenticationService* authService =
+      AuthenticationServiceFactory::GetForBrowserState(self.browserState);
+  base::RecordAction(base::UserMetricsAction(
+      "Signin_AccountSettings_GoogleActivityControlsClicked"));
+  DCHECK(!self.webAndAppSettingDetailsController);
+  self.webAndAppSettingDetailsController =
+      ios::GetChromeBrowserProvider()
+          ->GetChromeIdentityService()
+          ->CreateWebAndAppSettingDetailsController(
+              authService->GetAuthenticatedIdentity(), self);
+  UIImage* closeIcon = [ChromeIcon closeIcon];
+  SEL action = @selector(closeGoogleActivitySettings:);
+  [self.webAndAppSettingDetailsController.topViewController navigationItem]
+      .leftBarButtonItem = [ChromeIcon templateBarButtonItemWithImage:closeIcon
+                                                               target:self
+                                                               action:action];
+  [self.navigationController
+      presentViewController:self.webAndAppSettingDetailsController
+                   animated:YES
+                 completion:nil];
 }
 
 - (void)openDataFromChromeSyncWebPage {
