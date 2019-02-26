@@ -53,7 +53,7 @@ class IceTransportProxy final {
     virtual void OnGatheringStateChanged(cricket::IceGatheringState new_state) {
     }
     virtual void OnCandidateGathered(const cricket::Candidate& candidate) {}
-    virtual void OnStateChanged(cricket::IceTransportState new_state) {}
+    virtual void OnStateChanged(webrtc::IceTransportState new_state) {}
     virtual void OnSelectedCandidatePairChanged(
         const std::pair<cricket::Candidate, cricket::Candidate>&
             selected_candidate_pair) {}
@@ -100,7 +100,7 @@ class IceTransportProxy final {
   friend class IceTransportHost;
   void OnGatheringStateChanged(cricket::IceGatheringState new_state);
   void OnCandidateGathered(const cricket::Candidate& candidate);
-  void OnStateChanged(cricket::IceTransportState new_state);
+  void OnStateChanged(webrtc::IceTransportState new_state);
   void OnSelectedCandidatePairChanged(
       const std::pair<cricket::Candidate, cricket::Candidate>&
           selected_candidate_pair);

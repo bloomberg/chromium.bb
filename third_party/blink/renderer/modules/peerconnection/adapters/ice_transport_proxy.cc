@@ -136,7 +136,7 @@ void IceTransportProxy::OnCandidateGathered(
   delegate_->OnCandidateGathered(candidate);
 }
 
-void IceTransportProxy::OnStateChanged(cricket::IceTransportState new_state) {
+void IceTransportProxy::OnStateChanged(webrtc::IceTransportState new_state) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   delegate_->OnStateChanged(new_state);
 }

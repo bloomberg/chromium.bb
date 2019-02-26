@@ -46,7 +46,7 @@ class IceTransportAdapter {
     virtual void OnCandidateGathered(const cricket::Candidate& candidate) {}
 
     // Called asynchronously when the ICE connection state has changed.
-    virtual void OnStateChanged(cricket::IceTransportState new_state) {}
+    virtual void OnStateChanged(webrtc::IceTransportState new_state) {}
 
     // Called asynchronously when the ICE agent selects a different candidate
     // pair for the active connection.

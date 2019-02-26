@@ -38,7 +38,7 @@ IceTransportAdapterImpl::IceTransportAdapterImpl(
       this, &IceTransportAdapterImpl::OnGatheringStateChanged);
   p2p_transport_channel()->SignalCandidateGathered.connect(
       this, &IceTransportAdapterImpl::OnCandidateGathered);
-  p2p_transport_channel()->SignalStateChanged.connect(
+  p2p_transport_channel()->SignalIceTransportStateChanged.connect(
       this, &IceTransportAdapterImpl::OnStateChanged);
   p2p_transport_channel()->SignalNetworkRouteChanged.connect(
       this, &IceTransportAdapterImpl::OnNetworkRouteChanged);
@@ -129,7 +129,7 @@ void IceTransportAdapterImpl::OnCandidateGathered(
 void IceTransportAdapterImpl::OnStateChanged(
     cricket::IceTransportInternal* transport) {
   DCHECK_EQ(transport, p2p_transport_channel());
-  delegate_->OnStateChanged(p2p_transport_channel()->GetState());
+  delegate_->OnStateChanged(p2p_transport_channel()->GetIceTransportState());
 }
 
 void IceTransportAdapterImpl::OnNetworkRouteChanged(
