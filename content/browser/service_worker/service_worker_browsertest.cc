@@ -1217,7 +1217,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
                        ServiceWorkerScriptHeader) {
   embedded_test_server()->RegisterRequestHandler(
-      base::Bind(&VerifyServiceWorkerHeaderInRequest));
+      base::BindRepeating(&VerifyServiceWorkerHeaderInRequest));
   StartServerAndNavigateToSetup();
   InstallTestHelper("/service_worker/generated_sw.js",
                     blink::ServiceWorkerStatusCode::kOk);
@@ -1646,7 +1646,7 @@ class MockContentBrowserClient : public TestContentBrowserClient {
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchWithSaveData) {
   embedded_test_server()->RegisterRequestHandler(
-      base::Bind(&VerifySaveDataHeaderInRequest));
+      base::BindRepeating(&VerifySaveDataHeaderInRequest));
   StartServerAndNavigateToSetup();
   MockContentBrowserClient content_browser_client;
   content_browser_client.set_data_saver_enabled(true);
@@ -1661,7 +1661,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchWithSaveData) {
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
                        RequestWorkerScriptWithSaveData) {
   embedded_test_server()->RegisterRequestHandler(
-      base::Bind(&VerifySaveDataHeaderInRequest));
+      base::BindRepeating(&VerifySaveDataHeaderInRequest));
   StartServerAndNavigateToSetup();
   MockContentBrowserClient content_browser_client;
   content_browser_client.set_data_saver_enabled(true);
@@ -1675,7 +1675,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchWithoutSaveData) {
   embedded_test_server()->RegisterRequestHandler(
-      base::Bind(&VerifySaveDataHeaderNotInRequest));
+      base::BindRepeating(&VerifySaveDataHeaderNotInRequest));
   StartServerAndNavigateToSetup();
   MockContentBrowserClient content_browser_client;
   ContentBrowserClient* old_client =
@@ -1731,7 +1731,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, CrossOriginFetchWithSaveData) {
   net::EmbeddedTestServer cross_origin_server;
   cross_origin_server.ServeFilesFromSourceDirectory("content/test/data");
   cross_origin_server.RegisterRequestHandler(
-      base::Bind(&VerifySaveDataNotInAccessControlRequestHeader));
+      base::BindRepeating(&VerifySaveDataNotInAccessControlRequestHeader));
   ASSERT_TRUE(cross_origin_server.Start());
 
   MockContentBrowserClient content_browser_client;
@@ -1785,7 +1785,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest,
   observer->Init();
 
   embedded_test_server()->RegisterRequestHandler(
-      base::Bind(&VerifySaveDataHeaderInRequest));
+      base::BindRepeating(&VerifySaveDataHeaderInRequest));
   StartServerAndNavigateToSetup();
 
   blink::mojom::ServiceWorkerRegistrationOptions options(
@@ -1993,30 +1993,30 @@ class ServiceWorkerNavigationPreloadTest : public ServiceWorkerBrowserTest {
   }
 
   void RegisterMonitorRequestHandler() {
-    embedded_test_server()->RegisterRequestMonitor(
-        base::Bind(&self::MonitorRequestHandler, base::Unretained(this)));
+    embedded_test_server()->RegisterRequestMonitor(base::BindRepeating(
+        &self::MonitorRequestHandler, base::Unretained(this)));
   }
 
   void RegisterStaticFile(const std::string& relative_url,
                           const std::string& content,
                           const std::string& content_type) {
     embedded_test_server()->RegisterRequestHandler(
-        base::Bind(&self::StaticRequestHandler, base::Unretained(this),
-                   relative_url, content, content_type));
+        base::BindRepeating(&self::StaticRequestHandler, base::Unretained(this),
+                            relative_url, content, content_type));
   }
 
   void RegisterCustomResponse(const std::string& relative_url,
                               const std::string& response) {
     embedded_test_server()->RegisterRequestHandler(
-        base::Bind(&self::CustomRequestHandler, base::Unretained(this),
-                   relative_url, response));
+        base::BindRepeating(&self::CustomRequestHandler, base::Unretained(this),
+                            relative_url, response));
   }
 
   void RegisterKeepSearchRedirect(const std::string& relative_url,
                                   const std::string& redirect_location) {
-    embedded_test_server()->RegisterRequestHandler(
-        base::Bind(&self::KeepSearchRedirectHandler, base::Unretained(this),
-                   relative_url, redirect_location));
+    embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
+        &self::KeepSearchRedirectHandler, base::Unretained(this), relative_url,
+        redirect_location));
   }
 
   int GetRequestCount(const std::string& relative_url) const {
@@ -2031,7 +2031,8 @@ class ServiceWorkerNavigationPreloadTest : public ServiceWorkerBrowserTest {
     std::string text_content;
     shell()->web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
         base::ASCIIToUTF16("document.body.textContent;"),
-        base::Bind(&StoreString, &text_content, run_loop.QuitClosure()));
+        base::BindRepeating(&StoreString, &text_content,
+                            run_loop.QuitClosure()));
     run_loop.Run();
     return text_content;
   }
@@ -2525,7 +2526,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest,
 
   content::ResourceDispatcherHost::Get()->RegisterInterceptor(
       kNavigationPreloadHeaderName, "",
-      base::Bind(&CancellingInterceptorCallback));
+      base::BindRepeating(&CancellingInterceptorCallback));
 
   const char kPageUrl[] = "/service_worker/navigation_preload.html";
   const char kWorkerUrl[] = "/service_worker/navigation_preload.js";

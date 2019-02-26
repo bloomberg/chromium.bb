@@ -46,8 +46,8 @@ void ServiceWorkerDataPipeReader::Start() {
   handle_watcher_.Watch(
       stream_.get(),
       MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
-      base::Bind(&ServiceWorkerDataPipeReader::OnHandleGotSignal,
-                 base::Unretained(this)));
+      base::BindRepeating(&ServiceWorkerDataPipeReader::OnHandleGotSignal,
+                          base::Unretained(this)));
   owner_->OnResponseStarted();
 }
 

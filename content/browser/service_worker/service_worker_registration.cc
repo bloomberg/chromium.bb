@@ -350,8 +350,9 @@ void ServiceWorkerRegistration::StartLameDuckTimer() {
 
   lame_duck_timer_.Start(
       FROM_HERE, kMaxLameDuckTime,
-      base::Bind(&ServiceWorkerRegistration::RemoveLameDuckIfNeeded,
-                 Unretained(this) /* OK because |this| owns the timer */));
+      base::BindRepeating(
+          &ServiceWorkerRegistration::RemoveLameDuckIfNeeded,
+          Unretained(this) /* OK because |this| owns the timer */));
 }
 
 void ServiceWorkerRegistration::RemoveLameDuckIfNeeded() {

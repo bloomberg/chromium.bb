@@ -30,9 +30,9 @@ class ServiceWorkerInstalledScriptReader::MetaDataSender {
 
   void Start(base::OnceCallback<void(bool /* success */)> callback) {
     callback_ = std::move(callback);
-    watcher_.Watch(
-        handle_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
-        base::Bind(&MetaDataSender::OnWritable, weak_factory_.GetWeakPtr()));
+    watcher_.Watch(handle_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
+                   base::BindRepeating(&MetaDataSender::OnWritable,
+                                       weak_factory_.GetWeakPtr()));
   }
 
   void OnWritable(MojoResult) {
@@ -158,8 +158,8 @@ void ServiceWorkerInstalledScriptReader::OnReadInfoComplete(
   // Start sending body.
   body_watcher_.Watch(
       body_handle_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
-      base::Bind(&ServiceWorkerInstalledScriptReader::OnWritableBody,
-                 AsWeakPtr()));
+      base::BindRepeating(&ServiceWorkerInstalledScriptReader::OnWritableBody,
+                          AsWeakPtr()));
   body_watcher_.ArmOrNotify();
 
   scoped_refptr<net::HttpResponseHeaders> headers =
