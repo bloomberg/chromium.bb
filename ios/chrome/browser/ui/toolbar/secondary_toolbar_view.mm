@@ -19,6 +19,10 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+const CGFloat kToolsMenuOffset = -7;
+}  // namespace
+
 @interface SecondaryToolbarView ()<ToolbarCollapsing>
 // Factory used to create the buttons.
 @property(nonatomic, strong) ToolbarButtonFactory* buttonFactory;
@@ -128,6 +132,11 @@
   self.omniboxButton = [self.buttonFactory omniboxButton];
   self.tabGridButton = [self.buttonFactory tabGridButton];
   self.toolsMenuButton = [self.buttonFactory toolsMenuButton];
+
+  // Move the tools menu button such as it looks visually balanced with the
+  // button on the other side of the toolbar.
+  self.toolsMenuButton.transform =
+      CGAffineTransformMakeTranslation(kToolsMenuOffset, 0);
 
   self.allButtons = @[
     self.backButton, self.forwardButton, self.omniboxButton, self.tabGridButton,
