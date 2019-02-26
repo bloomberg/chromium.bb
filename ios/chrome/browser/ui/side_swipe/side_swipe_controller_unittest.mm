@@ -44,7 +44,7 @@ class SideSwipeControllerTest : public PlatformTest {
     view_ = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 320, 240)];
 
     [side_swipe_controller_ addHorizontalGesturesToView:view_];
-  };
+  }
 
   web::TestWebThreadBundle thread_bundle_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
