@@ -30,7 +30,7 @@ using testing::Eq;
 using testing::IsEmpty;
 using testing::SizeIs;
 
-constexpr char kTestServerUrl[] = "https://ia-pa.googleapis.com/v1/ocr";
+constexpr char kTestServerUrl[] = "https://ia-pa.googleapis.com/v1/annotation";
 
 // Example image URLs.
 
@@ -46,9 +46,10 @@ constexpr char kTemplateRequest[] = R"(
   "imageRequests": [{
     "imageId": "%s",
     "imageBytes": "%s",
-    "engineParameters": [{
-      "ocrParameters": {}
-    }]
+    "engineParameters": [
+      {"ocrParameters": {}},
+      {"descriptionParameters": {}}
+    ]
   }]
 }
 )";
@@ -60,23 +61,26 @@ constexpr char kBatchRequest[] = R"(
     {
       "imageId": "https://www.example.com/image1.jpg",
       "imageBytes": "AQID",
-      "engineParameters": [{
-        "ocrParameters": {}
-      }]
+      "engineParameters": [
+        {"ocrParameters": {}},
+        {"descriptionParameters": {}}
+      ]
     },
     {
       "imageId": "https://www.example.com/image2.jpg",
       "imageBytes": "BAUG",
-      "engineParameters": [{
-        "ocrParameters": {}
-      }]
+      "engineParameters": [
+        {"ocrParameters": {}},
+        {"descriptionParameters": {}}
+      ]
     },
     {
       "imageId": "https://www.example.com/image3.jpg",
       "imageBytes": "BwgJ",
-      "engineParameters": [{
-        "ocrParameters": {}
-      }]
+      "engineParameters": [
+        {"ocrParameters": {}},
+        {"descriptionParameters": {}}
+      ]
     }
   ]
 })";
@@ -317,13 +321,15 @@ void ReportResult(base::Optional<mojom::AnnotateImageError>* const error,
   if (result->which() == mojom::AnnotateImageResult::Tag::ERROR_CODE) {
     *error = result->get_error_code();
   } else {
-    *ocr_text = std::move(result->get_ocr_text());
+    CHECK_EQ(result->get_annotations().size(), 1u);
+    CHECK_EQ(result->get_annotations()[0]->type, mojom::AnnotationType::kOcr);
+    *ocr_text = std::move(result->get_annotations()[0]->text);
   }
 }
 
 }  // namespace
 
-// Test that OCR works for one client, and that the cache is populated.
+// Test that annotation works for one client, and that the cache is populated.
 TEST(AnnotatorTest, SuccessAndCache) {
   base::test::ScopedTaskEnvironment test_task_env(
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
@@ -361,7 +367,7 @@ TEST(AnnotatorTest, SuccessAndCache) {
 
     // HTTP request should have been made.
     test_url_factory.ExpectRequestAndSimulateResponse(
-        "ocr", {} /* expected_headers */,
+        "annotation", {} /* expected_headers */,
         ReformatJson(base::StringPrintf(kTemplateRequest, kImage1Url, "AQID")),
         kSuccessResponse, net::HTTP_OK);
     test_task_env.RunUntilIdle();
@@ -424,7 +430,7 @@ TEST(AnnotatorTest, HttpError) {
 
   // HTTP request should have been made.
   test_url_factory.ExpectRequestAndSimulateResponse(
-      "ocr", {} /* expected_headers */,
+      "annotation", {} /* expected_headers */,
       ReformatJson(base::StringPrintf(kTemplateRequest, kImage1Url, "AQID")),
       "", net::HTTP_INTERNAL_SERVER_ERROR);
   test_task_env.RunUntilIdle();
@@ -469,7 +475,7 @@ TEST(AnnotatorTest, BackendError) {
 
   // HTTP request should have been made.
   test_url_factory.ExpectRequestAndSimulateResponse(
-      "ocr", {} /* expected_headers */,
+      "annotation", {} /* expected_headers */,
       ReformatJson(base::StringPrintf(kTemplateRequest, kImage1Url, "AQID")),
       kErrorResponse, net::HTTP_OK);
   test_task_env.RunUntilIdle();
@@ -515,7 +521,7 @@ TEST(AnnotatorTest, ServerError) {
 
   // HTTP request should have been made; respond with nonsense string.
   test_url_factory.ExpectRequestAndSimulateResponse(
-      "ocr", {} /* expected_headers */,
+      "annotation", {} /* expected_headers */,
       ReformatJson(base::StringPrintf(kTemplateRequest, kImage1Url, "AQID")),
       "Hello, world!", net::HTTP_OK);
   test_task_env.RunUntilIdle();
@@ -576,7 +582,7 @@ TEST(AnnotatorTest, ProcessorFails) {
 
   // HTTP request for image 1 should have been made.
   test_url_factory.ExpectRequestAndSimulateResponse(
-      "ocr", {} /* expected_headers */,
+      "annotation", {} /* expected_headers */,
       ReformatJson(base::StringPrintf(kTemplateRequest, kImage1Url, "AQID")),
       kSuccessResponse, net::HTTP_OK);
   test_task_env.RunUntilIdle();
@@ -638,7 +644,7 @@ TEST(AnnotatorTest, ProcessorDies) {
 
   // HTTP request for image 1 should have been made.
   test_url_factory.ExpectRequestAndSimulateResponse(
-      "ocr", {} /* expected_headers */,
+      "annotation", {} /* expected_headers */,
       ReformatJson(base::StringPrintf(kTemplateRequest, kImage1Url, "AQID")),
       kSuccessResponse, net::HTTP_OK);
   test_task_env.RunUntilIdle();
@@ -701,7 +707,7 @@ TEST(AnnotatorTest, ConcurrentSameBatch) {
 
   // A single HTTP request for all images should have been sent.
   test_url_factory.ExpectRequestAndSimulateResponse(
-      "ocr", {} /* expected_headers */, ReformatJson(kBatchRequest),
+      "annotation", {} /* expected_headers */, ReformatJson(kBatchRequest),
       kBatchResponse, net::HTTP_OK);
   test_task_env.RunUntilIdle();
 
@@ -767,7 +773,7 @@ TEST(AnnotatorTest, ConcurrentSeparateBatches) {
   // still waiting to make the batch that will include the request for image
   // 2).
   test_url_factory.ExpectRequestAndSimulateResponse(
-      "ocr", {} /* expected_headers */,
+      "annotation", {} /* expected_headers */,
       ReformatJson(base::StringPrintf(kTemplateRequest, kImage1Url, "AQID")),
       R"({
            "results": [{
@@ -791,7 +797,7 @@ TEST(AnnotatorTest, ConcurrentSeparateBatches) {
 
   // Now the HTTP request for image 2 should have been made.
   test_url_factory.ExpectRequestAndSimulateResponse(
-      "ocr", {} /* expected_headers */,
+      "annotation", {} /* expected_headers */,
       ReformatJson(base::StringPrintf(kTemplateRequest, kImage2Url, "BAUG")),
       R"({
            "results": [{
@@ -896,7 +902,7 @@ TEST(AnnotatorTest, DuplicateWork) {
   // HTTP request for the image should have been made (with bytes obtained from
   // processor 1).
   test_url_factory.ExpectRequestAndSimulateResponse(
-      "ocr", {} /* expected_headers */,
+      "annotation", {} /* expected_headers */,
       ReformatJson(base::StringPrintf(kTemplateRequest, kImage1Url, "AQID")),
       kSuccessResponse, net::HTTP_OK);
   test_task_env.RunUntilIdle();
@@ -940,7 +946,7 @@ TEST(AnnotatorTest, ApiKey) {
 
     // HTTP request should have been made with the API key included.
     test_url_factory.ExpectRequestAndSimulateResponse(
-        "ocr", {{Annotator::kGoogApiKeyHeader, "my_api_key"}},
+        "annotation", {{Annotator::kGoogApiKeyHeader, "my_api_key"}},
         ReformatJson(base::StringPrintf(kTemplateRequest, kImage1Url, "AQID")),
         kSuccessResponse, net::HTTP_OK);
   }
@@ -952,7 +958,7 @@ TEST(AnnotatorTest, ApiKey) {
     TestServerURLLoaderFactory test_url_factory(
         "http://ia-pa.googleapis.com/v1/");
 
-    Annotator annotator(GURL("http://ia-pa.googleapis.com/v1/ocr"),
+    Annotator annotator(GURL("http://ia-pa.googleapis.com/v1/annotation"),
                         "my_api_key", kThrottle, 1 /* batch_size */,
                         1.0 /* min_ocr_confidence */,
                         test_url_factory.AsSharedURLLoaderFactory());
@@ -972,7 +978,7 @@ TEST(AnnotatorTest, ApiKey) {
 
     // HTTP request should have been made without the API key included.
     test_url_factory.ExpectRequestAndSimulateResponse(
-        "ocr", {{Annotator::kGoogApiKeyHeader, base::nullopt}},
+        "annotation", {{Annotator::kGoogApiKeyHeader, base::nullopt}},
         ReformatJson(base::StringPrintf(kTemplateRequest, kImage1Url, "AQID")),
         kSuccessResponse, net::HTTP_OK);
   }
@@ -981,8 +987,8 @@ TEST(AnnotatorTest, ApiKey) {
   {
     TestServerURLLoaderFactory test_url_factory("https://datascraper.com/");
 
-    Annotator annotator(GURL("https://datascraper.com/ocr"), "my_api_key",
-                        kThrottle, 1 /* batch_size */,
+    Annotator annotator(GURL("https://datascraper.com/annotation"),
+                        "my_api_key", kThrottle, 1 /* batch_size */,
                         1.0 /* min_ocr_confidence */,
                         test_url_factory.AsSharedURLLoaderFactory());
     TestImageProcessor processor;
@@ -1001,10 +1007,12 @@ TEST(AnnotatorTest, ApiKey) {
 
     // HTTP request should have been made without the API key included.
     test_url_factory.ExpectRequestAndSimulateResponse(
-        "ocr", {{Annotator::kGoogApiKeyHeader, base::nullopt}},
+        "annotation", {{Annotator::kGoogApiKeyHeader, base::nullopt}},
         ReformatJson(base::StringPrintf(kTemplateRequest, kImage1Url, "AQID")),
         kSuccessResponse, net::HTTP_OK);
   }
 }
+
+// TODO(crbug.com/916420): add unit tests for description annotations.
 
 }  // namespace image_annotation

@@ -88,14 +88,14 @@ class Annotator : public mojom::Annotator {
   using HttpRequestQueue =
       std::deque<std::pair<std::string, std::vector<uint8_t>>>;
 
-  // Constructs and returns a JSON object containing an OCR request for the
+  // Constructs and returns a JSON object containing an request for the
   // given images.
-  static std::string FormatJsonOcrRequest(HttpRequestQueue::iterator begin_it,
-                                          HttpRequestQueue::iterator end_it);
+  static std::string FormatJsonRequest(HttpRequestQueue::iterator begin_it,
+                                       HttpRequestQueue::iterator end_it);
 
-  // Creates a URL loader that calls the image annotation server with an OCR
-  // request for the given images.
-  static std::unique_ptr<network::SimpleURLLoader> MakeOcrRequestLoader(
+  // Creates a URL loader that calls the image annotation server with an
+  // annotation request for the given images.
+  static std::unique_ptr<network::SimpleURLLoader> MakeRequestLoader(
       const GURL& server_url,
       const std::string& api_key,
       HttpRequestQueue::iterator begin_it,
@@ -123,9 +123,9 @@ class Annotator : public mojom::Annotator {
                                 UrlLoaderList::iterator http_request_it,
                                 std::unique_ptr<std::string> json_response);
 
-  // Maps from source ID to previously-obtained OCR result.
+  // Maps from source ID to previously-obtained annotation results.
   // TODO(crbug.com/916420): periodically clear entries from this cache.
-  std::map<std::string, std::string> cached_results_;
+  std::map<std::string, mojom::AnnotateImageResultPtr> cached_results_;
 
   // Maps from source ID to the list of request info (i.e. info of clients that
   // have made requests) for that source.

@@ -177,21 +177,31 @@ void AXImageAnnotator::OnImageAnnotated(
   // TODO(nektar): Set the image annotation status on this image to Error.
   if (result->is_error_code())
     return;
-  if (!result->is_ocr_text()) {
-    DLOG(WARNING) << "Unrecognized image annotation result.";
+
+  if (!result->is_annotations()) {
+    DLOG(WARNING) << "No image annotation results.";
     return;
   }
 
-  if (result->get_ocr_text().empty())
+  for (const auto& annotation : result->get_annotations()) {
+    if (annotation->type != image_annotation::mojom::AnnotationType::kOcr)
+      continue;
+
+    if (annotation->text.empty())
+      return;
+
+    auto contextualized_string = GetContentClient()->GetLocalizedString(
+        IDS_AX_IMAGE_ANNOTATION_OCR_CONTEXT,
+        base::UTF8ToUTF16(annotation->text));
+
+    image_annotations_.at(image.AxID())
+        .set_annotation(base::UTF16ToUTF8(contextualized_string));
+    render_accessibility_->MarkWebAXObjectDirty(image, false /* subtree */);
+
     return;
+  }
 
-  auto contextualized_string = GetContentClient()->GetLocalizedString(
-      IDS_AX_IMAGE_ANNOTATION_OCR_CONTEXT,
-      base::UTF8ToUTF16(result->get_ocr_text()));
-
-  image_annotations_.at(image.AxID())
-      .set_annotation(base::UTF16ToUTF8(contextualized_string));
-  render_accessibility_->MarkWebAXObjectDirty(image, false /* subtree */);
+  DLOG(WARNING) << "No OCR results.";
 }
 
 }  // namespace content
