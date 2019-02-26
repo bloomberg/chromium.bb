@@ -61,6 +61,8 @@ source_set("wayland") {
     "wp_presentation.h",
     "wp_viewporter.cc",
     "wp_viewporter.h",
+    "zcr_secure_output.cc",
+    "zcr_secure_output.h",
     "zcr_vsync_feedback.cc",
     "zcr_vsync_feedback.h",
   ]
