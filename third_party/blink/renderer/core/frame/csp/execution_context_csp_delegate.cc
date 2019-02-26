@@ -9,8 +9,11 @@
 #include "third_party/blink/renderer/core/events/security_policy_violation_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
+#include "third_party/blink/renderer/core/frame/csp/csp_violation_report_body.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/renderer/core/frame/report.h"
+#include "third_party/blink/renderer/core/frame/reporting_context.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/ping_loader.h"
@@ -153,6 +156,13 @@ void ExecutionContextCSPDelegate::PostViolationReport(
 
   DEFINE_STATIC_LOCAL(ReportingServiceProxyPtrHolder,
                       reporting_service_proxy_holder, ());
+
+  // Construct and route the report to the ReportingContext, to be observed
+  // by any ReportingObservers.
+  CSPViolationReportBody* body = CSPViolationReportBody::Create(violation_data);
+  Report* observed_report =
+      MakeGarbageCollected<Report>("csp-violation", Url().GetString(), body);
+  ReportingContext::From(document)->QueueReport(observed_report);
 
   for (const auto& report_endpoint : report_endpoints) {
     if (use_reporting_api) {
