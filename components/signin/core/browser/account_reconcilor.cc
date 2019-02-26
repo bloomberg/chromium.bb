@@ -126,14 +126,11 @@ bool AccountsNeedUpdate(
     const signin::MultiloginParameters& parameters,
     const std::vector<gaia::ListedAccount>& existing_accounts) {
   if (parameters.mode ==
-      gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER) {
-    // In UPDATE mode accounts_to_send are guaranteed to be not empty.
-    DCHECK(!parameters.accounts_to_send.empty());
-    if (existing_accounts.empty())
-      return true;
-    // In UPDATE mode update is needed id syncing account is not first.
-    if (existing_accounts[0].id != parameters.accounts_to_send[0])
-      return true;
+          gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER &&
+      !existing_accounts.empty() && !parameters.accounts_to_send.empty() &&
+      existing_accounts[0].id != parameters.accounts_to_send[0]) {
+    // In UPDATE mode update is needed if first accounts don't match.
+    return true;
   }
   // Maybe some accounts in cookies are not valid and need refreshing.
   std::set<std::string> accounts_to_send_set(
@@ -502,14 +499,26 @@ void AccountReconcilor::FinishReconcileWithMultiloginEndpoint(
 
   DCHECK(is_reconcile_started_);
   if (AccountsNeedUpdate(parameters_for_multilogin, gaia_accounts)) {
-    // Reconcilor has to do some calls to gaia. is_reconcile_started_ is true
-    // and any StartReconcile() calls that are made in the meantime will be
-    // aborted until OnSetAccountsInCookieCompleted is called and
-    // is_reconcile_started_ is set to false.
-    set_accounts_in_progress_ = true;
-    PerformSetCookiesAction(parameters_for_multilogin);
-    DCHECK(is_reconcile_started_);
+    if (parameters_for_multilogin.mode ==
+            gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER &&
+        parameters_for_multilogin.accounts_to_send.empty()) {
+      // UPDATE mode does not support empty list of accounts, call logout
+      // instead.
+      PerformLogoutAllAccountsAction();
+      gaia_accounts.clear();
+      OnSetAccountsInCookieCompleted(GoogleServiceAuthError::AuthErrorNone());
+      DCHECK(!is_reconcile_started_);
+    } else {
+      // Reconcilor has to do some calls to gaia. is_reconcile_started_ is true
+      // and any StartReconcile() calls that are made in the meantime will be
+      // aborted until OnSetAccountsInCookieCompleted is called and
+      // is_reconcile_started_ is set to false.
+      set_accounts_in_progress_ = true;
+      PerformSetCookiesAction(parameters_for_multilogin);
+      DCHECK(is_reconcile_started_);
+    }
   } else {
+    // Nothing to do, accounts already match.
     OnSetAccountsInCookieCompleted(GoogleServiceAuthError::AuthErrorNone());
     DCHECK(!is_reconcile_started_);
   }

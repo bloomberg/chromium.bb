@@ -223,6 +223,7 @@ class AccountReconcilor : public KeyedService,
                            DelegateTimeoutIsNotCalled);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
                            DelegateTimeoutIsNotCalledIfTimeoutIsNotReached);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, MultiloginLogout);
 
   void set_timer_for_testing(std::unique_ptr<base::OneShotTimer> timer);
 
