@@ -802,7 +802,7 @@ deps = {
   },
 
   'src/third_party/grpc/src': {
-      'url': Var('chromium_git') + '/external/github.com/grpc/grpc.git' + '@' + '318c67782a752a8324233ff95e594a19f85578a7',
+      'url': Var('chromium_git') + '/external/github.com/grpc/grpc.git' + '@' + 'e60c4fc034815ac2cff62da047e7144172237036',
   },
 
   'src/third_party/freetype/src':
