@@ -322,6 +322,14 @@ public class BottomSheet
         }
 
         /**
+         * @return Whether this content owns its lifecycle. If false, the content will be hidden
+         *         when the user navigates away from the page or switches tab.
+         */
+        default boolean hasCustomLifecycle() {
+            return false;
+        }
+
+        /**
          * @return The resource id of the content description for the bottom sheet. This is
          *         generally the name of the feature/content that is showing. 'Swipe down to close.'
          *         will be automatically appended after the content description.

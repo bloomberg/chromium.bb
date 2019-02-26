@@ -27,12 +27,18 @@ public class TestBottomSheetContent implements BottomSheetContent {
     /** This content's priority. */
     private @ContentPriority int mPriority;
 
+    /** Whether this content is browser specific. */
+    private boolean mHasCustomLifecycle;
+
     /**
      * @param context A context to inflate views with.
      * @param priority The content's priority.
+     * @param hasCustomLifecycle Whether the content is browser specific.
      */
-    public TestBottomSheetContent(Context context, @ContentPriority int priority) {
+    public TestBottomSheetContent(
+            Context context, @ContentPriority int priority, boolean hasCustomLifecycle) {
         mPriority = priority;
+        mHasCustomLifecycle = hasCustomLifecycle;
         ThreadUtils.runOnUiThreadBlocking(() -> {
             mToolbarView = new View(context);
             ViewGroup.LayoutParams params =
@@ -80,6 +86,11 @@ public class TestBottomSheetContent implements BottomSheetContent {
     @Override
     public boolean isPeekStateEnabled() {
         return true;
+    }
+
+    @Override
+    public boolean hasCustomLifecycle() {
+        return mHasCustomLifecycle;
     }
 
     @Override
