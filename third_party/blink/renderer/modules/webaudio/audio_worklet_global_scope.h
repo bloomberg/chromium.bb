@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/modules/webaudio/audio_param_descriptor.h"
 #include "third_party/blink/renderer/platform/audio/audio_array.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
@@ -29,6 +30,8 @@ struct GlobalScopeCreationParams;
 // The storage for the construction of AudioWorkletProcessor, contains the
 // processor name and MessageChannelPort object.
 class MODULES_EXPORT ProcessorCreationParams final {
+  USING_FAST_MALLOC(ProcessorCreationParams);
+
  public:
   ProcessorCreationParams(const String& name,
                           MessagePortChannel message_port_channel)

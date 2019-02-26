@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -134,6 +135,8 @@ class MODULES_EXPORT AudioBuffer final : public ScriptWrappable {
 
 // Shared data that audio threads can hold onto.
 class SharedAudioBuffer final {
+  USING_FAST_MALLOC(SharedAudioBuffer);
+
  public:
   explicit SharedAudioBuffer(AudioBuffer*);
 
