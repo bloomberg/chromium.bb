@@ -306,9 +306,6 @@ class ASH_EXPORT ShelfView : public views::View,
   //     small resolution screen, the overflow bubble can show the app list
   //     button.
   bool is_overflow_mode() const { return overflow_mode_; }
-  bool is_showing_overflow_bubble() const {
-    return overflow_bubble_ && overflow_bubble_->IsShowing();
-  }
 
   int first_visible_index() const { return first_visible_index_; }
   int last_visible_index() const { return last_visible_index_; }
