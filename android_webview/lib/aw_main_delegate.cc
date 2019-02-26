@@ -50,6 +50,7 @@
 #include "gin/public/isolate_holder.h"
 #include "gin/v8_initializer.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "gpu/ipc/gl_in_process_context.h"
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
@@ -199,6 +200,9 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
                .name);
 
   CommandLineHelper::AddDisabledFeature(*cl, features::kBackgroundFetch.name);
+
+  CommandLineHelper::AddDisabledFeature(*cl,
+                                        features::kAndroidSurfaceControl.name);
 
   android_webview::RegisterPathProvider();
 
