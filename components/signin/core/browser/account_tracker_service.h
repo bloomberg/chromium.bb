@@ -33,6 +33,10 @@ namespace base {
 class DictionaryValue;
 }
 
+namespace identity {
+class IdentityTestEnvironment;
+}
+
 // AccountTrackerService is a KeyedService that retrieves and caches GAIA
 // information about Google Accounts.
 class AccountTrackerService : public KeyedService {
@@ -133,7 +137,7 @@ class AccountTrackerService : public KeyedService {
 
  private:
   friend class AccountFetcherService;
-  friend class FakeAccountFetcherService;
+  friend class identity::IdentityTestEnvironment;
 
   void NotifyAccountUpdated(const AccountInfo& account_info);
   void NotifyAccountUpdateFailed(const std::string& account_id);
