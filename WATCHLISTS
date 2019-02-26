@@ -1866,7 +1866,6 @@
                  'ftirelo+autofillwatch@chromium.org',
                  'mathp+autofillwatch@chromium.org',
                  'rogerm+autofillwatch@chromium.org',
-                 'sebsg+autofillwatch@chromium.org',
                  'tmartino+autofillwatch@chromium.org'],
     'autofill_assistant': ['autofill_assistant+watch@google.com'],
     'autofill_credit_cards': ['jsaul+autofillwatch@google.com'],
