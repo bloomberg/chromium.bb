@@ -210,7 +210,7 @@ bool CreateChromeApplicationShortcutView::Accept() {
 #endif
 
   web_app::CreateShortcutsWithInfo(web_app::SHORTCUT_CREATION_BY_USER,
-                                   creation_locations,
+                                   creation_locations, base::DoNothing(),
                                    std::move(shortcut_info_));
   return true;
 }

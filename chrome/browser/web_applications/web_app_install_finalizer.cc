@@ -96,9 +96,14 @@ void WebAppInstallFinalizer::OnDataWritten(InstallFinalizedCallback callback,
   std::move(callback).Run(std::move(app_id), InstallResultCode::kSuccess);
 }
 
-void WebAppInstallFinalizer::CreateOsShortcuts(const AppId& app_id) {
+void WebAppInstallFinalizer::CreateOsShortcuts(
+    const AppId& app_id,
+    CreateOsShortcutsCallback callback) {
   // TODO(loyso): Implement it.
   NOTIMPLEMENTED();
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), false /* shortcuts_created */));
 }
 
 void WebAppInstallFinalizer::ReparentTab(const AppId& app_id,

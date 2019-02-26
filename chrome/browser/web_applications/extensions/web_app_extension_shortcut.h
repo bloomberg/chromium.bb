@@ -21,15 +21,22 @@ class Extension;
 
 namespace web_app {
 
+// Callback made when CreateShortcuts has finished trying to create the
+// platform shortcuts indicating whether or not they were successfully created.
+using CreateShortcutsCallback = base::OnceCallback<void(bool shortcut_created)>;
+
 // Called by GetShortcutInfoForApp after fetching the ShortcutInfo.
-typedef base::OnceCallback<void(std::unique_ptr<ShortcutInfo>)>
-    ShortcutInfoCallback;
+using ShortcutInfoCallback =
+    base::OnceCallback<void(std::unique_ptr<ShortcutInfo>)>;
 
 // Create shortcuts for web application based on given shortcut data.
-// |shortcut_info| contains information about the shortcuts to create, and
-// |locations| contains information about where to create them.
+// |shortcut_info| contains information about the shortcuts to create,
+// |locations| contains information about where to create them, and
+// |callback| is a callback that is made when completed, indicating success
+// or failure of the operation.
 void CreateShortcutsWithInfo(ShortcutCreationReason reason,
                              const ShortcutLocations& locations,
+                             CreateShortcutsCallback callback,
                              std::unique_ptr<ShortcutInfo> shortcut_info);
 
 // Populates a ShortcutInfo for the given |extension| in |profile| and passes
@@ -58,7 +65,8 @@ base::FilePath GetWebAppDataDirectory(const base::FilePath& profile_path,
 void CreateShortcuts(ShortcutCreationReason reason,
                      const ShortcutLocations& locations,
                      Profile* profile,
-                     const extensions::Extension* app);
+                     const extensions::Extension* app,
+                     CreateShortcutsCallback callback);
 
 // Delete all shortcuts that have been created for the given profile and
 // extension.

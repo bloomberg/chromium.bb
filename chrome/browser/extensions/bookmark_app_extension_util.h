@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_BOOKMARK_APP_EXTENSION_UTIL_H_
 #define CHROME_BROWSER_EXTENSIONS_BOOKMARK_APP_EXTENSION_UTIL_H_
 
+#include "base/callback_forward.h"
+
 class Profile;
 
 namespace content {
@@ -15,7 +17,10 @@ namespace extensions {
 
 class Extension;
 
-void BookmarkAppCreateOsShortcuts(Profile* profile, const Extension* extension);
+void BookmarkAppCreateOsShortcuts(
+    Profile* profile,
+    const Extension* extension,
+    base::OnceCallback<void(bool created_shortcuts)> callback);
 
 void BookmarkAppReparentTab(content::WebContents* contents,
                             const Extension* extension);

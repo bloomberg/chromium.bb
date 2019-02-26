@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_BOOKMARK_APP_INSTALL_FINALIZER_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_BOOKMARK_APP_INSTALL_FINALIZER_H_
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -35,7 +36,8 @@ class BookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
   // InstallFinalizer:
   void FinalizeInstall(const WebApplicationInfo& web_app_info,
                        InstallFinalizedCallback callback) override;
-  void CreateOsShortcuts(const web_app::AppId& app_id) override;
+  void CreateOsShortcuts(const web_app::AppId& app_id,
+                         CreateOsShortcutsCallback callback) override;
   void ReparentTab(const web_app::AppId& app_id,
                    content::WebContents* web_contents) override;
   bool CanRevealAppShim() const override;

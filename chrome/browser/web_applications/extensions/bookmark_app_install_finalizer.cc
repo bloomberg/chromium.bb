@@ -96,9 +96,10 @@ void BookmarkAppInstallFinalizer::OnExtensionInstalled(
 }
 
 void BookmarkAppInstallFinalizer::CreateOsShortcuts(
-    const web_app::AppId& app_id) {
+    const web_app::AppId& app_id,
+    CreateOsShortcutsCallback callback) {
   const Extension* app = GetExtensionById(profile_, app_id);
-  BookmarkAppCreateOsShortcuts(profile_, app);
+  BookmarkAppCreateOsShortcuts(profile_, app, std::move(callback));
 }
 
 void BookmarkAppInstallFinalizer::ReparentTab(

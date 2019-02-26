@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
@@ -471,7 +472,7 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
   web_app::RecordAppBanner(contents_, web_app_info_.app_url);
 
   if (create_shortcuts_)
-    BookmarkAppCreateOsShortcuts(profile_, extension);
+    BookmarkAppCreateOsShortcuts(profile_, extension, base::DoNothing());
 
   // If there is a browser, it means that the app is being installed in the
   // foreground: window reparenting needed.

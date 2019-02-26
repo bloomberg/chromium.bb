@@ -27,12 +27,15 @@ class InstallFinalizer {
  public:
   using InstallFinalizedCallback =
       base::OnceCallback<void(const AppId& app_id, InstallResultCode code)>;
+  using CreateOsShortcutsCallback =
+      base::OnceCallback<void(bool shortcuts_created)>;
 
   // Write the WebApp data to disk and register the app.
   virtual void FinalizeInstall(const WebApplicationInfo& web_app_info,
                                InstallFinalizedCallback callback) = 0;
 
-  virtual void CreateOsShortcuts(const AppId& app_id) = 0;
+  virtual void CreateOsShortcuts(const AppId& app_id,
+                                 CreateOsShortcutsCallback callback) = 0;
   virtual void ReparentTab(const AppId& app_id,
                            content::WebContents* web_contents) = 0;
   virtual bool CanRevealAppShim() const = 0;

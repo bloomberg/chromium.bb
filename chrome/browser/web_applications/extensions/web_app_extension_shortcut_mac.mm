@@ -158,7 +158,8 @@ void ShowCreateChromeAppShortcutsDialog(
   // On Mac, the Applications folder is the only option, so don't bother asking
   // the user anything. Just create shortcuts.
   CreateShortcuts(web_app::SHORTCUT_CREATION_BY_USER,
-                  web_app::ShortcutLocations(), profile, app);
+                  web_app::ShortcutLocations(), profile, app,
+                  base::DoNothing());
   if (!close_callback.is_null())
     close_callback.Run(true);
 }
