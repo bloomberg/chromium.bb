@@ -1694,7 +1694,7 @@
   },
   {
     "name": "enable-surfacecontrol",
-    // "owners": [ "your-team" ],
+    "owners": [ "khushalsagar" ],
     "expiry_milestone": 76
   },
   {
