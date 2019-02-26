@@ -160,9 +160,6 @@ extern const char kBundledConnectionHelpDescription[];
 extern const char kBypassAppBannerEngagementChecksName[];
 extern const char kBypassAppBannerEngagementChecksDescription[];
 
-extern const char kCanvas2DImageChromiumName[];
-extern const char kCanvas2DImageChromiumDescription[];
-
 extern const char kClickToOpenPDFName[];
 extern const char kClickToOpenPDFDescription[];
 

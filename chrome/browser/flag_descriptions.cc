@@ -225,10 +225,6 @@ const char kBypassAppBannerEngagementChecksDescription[] =
     "eligibility requirements for showing app banners, such as having a "
     "manifest, are met.";
 
-const char kCanvas2DImageChromiumName[] = "Canvas 2D Image Chromium";
-const char kCanvas2DImageChromiumDescription[] =
-    "Allows for using CHROMIUM_image GLES2 extension for HTML Canvas Contexts";
-
 const char kClickToOpenPDFName[] = "Click to open embedded PDFs";
 const char kClickToOpenPDFDescription[] =
     "When the PDF plugin is unavailable, show a click-to-open placeholder for "
