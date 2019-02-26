@@ -1767,10 +1767,12 @@ bool DirectCompositionSurfaceWin::AreOverlaysSupported() {
   InitializeHardwareOverlaySupport();
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kDisableDirectCompositionLayers))
-    return false;
+  // Enable flag should be checked before the disable flag, so we could
+  // overwrite GPU driver bug workarounds in testing.
   if (command_line->HasSwitch(switches::kEnableDirectCompositionLayers))
     return true;
+  if (command_line->HasSwitch(switches::kDisableDirectCompositionLayers))
+    return false;
 
   return g_supports_overlays;
 }

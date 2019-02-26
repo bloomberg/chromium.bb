@@ -236,9 +236,14 @@ void AppendWorkaroundsToCommandLine(const GpuFeatureInfo& gpu_feature_info,
           DISABLE_ES3_GL_CONTEXT_FOR_TESTING)) {
     command_line->AppendSwitch(switches::kDisableES3GLContextForTesting);
   }
+#if defined(OS_WIN)
   if (gpu_feature_info.IsWorkaroundEnabled(DISABLE_DIRECT_COMPOSITION)) {
     command_line->AppendSwitch(switches::kDisableDirectComposition);
   }
+  if (gpu_feature_info.IsWorkaroundEnabled(DISABLE_DIRECT_COMPOSITION_LAYERS)) {
+    command_line->AppendSwitch(switches::kDisableDirectCompositionLayers);
+  }
+#endif
 }
 
 // Adjust gpu feature status based on enabled gpu driver bug workarounds.
