@@ -32,6 +32,10 @@ const char kProfileName[] = "p1";
 const char kUrl[] = "http://example.com";
 const char kHash[] =
     "842841a4c75a55ad050d686f4ea5f77e83ae059877fe9b6946aa63d3d057ed32";
+const char kHashUppercase[] =
+    "842841A4C75A55AD050D686F4EA5F77E83AE059877FE9B6946AA63D3D057ED32";
+const char kHash2[] =
+    "02f06421ae27144aacdc598aebcd345a5e2e634405e8578300173628fe1574bd";
 const char kPluginVmImageUnzipped[] = "plugin_vm_image_unzipped";
 const char kPluginVmImageFile1[] = "plugin_vm_image_file_1";
 const char kContent1[] = "This is content #1.";
@@ -158,8 +162,7 @@ TEST_F(PluginVmImageManagerTest, DownloadPluginVmImageParamsTest) {
 
   // Finishing image processing.
   test_browser_thread_bundle_.RunUntilIdle();
-  // Faking downloaded file for testing. Creates one additional call to
-  // OnDownloadCompleted().
+  // Faking downloaded file for testing.
   manager_->SetDownloadedPluginVmImageArchiveForTesting(
       fake_downloaded_plugin_vm_image_archive_);
   manager_->StartUnzipping();
@@ -300,6 +303,12 @@ TEST_F(PluginVmImageManagerTest, EmptyPluginVmImageUrlTest) {
 
   manager_->StartDownload();
   test_browser_thread_bundle_.RunUntilIdle();
+}
+
+TEST_F(PluginVmImageManagerTest, VerifyDownloadTest) {
+  EXPECT_FALSE(manager_->VerifyDownload(kHash2));
+  EXPECT_TRUE(manager_->VerifyDownload(kHashUppercase));
+  EXPECT_TRUE(manager_->VerifyDownload(kHash));
 }
 
 }  // namespace plugin_vm

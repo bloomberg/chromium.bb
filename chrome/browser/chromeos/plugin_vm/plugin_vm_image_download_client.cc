@@ -98,9 +98,7 @@ void PluginVmImageDownloadClient::OnDownloadSucceeded(
     const download::CompletionInfo& completion_info) {
   VLOG(1) << __func__ << " called";
   VLOG(1) << "Downloaded file is in " << completion_info.path.value();
-  // TODO(https://crbug.com/904851): Verify download using hash specified by
-  // PluginVmImage user policy. If hashes don't match remove downloaded file.
-  GetManager()->OnDownloadCompleted(completion_info.path);
+  GetManager()->OnDownloadCompleted(completion_info);
 }
 
 bool PluginVmImageDownloadClient::CanServiceRemoveDownloadedFile(

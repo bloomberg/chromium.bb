@@ -7,6 +7,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/download/public/background_service/download_metadata.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/window/dialog_client_view.h"
@@ -80,7 +81,7 @@ IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest, SetupCompleted) {
   CheckSetupIsInProgress();
 
   view_->GetPluginVmImageManagerForTesting()->OnDownloadCompleted(
-      base::FilePath());
+      download::CompletionInfo());
 
   CheckSetupIsInProgress();
 
@@ -118,7 +119,7 @@ IN_PROC_BROWSER_TEST_F(PluginVmLauncherViewBrowserTest,
   CheckSetupIsInProgress();
 
   view_->GetPluginVmImageManagerForTesting()->OnDownloadCompleted(
-      base::FilePath());
+      download::CompletionInfo());
 
   CheckSetupIsInProgress();
 

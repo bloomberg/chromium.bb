@@ -21,6 +21,7 @@ class Optional;
 
 namespace download {
 class DownloadService;
+struct CompletionInfo;
 }  // namespace download
 
 class Profile;
@@ -82,7 +83,7 @@ class PluginVmImageManager : public KeyedService {
   // Called by PluginVmImageDownloadClient.
   void OnDownloadStarted();
   void OnProgressUpdated(base::Optional<double> fraction_complete);
-  void OnDownloadCompleted(base::FilePath file_path);
+  void OnDownloadCompleted(const download::CompletionInfo& info);
   void OnDownloadCancelled();
   void OnDownloadFailed();
 
@@ -90,10 +91,14 @@ class PluginVmImageManager : public KeyedService {
   // image archive. In case |success| is false also deletes PluginVm image.
   void OnUnzipped(bool success);
 
+  // Returns true in case downloaded PluginVm image archive passes verification
+  // and false otherwise.
+  bool VerifyDownload(const std::string& downloaded_archive_hash);
+
   void SetDownloadServiceForTesting(
       download::DownloadService* download_service);
   void SetDownloadedPluginVmImageArchiveForTesting(
-      base::FilePath downloaded_plugin_vm_image_archive);
+      const base::FilePath& downloaded_plugin_vm_image_archive);
   std::string GetCurrentDownloadGuidForTesting();
 
  private:
@@ -134,9 +139,6 @@ class PluginVmImageManager : public KeyedService {
   void OnStartDownload(const std::string& download_guid,
                        download::DownloadParams::StartResult start_result);
   bool IsDownloading();
-  // Returns true in case downloaded PluginVm image archive passes verification
-  // and false otherwise.
-  bool VerifyDownload(std::string downloaded_archive_hash);
 
   bool UnzipDownloadedPluginVmImageArchive();
   bool IsUnzippingCancelled();
