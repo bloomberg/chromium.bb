@@ -3057,10 +3057,7 @@
           '--use-gpu-in-tests',
           # ANGLE test retries deliberately disabled to prevent flakiness.
           # http://crbug.com/669196
-          '--test-launcher-retry-limit=0',
-          # Work around leaks leading to out-of-memory as the test size grows.
-          # http://anglebug.com/3153
-          '--test-launcher-batch-limit=400'
+          '--test-launcher-retry-limit=0'
         ],
         'should_retry_with_patch': False,
         'swarming': {
