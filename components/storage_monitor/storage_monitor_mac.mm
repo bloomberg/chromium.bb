@@ -306,7 +306,7 @@ void StorageMonitorMac::EjectDevice(
   options->callback = callback;
   options->disk = std::move(disk);
   base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::Bind(EjectDisk, options));
+                           base::BindOnce(EjectDisk, options));
 }
 
 // static

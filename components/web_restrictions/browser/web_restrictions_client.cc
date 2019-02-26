@@ -61,8 +61,8 @@ void WebRestrictionsClient::SetAuthority(
   // accessed from the IO thread.
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::IO},
-      base::Bind(&WebRestrictionsClient::SetAuthorityTask,
-                 base::Unretained(this), content_provider_authority));
+      base::BindOnce(&WebRestrictionsClient::SetAuthorityTask,
+                     base::Unretained(this), content_provider_authority));
 }
 
 void WebRestrictionsClient::SetAuthorityTask(
@@ -136,9 +136,9 @@ void WebRestrictionsClient::RequestPermission(
 void WebRestrictionsClient::OnWebRestrictionsChanged(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::Bind(&WebRestrictionsClient::ClearCache, base::Unretained(this)));
+  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
+                           base::BindOnce(&WebRestrictionsClient::ClearCache,
+                                          base::Unretained(this)));
 }
 
 void WebRestrictionsClient::RecordURLAccess(const std::string& url) {
