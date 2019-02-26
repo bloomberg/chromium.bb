@@ -121,13 +121,17 @@
 
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
 #include "chromecast/browser/cast_extension_message_filter.h"  // nogncheck
+#include "chromecast/browser/cast_extension_url_loader_factory.h"  // nogncheck
 #include "extensions/browser/extension_message_filter.h"  // nogncheck
+#include "extensions/browser/extension_protocols.h"       // nogncheck
 #include "extensions/browser/extension_registry.h"        // nogncheck
 #include "extensions/browser/extension_system.h"          // nogncheck
 #include "extensions/browser/guest_view/extensions_guest_view_message_filter.h"  // nogncheck
+#include "extensions/browser/guest_view/web_view/web_view_guest.h"  // nogncheck
 #include "extensions/browser/info_map.h"                            // nogncheck
 #include "extensions/browser/io_thread_extension_message_filter.h"  // nogncheck
 #include "extensions/browser/process_map.h"                         // nogncheck
+#include "extensions/common/constants.h"                            // nogncheck
 #endif
 
 namespace chromecast {
@@ -917,6 +921,39 @@ CastContentBrowserClient::CreateThrottlesForNavigation(
   }
 #endif
   return throttles;
+}
+
+void CastContentBrowserClient::RegisterNonNetworkNavigationURLLoaderFactories(
+    int frame_tree_node_id,
+    NonNetworkURLLoaderFactoryMap* factories) {
+#if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
+  content::WebContents* web_contents =
+      content::WebContents::FromFrameTreeNodeId(frame_tree_node_id);
+  auto* browser_context = web_contents->GetBrowserContext();
+  auto extension_factory =
+      extensions::CreateExtensionNavigationURLLoaderFactory(
+          browser_context,
+          !!extensions::WebViewGuest::FromWebContents(web_contents));
+  factories->emplace(extensions::kExtensionScheme,
+                     std::make_unique<CastExtensionURLLoaderFactory>(
+                         browser_context, std::move(extension_factory)));
+#endif
+}
+
+void CastContentBrowserClient::RegisterNonNetworkSubresourceURLLoaderFactories(
+    int render_process_id,
+    int render_frame_id,
+    NonNetworkURLLoaderFactoryMap* factories) {
+#if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
+  content::RenderFrameHost* frame_host =
+      content::RenderFrameHost::FromID(render_process_id, render_frame_id);
+  auto* browser_context = frame_host->GetProcess()->GetBrowserContext();
+  auto extension_factory = extensions::CreateExtensionURLLoaderFactory(
+      render_process_id, render_frame_id);
+  factories->emplace(extensions::kExtensionScheme,
+                     std::make_unique<CastExtensionURLLoaderFactory>(
+                         browser_context, std::move(extension_factory)));
+#endif
 }
 
 void CastContentBrowserClient::OnNetworkServiceCreated(

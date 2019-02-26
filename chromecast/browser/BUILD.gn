@@ -250,6 +250,8 @@ cast_source_set("browser") {
       "cast_extension_host.h",
       "cast_extension_message_filter.cc",
       "cast_extension_message_filter.h",
+      "cast_extension_url_loader_factory.cc",
+      "cast_extension_url_loader_factory.h",
       "cast_web_view_extension.cc",
       "cast_web_view_extension.h",
       "extension_request_protocol_handler.cc",
