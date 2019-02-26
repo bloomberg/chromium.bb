@@ -11,7 +11,7 @@ import org.chromium.chrome.R;
 /* package */ class SilenceLintErrors {
     private int[] mRes = new int[] {
             R.anim.stay_hidden,
-            R.drawable.vr_services,
+            org.chromium.chrome.vr.pub.R.drawable.vr_services,
     };
 
     private SilenceLintErrors() {}
