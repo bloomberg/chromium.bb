@@ -455,18 +455,33 @@ SkiaOutputSurfaceImplOnGpu::OffscreenSurface::OffscreenSurface() = default;
 SkiaOutputSurfaceImplOnGpu::OffscreenSurface::~OffscreenSurface() = default;
 
 SkiaOutputSurfaceImplOnGpu::OffscreenSurface::OffscreenSurface(
-    const OffscreenSurface& offscreen_surface) = default;
-
-SkiaOutputSurfaceImplOnGpu::OffscreenSurface::OffscreenSurface(
     OffscreenSurface&& offscreen_surface) = default;
 
 SkiaOutputSurfaceImplOnGpu::OffscreenSurface&
 SkiaOutputSurfaceImplOnGpu::OffscreenSurface::operator=(
-    const OffscreenSurface& offscreen_surface) = default;
-
-SkiaOutputSurfaceImplOnGpu::OffscreenSurface&
-SkiaOutputSurfaceImplOnGpu::OffscreenSurface::operator=(
     OffscreenSurface&& offscreen_surface) = default;
+
+SkSurface* SkiaOutputSurfaceImplOnGpu::OffscreenSurface::surface() const {
+  return surface_.get();
+}
+
+sk_sp<SkPromiseImageTexture>
+SkiaOutputSurfaceImplOnGpu::OffscreenSurface::fulfill() {
+  DCHECK(surface_);
+  if (!promise_texture_) {
+    promise_texture_ = SkPromiseImageTexture::Make(
+        surface_->getBackendTexture(SkSurface::kFlushRead_BackendHandleAccess));
+  } else {
+    surface_->flush();
+  }
+  return promise_texture_;
+}
+
+void SkiaOutputSurfaceImplOnGpu::OffscreenSurface::set_surface(
+    sk_sp<SkSurface> surface) {
+  surface_ = std::move(surface);
+  promise_texture_ = {};
+}
 
 SkiaOutputSurfaceImplOnGpu::SurfaceWrapper::SurfaceWrapper() = default;
 
@@ -720,21 +735,22 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
 
   PullTextureUpdates(std::move(sync_tokens));
 
-  auto& surface = offscreen_surfaces_[id].surface;
+  auto& offscreen = offscreen_surfaces_[id];
   SkSurfaceCharacterization characterization;
   // TODO(penghuang): Using characterization != ddl->characterization(), when
   // the SkSurfaceCharacterization::operator!= is implemented in Skia.
-  if (!surface || !surface->characterize(&characterization) ||
+  if (!offscreen.surface() ||
+      !offscreen.surface()->characterize(&characterization) ||
       characterization != ddl->characterization()) {
-    surface = SkSurface::MakeRenderTarget(gr_context(), ddl->characterization(),
-                                          SkBudgeted::kNo);
-    DCHECK(surface);
+    offscreen.set_surface(SkSurface::MakeRenderTarget(
+        gr_context(), ddl->characterization(), SkBudgeted::kNo));
+    DCHECK(offscreen.surface());
   }
   {
     base::Optional<gpu::raster::GrShaderCache::ScopedCacheUse> cache_use;
     if (gr_shader_cache_)
       cache_use.emplace(gr_shader_cache_, gpu::kInProcessCommandBufferClientId);
-    surface->draw(ddl.get());
+    offscreen.surface()->draw(ddl.get());
     gr_context()->flush();
   }
   ReleaseFenceSyncAndPushTextureUpdates(sync_fence_release);
@@ -765,7 +781,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
   DCHECK(from_fbo0 ||
          offscreen_surfaces_.find(id) != offscreen_surfaces_.end());
   auto* surface =
-      from_fbo0 ? sk_surface_.get() : offscreen_surfaces_[id].surface.get();
+      from_fbo0 ? sk_surface_.get() : offscreen_surfaces_[id].surface();
 
   if (!is_using_vulkan()) {
     // Lazy initialize GLRendererCopier.
@@ -963,19 +979,12 @@ sk_sp<SkPromiseImageTexture> SkiaOutputSurfaceImplOnGpu::FulfillPromiseTexture(
   DCHECK(!*shared_image_out);
   auto it = offscreen_surfaces_.find(id);
   DCHECK(it != offscreen_surfaces_.end());
-  auto& surface = it->second.surface;
-  auto& promise_texture = it->second.promise_texture;
+  auto promise_texture = it->second.fulfill();
   if (!promise_texture) {
-    promise_texture = SkPromiseImageTexture::Make(
-        surface->getBackendTexture(SkSurface::kFlushRead_BackendHandleAccess));
-    if (!promise_texture) {
-      DLOG(ERROR)
-          << "Failed to fulfill the promise texture created from RenderPassId:"
-          << id;
-      return nullptr;
-    }
-  } else {
-    surface->flush();
+    DLOG(ERROR)
+        << "Failed to fulfill the promise texture created from RenderPassId:"
+        << id;
+    return nullptr;
   }
   return promise_texture;
 }
