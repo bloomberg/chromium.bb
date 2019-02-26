@@ -24,7 +24,6 @@
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_property_tree_printer.h"
-#include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 
 namespace blink {
@@ -379,10 +378,6 @@ void PrePaintTreeWalk::WalkInternal(const LayoutObject& object,
     object.GetFrameView()->GetJankTracker().NotifyObjectPrePaint(
         object, paint_invalidator_context.old_visual_rect,
         *paint_invalidator_context.painting_layer);
-  }
-  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled()) {
-    object.GetFrameView()->GetPaintTimingDetector().NotifyObjectPrePaint(
-        object, *paint_invalidator_context.painting_layer);
   }
 }
 

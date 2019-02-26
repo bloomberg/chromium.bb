@@ -212,6 +212,8 @@ void TextPaintTimingDetector::RecordText(
     rect_size = frame_view_->GetPaintTimingDetector().CalculateVisualSize(
         visual_rect, current_paint_chunk_properties);
   }
+  DVLOG(2) << "Node id (" << node_id << "): size=" << rect_size
+           << ", type=" << object.DebugName();
 
   // When rect_size == 0, it either means the text size is 0 or the text is out
   // of viewport. In either case, we don't record their time for efficiency.

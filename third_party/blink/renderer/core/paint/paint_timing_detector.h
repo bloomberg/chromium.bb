@@ -19,6 +19,7 @@ class LayoutRect;
 class TextPaintTimingDetector;
 class ImagePaintTimingDetector;
 class PropertyTreeState;
+class Image;
 
 // PaintTimingDetector contains some of paint metric detectors,
 // providing common infrastructure for these detectors.
@@ -31,8 +32,21 @@ class CORE_EXPORT PaintTimingDetector
     : public GarbageCollected<PaintTimingDetector> {
  public:
   PaintTimingDetector(LocalFrameView*);
-  void NotifyObjectPrePaint(const LayoutObject& object,
-                            const PaintLayer& painting_layer);
+
+  // TODO(crbug/936124): the detector no longer need to look for background
+  // images in each layer.
+  // Notify the paint of background image.
+  static void NotifyBackgroundImagePaint(
+      const Node* node,
+      Image* image,
+      const PropertyTreeState& current_paint_chunk_properties);
+  static void NotifyImagePaint(
+      const Node* node,
+      const PropertyTreeState& current_paint_chunk_properties);
+  static void NotifyImagePaint(
+      const LayoutObject& object,
+      const PropertyTreeState& current_paint_chunk_properties);
+
   static void NotifyTextPaint(const Node* node, const PropertyTreeState&);
   static void NotifyTextPaint(const LayoutObject& object,
                               const PropertyTreeState&);

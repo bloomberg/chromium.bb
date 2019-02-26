@@ -13,12 +13,14 @@
 #include "third_party/blink/renderer/core/paint/nine_piece_image_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/paint/rounded_inner_rect_clipper.h"
 #include "third_party/blink/renderer/core/style/border_edge.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/shadow_list.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 #include "third_party/blink/renderer/platform/graphics/scoped_interpolation_quality.h"
 
 namespace blink {
@@ -542,6 +544,14 @@ inline bool PaintFastBottomLayer(Node* node,
   context.DrawImageRRect(image, Image::kSyncDecode, image_border, src_rect,
                          composite_op);
 
+  if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled()) {
+    if (info.image && info.image->IsImageResource()) {
+      PaintTimingDetector::NotifyBackgroundImagePaint(
+          node, image,
+          paint_info.context.GetPaintController()
+              .CurrentPaintChunkProperties());
+    }
+  }
   return true;
 }
 
@@ -658,6 +668,13 @@ void PaintFillLayerBackground(GraphicsContext& context,
                         FloatRect(geometry.SnappedDestRect()), geometry.Phase(),
                         FloatSize(geometry.TileSize()), composite_op,
                         FloatSize(geometry.SpaceSize()));
+    if (RuntimeEnabledFeatures::FirstContentfulPaintPlusPlusEnabled()) {
+      if (info.image && info.image->IsImageResource()) {
+        PaintTimingDetector::NotifyBackgroundImagePaint(
+            node, image,
+            context.GetPaintController().CurrentPaintChunkProperties());
+      }
+    }
   }
 }
 

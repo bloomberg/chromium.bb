@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/style/style_fetched_image.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
+#include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
@@ -42,7 +43,7 @@ String GetImageUrl(const LayoutObject& object) {
     const ImageResourceContent* cached_image = image_resource->CachedImage();
     return cached_image ? cached_image->Url().StrippedForUseAsReferrer() : "";
   }
-  DCHECK(ImagePaintTimingDetector::HasContentfulBackgroundImage(object));
+  DCHECK(ImagePaintTimingDetector::HasBackgroundImage(object));
   const ComputedStyle* style = object.Style();
   StringBuilder concatenated_result;
   for (const FillLayer* bg_layer = &style->BackgroundLayers(); bg_layer;
@@ -59,7 +60,7 @@ String GetImageUrl(const LayoutObject& object) {
 #endif
 
 bool AttachedBackgroundImagesAllLoaded(const LayoutObject& object) {
-  DCHECK(ImagePaintTimingDetector::HasContentfulBackgroundImage(object));
+  DCHECK(ImagePaintTimingDetector::HasBackgroundImage(object));
   const ComputedStyle* style = object.Style();
   DCHECK(style);
   for (const FillLayer* bg_layer = &style->BackgroundLayers(); bg_layer;
@@ -92,7 +93,7 @@ bool IsLoaded(const LayoutObject& object) {
     const ImageResourceContent* cached_image = image_resource->CachedImage();
     return cached_image ? cached_image->IsLoaded() : false;
   }
-  DCHECK(ImagePaintTimingDetector::HasContentfulBackgroundImage(object));
+  DCHECK(ImagePaintTimingDetector::HasBackgroundImage(object));
   return AttachedBackgroundImagesAllLoaded(object);
 }
 }  // namespace
@@ -190,7 +191,7 @@ void ImagePaintTimingDetector::Analyze() {
   }
 }
 
-void ImagePaintTimingDetector::OnPrePaintFinished() {
+void ImagePaintTimingDetector::OnPaintFinished() {
   frame_index_++;
   if (records_pending_timing_.size() <= 0)
     return;
@@ -276,37 +277,14 @@ void ImagePaintTimingDetector::ReportSwapTime(
   Analyze();
 }
 
-// In the context of FCP++, we define contentful background image as one that
-// satisfies all of the following conditions:
-// * has image reources attached to style of the object, i.e.,
-//  { background-image: url('example.gif') }
-// * not attached to <body> or <html>
-//
 // static
-bool ImagePaintTimingDetector::HasContentfulBackgroundImage(
-    const LayoutObject& object) {
+bool ImagePaintTimingDetector::HasBackgroundImage(const LayoutObject& object) {
   Node* node = object.GetNode();
   if (!node)
-    return false;
-  // Background images attached to <body> or <html> are likely for background
-  // purpose, so we rule them out, according to the following rules:
-  // * Box model objects includes objects of box model, such as <div>, <body>,
-  //  LayoutView, but not includes LayoutText.
-  // * BackgroundTransfersToView is true for the <body>, <html>, e.g., that
-  //  have transferred their background to LayoutView.
-  // * LayoutView has the background transfered by <html> if <html> has
-  //  background.
-  if (!object.IsBoxModelObject() ||
-      ToLayoutBoxModelObject(object).BackgroundTransfersToView())
-    return false;
-  if (object.IsLayoutView())
     return false;
   const ComputedStyle* style = object.Style();
   if (!style)
     return false;
-  if (!style->HasBackgroundImage())
-    return false;
-
   for (const FillLayer* bg_layer = &style->BackgroundLayers(); bg_layer;
        bg_layer = bg_layer->Next()) {
     StyleImage* bg_image = bg_layer->GetImage();
@@ -318,8 +296,9 @@ bool ImagePaintTimingDetector::HasContentfulBackgroundImage(
   return false;
 }
 
-void ImagePaintTimingDetector::RecordImage(const LayoutObject& object,
-                                           const PaintLayer& painting_layer) {
+void ImagePaintTimingDetector::RecordImage(
+    const LayoutObject& object,
+    const PropertyTreeState& current_paint_chunk_properties) {
   // TODO(crbug.com/933479): Use LayoutObject::GeneratingNode() to include
   // anonymous objects' rect.
   Node* node = object.GetNode();
@@ -342,7 +321,9 @@ void ImagePaintTimingDetector::RecordImage(const LayoutObject& object,
       return;
     uint64_t rect_size =
         frame_view_->GetPaintTimingDetector().CalculateVisualSize(
-            visual_rect, painting_layer);
+            visual_rect, current_paint_chunk_properties);
+    DVLOG(2) << "Node id (" << node_id << "): size=" << rect_size
+             << ", type=" << object.DebugName();
     if (rect_size == 0) {
       // When rect_size == 0, it either means the image is size 0 or the image
       // is out of viewport. Either way, we don't track this image anymore, to
@@ -386,6 +367,30 @@ void ImagePaintTimingDetector::RecordImage(const LayoutObject& object,
     record->first_paint_index = ++first_paint_index_max_;
     time_ordered_set_.insert(record->AsWeakPtr());
   }
+}
+
+// In the context of FCP++, we define contentful background image as one that
+// satisfies all of the following conditions:
+// * has image reources attached to style of the object, i.e.,
+//  { background-image: url('example.gif') }
+// * not attached to <body> or <html>
+// This function contains the above heuristics.
+//
+// static
+bool ImagePaintTimingDetector::IsBackgroundImageContentful(
+    const LayoutObject& object,
+    const Image& image) {
+  // Background images attached to <body> or <html> are likely for background
+  // purpose, so we rule them out.
+  if (object.IsLayoutView()) {
+    return false;
+  }
+  // Generated images are excluded here, as they are likely to serve for
+  // background purpose.
+  if (!image.IsBitmapImage() && !image.IsStaticBitmapImage() &&
+      !image.IsSVGImage() && !image.IsPlaceholderImage())
+    return false;
+  return true;
 }
 
 void ImagePaintTimingDetector::StopRecordEntries() {

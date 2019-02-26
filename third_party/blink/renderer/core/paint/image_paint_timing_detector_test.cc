@@ -23,7 +23,7 @@
 namespace blink {
 
 class ImagePaintTimingDetectorTest
-    : public PageTestBase,
+    : public RenderingTest,
       private ScopedFirstContentfulPaintPlusPlusForTest {
   using CallbackQueue = std::queue<WebLayerTreeView::ReportTimeCallback>;
 
@@ -39,7 +39,8 @@ class ImagePaintTimingDetectorTest
   }
 
   void SetUp() override {
-    PageTestBase::SetUp();
+    RenderingTest::SetUp();
+    RenderingTest::EnableCompositing();
     GetPaintTimingDetector()
         .GetImagePaintTimingDetector()
         .notify_swap_time_override_for_testing_ =
@@ -299,35 +300,6 @@ TEST_F(ImagePaintTimingDetectorTest,
   EXPECT_TRUE(record);
   EXPECT_EQ(record->first_paint_time_after_loaded,
             base::TimeTicks() + TimeDelta::FromSecondsD(1));
-}
-
-// This test dipicts a situation when a smaller image has loaded, but a larger
-// image is loading. When we call analyze, the result will be empty because
-// we don't know when the largest image will finish loading. We wait until
-// next analysis to make the judgement again.
-// This bahavior is the same with Last Image Paint as well.
-TEST_F(ImagePaintTimingDetectorTest, DiscardAnalysisWhenLargestIsLoading) {
-  SetBodyInnerHTML(R"HTML(
-    <style>img { display:block }</style>
-    <div id="parent">
-      <img height="5" width="5" id="1"></img>
-      <img height="9" width="9" id="2"></img>
-    </div>
-  )HTML");
-  SetImageAndPaint("1", 5, 5);
-  UpdateAllLifecyclePhasesForTest();
-  ImageRecord* record;
-  InvokeCallback();
-  record = FindLargestPaintCandidate();
-  EXPECT_FALSE(record);
-
-  SetImageAndPaint("2", 9, 9);
-  UpdateAllLifecyclePhasesForTest();
-  InvokeCallback();
-  record = FindLargestPaintCandidate();
-  EXPECT_TRUE(record);
-  EXPECT_EQ(record->first_size, 81ul);
-  EXPECT_FALSE(record->first_paint_time_after_loaded.is_null());
 }
 
 // This is to prove that a swap time is assigned only to nodes of the frame who
@@ -632,8 +604,6 @@ TEST_F(ImagePaintTimingDetectorTest, BackgroundImage_IgnoreBody) {
         background-image: url(data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==);
       }
     </style>
-    <body>
-    </body>
   )HTML");
   EXPECT_EQ(CountRecords(), 0u);
 }
