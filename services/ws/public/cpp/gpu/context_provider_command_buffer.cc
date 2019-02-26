@@ -163,10 +163,14 @@ gpu::ContextResult ContextProviderCommandBuffer::BindToCurrentThread() {
       return bind_result_;
     }
 
+    // The transfer buffer is used to serialize Dawn commands
+    transfer_buffer_ =
+        std::make_unique<gpu::TransferBuffer>(webgpu_helper.get());
+
     // The WebGPUImplementation exposes the WebGPUInterface, as well as the
     // gpu::ContextSupport interface.
     auto webgpu_impl = std::make_unique<gpu::webgpu::WebGPUImplementation>(
-        webgpu_helper.get());
+        webgpu_helper.get(), transfer_buffer_.get(), command_buffer_.get());
 
     std::string type_name =
         command_buffer_metrics::ContextTypeToString(context_type_);
