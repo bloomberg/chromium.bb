@@ -43,9 +43,17 @@ struct AstNode {
     kOther,
   };
 
+  // A node that (along with its' sublings) represents some sub-section of the
+  // text represented by this node.
   AstNode* children;
+
+  // Pointer to the next sibling of this node in the siblings linked list.
   AstNode* sibling;
+
+  // Type of node being represented.
   Type type;
+
+  // Text which was parsed into the string.
   std::string text;
 };
 

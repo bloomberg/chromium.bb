@@ -160,6 +160,8 @@ CddlType* AnalyzeType2(CddlSymbolTable* table, const AstNode& type2) {
       array->array = AnalyzeGroup(table, *node);
       return array;
     } else if (type2.text[0] == '&') {
+      // Represents a choice between options in this group (ie an enum), not a
+      // choice between groups (which is currently unsupported).
       CddlType* group_choice =
           AddCddlType(table, CddlType::Which::kGroupChoice);
       group_choice->group_choice = AnalyzeGroup(table, *node);
@@ -183,6 +185,8 @@ CddlType* AnalyzeType1(CddlSymbolTable* table, const AstNode& type1) {
 CddlType* AnalyzeType(CddlSymbolTable* table, const AstNode& type) {
   const AstNode* type1 = type.children;
   if (type1->sibling) {
+    // If the type we are looking at has a type choice, create a top-level
+    // choice object, with a vector containing all valid choices.
     CddlType* type_choice = AddCddlType(table, CddlType::Which::kDirectChoice);
     InitDirectChoice(&type_choice->direct_choice);
     while (type1) {
@@ -191,6 +195,7 @@ CddlType* AnalyzeType(CddlSymbolTable* table, const AstNode& type) {
     }
     return type_choice;
   } else {
+    // Else just return the single choice.
     return AnalyzeType1(table, *type1);
   }
 }
@@ -218,10 +223,15 @@ bool AnalyzeGroupEntry(CddlSymbolTable* table,
                        const AstNode& group_entry,
                        CddlGroup::Entry* entry) {
   const AstNode* node = group_entry.children;
+
+  // If it's an occurance operator (so the entry is optional), mark it as such
+  // and proceed to the next the node.
   if (node->type == AstNode::Type::kOccur) {
     entry->opt_occurrence = std::string(node->text);
     node = node->sibling;
   }
+
+  // If it's a member key (key in a map), save it and go to next node.
   if (node->type == AstNode::Type::kMemberKey) {
     if (node->text[node->text.size() - 1] == '>')
       return false;
@@ -230,6 +240,8 @@ bool AnalyzeGroupEntry(CddlSymbolTable* table,
     entry->type.opt_key = std::string(node->children->text);
     node = node->sibling;
   }
+
+  // If it's a type, process it as such.
   if (node->type == AstNode::Type::kType) {
     if (entry->which == CddlGroup::Entry::Which::kUninitialized) {
       entry->which = CddlGroup::Entry::Which::kType;
@@ -326,35 +338,13 @@ std::pair<bool, CddlSymbolTable> BuildSymbolTable(const AstNode& rules) {
   std::pair<bool, CddlSymbolTable> result;
   result.first = false;
   auto& table = result.second;
-  const AstNode* node = rules.children;
-  if (node->type != AstNode::Type::kTypename &&
-      node->type != AstNode::Type::kGroupname) {
-    return result;
-  }
-  bool is_type = node->type == AstNode::Type::kTypename;
-  table.root_rule = std::string(node->text);
+  table.root_rule = std::string(rules.children->text);
 
-  node = node->sibling;
-  if (node->type != AstNode::Type::kAssign)
-    return result;
+  // Parse over all rules iteratively.
+  for (const AstNode* rule = &rules; rule; rule = rule->sibling) {
+    AstNode* node = rule->children;
 
-  node = node->sibling;
-  if (is_type) {
-    CddlType* type = AnalyzeType(&table, *node);
-    if (!type)
-      return result;
-    table.type_map.emplace(table.root_rule, type);
-  } else {
-    table.groups.emplace_back(new CddlGroup);
-    CddlGroup* group = table.groups.back().get();
-    group->entries.emplace_back(new CddlGroup::Entry);
-    AnalyzeGroupEntry(&table, *node, group->entries.back().get());
-    table.group_map.emplace(table.root_rule, group);
-  }
-
-  const AstNode* rule = rules.sibling;
-  while (rule) {
-    node = rule->children;
+    // Ensure that the node is either a type or group definition.
     if (node->type != AstNode::Type::kTypename &&
         node->type != AstNode::Type::kGroupname) {
       return result;
@@ -362,10 +352,12 @@ std::pair<bool, CddlSymbolTable> BuildSymbolTable(const AstNode& rules) {
     bool is_type = node->type == AstNode::Type::kTypename;
     absl::string_view name = node->text;
 
+    // Ensure that the node is assignment.
     node = node->sibling;
     if (node->type != AstNode::Type::kAssign)
       return result;
 
+    // Process the definition.
     node = node->sibling;
     if (is_type) {
       CddlType* type = AnalyzeType(&table, *node);
@@ -379,13 +371,14 @@ std::pair<bool, CddlSymbolTable> BuildSymbolTable(const AstNode& rules) {
       AnalyzeGroupEntry(&table, *node, group->entries.back().get());
       table.group_map.emplace(std::string(name), group);
     }
-    rule = rule->sibling;
   }
 
   result.first = true;
   return result;
 }
 
+// Fetches a C++ Type from all known definitons, or inserts a placeholder to be
+// updated later if the type hasn't been defined yet.
 CppType* GetCppType(CppSymbolTable* table, const std::string& name) {
   if (name.empty()) {
     table->cpp_types.emplace_back(new CppType);
@@ -452,6 +445,9 @@ bool AddMembersToStruct(
   for (const auto& x : entries) {
     if (x->which == CddlGroup::Entry::Which::kType) {
       if (x->type.opt_key.empty()) {
+        // If the represented node has no text (ie - it's code generated) then
+        // it must have an inner type that is based on the user input. If this
+        // one looks as expected, process it recursively.
         if (x->type.value->which != CddlType::Which::kId ||
             !x->opt_occurrence.empty()) {
           return false;
@@ -470,6 +466,7 @@ bool AddMembersToStruct(
           return false;
         }
       } else {
+        // Here it is a real type definition - so process it as such.
         CppType* member_type =
             MakeCppType(table, cddl_table,
                         cpp_type->name + std::string("_") + x->type.opt_key,
@@ -479,6 +476,8 @@ bool AddMembersToStruct(
         if (member_type->name.empty())
           member_type->name = x->type.opt_key;
         if (x->opt_occurrence == "?") {
+          // Create an "optional" type, with sub-type being the type that is
+          // optional.
           table->cpp_types.emplace_back(new CppType);
           CppType* optional_type = table->cpp_types.back().get();
           optional_type->which = CppType::Which::kOptional;
@@ -491,6 +490,7 @@ bool AddMembersToStruct(
         }
       }
     } else {
+      // if it's not a type, it's a group so add its members recursuvely.
       if (!AddMembersToStruct(table, cddl_table, cpp_type, x->group->entries))
         return false;
     }

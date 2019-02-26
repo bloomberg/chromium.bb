@@ -49,6 +49,7 @@ bool IsBinaryDigit(char x) {
   return '0' == x || x == '1';
 }
 
+// Determines if the given character matches regex '[a-zA-Z@_$]'.
 bool IsExtendedAlpha(char x) {
   return absl::ascii_isalpha(x) || x == '@' || x == '_' || x == '$';
 }
@@ -66,6 +67,7 @@ absl::string_view SkipNewline(absl::string_view view) {
   return view.substr(index);
 }
 
+// Skips over a comment that makes up the remainder of the current line.
 absl::string_view SkipComment(absl::string_view view) {
   size_t index = 0;
   if (view[index] == ';') {
@@ -211,6 +213,8 @@ AstNode* ParseValue(Parser* p) {
   return node;
 }
 
+// Looks for an occurance indicator (such as '*' or '?') prefacing the group
+// definition and parses it into a node if found.
 AstNode* ParseOccur(Parser* p) {
   if (p->data[0] != '*' && p->data[0] != '?') {
     return nullptr;
@@ -284,6 +288,8 @@ AstNode* ParseMemberKey3(Parser* p) {
   return node;
 }
 
+// Iteratively tries all valid member key formats, retuning a Node representing
+// the member key if found or nullptr if not.
 AstNode* ParseMemberKey(Parser* p) {
   AstNode* node = ParseMemberKey1(p);
   if (!node) {
@@ -306,6 +312,9 @@ bool SkipOptionalComma(Parser* p) {
   return true;
 }
 
+// Parse the group contained inside of other brackets. Since the brackets around
+// the group are optional inside of other brackets, we can't directly call
+// ParseGroupEntry(...) and instead need this wrapper around it.
 AstNode* ParseGroupChoice(Parser* p) {
   Parser p_speculative{p->data};
   AstNode* tail = nullptr;
@@ -516,8 +525,12 @@ AstNode* ParseType1(Parser* p) {
                  absl::string_view(orig, p->data - orig), type2);
 }
 
+// Different valid types for a call are specified as type1 / type2, so we split
+// at the '/' character and process each allowed type separately.
 AstNode* ParseType(Parser* p) {
   Parser p_speculative{p->data};
+
+  // Parse all allowed types into a linked list starting in type1's sibling ptr.
   AstNode* type1 = ParseType1(&p_speculative);
   if (!type1) {
     return nullptr;
@@ -538,6 +551,8 @@ AstNode* ParseType(Parser* p) {
     tail = next_type1;
     SkipWhitespaceAndComments(&p_speculative);
   }
+
+  // Create a new AstNode with all parsed types.
   AstNode* node =
       AddNode(p, AstNode::Type::kType,
               absl::string_view(p->data, p_speculative.data - p->data), type1);
@@ -549,9 +564,13 @@ AstNode* ParseType(Parser* p) {
 
 AstNode* ParseId(Parser* p) {
   const char* id = p->data;
+
+  // If the id doesnt start with a valid name character, return null.
   if (!IsExtendedAlpha(id[0])) {
     return nullptr;
   }
+
+  // Read through the name character by character and make sure it's valid.
   const char* it = id + 1;
   while (true) {
     if (it[0] == '-' || it[0] == '.') {
@@ -566,26 +585,38 @@ AstNode* ParseId(Parser* p) {
       break;
     }
   }
+
+  // Create and return a new node with the parsed data.
   AstNode* node =
       AddNode(p, AstNode::Type::kId, absl::string_view(p->data, it - p->data));
   p->data = it;
   return node;
 }
 
+// Parses a group element of form 'name: type',
 AstNode* ParseGroupEntry1(Parser* p) {
   Parser p_speculative{p->data};
+
+  // Check for an occurance indicator ('?', '*', "+") before the entry
+  // definition.
   AstNode* occur = ParseOccur(&p_speculative);
   if (occur) {
     SkipWhitespaceAndComments(&p_speculative);
   }
+
+  // Parse the id of the entry.
   AstNode* member_key = ParseMemberKey(&p_speculative);
   if (member_key) {
     SkipWhitespaceAndComments(&p_speculative);
   }
+
+  // Parse the type of data stored in the entry.
   AstNode* type = ParseType(&p_speculative);
   if (!type) {
     return nullptr;
   }
+
+  // Create a new node with this information.
   AstNode* node = AddNode(p, AstNode::Type::kGrpent, absl::string_view());
   if (occur) {
     node->children = occur;
@@ -608,13 +639,20 @@ AstNode* ParseGroupEntry1(Parser* p) {
   return node;
 }
 
+// Parses an entry which is a reference to another sub-group, of the form
+// 'sugroupName'.
 // NOTE: This should probably never be hit, why is it in the grammar?
 AstNode* ParseGroupEntry2(Parser* p) {
   Parser p_speculative{p->data};
+
+  // Check for an occurance indicator ('?', '*', "+") before the sub-group
+  // definition.
   AstNode* occur = ParseOccur(&p_speculative);
   if (occur) {
     SkipWhitespaceAndComments(&p_speculative);
   }
+
+  // Parse the ID of the sub-group.
   AstNode* id = ParseId(&p_speculative);
   if (!id) {
     return nullptr;
@@ -626,6 +664,8 @@ AstNode* ParseGroupEntry2(Parser* p) {
               << std::endl;
     return nullptr;
   }
+
+  // Create a new node containing this sub-group reference.
   AstNode* node = AddNode(p, AstNode::Type::kGrpent, absl::string_view());
   if (occur) {
     occur->sibling = id;
@@ -640,6 +680,8 @@ AstNode* ParseGroupEntry2(Parser* p) {
   return node;
 }
 
+// Recursively parse a group entry that's an inline-defined group of the form
+// '(...<some contents>...)'.
 AstNode* ParseGroupEntry3(Parser* p) {
   Parser p_speculative{p->data};
   AstNode* occur = ParseOccur(&p_speculative);
@@ -651,7 +693,7 @@ AstNode* ParseGroupEntry3(Parser* p) {
   }
   ++p_speculative.data;
   SkipWhitespaceAndComments(&p_speculative);
-  AstNode* group = ParseGroup(&p_speculative);
+  AstNode* group = ParseGroup(&p_speculative);  // Recursive call here.
   if (!group) {
     return nullptr;
   }
@@ -675,19 +717,31 @@ AstNode* ParseGroupEntry3(Parser* p) {
   return node;
 }
 
+// Recursively parse the group assignemnt.
 AstNode* ParseGroupEntry(Parser* p) {
+  // Parse a group entry of form 'id: type'.
   AstNode* node = ParseGroupEntry1(p);
+
+  // Parse a group entry of form 'subgroupName'.
   if (!node) {
     node = ParseGroupEntry2(p);
   }
+
+  // Parse a group entry of the form (...<some contents>...).
+  // NOTE: This is the method hit during the top-level group parsing, and the
+  // recursive call occurs inside this method.
   if (!node) {
     node = ParseGroupEntry3(p);
   }
+
+  // return the results of the recursive call.
   return node;
 }
 
 AstNode* ParseRule(Parser* p) {
   const char* start = p->data;
+
+  // Use the parser to extract the id and data.
   AstNode* id = ParseId(p);
   if (!id) {
     return nullptr;
@@ -698,6 +752,8 @@ AstNode* ParseRule(Parser* p) {
               << std::endl;
     return nullptr;
   }
+
+  // Determine the type of assignment being done to this variable name (ie '=').
   SkipWhitespaceAndComments(p);
   const char* assign_start = p->data;
   AssignType assign_type = ParseAssignmentType(p);
@@ -713,22 +769,27 @@ AstNode* ParseRule(Parser* p) {
       absl::string_view(assign_start, p->data - assign_start));
   id->sibling = assign_node;
 
+  // Parse the object type being assigned.
   SkipWhitespaceAndComments(p);
-  AstNode* type = ParseType(p);
-  id->type = AstNode::Type::kTypename;
-  if (!type) {
+  AstNode* type = ParseType(p);  // Try to parse it as a type.
+  if (type) {
+    id->type = AstNode::Type::kTypename;
+  } else {  // If it's not a type, try and parse it as a group.
     type = ParseGroupEntry(p);
     id->type = AstNode::Type::kGroupname;
-    if (!type) {
-      return nullptr;
-    }
+  }
+  if (!type) {  // if it's not a type or a group, exit as failure.
+    return nullptr;
   }
   assign_node->sibling = type;
   SkipWhitespaceAndComments(p);
+
+  // Return the results.
   return AddNode(p, AstNode::Type::kRule,
                  absl::string_view(start, p->data - start), id);
 }
 
+// Iteratively parse the CDDL spec into a tree structure.
 ParseResult ParseCddl(absl::string_view data) {
   if (data[0] == 0) {
     return {nullptr, {}};

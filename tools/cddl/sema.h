@@ -16,7 +16,9 @@
 
 struct CddlGroup;
 
+// Represents a type defined in CDDL.
 struct CddlType {
+  // Type of assignment being represented by this CDDL node.
   enum class Which {
     kDirectChoice,
     kValue,
@@ -59,6 +61,7 @@ struct CddlType {
   };
 };
 
+// Represets a group defined in CDDL.
 // TODO(btolsch): group choices
 struct CddlGroup {
   struct Entry {
@@ -85,15 +88,27 @@ struct CddlGroup {
   std::vector<std::unique_ptr<Entry>> entries;
 };
 
+// Represents all CDDL definitions.
 struct CddlSymbolTable {
+  // Set of all CDDL types.
   std::vector<std::unique_ptr<CddlType>> types;
+
+  // Set of all CDDL groups.
   std::vector<std::unique_ptr<CddlGroup>> groups;
+
+  // Map from name of a type to the object that represents it.
   std::map<std::string, CddlType*> type_map;
+
+  // Map from name of a group to the object that represents it.
   std::map<std::string, CddlGroup*> group_map;
+
+  // Root rule for the CDDL document.
   std::string root_rule;
 };
 
+// Represents a C++ Type, as translated from CDDL.
 struct CppType {
+  // Data type for this C++ type.
   enum class Which {
     kUninitialized = 0,
     kUint64,
