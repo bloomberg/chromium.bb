@@ -317,7 +317,8 @@ bool AutomationAXTreeWrapper::OnAccessibilityEvents(
 }
 
 bool AutomationAXTreeWrapper::IsDesktopTree() const {
-  return tree_.root()->data().role == ax::mojom::Role::kDesktop;
+  return tree_.root() ? tree_.root()->data().role == ax::mojom::Role::kDesktop
+                      : false;
 }
 
 void AutomationAXTreeWrapper::OnNodeDataWillChange(
