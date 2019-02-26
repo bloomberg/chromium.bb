@@ -42,9 +42,7 @@ def main():
   options = parser.parse_args()
 
   # JNI_OnLoad is always exported.
-  # CrashpadHandlerMain() is the entry point to the Crashpad handler, required
-  # for libcrashpad_handler_trampoline.so.
-  symbol_list = ['CrashpadHandlerMain', 'JNI_OnLoad']
+  symbol_list = ['JNI_OnLoad']
 
   if options.export_java_symbols:
     symbol_list.append('Java_*')
