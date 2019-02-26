@@ -28,6 +28,12 @@ def capabilities():
     return {}
 
 
+def pytest_generate_tests(metafunc):
+    if "capabilities" in metafunc.fixturenames:
+        marker = metafunc.definition.get_closest_marker(name="capabilities")
+        if marker:
+            metafunc.parametrize("capabilities", marker.args, ids=None)
+
 
 @pytest.fixture
 def add_event_listeners(session):
@@ -146,8 +152,9 @@ def session(capabilities, configuration, request):
         if not _current_session.session_id:
             raise
 
-    # Enforce a fixed default window size
+    # Enforce a fixed default window size and position
     _current_session.window.size = defaults.WINDOW_SIZE
+    _current_session.window.position = defaults.WINDOW_POSITION
 
     yield _current_session
 

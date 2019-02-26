@@ -141,6 +141,6 @@ class Poll(object):
                 message = " with message: {}".format(self.exc_msg)
             raise self.exc_cls(
                 "Timed out after {} seconds{}".format(elapsed, message),
-                stacktrace=last_exc)
+                cause=last_exc)
         else:
             return rv
