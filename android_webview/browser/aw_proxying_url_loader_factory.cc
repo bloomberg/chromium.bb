@@ -19,6 +19,7 @@
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "components/safe_browsing/common/safebrowsing_constants.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_request_id.h"
@@ -134,11 +135,25 @@ class InterceptedRequest : public network::mojom::URLLoader,
 
  private:
   std::unique_ptr<AwContentsIoThreadClient> GetIoThreadClient();
-  void OnRequestError(const network::URLLoaderCompletionStatus& status);
+
+  // This is called when the original URLLoaderClient has a connection error.
+  void OnURLLoaderClientError();
+
+  // This is called when the original URLLoader has a connection error.
+  void OnURLLoaderError(uint32_t custom_reason, const std::string& description);
+
+  // Call OnComplete on |target_client_|. If |wait_for_loader_error| is true
+  // then this object will wait for |proxied_loader_binding_| to have a
+  // connection error before destructing.
+  void CallOnComplete(const network::URLLoaderCompletionStatus& status,
+                      bool wait_for_loader_error);
 
   // TODO(timvolodine): consider factoring this out of this class.
-  void OnReceivedErrorToCallback(int error_code);
   bool ShouldNotInterceptRequest();
+
+  // Posts the error callback to the UI thread, ensuring that at most we send
+  // only one.
+  void SendErrorCallback(int error_code, bool safebrowsing_hit);
 
   const int process_id_;
   const uint64_t request_id_;
@@ -146,6 +161,14 @@ class InterceptedRequest : public network::mojom::URLLoader,
   const uint32_t options_;
   bool input_stream_previously_failed_ = false;
   bool request_was_redirected_ = false;
+
+  // To avoid sending multiple OnReceivedError callbacks.
+  bool sent_error_callback_ = false;
+
+  // If the |target_loader_| called OnComplete with an error this stores it.
+  // That way the destructor can send it to OnReceivedError if safe browsing
+  // error didn't occur.
+  int error_status_ = net::OK;
 
   network::ResourceRequest request_;
   const net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
@@ -227,11 +250,16 @@ InterceptedRequest::InterceptedRequest(
       weak_factory_(this) {
   // If there is a client error, clean up the request.
   target_client_.set_connection_error_handler(base::BindOnce(
-      &InterceptedRequest::OnRequestError, weak_factory_.GetWeakPtr(),
-      network::URLLoaderCompletionStatus(net::ERR_ABORTED)));
+      &InterceptedRequest::OnURLLoaderClientError, base::Unretained(this)));
+  proxied_loader_binding_.set_connection_error_with_reason_handler(
+      base::BindOnce(&InterceptedRequest::OnURLLoaderError,
+                     base::Unretained(this)));
 }
 
-InterceptedRequest::~InterceptedRequest() {}
+InterceptedRequest::~InterceptedRequest() {
+  if (error_status_ != net::OK)
+    SendErrorCallback(error_status_, false);
+}
 
 void InterceptedRequest::Restart() {
   // TODO(timvolodine): add async check shouldOverrideUrlLoading and
@@ -242,7 +270,10 @@ void InterceptedRequest::Restart() {
   DCHECK(io_thread_client);
 
   if (ShouldBlockURL(request_.url, io_thread_client.get())) {
-    OnRequestError(network::URLLoaderCompletionStatus(net::ERR_ACCESS_DENIED));
+    auto status = network::URLLoaderCompletionStatus(net::ERR_ACCESS_DENIED);
+    SendErrorCallback(status.error_code, false);
+    target_client_->OnComplete(status);
+    delete this;
     return;
   }
 
@@ -385,15 +416,15 @@ void OnReceivedHttpErrorOnUiThread(
 void OnReceivedErrorOnUiThread(int process_id,
                                int render_frame_id,
                                const AwWebResourceRequest& request,
-                               int error_code) {
+                               int error_code,
+                               bool safebrowsing_hit) {
   auto* client = GetAwContentsClientBridgeFromID(process_id, render_frame_id);
   if (!client) {
     DLOG(WARNING) << "client is null, onReceivedError dropped for "
                   << request.url;
     return;
   }
-  // TODO(timvolodine): properly handle safe_browsing_hit.
-  client->OnReceivedError(request, error_code, false /*safebrowsing_hit*/);
+  client->OnReceivedError(request, error_code, safebrowsing_hit);
 }
 
 void OnNewLoginRequestOnUiThread(int process_id,
@@ -489,16 +520,10 @@ void InterceptedRequest::OnStartLoadingResponseBody(
 
 void InterceptedRequest::OnComplete(
     const network::URLLoaderCompletionStatus& status) {
-  if (status.error_code != net::OK) {
-    OnRequestError(status);
-    return;
-  }
-
-  target_client_->OnComplete(status);
-
-  // Deletes |this|.
-  // TODO(timvolodine): consider doing this via the factory.
-  delete this;
+  // Only wait for the original loader to possibly have a custom error if the
+  // target loader succeeded. If the target loader failed, then it was a race as
+  // to whether that error or the safe browsing error would be reported.
+  CallOnComplete(status, status.error_code == net::OK);
 }
 
 // URLLoader methods.
@@ -509,6 +534,12 @@ void InterceptedRequest::FollowRedirect(
     const base::Optional<GURL>& new_url) {
   if (target_loader_)
     target_loader_->FollowRedirect(removed_headers, modified_headers, new_url);
+
+  // If |OnURLLoaderClientError| was called then we're just waiting for the
+  // connection error handler of |proxied_loader_binding_|. Don't restart the
+  // job since that'll create another URLLoader
+  if (!target_client_)
+    return;
 
   Restart();
 }
@@ -548,23 +579,70 @@ InterceptedRequest::GetIoThreadClient() {
              : AwContentsIoThreadClient::FromID(request_.render_frame_id);
 }
 
-void InterceptedRequest::OnRequestError(
-    const network::URLLoaderCompletionStatus& status) {
-  target_client_->OnComplete(status);
-
-  OnReceivedErrorToCallback(status.error_code);
-
-  // Deletes |this|.
-  // TODO(timvolodine): consider handling this through a data structure.
-  delete this;
+void InterceptedRequest::OnURLLoaderClientError() {
+  // We set |wait_for_loader_error| to true because if the loader did have a
+  // custom_reason error then the client would be reset as well and it would be
+  // a race as to which connection error we saw first.
+  CallOnComplete(network::URLLoaderCompletionStatus(net::ERR_ABORTED),
+                 true /* wait_for_loader_error */);
 }
 
-void InterceptedRequest::OnReceivedErrorToCallback(int error_code) {
+void InterceptedRequest::OnURLLoaderError(uint32_t custom_reason,
+                                          const std::string& description) {
+  if (custom_reason == network::mojom::URLLoader::kClientDisconnectReason)
+    SendErrorCallback(safe_browsing::GetNetErrorCodeForSafeBrowsing(), true);
+
+  // If CallOnComplete was already called, then this object is ready to be
+  // deleted.
+  if (!target_client_)
+    delete this;
+}
+
+void InterceptedRequest::CallOnComplete(
+    const network::URLLoaderCompletionStatus& status,
+    bool wait_for_loader_error) {
+  // Save an error status so that we call onReceiveError at destruction if there
+  // was no safe browsing error.
+  if (status.error_code != net::OK)
+    error_status_ = status.error_code;
+
+  if (target_client_)
+    target_client_->OnComplete(status);
+
+  if (proxied_loader_binding_ && wait_for_loader_error) {
+    // Don't delete |this| yet, in case the |proxied_loader_binding_|'s
+    // error_handler is called with a reason to indicate an error which we want
+    // to send to the client bridge. Also reset |target_client_| so we don't
+    // get its error_handler called and then delete |this|.
+    target_client_.reset();
+
+    // Since the original client is gone no need to continue loading the
+    // request.
+    proxied_client_binding_.Close();
+    target_loader_.reset();
+
+    // In case there are pending checks as to whether this request should be
+    // intercepted, we don't want that causing |target_client_| to be used
+    // later.
+    weak_factory_.InvalidateWeakPtrs();
+  } else {
+    delete this;
+  }
+}
+
+void InterceptedRequest::SendErrorCallback(int error_code,
+                                           bool safebrowsing_hit) {
+  // Ensure we only send one error callback, e.g. to avoid sending two if
+  // there's both a networking error and safe browsing blocked the request.
+  if (sent_error_callback_)
+    return;
+
+  sent_error_callback_ = true;
   base::PostTaskWithTraits(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&OnReceivedErrorOnUiThread, process_id_,
                      request_.render_frame_id, AwWebResourceRequest(request_),
-                     error_code));
+                     error_code, safebrowsing_hit));
 }
 
 }  // namespace

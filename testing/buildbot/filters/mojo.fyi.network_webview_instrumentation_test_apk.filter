@@ -30,11 +30,6 @@
 # https://crbug.com/893580
 -org.chromium.android_webview.test.LoadDataWithBaseUrlTest.testLoadDataWithBaseUrlAccessingFile
 
-# https://crbug.com/893582
--org.chromium.android_webview.test.SafeBrowsingTest.testSafeBrowsingDontProceedCausesNetworkErrorForMainFrame
--org.chromium.android_webview.test.SafeBrowsingTest.testSafeBrowsingOnSafeBrowsingHitBackToSafety
--org.chromium.android_webview.test.SafeBrowsingTest.testSafeBrowsingShowsNetworkErrorForInvisibleViews
-
 # https://crbug.com/902658
 -org.chromium.android_webview.test.AwProxyControllerTest.testProxyOverride
 -org.chromium.android_webview.test.AwProxyControllerTest.testProxyOverrideLocalhost

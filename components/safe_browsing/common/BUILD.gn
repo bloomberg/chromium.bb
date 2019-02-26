@@ -20,6 +20,7 @@ source_set("common") {
     "//components/policy/core/browser:browser",
     "//components/prefs:prefs",
     "//components/safe_browsing:csd_proto",
+    "//components/safe_browsing:features",
     "//crypto:crypto",
     "//ipc",
     "//url/ipc:url_ipc",
