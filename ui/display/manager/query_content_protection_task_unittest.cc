@@ -178,7 +178,7 @@ TEST_F(QueryContentProtectionTaskTest, QueryWithMirrorHDCPDisplays) {
   displays.push_back(CreateDisplaySnapshot(1, DISPLAY_CONNECTION_TYPE_HDMI));
   displays.push_back(CreateDisplaySnapshot(2, DISPLAY_CONNECTION_TYPE_DVI));
   TestDisplayLayoutManager layout_manager(std::move(displays),
-                                          MULTIPLE_DISPLAY_STATE_DUAL_MIRROR);
+                                          MULTIPLE_DISPLAY_STATE_MULTI_MIRROR);
 
   QueryContentProtectionTask task(
       &layout_manager, &display_delegate_, 1,

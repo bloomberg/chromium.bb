@@ -85,7 +85,7 @@ std::string MultipleDisplayStateToString(MultipleDisplayState state) {
       return "HEADLESS";
     case MULTIPLE_DISPLAY_STATE_SINGLE:
       return "SINGLE";
-    case MULTIPLE_DISPLAY_STATE_DUAL_MIRROR:
+    case MULTIPLE_DISPLAY_STATE_MULTI_MIRROR:
       return "DUAL_MIRROR";
     case MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED:
       return "MULTI_EXTENDED";
