@@ -20,6 +20,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/metrics/tab_stats_data_store.h"
 #include "chrome/browser/metrics/tab_stats_tracker_delegate.h"
+#include "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom-forward.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_observer.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
@@ -151,7 +152,7 @@ class TabStatsTracker : public TabStripModelObserver,
 
   // resource_coordinator::TabLifecycleObserver:
   void OnDiscardedStateChange(content::WebContents* contents,
-                              mojom::LifecycleUnitDiscardReason reason,
+                              ::mojom::LifecycleUnitDiscardReason reason,
                               bool is_discarded) override;
 
   void OnAutoDiscardableStateChange(content::WebContents* contents,

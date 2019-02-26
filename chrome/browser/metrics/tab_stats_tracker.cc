@@ -331,7 +331,7 @@ void TabStatsTracker::OnResume() {
 // resource_coordinator::TabLifecycleObserver:
 void TabStatsTracker::OnDiscardedStateChange(
     content::WebContents* contents,
-    mojom::LifecycleUnitDiscardReason reason,
+    ::mojom::LifecycleUnitDiscardReason reason,
     bool is_discarded) {
   // Increment the count in the data store for tabs metrics reporting.
   tab_stats_data_store_->OnTabDiscardStateChange(reason, is_discarded);
