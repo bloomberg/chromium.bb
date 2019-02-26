@@ -41,6 +41,7 @@ source_set("cronet_native_impl") {
     "//base",
     "//components/cronet:cronet_common",
     "//components/cronet:cronet_version_header",
+    "//components/cronet:metrics_util",
     "//components/grpc_support:grpc_support",
     "//net",
   ]
@@ -57,6 +58,8 @@ source_set("cronet_native_impl") {
     "engine.h",
     "io_buffer_with_cronet_buffer.cc",
     "io_buffer_with_cronet_buffer.h",
+    "native_metrics_util.cc",
+    "native_metrics_util.h",
     "runnables.cc",
     "runnables.h",
     "upload_data_sink.cc",
@@ -77,6 +80,7 @@ source_set("cronet_native_unittests") {
 
   deps = [
     ":cronet_native_impl",
+    "//base/test:test_support",
     "//components/cronet/native/test:cronet_native_testutil",
     "//net:test_support",
     "//testing/gtest",
@@ -85,6 +89,7 @@ source_set("cronet_native_unittests") {
   configs += [ ":cronet_native_include_config" ]
 
   sources = [
+    "native_metrics_util_test.cc",
     "runnables_unittest.cc",
 
     # Generated from cronet.idl.
