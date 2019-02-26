@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
@@ -153,9 +154,27 @@ void PreviewsLitePageServingURLLoader::StartNetworkRequest(
       mojo::MakeRequest(&network_url_loader_), frame_tree_node_id_, 0,
       network::mojom::kURLLoadOptionNone, request, std::move(client),
       net::MutableNetworkTrafficAnnotationTag(kPreviewsTrafficAnnotation));
+
+  timeout_timer_.Start(
+      FROM_HERE, previews::params::LitePagePreviewsNavigationTimeoutDuration(),
+      base::BindOnce(&PreviewsLitePageServingURLLoader::Timeout,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 PreviewsLitePageServingURLLoader::~PreviewsLitePageServingURLLoader() = default;
+
+void PreviewsLitePageServingURLLoader::Timeout() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // If the result is already determined, don't do anything.
+  if (result_callback_.is_null())
+    return;
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "Previews.ServerLitePage.ServerResponse",
+      PreviewsLitePageNavigationThrottle::ServerResponse::kTimeout);
+
+  Fallback();
+}
 
 void PreviewsLitePageServingURLLoader::Fallback() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

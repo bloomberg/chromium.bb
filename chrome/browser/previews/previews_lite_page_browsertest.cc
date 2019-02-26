@@ -1341,8 +1341,6 @@ INSTANTIATE_TEST_SUITE_P(URLLoaderImplementation,
 
 IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerTimeoutBrowserTest,
                        DISABLE_ON_WIN_MAC(LitePagePreviewsTimeout)) {
-  if (GetParam())
-    return;
   {
     // Ensure that a hung previews navigation doesn't wind up at the previews
     // server.
