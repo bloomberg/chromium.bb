@@ -5,6 +5,7 @@
 #include "services/image_annotation/annotator.h"
 
 #include <algorithm>
+#include <tuple>
 #include <utility>
 
 #include "base/base64.h"
@@ -13,6 +14,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
+#include "base/stl_util.h"
 #include "components/google/core/common/google_util.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -27,51 +29,59 @@ constexpr size_t kMaxResponseSize = 1024 * 1024;  // 1MB.
 // The server returns separate OCR results for each region of the image; we
 // naively concatenate these into one response string.
 //
-// Returns nullopt if there is any unexpected structure to the annotations
-// message.
-base::Optional<std::string> ParseJsonOcrAnnotation(
-    const base::Value& ocr_engine,
-    const double min_ocr_confidence) {
-  const base::Value* const ocr_regions = ocr_engine.FindKey("ocrRegions");
+// Returns a null pointer if there is any unexpected structure to the
+// annotations message.
+mojom::AnnotationPtr ParseJsonOcrAnnotation(const base::Value& ocr_engine,
+                                            const double min_ocr_confidence) {
   // No OCR regions is valid - it just means there is no text.
+  const base::Value* const ocr_regions = ocr_engine.FindKey("ocrRegions");
   if (!ocr_regions)
-    return std::string();
+    return mojom::Annotation::New(mojom::AnnotationType::kOcr, 1.0 /* score */,
+                                  std::string() /* text */);
 
   if (!ocr_regions->is_list())
-    return base::nullopt;
+    return mojom::AnnotationPtr(nullptr);
 
   std::string all_ocr_text;
+  int word_count = 0;
+  double word_confidence_sum = 0.0;
   for (const base::Value& ocr_region : ocr_regions->GetList()) {
     if (!ocr_region.is_dict())
-      return base::nullopt;
+      continue;
 
     const base::Value* const words = ocr_region.FindKey("words");
     if (!words || !words->is_list())
-      return base::nullopt;
+      continue;
 
     std::string region_ocr_text;
     for (const base::Value& word : words->GetList()) {
       if (!word.is_dict())
-        return base::nullopt;
+        continue;
 
       const base::Value* const detected_text = word.FindKey("detectedText");
       if (!detected_text || !detected_text->is_string())
-        return base::nullopt;
+        continue;
 
       // A confidence value of 0 or 1 is interpreted as an int and not a double.
       const base::Value* const confidence = word.FindKey("confidenceScore");
       if (!confidence || (!confidence->is_double() && !confidence->is_int()) ||
           confidence->GetDouble() < 0.0 || confidence->GetDouble() > 1.0)
-        return base::nullopt;
+        continue;
 
       if (confidence->GetDouble() < min_ocr_confidence)
         continue;
 
       const std::string& detected_text_str = detected_text->GetString();
 
-      if (!region_ocr_text.empty() && !detected_text_str.empty())
+      if (detected_text_str.empty())
+        continue;
+
+      if (!region_ocr_text.empty())
         region_ocr_text += " ";
+
       region_ocr_text += detected_text_str;
+      ++word_count;
+      word_confidence_sum += confidence->GetDouble();
     }
 
     if (!all_ocr_text.empty() && !region_ocr_text.empty())
@@ -79,27 +89,86 @@ base::Optional<std::string> ParseJsonOcrAnnotation(
     all_ocr_text += region_ocr_text;
   }
 
-  return all_ocr_text;
+  return mojom::Annotation::New(
+      mojom::AnnotationType::kOcr,
+      word_count == 0 ? 1.0 : word_confidence_sum / word_count, all_ocr_text);
 }
 
-// Attempts to extract OCR results from the server response, returning a map
-// from each source ID to its OCR text (if successfully extracted).
-std::map<std::string, std::string> ParseJsonOcrResponse(
+// Extracts annotations from the given description engine result into the second
+// element of the return tuple.
+//
+// The first element of the return tuple will be true if the image was
+// classified as containing adult content.
+std::tuple<bool, std::vector<mojom::AnnotationPtr>> ParseJsonDescAnnotations(
+    const base::Value& desc_engine) {
+  constexpr char kAdultFailureReason[] = "ADULT";
+  const std::map<std::string, mojom::AnnotationType> annotation_types = {
+      {"OCR", mojom::AnnotationType::kOcr},
+      {"CAPTION", mojom::AnnotationType::kCaption},
+      {"LABEL", mojom::AnnotationType::kLabel}};
+
+  const base::Value* const failure_reason =
+      desc_engine.FindKey("failureReason");
+
+  const bool adult = failure_reason && failure_reason->is_string() &&
+                     failure_reason->GetString() == kAdultFailureReason;
+  std::vector<mojom::AnnotationPtr> results;
+
+  const base::Value* const desc_list_dict =
+      desc_engine.FindKey("descriptionList");
+  if (!desc_list_dict || !desc_list_dict->is_dict())
+    return {adult, std::move(results)};
+
+  const base::Value* const desc_list = desc_list_dict->FindKey("descriptions");
+  if (!desc_list || !desc_list->is_list())
+    return {adult, std::move(results)};
+
+  for (const base::Value& desc : desc_list->GetList()) {
+    if (!desc.is_dict())
+      continue;
+
+    const base::Value* const type = desc.FindKey("type");
+    if (!type || !type->is_string())
+      continue;
+
+    const auto type_lookup = annotation_types.find(type->GetString());
+    if (type_lookup == annotation_types.end())
+      continue;
+
+    const base::Value* const score = desc.FindKey("score");
+    if (!score || (!score->is_double() && !score->is_int()) ||
+        score->GetDouble() < 0.0 || score->GetDouble() > 1.0)
+      continue;
+
+    const base::Value* const text = desc.FindKey("text");
+    if (!text || !text->is_string() || text->GetString().empty())
+      continue;
+
+    results.push_back(mojom::Annotation::New(
+        type_lookup->second, score->GetDouble(), text->GetString()));
+  }
+
+  return {adult, std::move(results)};
+}
+
+// Attempts to extract annotation results from the server response, returning a
+// map from each source ID to its annotations (if successfully extracted).
+std::map<std::string, mojom::AnnotateImageResultPtr> ParseJsonResponse(
     const std::string* const json_response,
     const double min_ocr_confidence) {
   if (!json_response)
     return {};
 
-  const std::unique_ptr<base::Value> response =
-      base::JSONReader::ReadDeprecated(*json_response);
-  if (!response || !response->is_dict())
+  const base::Optional<base::Value> response =
+      base::JSONReader::Read(*json_response);
+  if (!response.has_value() || !response->is_dict())
     return {};
 
   const base::Value* const results = response->FindKey("results");
   if (!results || !results->is_list())
     return {};
 
-  std::map<std::string, std::string> out;
+  std::map<std::string, mojom::AnnotateImageResultPtr> out;
   for (const base::Value& result : results->GetList()) {
     if (!result.is_dict())
       continue;
@@ -109,24 +178,53 @@ std::map<std::string, std::string> ParseJsonOcrResponse(
       continue;
 
     const base::Value* const engine_results = result.FindKey("engineResults");
-    if (!engine_results || !engine_results->is_list() ||
-        engine_results->GetList().size() != 1)
+    if (!engine_results || !engine_results->is_list())
       continue;
 
-    const base::Value& engine_result = engine_results->GetList()[0];
-    if (!engine_result.is_dict())
-      continue;
+    // We expect the engine result list to have exactly two results: one for OCR
+    // and one for image descriptions. However, we "robustly" handle missing
+    // engines, unknown engines (by skipping them) and repetitions (by
+    // overwriting data).
+    bool adult = false;
+    std::vector<mojom::AnnotationPtr> annotations;
+    mojom::AnnotationPtr ocr_annotation;
+    for (const base::Value& engine_result : engine_results->GetList()) {
+      if (!engine_result.is_dict())
+        continue;
 
-    const base::Value* const ocr_engine = engine_result.FindKey("ocrEngine");
-    if (!ocr_engine || !ocr_engine->is_dict())
-      continue;
+      const base::Value* const desc_engine =
+          engine_result.FindKey("descriptionEngine");
+      const base::Value* const ocr_engine = engine_result.FindKey("ocrEngine");
 
-    const base::Optional<std::string> ocr_text =
-        ParseJsonOcrAnnotation(*ocr_engine, min_ocr_confidence);
-    if (!ocr_text.has_value())
-      continue;
+      if (desc_engine && desc_engine->is_dict()) {
+        // Add description annotations and update the adult image flag.
+        std::tie(adult, annotations) = ParseJsonDescAnnotations(*desc_engine);
+      } else if (ocr_engine && ocr_engine->is_dict()) {
+        // Update the specialized OCR annotations.
+        ocr_annotation =
+            ParseJsonOcrAnnotation(*ocr_engine, min_ocr_confidence);
+      }
+    }
 
-    out[image_id->GetString()] = *ocr_text;
+    // Remove any description OCR data (which is lower quality) if we have
+    // specialized OCR results.
+    if (!ocr_annotation.is_null()) {
+      base::EraseIf(annotations, [](const mojom::AnnotationPtr& a) {
+        return a->type == mojom::AnnotationType::kOcr;
+      });
+      annotations.push_back(std::move(ocr_annotation));
+    }
+
+    if (adult) {
+      out[image_id->GetString()] = mojom::AnnotateImageResult::NewErrorCode(
+          mojom::AnnotateImageError::kAdult);
+    } else if (annotations.empty()) {
+      out[image_id->GetString()] = mojom::AnnotateImageResult::NewErrorCode(
+          mojom::AnnotateImageError::kFailure);
+    } else {
+      out[image_id->GetString()] =
+          mojom::AnnotateImageResult::NewAnnotations(std::move(annotations));
+    }
   }
 
   return out;
@@ -166,8 +264,7 @@ void Annotator::AnnotateImage(const std::string& source_id,
   // Return cached results if they exist.
   const auto cache_lookup = cached_results_.find(source_id);
   if (cache_lookup != cached_results_.end()) {
-    std::move(callback).Run(
-        mojom::AnnotateImageResult::NewOcrText(cache_lookup->second));
+    std::move(callback).Run(cache_lookup->second.Clone());
     return;
   }
 
@@ -201,7 +298,7 @@ void Annotator::AnnotateImage(const std::string& source_id,
 }
 
 // static
-std::string Annotator::FormatJsonOcrRequest(
+std::string Annotator::FormatJsonRequest(
     const HttpRequestQueue::iterator begin_it,
     const HttpRequestQueue::iterator end_it) {
   base::Value image_request_list(base::Value::Type::LIST);
@@ -215,12 +312,16 @@ std::string Annotator::FormatJsonOcrRequest(
 
     // TODO(crbug.com/916420): accept and propagate page language info to
     //                         improve OCR accuracy.
-    base::Value engine_params(base::Value::Type::DICTIONARY);
-    engine_params.SetKey("ocrParameters",
-                         base::Value(base::Value::Type::DICTIONARY));
+    base::Value ocr_engine_params(base::Value::Type::DICTIONARY);
+    ocr_engine_params.SetKey("ocrParameters",
+                             base::Value(base::Value::Type::DICTIONARY));
+    base::Value desc_engine_params(base::Value::Type::DICTIONARY);
+    desc_engine_params.SetKey("descriptionParameters",
+                              base::Value(base::Value::Type::DICTIONARY));
 
     base::Value engine_params_list(base::Value::Type::LIST);
-    engine_params_list.GetList().push_back(std::move(engine_params));
+    engine_params_list.GetList().push_back(std::move(ocr_engine_params));
+    engine_params_list.GetList().push_back(std::move(desc_engine_params));
 
     base::Value image_request(base::Value::Type::DICTIONARY);
     image_request.SetKey("imageId", base::Value(it->first));
@@ -240,7 +341,7 @@ std::string Annotator::FormatJsonOcrRequest(
 }
 
 // static
-std::unique_ptr<network::SimpleURLLoader> Annotator::MakeOcrRequestLoader(
+std::unique_ptr<network::SimpleURLLoader> Annotator::MakeRequestLoader(
     const GURL& server_url,
     const std::string& api_key,
     const HttpRequestQueue::iterator begin_it,
@@ -270,15 +371,16 @@ std::unique_ptr<network::SimpleURLLoader> Annotator::MakeOcrRequestLoader(
         semantics {
           sender: "Image Annotation"
           description:
-            "Chrome can identify text inside images and provide this text to "
-            "screen readers (for visually-impaired users) by sending images to "
-            "Google's servers. If image text extraction is enabled for a page, "
-            "Chrome will send the URLs and pixels of all images on the "
-            "page to Google's servers, which will return any textual content "
-            "identified inside the images. This content is made accessible to "
-            "screen reading software."
+            "Chrome can provide image labels (which include detected objects, "
+            "extracted text and generated captions) to screen readers (for "
+            "visually-impaired users) by sending images to Google's servers. "
+            "If image labeling is enabled for a page, Chrome will send the "
+            "URLs and pixels of all images on the page to Google's servers, "
+            "which will return labels for content identified inside the "
+            "images. This content is made accessible to screen reading "
+            "software."
           trigger: "A page containing images is loaded for a user who has "
-                   "automatic image text extraction enabled."
+                   "automatic image labeling enabled."
           data: "Image pixels and URLs. No user identifier is sent along with "
                 "the data."
           destination: GOOGLE_OWNED_SERVICE
@@ -296,7 +398,7 @@ std::unique_ptr<network::SimpleURLLoader> Annotator::MakeOcrRequestLoader(
   auto url_loader = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
 
-  url_loader->AttachStringForUpload(FormatJsonOcrRequest(begin_it, end_it),
+  url_loader->AttachStringForUpload(FormatJsonRequest(begin_it, end_it),
                                     "application/json");
 
   return url_loader;
@@ -346,7 +448,7 @@ void Annotator::SendRequestBatchToServer() {
 
   // Kick off server communication.
   http_requests_.push_back(
-      MakeOcrRequestLoader(server_url_, api_key_, begin_it, end_it));
+      MakeRequestLoader(server_url_, api_key_, begin_it, end_it));
   http_requests_.back()->DownloadToString(
       url_loader_factory_.get(),
       base::BindOnce(&Annotator::OnServerResponseReceived,
@@ -363,9 +465,9 @@ void Annotator::OnServerResponseReceived(
     const std::unique_ptr<std::string> json_response) {
   http_requests_.erase(http_request_it);
 
-  // Extract OCR results for each source ID with valid results.
-  const std::map<std::string, std::string> ocr_results =
-      ParseJsonOcrResponse(json_response.get(), min_ocr_confidence_);
+  // Extract annotation results for each source ID with valid results.
+  const std::map<std::string, mojom::AnnotateImageResultPtr> results =
+      ParseJsonResponse(json_response.get(), min_ocr_confidence_);
 
   // Process each source ID for which we expect to have results.
   for (const std::string& source_id : source_ids) {
@@ -373,10 +475,12 @@ void Annotator::OnServerResponseReceived(
 
     // The lookup will be successful if there is a valid result (i.e. not an
     // error and not a malformed result) for this source ID.
-    const auto result_lookup = ocr_results.find(source_id);
+    const auto result_lookup = results.find(source_id);
 
-    if (result_lookup != ocr_results.end())
-      cached_results_.insert({source_id, result_lookup->second});
+    // Populate the result struct for this image and copy it into the cache if
+    // necessary.
+    if (result_lookup != results.end())
+      cached_results_.insert({source_id, result_lookup->second.Clone()});
 
     // This should not happen, since only this method removes entries of
     // |request_infos_|, and this method should only execute once per source ID.
@@ -384,15 +488,15 @@ void Annotator::OnServerResponseReceived(
     if (request_info_it == request_infos_.end())
       continue;
 
+    const auto image_result = result_lookup != results.end()
+                                  ? result_lookup->second.Clone()
+                                  : mojom::AnnotateImageResult::NewErrorCode(
+                                        mojom::AnnotateImageError::kFailure);
+
     // Notify clients of success or failure.
     // TODO(crbug.com/916420): explore server retry strategies.
-    const auto result =
-        result_lookup != ocr_results.end()
-            ? mojom::AnnotateImageResult::NewOcrText(result_lookup->second)
-            : mojom::AnnotateImageResult::NewErrorCode(
-                  mojom::AnnotateImageError::kFailure);
     for (auto& info : request_info_it->second) {
-      std::move(info.second).Run(result.Clone());
+      std::move(info.second).Run(image_result.Clone());
     }
     request_infos_.erase(request_info_it);
   }

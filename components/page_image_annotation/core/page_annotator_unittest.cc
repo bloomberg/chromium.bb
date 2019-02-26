@@ -181,8 +181,13 @@ TEST(PageAnnotatorTest, Annotation) {
   // Expect success and failure to be reported.
   const auto error = ia_mojom::AnnotateImageResult::NewErrorCode(
       ia_mojom::AnnotateImageError::kCanceled);
+
+  // Can't use an initializer list since it performs copies.
+  std::vector<ia_mojom::AnnotationPtr> annotations;
+  annotations.push_back(ia_mojom::Annotation::New(
+      ia_mojom::AnnotationType::kOcr, 1.0, "text from image"));
   const auto success =
-      ia_mojom::AnnotateImageResult::NewOcrText("text from image");
+      ia_mojom::AnnotateImageResult::NewAnnotations(std::move(annotations));
 
   ASSERT_THAT(test_annotator.callbacks_, SizeIs(3));
   std::move(test_annotator.callbacks_[0]).Run(error.Clone());
