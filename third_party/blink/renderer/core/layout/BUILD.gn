@@ -401,7 +401,6 @@ blink_core_sources("layout") {
     "ng/layout_ng_table_caption.h",
     "ng/layout_ng_table_cell.cc",
     "ng/layout_ng_table_cell.h",
-    "ng/legacy_layout_tree_walking.cc",
     "ng/legacy_layout_tree_walking.h",
     "ng/list/layout_ng_list_item.cc",
     "ng/list/layout_ng_list_item.h",
