@@ -555,7 +555,12 @@ void WebContentsViewMac::ViewsHostableAttach(ViewsHostableView::Host* host) {
   } else if (factory_host_id != NSViewBridgeFactoryHost::kLocalDirectHostId) {
     LOG(ERROR) << "Failed to look up NSViewBridgeFactoryHost!";
   }
-  ns_view_bridge_local_->SetParentNSView(views_host_->GetNSViewId(), token);
+
+  // TODO(https://crbug.com/933679): WebContentsNSViewBridge::SetParentView
+  // will look up the parent NSView by its id, but this has been observed to
+  // fail in the field, so assume that the caller handles updating the NSView
+  // hierarchy.
+  // ns_view_bridge_local_->SetParentNSView(views_host_->GetNSViewId(), token);
 
   for (auto* rwhv_mac : GetChildViews()) {
     rwhv_mac->MigrateNSViewBridge(factory_host, ns_view_id_);

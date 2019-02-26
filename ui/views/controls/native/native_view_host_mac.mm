@@ -122,15 +122,17 @@ void NativeViewHostMac::AttachNativeView() {
   EnsureNativeViewHasNoChildWidgets(native_view_);
 
   auto* bridge_host = GetBridgedNativeWidgetHost();
-  DCHECK(bridge_host);
+  CHECK(bridge_host);
 
-  if (native_view_hostable_) {
+  // TODO(https://crbug.com/933679): This is lifted out the ViewsHostableAttach
+  // call below because of crashes being observed in the field.
+  NSView* superview =
+      bridge_host->native_widget_mac()->GetNativeView().GetNativeNSView();
+  [superview addSubview:native_view_];
+
+  if (native_view_hostable_)
     native_view_hostable_->ViewsHostableAttach(this);
-  } else {
-    NSView* superview =
-        bridge_host->native_widget_mac()->GetNativeView().GetNativeNSView();
-    [superview addSubview:native_view_];
-  }
+
   bridge_host->SetAssociationForView(host_, native_view_);
 }
 
