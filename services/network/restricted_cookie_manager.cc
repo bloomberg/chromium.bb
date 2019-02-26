@@ -18,46 +18,9 @@
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
+#include "services/network/cookie_managers_shared.h"
 
 namespace network {
-
-namespace {
-
-// TODO(pwnall): De-duplicate from cookie_manager.cc
-mojom::CookieChangeCause ToCookieChangeCause(net::CookieChangeCause net_cause) {
-  switch (net_cause) {
-    case net::CookieChangeCause::INSERTED:
-      return mojom::CookieChangeCause::INSERTED;
-    case net::CookieChangeCause::EXPLICIT:
-      return mojom::CookieChangeCause::EXPLICIT;
-    case net::CookieChangeCause::UNKNOWN_DELETION:
-      return mojom::CookieChangeCause::UNKNOWN_DELETION;
-    case net::CookieChangeCause::OVERWRITE:
-      return mojom::CookieChangeCause::OVERWRITE;
-    case net::CookieChangeCause::EXPIRED:
-      return mojom::CookieChangeCause::EXPIRED;
-    case net::CookieChangeCause::EVICTED:
-      return mojom::CookieChangeCause::EVICTED;
-    case net::CookieChangeCause::EXPIRED_OVERWRITE:
-      return mojom::CookieChangeCause::EXPIRED_OVERWRITE;
-  }
-  NOTREACHED();
-  return mojom::CookieChangeCause::EXPLICIT;
-}
-
-net::CookieStore::SetCookiesCallback StatusToBool(
-    base::OnceCallback<void(bool)> callback) {
-  return base::BindOnce(
-      [](base::OnceCallback<void(bool)> callback,
-         const net::CanonicalCookie::CookieInclusionStatus status) {
-        bool success =
-            (status == net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
-        std::move(callback).Run(success);
-      },
-      std::move(callback));
-}
-
-}  // anonymous namespace
 
 class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
  public:
@@ -221,9 +184,9 @@ void RestrictedCookieManager::SetCanonicalCookie(
 
   // TODO(pwnall): source_scheme might depend on the renderer.
   bool modify_http_only = false;
-  cookie_store_->SetCanonicalCookieAsync(std::move(sanitized_cookie),
-                                         origin_.scheme(), modify_http_only,
-                                         StatusToBool(std::move(callback)));
+  cookie_store_->SetCanonicalCookieAsync(
+      std::move(sanitized_cookie), origin_.scheme(), modify_http_only,
+      AdaptCookieInclusionStatusToBool(std::move(callback)));
 }
 
 void RestrictedCookieManager::AddChangeListener(

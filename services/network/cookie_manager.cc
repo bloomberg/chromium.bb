@@ -14,6 +14,7 @@
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_util.h"
+#include "services/network/cookie_managers_shared.h"
 #include "services/network/session_cleanup_channel_id_store.h"
 #include "services/network/session_cleanup_cookie_store.h"
 #include "url/gurl.h"
@@ -24,28 +25,6 @@ using CookieDeleteSessionControl = net::CookieDeletionInfo::SessionControl;
 namespace network {
 
 namespace {
-
-mojom::CookieChangeCause ChangeCauseTranslation(
-    net::CookieChangeCause net_cause) {
-  switch (net_cause) {
-    case net::CookieChangeCause::INSERTED:
-      return mojom::CookieChangeCause::INSERTED;
-    case net::CookieChangeCause::EXPLICIT:
-      return mojom::CookieChangeCause::EXPLICIT;
-    case net::CookieChangeCause::UNKNOWN_DELETION:
-      return mojom::CookieChangeCause::UNKNOWN_DELETION;
-    case net::CookieChangeCause::OVERWRITE:
-      return mojom::CookieChangeCause::OVERWRITE;
-    case net::CookieChangeCause::EXPIRED:
-      return mojom::CookieChangeCause::EXPIRED;
-    case net::CookieChangeCause::EVICTED:
-      return mojom::CookieChangeCause::EVICTED;
-    case net::CookieChangeCause::EXPIRED_OVERWRITE:
-      return mojom::CookieChangeCause::EXPIRED_OVERWRITE;
-  }
-  NOTREACHED();
-  return mojom::CookieChangeCause::EXPLICIT;
-}
 
 // Converts the one-argument callbacks to two-argument callback that ignores
 // the second arument for the cookie_store
@@ -60,18 +39,6 @@ net::CookieStore::GetCookieListCallback IgnoreSecondArg(
       std::move(callback));
 }
 
-net::CookieStore::SetCookiesCallback StatusToBool(
-    base::OnceCallback<void(bool)> callback) {
-  return base::BindOnce(
-      [](base::OnceCallback<void(bool)> callback,
-         const net::CanonicalCookie::CookieInclusionStatus status) {
-        bool success =
-            (status == net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
-        std::move(callback).Run(success);
-      },
-      std::move(callback));
-}
-
 }  // namespace
 
 CookieManager::ListenerRegistration::ListenerRegistration() {}
@@ -81,7 +48,7 @@ CookieManager::ListenerRegistration::~ListenerRegistration() {}
 void CookieManager::ListenerRegistration::DispatchCookieStoreChange(
     const net::CanonicalCookie& cookie,
     net::CookieChangeCause cause) {
-  listener->OnCookieChange(cookie, ChangeCauseTranslation(cause));
+  listener->OnCookieChange(cookie, ToCookieChangeCause(cause));
 }
 
 CookieManager::CookieManager(
@@ -140,7 +107,7 @@ void CookieManager::SetCanonicalCookie(const net::CanonicalCookie& cookie,
                                        SetCanonicalCookieCallback callback) {
   cookie_store_->SetCanonicalCookieAsync(
       std::make_unique<net::CanonicalCookie>(cookie), source_scheme,
-      modify_http_only, StatusToBool(std::move(callback)));
+      modify_http_only, AdaptCookieInclusionStatusToBool(std::move(callback)));
 }
 
 void CookieManager::DeleteCanonicalCookie(
