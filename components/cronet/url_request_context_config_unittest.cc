@@ -6,13 +6,18 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/json/json_writer.h"
+#include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "net/base/host_port_pair.h"
+#include "net/base/net_errors.h"
 #include "net/cert/cert_verifier.h"
+#include "net/dns/host_resolver.h"
 #include "net/http/http_network_session.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_with_source.h"
@@ -268,10 +273,13 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
   // Check IPv6 is disabled when on wifi.
   EXPECT_TRUE(context->host_resolver()->GetNoIPv6OnWifi());
 
-  net::HostResolver::RequestInfo info(net::HostPortPair("abcde", 80));
-  net::AddressList addresses;
-  EXPECT_EQ(net::OK, context->host_resolver()->ResolveFromCache(
-                         info, &addresses, net::NetLogWithSource()));
+  // All host resolution expected to be mapped to an immediately-resolvable IP.
+  std::unique_ptr<net::HostResolver::ResolveHostRequest> resolve_request =
+      context->host_resolver()->CreateRequest(net::HostPortPair("abcde", 80),
+                                              net::NetLogWithSource(),
+                                              base::nullopt);
+  EXPECT_EQ(net::OK, resolve_request->Start(
+                         base::BindOnce([](int error) { NOTREACHED(); })));
 
   EXPECT_TRUE(config.network_thread_priority);
   EXPECT_EQ(42.0, config.network_thread_priority.value());
