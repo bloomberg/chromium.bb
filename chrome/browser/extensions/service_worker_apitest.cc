@@ -309,6 +309,13 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerBasedBackgroundTest, StorageNoPermissions) {
       << message_;
 }
 
+// Tests chrome.tabs events.
+IN_PROC_BROWSER_TEST_P(ServiceWorkerBasedBackgroundTest, TabsEvents) {
+  ASSERT_TRUE(
+      RunExtensionTest("service_worker/worker_based_background/tabs_events"))
+      << message_;
+}
+
 // Listens for |message| from extension Service Worker early so that tests can
 // wait for the message on startup (and not miss it).
 class ServiceWorkerWithEarlyMessageListenerTest
