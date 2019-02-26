@@ -8,6 +8,8 @@
 
 #include <algorithm>
 #include <memory>
+#include <set>
+#include <string>
 
 #include "ash/app_list/app_list_util.h"
 #include "ash/app_list/app_list_view_delegate.h"
@@ -20,6 +22,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/i18n/rtl.h"
+#include "base/stl_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/background.h"
@@ -50,7 +53,8 @@ SearchResultTileItemListView::SearchResultTileItemListView(
     SearchResultPageView* search_result_page_view,
     views::Textfield* search_box,
     AppListViewDelegate* view_delegate)
-    : search_result_page_view_(search_result_page_view),
+    : SearchResultContainerView(view_delegate),
+      search_result_page_view_(search_result_page_view),
       search_box_(search_box),
       is_play_store_app_search_enabled_(
           app_list_features::IsPlayStoreAppSearchEnabled()),
@@ -109,16 +113,27 @@ int SearchResultTileItemListView::DoUpdate() {
   ash::SearchResultDisplayType previous_display_type =
       ash::SearchResultDisplayType::kNone;
 
+  std::set<std::string> result_id_removed, result_id_added;
   for (size_t i = 0; i < kMaxNumSearchResultTiles; ++i) {
+    // If the current result at i exists, wants to be notified and is a
+    // different id, notify it that it is being hidden.
+    SearchResult* current_result = tile_views_[i]->result();
+    if (current_result != nullptr) {
+      result_id_removed.insert(current_result->id());
+    }
+
     if (i >= display_results.size()) {
       if (is_play_store_app_search_enabled_)
         separator_views_[i]->SetVisible(false);
+
       tile_views_[i]->SetResult(nullptr);
       continue;
     }
 
     SearchResult* item = display_results[i];
+
     tile_views_[i]->SetResult(item);
+    result_id_added.insert(item->id());
 
     if (is_play_store_app_search_enabled_ ||
         is_app_reinstall_recommendation_enabled_) {
@@ -137,6 +152,33 @@ int SearchResultTileItemListView::DoUpdate() {
 
     previous_type = item->result_type();
     previous_display_type = item->display_type();
+  }
+
+  // notify visibility changes, if needed.
+  std::set<std::string> actual_added_ids =
+      base::STLSetDifference<std::set<std::string>>(result_id_added,
+                                                    result_id_removed);
+
+  for (const std::string& added_id : actual_added_ids) {
+    SearchResult* added =
+        view_delegate()->GetSearchModel()->FindSearchResult(added_id);
+    if (added != nullptr && added->notify_visibility_change()) {
+      view_delegate()->OnSearchResultVisibilityChanged(added->id(), shown());
+    }
+  }
+  if (shown() != false) {
+    std::set<std::string> actual_removed_ids =
+        base::STLSetDifference<std::set<std::string>>(result_id_removed,
+                                                      result_id_added);
+    // we only notify removed items if we're in the middle of showing.
+    for (const std::string& removed_id : actual_removed_ids) {
+      SearchResult* removed =
+          view_delegate()->GetSearchModel()->FindSearchResult(removed_id);
+      if (removed != nullptr && removed->notify_visibility_change()) {
+        view_delegate()->OnSearchResultVisibilityChanged(removed->id(),
+                                                         false /*=shown*/);
+      }
+    }
   }
 
   set_container_score(
@@ -229,6 +271,39 @@ bool SearchResultTileItemListView::OnKeyPressed(const ui::KeyEvent& event) {
 
 const char* SearchResultTileItemListView::GetClassName() const {
   return "SearchResultTileItemListView";
+}
+
+void SearchResultTileItemListView::OnShownChanged() {
+  SearchResultContainerView::OnShownChanged();
+  for (const auto* tile_view : tile_views_) {
+    SearchResult* result = tile_view->result();
+    if (result == nullptr) {
+      continue;
+    }
+    if (result->notify_visibility_change()) {
+      view_delegate()->OnSearchResultVisibilityChanged(result->id(), shown());
+    }
+  }
+}
+
+void SearchResultTileItemListView::VisibilityChanged(View* starting_from,
+                                                     bool is_visible) {
+  SearchResultContainerView::VisibilityChanged(starting_from, is_visible);
+  // We only do this work when is_visible is false, since this is how we
+  // receive the event. We filter and only run when shown.
+  if (is_visible && shown()) {
+    return;
+  }
+  for (const auto* tile_view : tile_views_) {
+    SearchResult* result = tile_view->result();
+    if (result == nullptr) {
+      continue;
+    }
+    if (result->notify_visibility_change()) {
+      view_delegate()->OnSearchResultVisibilityChanged(result->id(),
+                                                       false /*=visible*/);
+    }
+  }
 }
 
 }  // namespace app_list

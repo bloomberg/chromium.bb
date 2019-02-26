@@ -90,6 +90,8 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   void GetNavigableContentsFactory(
       content::mojom::NavigableContentsFactoryRequest request) override;
   ash::AssistantViewDelegate* GetAssistantViewDelegate() override;
+  void OnSearchResultVisibilityChanged(const std::string& id,
+                                       bool visibility) override;
 
   // Do a bulk replacement of the items in the model.
   void ReplaceTestModel(int item_count);

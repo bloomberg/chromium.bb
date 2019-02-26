@@ -260,6 +260,18 @@ void AppListClientImpl::GetNavigableContentsFactory(
   }
 }
 
+void AppListClientImpl::OnSearchResultVisibilityChanged(const std::string& id,
+                                                        bool visibility) {
+  if (!search_controller_)
+    return;
+
+  ChromeSearchResult* result = search_controller_->FindSearchResult(id);
+  if (result == nullptr) {
+    return;
+  }
+  result->OnVisibilityChanged(visibility);
+}
+
 void AppListClientImpl::ActiveUserChanged(
     const user_manager::User* active_user) {
   if (!active_user->is_profile_created())

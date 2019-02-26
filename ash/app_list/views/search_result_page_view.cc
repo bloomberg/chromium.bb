@@ -346,7 +346,18 @@ void SearchResultPageView::OnSearchResultContainerResultFocused(
 void SearchResultPageView::OnHidden() {
   // Hide the search results page when it is behind search box to avoid focus
   // being moved onto suggested apps when zero state is enabled.
+  AppListPage::OnHidden();
   SetVisible(false);
+  for (auto* container_view : result_container_views_) {
+    container_view->SetShown(false);
+  }
+}
+
+void SearchResultPageView::OnShown() {
+  AppListPage::OnShown();
+  for (auto* container_view : result_container_views_) {
+    container_view->SetShown(true);
+  }
 }
 
 gfx::Rect SearchResultPageView::GetPageBoundsForState(

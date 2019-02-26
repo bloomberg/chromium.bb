@@ -78,6 +78,8 @@ class AppListClientImpl
   void OnPageBreakItemDeleted(const std::string& id) override;
   void GetNavigableContentsFactory(
       content::mojom::NavigableContentsFactoryRequest request) override;
+  void OnSearchResultVisibilityChanged(const std::string& id,
+                                       bool visible) override;
 
   // user_manager::UserManager::UserSessionStateObserver:
   void ActiveUserChanged(const user_manager::User* active_user) override;

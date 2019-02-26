@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include "ash/app_list/app_list_export.h"
+#include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/model/search/search_model.h"
 #include "base/macros.h"
@@ -38,7 +39,7 @@ class APP_LIST_EXPORT SearchResultContainerView : public views::View,
     virtual void OnSearchResultContainerResultFocused(
         SearchResultBaseView* focused_result_view) = 0;
   };
-  SearchResultContainerView();
+  explicit SearchResultContainerView(AppListViewDelegate* view_delegate);
   ~SearchResultContainerView() override;
 
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
@@ -87,6 +88,14 @@ class APP_LIST_EXPORT SearchResultContainerView : public views::View,
   // exist.
   virtual SearchResultBaseView* GetFirstResultView();
 
+  // Called from SearchResultPageView OnShown/OnHidden
+  void SetShown(bool shown);
+  bool shown() const { return shown_; }
+  // Called when SetShowing has changed a result.
+  virtual void OnShownChanged();
+
+  AppListViewDelegate* view_delegate() const { return view_delegate_; }
+
  private:
   // Schedules an Update call using |update_factory_|. Do nothing if there is a
   // pending call.
@@ -102,6 +111,10 @@ class APP_LIST_EXPORT SearchResultContainerView : public views::View,
   double container_score_;
 
   SearchModel::SearchResults* results_ = nullptr;  // Owned by SearchModel.
+
+  // view delegate for notifications.
+  bool shown_ = false;
+  AppListViewDelegate* const view_delegate_;
 
   ScopedObserver<SearchResultBaseView, ViewObserver> result_view_observer_{
       this};

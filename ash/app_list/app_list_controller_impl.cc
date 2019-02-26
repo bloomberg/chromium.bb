@@ -999,6 +999,13 @@ ash::AssistantViewDelegate* AppListControllerImpl::GetAssistantViewDelegate() {
   return Shell::Get()->assistant_controller()->view_delegate();
 }
 
+void AppListControllerImpl::OnSearchResultVisibilityChanged(
+    const std::string& id,
+    bool visibility) {
+  if (client_)
+    client_->OnSearchResultVisibilityChanged(id, visibility);
+}
+
 void AppListControllerImpl::AddObserver(AppListControllerObserver* observer) {
   observers_.AddObserver(observer);
 }

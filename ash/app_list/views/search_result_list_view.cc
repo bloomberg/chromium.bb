@@ -33,7 +33,8 @@ namespace app_list {
 
 SearchResultListView::SearchResultListView(AppListMainView* main_view,
                                            AppListViewDelegate* view_delegate)
-    : main_view_(main_view),
+    : SearchResultContainerView(view_delegate),
+      main_view_(main_view),
       view_delegate_(view_delegate),
       results_container_(new views::View) {
   results_container_->SetLayoutManager(

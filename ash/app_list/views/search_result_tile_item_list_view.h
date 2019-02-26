@@ -43,6 +43,13 @@ class APP_LIST_EXPORT SearchResultTileItemListView
     return tile_views_;
   }
 
+  // Overridden from SearchResultContainerView:
+  void OnShownChanged() override;
+
+ protected:
+  // View overrides:
+  void VisibilityChanged(View* starting_from, bool is_visible) override;
+
  private:
   // Overridden from SearchResultContainerView:
   int DoUpdate() override;
