@@ -36,10 +36,13 @@ class PluginVmLauncherView : public views::BubbleDialogDelegateView,
 
   // plugin_vm::PluginVmImageDownloadObserver implementation.
   void OnDownloadStarted() override;
-  void OnProgressUpdated(base::Optional<double> fraction_complete) override;
+  void OnDownloadProgressUpdated(uint64_t bytes_downloaded,
+                                 int64_t content_length) override;
   void OnDownloadCompleted() override;
   void OnDownloadCancelled() override;
   void OnDownloadFailed() override;
+  void OnUnzippingProgressUpdated(int64_t bytes_unzipped,
+                                  int64_t plugin_vm_image_size) override;
   void OnUnzipped() override;
   void OnUnzippingFailed() override;
 
