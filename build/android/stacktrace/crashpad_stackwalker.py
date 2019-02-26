@@ -6,7 +6,7 @@
 
 # Fetches Crashpad dumps from a given device, walks and symbolizes the stacks.
 # All the non-trivial operations are performed by generate_breakpad_symbols.py,
-# minidump_dump and minidump_stackwalk.
+# dump_syms, minidump_dump and minidump_stackwalk.
 
 import argparse
 import logging
