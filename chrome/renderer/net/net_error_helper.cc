@@ -105,10 +105,11 @@ OfflineContentOnNetErrorFeatureState GetOfflineContentOnNetErrorFeatureState() {
   const std::string alternate_ui_name = base::GetFieldTrialParamValueByFeature(
       features::kNewNetErrorPageUI,
       features::kNewNetErrorPageUIAlternateParameterName);
-  if (alternate_ui_name == features::kNewNetErrorPageUIAlternateContentList) {
-    return OfflineContentOnNetErrorFeatureState::kEnabledList;
+  if (alternate_ui_name ==
+      features::kNewNetErrorPageUIAlternateContentPreview) {
+    return OfflineContentOnNetErrorFeatureState::kEnabledSummary;
   }
-  return OfflineContentOnNetErrorFeatureState::kEnabledSummary;
+  return OfflineContentOnNetErrorFeatureState::kEnabledList;
 }
 #else   // OS_ANDROID
 OfflineContentOnNetErrorFeatureState GetOfflineContentOnNetErrorFeatureState() {

@@ -398,7 +398,7 @@ const base::Feature kNativeNotifications{"NativeNotifications",
 // Changes the net error page UI by adding suggested offline content or
 // enabling automatic fetching of the page when online again.
 const base::Feature kNewNetErrorPageUI{"NewNetErrorPageUI",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+                                       base::FEATURE_ENABLED_BY_DEFAULT};
 const char kNewNetErrorPageUIAlternateParameterName[] = "ui-alternate";
 
 const char kNewNetErrorPageUIAlternateContentList[] = "content_list";
