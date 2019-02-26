@@ -478,6 +478,41 @@ TEST_F(AutofillWalletMetadataSyncBridgeTest,
               kCard1SpecificsId, /*use_count=*/3, /*use_date=*/6))));
 }
 
+// Verify that lower values of metadata are not sent to the sync server when
+// local metadata is created (tests the case when metadata with higher use
+// counts arrive before the data, the data bridge later notifies about creation
+// for data that is already there).
+TEST_F(AutofillWalletMetadataSyncBridgeTest,
+       DontSendLowerValueToServerOnCreation) {
+  table()->SetServerProfiles({CreateServerProfileWithUseStats(
+      kAddr1ServerId, /*use_count=*/2, /*use_date=*/5)});
+  table()->SetServerCreditCards({CreateServerCreditCardWithUseStats(
+      kCard1ServerId, /*use_count=*/3, /*use_date=*/6)});
+  ResetBridge();
+
+  AutofillProfile updated_profile = CreateServerProfileWithUseStats(
+      kAddr1ServerId, /*use_count=*/1, /*use_date=*/4);
+  CreditCard updated_card = CreateServerCreditCardWithUseStats(
+      kCard1ServerId, /*use_count=*/2, /*use_date=*/5);
+
+  EXPECT_CALL(mock_processor(), Put(_, _, _)).Times(0);
+
+  bridge()->AutofillProfileChanged(
+      AutofillProfileChange(AutofillProfileChange::ADD,
+                            updated_profile.server_id(), &updated_profile));
+  bridge()->CreditCardChanged(CreditCardChange(
+      CreditCardChange::ADD, updated_card.server_id(), &updated_card));
+
+  // Check that also the local metadata did not get updated.
+  EXPECT_THAT(
+      GetAllLocalDataInclRestart(),
+      UnorderedElementsAre(
+          EqualsSpecifics(CreateWalletMetadataSpecificsForAddressWithUseStats(
+              kAddr1SpecificsId, /*use_count=*/2, /*use_date=*/5)),
+          EqualsSpecifics(CreateWalletMetadataSpecificsForCardWithUseStats(
+              kCard1SpecificsId, /*use_count=*/3, /*use_date=*/6))));
+}
+
 // Verify that higher values of metadata are sent to the sync server when local
 // metadata is updated.
 TEST_F(AutofillWalletMetadataSyncBridgeTest,
