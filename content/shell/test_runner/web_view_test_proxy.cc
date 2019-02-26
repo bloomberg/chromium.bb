@@ -53,10 +53,9 @@ blink::WebView* WebViewTestProxy::CreateView(
     delegate()->PrintMessage(std::string("createView(") +
                              URLDescription(request.Url()) + ")\n");
   }
-  return RenderViewImpl::CreateView(creator, request, features, frame_name,
-                                    policy, suppress_opener, sandbox_flags,
-                                    blink::FeaturePolicy::FeatureState(),
-                                    session_storage_namespace_id);
+  return RenderViewImpl::CreateView(
+      creator, request, features, frame_name, policy, suppress_opener,
+      sandbox_flags, opener_feature_state, session_storage_namespace_id);
 }
 
 void WebViewTestProxy::PrintPage(blink::WebLocalFrame* frame) {

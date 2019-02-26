@@ -14375,16 +14375,14 @@ IN_PROC_BROWSER_TEST_P(FeaturePolicyPropagationToAuxiliaryBrowsingContextTest,
   const std::string kScriptCheckPolicy =
       "document.featurePolicy.allowsFeature('sync-xhr')";
   // Test parameters
-  const char* iframe_type = std::get<0>(GetParam());
-  const char* iframe_src =
-      (std::get<1>(GetParam()) ? same_origin_child : cross_origin_child)
-          .spec()
-          .c_str();
-  const char* window_url = (std::get<2>(GetParam()) ? same_origin_window_url
-                                                    : cross_origin_window_url)
-                               .spec()
-                               .c_str();
-  const char* window_feature = std::get<3>(GetParam());
+  const std::string iframe_type = std::get<0>(GetParam());
+  const std::string iframe_src =
+      (std::get<1>(GetParam()) ? same_origin_child : cross_origin_child).spec();
+  const std::string window_url =
+      (std::get<2>(GetParam()) ? same_origin_window_url
+                               : cross_origin_window_url)
+          .spec();
+  const std::string window_feature = std::get<3>(GetParam());
   SCOPED_TRACE(testing::Message() << " <iframe> Type: " << iframe_type
                                   << " <iframe> Source: " << iframe_src
                                   << " window URL: " << window_url
@@ -14396,8 +14394,8 @@ IN_PROC_BROWSER_TEST_P(FeaturePolicyPropagationToAuxiliaryBrowsingContextTest,
   //     sandbox version "allow-popups-to-escape-sandbox".
   // For now, only the sandbox-escaping case should be allowed to have a new
   // (default) feature policy state.
-  bool expected_feature_state_in_auxiliary_browsing_context = iframe_type =
-      "sandboxed-escaping";
+  bool expected_feature_state_in_auxiliary_browsing_context =
+      (iframe_type == "sandboxed-escaping");
   ShellAddedObserver shell_added_observer;
   ASSERT_TRUE(
       ExecJs(shell(), JsReplace("test($1, $2, $3, $4)", iframe_type, iframe_src,
@@ -14411,17 +14409,15 @@ IN_PROC_BROWSER_TEST_P(FeaturePolicyPropagationToAuxiliaryBrowsingContextTest,
   }
   ASSERT_TRUE(WaitForLoadStop(new_shell->web_contents()));
   ASSERT_EQ(new_shell->web_contents()->GetLastCommittedURL(), window_url);
-  bool renderer_side_feature_state =
-      EvalJs(new_shell, kScriptCheckPolicy).ExtractBool();
+  EXPECT_EQ(expected_feature_state_in_auxiliary_browsing_context,
+            EvalJs(new_shell, kScriptCheckPolicy));
   bool browser_side_feature_state =
       static_cast<RenderFrameHostImpl*>(
           new_shell->web_contents()->GetMainFrame())
           ->feature_policy()
           ->IsFeatureEnabled(blink::mojom::FeaturePolicyFeature::kSyncXHR);
-  ASSERT_EQ(expected_feature_state_in_auxiliary_browsing_context,
+  EXPECT_EQ(expected_feature_state_in_auxiliary_browsing_context,
             browser_side_feature_state);
-  ASSERT_EQ(expected_feature_state_in_auxiliary_browsing_context,
-            renderer_side_feature_state);
   new_shell->Close();
 }
 
