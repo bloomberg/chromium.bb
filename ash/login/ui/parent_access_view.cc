@@ -74,6 +74,7 @@ constexpr int kArrowButtonSizeDp = 40;
 constexpr int kArrowSizeDp = 20;
 
 constexpr SkColor kTextColor = SK_ColorWHITE;
+constexpr SkColor kErrorColor = SkColorSetARGB(0xFF, 0xF2, 0x8B, 0x82);
 constexpr SkColor kArrowButtonColor = SkColorSetARGB(0x57, 0xFF, 0xFF, 0xFF);
 
 }  // namespace
@@ -83,16 +84,16 @@ constexpr SkColor kArrowButtonColor = SkColorSetARGB(0x57, 0xFF, 0xFF, 0xFF);
 class ParentAccessView::AccessCodeInput : public views::View,
                                           public views::TextfieldController {
  public:
-  using OnCodeComplete = base::RepeatingCallback<void(bool complete)>;
+  using OnInputChange = base::RepeatingCallback<void(bool complete)>;
 
   // Builds the view for an access code that consists out of |length| digits.
-  // |on_code_complete| will be called when code completion state changes. True
-  // will be passed if the current code is complate (all digits have input
-  // value) and false otherwise.
-  AccessCodeInput(int length, const OnCodeComplete& on_code_complete)
-      : on_code_complete_(on_code_complete) {
+  // |on_input_change| will be called upon access code digit insertion, deletion
+  // or change. True will be passed if the current code is complete (all digits
+  // have input values) and false otherwise.
+  AccessCodeInput(int length, OnInputChange on_input_change)
+      : on_input_change_(std::move(on_input_change)) {
     DCHECK_LT(0, length);
-    DCHECK(on_code_complete_);
+    DCHECK(on_input_change_);
 
     SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::kHorizontal, gfx::Insets(),
@@ -132,16 +133,18 @@ class ParentAccessView::AccessCodeInput : public views::View,
     ActiveField()->SetText(base::IntToString16(value));
     FocusNextField();
 
-    if (GetCode().has_value())
-      on_code_complete_.Run(true);
+    on_input_change_.Run(GetCode().has_value());
   }
 
-  // Clears value from the |active_field_| and moves focus to the previous field
-  // if it exists.
+  // Clears input from the |active_field_|. If |active_field| is empty moves
+  // focus to the previous field (if exists) and clears input there.
   void Backspace() {
+    if (ActiveInput().empty()) {
+      FocusPreviousField();
+    }
+
     ActiveField()->SetText(base::string16());
-    FocusPreviousField();
-    on_code_complete_.Run(false);
+    on_input_change_.Run(false);
   }
 
   // Returns access code as string if all fields contain input.
@@ -157,6 +160,13 @@ class ParentAccessView::AccessCodeInput : public views::View,
       base::StrAppend(&result, {base::UTF16ToUTF8(field->text())});
     }
     return result;
+  }
+
+  // Sets the color of the input text.
+  void SetInputColor(SkColor color) {
+    for (auto* field : input_fields_) {
+      field->SetTextColor(color);
+    }
   }
 
   // views::View:
@@ -215,9 +225,10 @@ class ParentAccessView::AccessCodeInput : public views::View,
   // Returns text in the active input field.
   const base::string16& ActiveInput() const { return ActiveField()->text(); }
 
-  // To be called when access code completion state changes. Passes true when
-  // code is complete (all digits have input value) and false otherwise.
-  OnCodeComplete on_code_complete_;
+  // To be called when access input code changes (digit is inserted, deleted or
+  // updated). Passes true when code is complete (all digits have input value)
+  // and false otherwise.
+  OnInputChange on_input_change_;
 
   // An active/focused input field index. Incoming digit will be inserted here.
   int active_input_index_ = 0;
@@ -243,6 +254,10 @@ ArrowButtonView* ParentAccessView::TestApi::submit_button() const {
 
 LoginPinView* ParentAccessView::TestApi::pin_keyboard_view() const {
   return view_->pin_keyboard_view_;
+}
+
+ParentAccessView::State ParentAccessView::TestApi::state() const {
+  return view_->state_;
 }
 
 ParentAccessView::Callbacks::Callbacks() = default;
@@ -344,7 +359,7 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
   // Access code input view.
   access_code_view_ =
       new AccessCodeInput(kParentAccessCodePinLength,
-                          base::BindRepeating(&ParentAccessView::OnCodeComplete,
+                          base::BindRepeating(&ParentAccessView::OnInputChange,
                                               base::Unretained(this)));
   AddChildView(access_code_view_);
 
@@ -435,6 +450,29 @@ void ParentAccessView::SubmitCode() {
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
+void ParentAccessView::UpdateState(State state) {
+  if (state_ == state)
+    return;
+
+  state_ = state;
+  switch (state_) {
+    case State::kNormal: {
+      access_code_view_->SetInputColor(kTextColor);
+      title_label_->SetEnabledColor(kTextColor);
+      title_label_->SetText(
+          l10n_util::GetStringUTF16(IDS_ASH_LOGIN_PARENT_ACCESS_TITLE));
+      return;
+    }
+    case State::kError: {
+      access_code_view_->SetInputColor(kErrorColor);
+      title_label_->SetEnabledColor(kErrorColor);
+      title_label_->SetText(
+          l10n_util::GetStringUTF16(IDS_ASH_LOGIN_PARENT_ACCESS_TITLE_ERROR));
+      return;
+    }
+  }
+}
+
 void ParentAccessView::OnValidationResult(base::Optional<bool> result) {
   if (result.has_value() && *result) {
     VLOG(1) << "Parent access code successfully validated";
@@ -443,10 +481,13 @@ void ParentAccessView::OnValidationResult(base::Optional<bool> result) {
   }
 
   VLOG(1) << "Invalid parent access code entered";
-  // TODO(agawronska): Show error.
+  UpdateState(State::kError);
 }
 
-void ParentAccessView::OnCodeComplete(bool complete) {
+void ParentAccessView::OnInputChange(bool complete) {
+  if (state_ == State::kError)
+    UpdateState(State::kNormal);
+
   submit_button_->SetEnabled(complete);
 }
 
