@@ -928,11 +928,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "enable-canvas-2d-image-chromium",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-chrome-duet",
     // "owners": [ "your-team" ],
     "expiry_milestone": 76
