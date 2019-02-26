@@ -12,7 +12,6 @@
 #include "content/common/content_export.h"
 #include "content/renderer/media/stream/media_stream_constraints_util.h"
 #include "media/capture/video_capture_types.h"
-#include "third_party/blink/public/mojom/mediastream/media_devices.mojom.h"
 
 namespace blink {
 class WebString;
@@ -35,6 +34,25 @@ ToWebDisplaySurface(media::mojom::DisplayCaptureSurfaceType display_surface);
 CONTENT_EXPORT blink::WebMediaStreamTrack::CursorCaptureType
 ToWebCursorCaptureType(media::mojom::CursorCaptureType cursor);
 
+// This is a temporary struct to bridge blink and content mojo types.
+// TODO(crbug.com/704136): Replace references to this type with the blink mojo
+// type once all dependent types are migrated to Blink.
+struct CONTENT_EXPORT VideoInputDeviceCapabilities {
+  VideoInputDeviceCapabilities(std::string device_id,
+                               std::string group_id,
+                               std::vector<media::VideoCaptureFormat> formats,
+                               media::VideoFacingMode facing_mode);
+  VideoInputDeviceCapabilities();
+  VideoInputDeviceCapabilities(VideoInputDeviceCapabilities&& other);
+  VideoInputDeviceCapabilities& operator=(VideoInputDeviceCapabilities&& other);
+  ~VideoInputDeviceCapabilities();
+
+  std::string device_id;
+  std::string group_id;
+  std::vector<media::VideoCaptureFormat> formats;
+  media::VideoFacingMode facing_mode;
+};
+
 struct CONTENT_EXPORT VideoDeviceCaptureCapabilities {
   VideoDeviceCaptureCapabilities();
   VideoDeviceCaptureCapabilities(VideoDeviceCaptureCapabilities&& other);
@@ -42,9 +60,12 @@ struct CONTENT_EXPORT VideoDeviceCaptureCapabilities {
   VideoDeviceCaptureCapabilities& operator=(
       VideoDeviceCaptureCapabilities&& other);
 
-  // Each field is independent of each other.
-  std::vector<blink::mojom::VideoInputDeviceCapabilitiesPtr>
-      device_capabilities;
+  // Each capabilities field is independent of each other.
+  // TODO(crbug.com/704136): Replace VideoInputDeviceCapabilities in the
+  // |device_capabilities| definition with the Blink mojo
+  // VideoInputDeviceCapabilitiesPtr type once dependent types are migrated to
+  // Blink.
+  std::vector<VideoInputDeviceCapabilities> device_capabilities;
   std::vector<base::Optional<bool>> noise_reduction_capabilities;
 };
 
