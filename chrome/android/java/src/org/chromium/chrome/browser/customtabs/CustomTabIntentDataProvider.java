@@ -320,7 +320,7 @@ public class CustomTabIntentDataProvider extends BrowserSessionDataProvider {
         String moduleClassName = IntentUtils.safeGetStringExtra(intent, EXTRA_MODULE_CLASS_NAME);
         if (modulePackageName != null && moduleClassName != null) {
             mModuleComponentName = new ComponentName(modulePackageName, moduleClassName);
-            mModuleDexResourceId = intent.getIntExtra(EXTRA_MODULE_DEX_RESOURCE_ID, -1);
+            mModuleDexResourceId = intent.getIntExtra(EXTRA_MODULE_DEX_RESOURCE_ID, 0);
             String moduleManagedUrlsRegex =
                     IntentUtils.safeGetStringExtra(intent, EXTRA_MODULE_MANAGED_URLS_REGEX);
             mModuleManagedUrlsPattern = (moduleManagedUrlsRegex != null)
