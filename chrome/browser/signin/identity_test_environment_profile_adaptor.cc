@@ -14,31 +14,8 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
-#include "components/signin/core/browser/fake_signin_manager.h"
 
 namespace {
-
-// TestingFactory that creates a FakeSigninManagerBase on ChromeOS and a
-// FakeSigninManager on all other platforms.
-std::unique_ptr<KeyedService> BuildFakeSigninManagerForTesting(
-    content::BrowserContext* context) {
-  Profile* profile = static_cast<Profile*>(context);
-  std::unique_ptr<SigninManagerBase> manager =
-#if defined(OS_CHROMEOS)
-      std::make_unique<SigninManagerBase>(
-          ChromeSigninClientFactory::GetForProfile(profile),
-          ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-          AccountTrackerServiceFactory::GetForProfile(profile));
-#else
-      std::make_unique<FakeSigninManager>(
-          ChromeSigninClientFactory::GetForProfile(profile),
-          ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-          AccountTrackerServiceFactory::GetForProfile(profile),
-          GaiaCookieManagerServiceFactory::GetForProfile(profile));
-#endif
-  manager->Initialize(nullptr);
-  return manager;
-}
 
 // Testing factory that creates a FakeAccountFetcherService.
 std::unique_ptr<KeyedService> BuildFakeAccountFetcherService(
@@ -120,9 +97,7 @@ IdentityTestEnvironmentProfileAdaptor::GetIdentityTestEnvironmentFactories() {
   return {{AccountFetcherServiceFactory::GetInstance(),
            base::BindRepeating(&BuildFakeAccountFetcherService)},
           {ProfileOAuth2TokenServiceFactory::GetInstance(),
-           base::BindRepeating(&BuildFakeProfileOAuth2TokenService)},
-          {SigninManagerFactory::GetInstance(),
-           base::BindRepeating(&BuildFakeSigninManagerForTesting)}};
+           base::BindRepeating(&BuildFakeProfileOAuth2TokenService)}};
 }
 
 // static
@@ -149,12 +124,7 @@ IdentityTestEnvironmentProfileAdaptor::IdentityTestEnvironmentProfileAdaptor(
               AccountFetcherServiceFactory::GetForProfile(profile)),
           static_cast<FakeProfileOAuth2TokenService*>(
               ProfileOAuth2TokenServiceFactory::GetForProfile(profile)),
-#if defined(OS_CHROMEOS)
           SigninManagerFactory::GetForProfile(profile),
-#else
-          static_cast<FakeSigninManager*>(
-              SigninManagerFactory::GetForProfile(profile)),
-#endif
           GaiaCookieManagerServiceFactory::GetForProfile(profile),
           IdentityManagerFactory::GetForProfile(profile)) {
 }

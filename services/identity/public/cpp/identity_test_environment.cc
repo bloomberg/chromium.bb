@@ -12,8 +12,8 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
-#include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
@@ -52,7 +52,7 @@ class IdentityManagerDependenciesOwner {
 
   FakeAccountFetcherService* account_fetcher_service();
 
-  SigninManagerForTest* signin_manager();
+  SigninManagerBase* signin_manager();
 
   FakeProfileOAuth2TokenService* token_service();
 
@@ -75,7 +75,11 @@ class IdentityManagerDependenciesOwner {
   AccountTrackerService account_tracker_;
   FakeAccountFetcherService account_fetcher_;
   FakeProfileOAuth2TokenService token_service_;
-  SigninManagerForTest signin_manager_;
+#if defined(OS_CHROMEOS)
+  SigninManagerBase signin_manager_;
+#else
+  SigninManager signin_manager_;
+#endif
   std::unique_ptr<GaiaCookieManagerService> gaia_cookie_manager_service_;
 
   DISALLOW_COPY_AND_ASSIGN(IdentityManagerDependenciesOwner);
@@ -149,7 +153,7 @@ IdentityManagerDependenciesOwner::account_fetcher_service() {
   return &account_fetcher_;
 }
 
-SigninManagerForTest* IdentityManagerDependenciesOwner::signin_manager() {
+SigninManagerBase* IdentityManagerDependenciesOwner::signin_manager() {
   return &signin_manager_;
 }
 
@@ -203,7 +207,7 @@ IdentityTestEnvironment::IdentityTestEnvironment(
     AccountTrackerService* account_tracker_service,
     FakeAccountFetcherService* account_fetcher_service,
     FakeProfileOAuth2TokenService* token_service,
-    SigninManagerForTest* signin_manager,
+    SigninManagerBase* signin_manager,
     GaiaCookieManagerService* gaia_cookie_manager_service,
     network::TestURLLoaderFactory* test_url_loader_factory)
     : IdentityTestEnvironment(pref_service,
@@ -221,7 +225,7 @@ IdentityTestEnvironment::IdentityTestEnvironment(
     AccountTrackerService* account_tracker_service,
     FakeAccountFetcherService* account_fetcher_service,
     FakeProfileOAuth2TokenService* token_service,
-    SigninManagerForTest* signin_manager,
+    SigninManagerBase* signin_manager,
     GaiaCookieManagerService* gaia_cookie_manager_service,
     IdentityManager* identity_manager,
     network::TestURLLoaderFactory* test_url_loader_factory)
@@ -240,7 +244,7 @@ IdentityTestEnvironment::IdentityTestEnvironment(
     AccountTrackerService* account_tracker_service,
     FakeAccountFetcherService* account_fetcher_service,
     FakeProfileOAuth2TokenService* token_service,
-    SigninManagerForTest* signin_manager,
+    SigninManagerBase* signin_manager,
     GaiaCookieManagerService* gaia_cookie_manager_service,
     network::TestURLLoaderFactory* test_url_loader_factory,
     std::unique_ptr<IdentityManagerDependenciesOwner> dependencies_owner,

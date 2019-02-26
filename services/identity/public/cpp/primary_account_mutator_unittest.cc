@@ -443,9 +443,9 @@ TEST_F(PrimaryAccountMutatorTest, ClearPrimaryAccount_Default) {
       signin_metrics::SIGNOUT_TEST,
       signin_metrics::SignoutDelete::IGNORE_METRIC));
 
-  // The underlying SigninManager in IdentityTestEnvironment (FakeSigninManager)
-  // will be created with signin::AccountConsistencyMethod::kDisabled, which
-  // should result in ClearPrimaryAccount() removing all the tokens.
+  // The underlying SigninManager in IdentityTestEnvironment will be created
+  // with signin::AccountConsistencyMethod::kDisabled, which should result in
+  // ClearPrimaryAccount() removing all the tokens.
   EXPECT_FALSE(identity_manager->HasPrimaryAccount());
   EXPECT_FALSE(identity_manager->HasAccountWithRefreshToken(
       primary_account_info.account_id));
