@@ -382,6 +382,7 @@ const base::Feature kAcknowledgeNtpOverrideOnDeactivate{
 #endif
 
 // Enables or disables modal permission prompts.
+// TODO(https://crbug.com/935900): Remove this.
 const base::Feature kModalPermissionPrompts{"ModalPermissionPrompts",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 

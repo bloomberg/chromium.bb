@@ -2451,10 +2451,6 @@ const char kModalPermissionDialogViewName[] = "Modal Permission Dialog";
 const char kModalPermissionDialogViewDescription[] =
     "Enable this option to use ModalDialogManager for permission Dialogs.";
 
-const char kModalPermissionPromptsName[] = "Modal Permission Prompts";
-const char kModalPermissionPromptsDescription[] =
-    "Whether to use permission dialogs in place of permission infobars.";
-
 const char kNewContactsPickerName[] = "Enable new contacts picker";
 const char kNewContactsPickerDescription[] =
     "Activates the new picker for selecting contacts.";
