@@ -18,8 +18,10 @@
 #include "chromeos/dbus/fake_diagnosticsd_client.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/system/handle.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -27,7 +29,12 @@ namespace chromeos {
 namespace {
 
 class MockMojoDiagnosticsdService
-    : public diagnosticsd::mojom::DiagnosticsdService {};
+    : public diagnosticsd::mojom::DiagnosticsdService {
+ public:
+  MOCK_METHOD2(SendUiMessageToDiagnosticsProcessor,
+               void(mojo::ScopedHandle,
+                    SendUiMessageToDiagnosticsProcessorCallback));
+};
 
 // Fake implementation of the DiagnosticsdServiceFactory Mojo interface that
 // holds up method calls and allows to complete them afterwards.

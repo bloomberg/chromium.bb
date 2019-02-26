@@ -729,6 +729,8 @@ source_set("chromeos") {
     "device_sync/device_sync_client_factory.h",
     "diagnosticsd/diagnosticsd_bridge.cc",
     "diagnosticsd/diagnosticsd_bridge.h",
+    "diagnosticsd/diagnosticsd_messaging.cc",
+    "diagnosticsd/diagnosticsd_messaging.h",
     "diagnosticsd/diagnosticsd_web_request_service.cc",
     "diagnosticsd/diagnosticsd_web_request_service.h",
     "diagnosticsd/mojo_utils.cc",

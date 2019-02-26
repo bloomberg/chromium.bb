@@ -41,6 +41,25 @@ interface DiagnosticsdServiceFactory {
 
 // Interface exposed by the diagnosticsd daemon.
 interface DiagnosticsdService {
+  // Sends a message, originating from the diagnostics UI extension (hosted by
+  // the browser), to the diagnostics_processor daemon. The message contents are
+  // serialized JSON. Delivery of the message is not guaranteed (for example, if
+  // the diagnostics_processor daemon isn't running at the moment).
+  //
+  // NOTE: the |json_message| message must not exceed 1 MB (1'000'000 bytes).
+  //
+  // The response will contain the JSON message returned by the
+  // diagnostics_processor daemon. The response handle will be unset if the
+  // request wasn't delivered to the daemon or the daemon made no reply.
+  //
+  // NOTE: Both request and response messages are opaque to Chrome and not
+  // interpreted by it in any way (except for the JSON validity verification
+  // of the response message that happens in the target extension's renderer
+  // process). This method simply transmits data between two endpoints that are
+  // implemented by third parties (the diagnostics UI extension and the
+  // diagnostics_processor daemon).
+  SendUiMessageToDiagnosticsProcessor@0(handle json_message)
+      => (handle? response_json_message);
 };
 
 // Interface exposed by the consumer of DiagnosticsdService. In production this
