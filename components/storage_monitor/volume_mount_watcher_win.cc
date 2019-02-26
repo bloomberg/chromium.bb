@@ -227,7 +227,7 @@ void EjectDeviceInThreadPool(
       device != device.DirName()) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
-        base::Bind(callback, StorageMonitor::EJECT_FAILURE));
+        base::BindOnce(callback, StorageMonitor::EJECT_FAILURE));
     return;
   }
   base::SStringPrintf(&volume_name, L"\\\\.\\%lc:", drive_letter);
@@ -239,7 +239,7 @@ void EjectDeviceInThreadPool(
   if (!volume_handle.IsValid()) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
-        base::Bind(callback, StorageMonitor::EJECT_FAILURE));
+        base::BindOnce(callback, StorageMonitor::EJECT_FAILURE));
     return;
   }
 
@@ -269,7 +269,7 @@ void EjectDeviceInThreadPool(
 
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
-        base::Bind(callback, StorageMonitor::EJECT_IN_USE));
+        base::BindOnce(callback, StorageMonitor::EJECT_IN_USE));
     return;
   }
 
@@ -285,8 +285,9 @@ void EjectDeviceInThreadPool(
   if (!dismounted) {
     DeviceIoControl(volume_handle.Get(), FSCTL_UNLOCK_VOLUME, nullptr, 0,
                     nullptr, 0, &bytes_returned, nullptr);
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             base::Bind(callback, StorageMonitor::EJECT_OK));
+    base::PostTaskWithTraits(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(callback, StorageMonitor::EJECT_OK));
     return;
   }
 
@@ -298,7 +299,7 @@ void EjectDeviceInThreadPool(
                        &bytes_returned, nullptr)) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
-        base::Bind(callback, StorageMonitor::EJECT_FAILURE));
+        base::BindOnce(callback, StorageMonitor::EJECT_FAILURE));
     return;
   }
 
@@ -307,12 +308,12 @@ void EjectDeviceInThreadPool(
                        0, nullptr, 0, &bytes_returned, nullptr)) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
-        base::Bind(callback, StorageMonitor::EJECT_FAILURE));
+        base::BindOnce(callback, StorageMonitor::EJECT_FAILURE));
     return;
   }
 
   base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           base::Bind(callback, StorageMonitor::EJECT_OK));
+                           base::BindOnce(callback, StorageMonitor::EJECT_OK));
 }
 
 }  // namespace
@@ -377,15 +378,15 @@ void VolumeMountWatcherWin::RetrieveInfoForDeviceAndAdd(
   if (!get_device_details_callback.Run(device_path, &info)) {
     base::PostTaskWithTraits(
         FROM_HERE, {BrowserThread::UI},
-        base::Bind(&VolumeMountWatcherWin::DeviceCheckComplete, volume_watcher,
-                   device_path));
+        base::BindOnce(&VolumeMountWatcherWin::DeviceCheckComplete,
+                       volume_watcher, device_path));
     return;
   }
 
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(&VolumeMountWatcherWin::HandleDeviceAttachEventOnUIThread,
-                 volume_watcher, device_path, info));
+      base::BindOnce(&VolumeMountWatcherWin::HandleDeviceAttachEventOnUIThread,
+                     volume_watcher, device_path, info));
 }
 
 void VolumeMountWatcherWin::DeviceCheckComplete(
