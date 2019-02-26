@@ -2797,3 +2797,45 @@ TEST_F(AccountReconcilorTest, LockDestructionOrder) {
   DeleteReconcilor();
   // |lock| is destroyed after the reconcilor, this should not crash.
 }
+
+// Checks that multilogin with empty list of accounts in UPDATE mode is changed
+// into a Logout call.
+TEST_F(AccountReconcilorTest, MultiloginLogout) {
+  // Delegate implementation always returning UPDATE mode with no accounts.
+  class MultiloginLogoutDelegate : public signin::AccountReconcilorDelegate {
+    bool IsReconcileEnabled() const override { return true; }
+    bool IsAccountConsistencyEnforced() const override { return true; }
+    std::vector<std::string> GetChromeAccountsForReconcile(
+        const std::vector<std::string>& chrome_accounts,
+        const std::string& primary_account,
+        const std::vector<gaia::ListedAccount>& gaia_accounts,
+        const gaia::MultiloginMode mode) const override {
+      return {};
+    }
+    gaia::MultiloginMode CalculateModeForReconcile(
+        const std::vector<gaia::ListedAccount>& gaia_accounts,
+        const std::string primary_account,
+        bool first_execution,
+        bool primary_has_error) const override {
+      return gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER;
+    }
+  };
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kUseMultiloginEndpoint);
+  MockAccountReconcilor* reconcilor =
+      GetMockReconcilor(std::make_unique<MultiloginLogoutDelegate>());
+  signin::SetListAccountsResponseOneAccount("user@gmail.com", "123456",
+                                            &test_url_loader_factory_);
+
+  // Logout call to Gaia.
+  EXPECT_CALL(*reconcilor, PerformLogoutAllAccountsAction());
+  // No multilogin call.
+  EXPECT_CALL(*reconcilor, PerformSetCookiesAction(testing::_)).Times(0);
+
+  reconcilor->StartReconcile();
+  ASSERT_TRUE(reconcilor->is_reconcile_started_);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(reconcilor->is_reconcile_started_);
+  ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_OK, reconcilor->GetState());
+}
