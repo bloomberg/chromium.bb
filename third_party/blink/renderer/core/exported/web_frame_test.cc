@@ -275,8 +275,8 @@ class WebFrameTest : public testing::Test {
     RegisterMockedHttpURLLoad("nodeimage.html");
     web_view_helper->InitializeAndLoad(base_url_ + "nodeimage.html");
     web_view_helper->Resize(WebSize(640, 480));
-    LocalFrame* frame =
-        ToLocalFrame(web_view_helper->GetWebView()->GetPage()->MainFrame());
+    auto* frame =
+        To<LocalFrame>(web_view_helper->GetWebView()->GetPage()->MainFrame());
     DCHECK(frame);
     Element* element = frame->GetDocument()->getElementById(testcase.c_str());
     return DataTransfer::NodeImage(*frame, *element);
@@ -1220,8 +1220,8 @@ TEST_F(WebFrameTest, PostMessageThenDetach) {
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad("about:blank");
 
-  LocalFrame* frame =
-      ToLocalFrame(web_view_helper.GetWebView()->GetPage()->MainFrame());
+  auto* frame =
+      To<LocalFrame>(web_view_helper.GetWebView()->GetPage()->MainFrame());
   NonThrowableExceptionState exception_state;
   scoped_refptr<SerializedScriptValue> message =
       SerializeString("message", ToScriptStateForMainWorld(frame));
@@ -1296,7 +1296,7 @@ TEST_F(WebFrameTest, ChangeInFixedLayoutResetsTextAutosizingMultipliers) {
                                     &client, nullptr, ConfigureAndroid);
 
   Document* document =
-      ToLocalFrame(web_view_helper.GetWebView()->GetPage()->MainFrame())
+      To<LocalFrame>(web_view_helper.GetWebView()->GetPage()->MainFrame())
           ->GetDocument();
   document->GetSettings()->SetTextAutosizingEnabled(true);
   EXPECT_TRUE(document->GetSettings()->TextAutosizingEnabled());
@@ -1327,7 +1327,7 @@ TEST_F(WebFrameTest, WorkingTextAutosizingMultipliers_VirtualViewport) {
                                     nullptr, ConfigureAndroid);
 
   Document* document =
-      ToLocalFrame(web_view_helper.GetWebView()->GetPage()->MainFrame())
+      To<LocalFrame>(web_view_helper.GetWebView()->GetPage()->MainFrame())
           ->GetDocument();
   document->GetSettings()->SetTextAutosizingEnabled(true);
   EXPECT_TRUE(document->GetSettings()->TextAutosizingEnabled());
@@ -1351,8 +1351,8 @@ TEST_F(WebFrameTest,
   web_view_helper.InitializeAndLoad(base_url_ + "iframe_reload.html", nullptr,
                                     &client, nullptr, ConfigureAndroid);
 
-  LocalFrame* main_frame =
-      ToLocalFrame(web_view_helper.GetWebView()->GetPage()->MainFrame());
+  auto* main_frame =
+      To<LocalFrame>(web_view_helper.GetWebView()->GetPage()->MainFrame());
   Document* document = main_frame->GetDocument();
   LocalFrameView* frame_view = web_view_helper.LocalMainFrame()->GetFrameView();
   document->GetSettings()->SetTextAutosizingEnabled(true);
@@ -1360,12 +1360,12 @@ TEST_F(WebFrameTest,
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
 
   for (Frame* frame = main_frame; frame; frame = frame->Tree().TraverseNext()) {
-    if (!frame->IsLocalFrame())
+    auto* local_frame = DynamicTo<LocalFrame>(frame);
+    if (!local_frame)
       continue;
-    EXPECT_TRUE(
-        SetTextAutosizingMultiplier(ToLocalFrame(frame)->GetDocument(), 2));
+    EXPECT_TRUE(SetTextAutosizingMultiplier(local_frame->GetDocument(), 2));
     for (LayoutObject* layout_object =
-             ToLocalFrame(frame)->GetDocument()->GetLayoutView();
+             local_frame->GetDocument()->GetLayoutView();
          layout_object; layout_object = layout_object->NextInPreOrder()) {
       if (layout_object->IsText())
         EXPECT_FALSE(layout_object->NeedsLayout());
@@ -1375,10 +1375,11 @@ TEST_F(WebFrameTest,
   frame_view->GetPage()->GetVisualViewport().SetSize(IntSize(200, 200));
 
   for (Frame* frame = main_frame; frame; frame = frame->Tree().TraverseNext()) {
-    if (!frame->IsLocalFrame())
+    auto* local_frame = DynamicTo<LocalFrame>(frame);
+    if (!local_frame)
       continue;
     for (LayoutObject* layout_object =
-             ToLocalFrame(frame)->GetDocument()->GetLayoutView();
+             local_frame->GetDocument()->GetLayoutView();
          !layout_object; layout_object = layout_object->NextInPreOrder()) {
       if (layout_object->IsText())
         EXPECT_TRUE(layout_object->NeedsLayout());
@@ -1539,7 +1540,7 @@ TEST_F(WebFrameTest, DelayedViewportInitialScale) {
   EXPECT_EQ(0.25f, web_view_helper.GetWebView()->PageScaleFactor());
 
   ViewportData& viewport =
-      ToLocalFrame(web_view_helper.GetWebView()->GetPage()->MainFrame())
+      To<LocalFrame>(web_view_helper.GetWebView()->GetPage()->MainFrame())
           ->GetDocument()
           ->GetViewportData();
   ViewportDescription description = viewport.GetViewportDescription();
@@ -2107,7 +2108,7 @@ TEST_F(WebFrameTest, ToggleViewportMetaOnOff) {
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
 
   ViewportData& viewport =
-      ToLocalFrame(web_view_helper.GetWebView()->GetPage()->MainFrame())
+      To<LocalFrame>(web_view_helper.GetWebView()->GetPage()->MainFrame())
           ->GetDocument()
           ->GetViewportData();
   EXPECT_FALSE(viewport.GetViewportDescription().IsLegacyViewportType());
@@ -2380,7 +2381,7 @@ TEST_F(WebFrameTest, LayoutSize320Quirk) {
   // The magic number to snap to device-width is 320, so test that 321 is
   // respected.
   ViewportData& viewport =
-      ToLocalFrame(web_view_helper.GetWebView()->GetPage()->MainFrame())
+      To<LocalFrame>(web_view_helper.GetWebView()->GetPage()->MainFrame())
           ->GetDocument()
           ->GetViewportData();
   ViewportDescription description = viewport.GetViewportDescription();
@@ -2635,7 +2636,7 @@ TEST_F(WebFrameTest, pageScaleFactorWrittenToHistoryItem) {
 
   web_view_helper.GetWebView()->SetPageScaleFactor(3);
   EXPECT_EQ(3,
-            ToLocalFrame(web_view_helper.GetWebView()->GetPage()->MainFrame())
+            To<LocalFrame>(web_view_helper.GetWebView()->GetPage()->MainFrame())
                 ->Loader()
                 .GetDocumentLoader()
                 ->GetHistoryItem()
@@ -2662,7 +2663,7 @@ TEST_F(WebFrameTest, initialScaleWrittenToHistoryItem) {
   float minimum_page_scale_factor =
       viewport_width / (float)default_fixed_layout_width;
   EXPECT_EQ(minimum_page_scale_factor,
-            ToLocalFrame(web_view_helper.GetWebView()->GetPage()->MainFrame())
+            To<LocalFrame>(web_view_helper.GetWebView()->GetPage()->MainFrame())
                 ->Loader()
                 .GetDocumentLoader()
                 ->GetHistoryItem()
@@ -2729,7 +2730,7 @@ TEST_F(WebFrameTest, pageScaleFactorDoesNotApplyCssTransform) {
   web_view_helper.GetWebView()->SetPageScaleFactor(2);
 
   EXPECT_EQ(980,
-            ToLocalFrame(web_view_helper.GetWebView()->GetPage()->MainFrame())
+            To<LocalFrame>(web_view_helper.GetWebView()->GetPage()->MainFrame())
                 ->ContentLayoutObject()
                 ->DocumentRect()
                 .Width());
@@ -7356,8 +7357,8 @@ TEST_F(WebFrameTest, ModifiedClickNewWindow) {
   web_view_helper.InitializeAndLoad(base_url_ + "ctrl_click.html",
                                     &web_frame_client, &web_view_client);
 
-  LocalFrame* frame =
-      ToLocalFrame(web_view_helper.GetWebView()->GetPage()->MainFrame());
+  auto* frame =
+      To<LocalFrame>(web_view_helper.GetWebView()->GetPage()->MainFrame());
   Document* document = frame->GetDocument();
   KURL destination = ToKURL(base_url_ + "hello_world.html");
 
@@ -7375,10 +7376,8 @@ TEST_F(WebFrameTest, ModifiedClickNewWindow) {
   std::unique_ptr<UserGestureIndicator> gesture =
       LocalFrame::NotifyUserActivation(frame);
   web_frame_client.IgnoreNavigations();
-  ToLocalFrame(web_view_helper.GetWebView()->GetPage()->MainFrame())
-      ->Loader()
-      .StartNavigation(frame_request, WebFrameLoadType::kStandard,
-                       NavigationPolicyFromEvent(event));
+  frame->Loader().StartNavigation(frame_request, WebFrameLoadType::kStandard,
+                                  NavigationPolicyFromEvent(event));
   frame_test_helpers::PumpPendingRequestsForFrameToLoad(
       web_view_helper.LocalMainFrame());
 
@@ -7563,15 +7562,11 @@ TEST_F(WebFrameTest, NavigateToSame) {
                                     &client);
   EXPECT_FALSE(client.FrameLoadTypeReloadSeen());
 
+  auto* local_frame =
+      To<LocalFrame>(web_view_helper.GetWebView()->GetPage()->MainFrame());
   FrameLoadRequest frame_request(
-      nullptr,
-      ResourceRequest(
-          ToLocalFrame(web_view_helper.GetWebView()->GetPage()->MainFrame())
-              ->GetDocument()
-              ->Url()));
-  ToLocalFrame(web_view_helper.GetWebView()->GetPage()->MainFrame())
-      ->Loader()
-      .StartNavigation(frame_request);
+      nullptr, ResourceRequest(local_frame->GetDocument()->Url()));
+  local_frame->Loader().StartNavigation(frame_request);
   frame_test_helpers::PumpPendingRequestsForFrameToLoad(
       web_view_helper.LocalMainFrame());
 
@@ -7760,21 +7755,16 @@ TEST_F(WebFrameTest, SameDocumentHistoryNavigationCommitType) {
   frame_test_helpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view_impl =
       web_view_helper.InitializeAndLoad(base_url_ + "push_state.html", &client);
+  auto* local_frame = To<LocalFrame>(web_view_impl->GetPage()->MainFrame());
   Persistent<HistoryItem> item =
-      ToLocalFrame(web_view_impl->GetPage()->MainFrame())
-          ->Loader()
-          .GetDocumentLoader()
-          ->GetHistoryItem();
+      local_frame->Loader().GetDocumentLoader()->GetHistoryItem();
   RunPendingTasks();
 
-  ToLocalFrame(web_view_impl->GetPage()->MainFrame())
-      ->Loader()
-      .CommitSameDocumentNavigation(item->Url(), WebFrameLoadType::kBackForward,
-                                    item.Get(),
-                                    ClientRedirectPolicy::kNotClientRedirect,
-                                    nullptr, /* origin_document */
-                                    false,   /* has_event */
-                                    nullptr /* extra_data */);
+  local_frame->Loader().CommitSameDocumentNavigation(
+      item->Url(), WebFrameLoadType::kBackForward, item.Get(),
+      ClientRedirectPolicy::kNotClientRedirect, nullptr, /* origin_document */
+      false,                                             /* has_event */
+      nullptr /* extra_data */);
   EXPECT_EQ(kWebBackForwardCommit, client.LastCommitType());
 }
 
@@ -9872,8 +9862,8 @@ TEST_F(WebFrameTest, ResizeInvalidatesDeviceMediaQueries) {
   web_view_helper.InitializeAndLoad(base_url_ + "device_media_queries.html",
                                     nullptr, &client, nullptr,
                                     ConfigureAndroid);
-  LocalFrame* frame =
-      ToLocalFrame(web_view_helper.GetWebView()->GetPage()->MainFrame());
+  auto* frame =
+      To<LocalFrame>(web_view_helper.GetWebView()->GetPage()->MainFrame());
   Element* element = frame->GetDocument()->getElementById("test");
   ASSERT_TRUE(element);
 
@@ -11059,7 +11049,7 @@ TEST_F(WebFrameTest, LoadJavascriptURLInNewFrame) {
   // Normally, the result of the JS url replaces the existing contents on the
   // Document. However, if the JS triggers a navigation, the contents should
   // not be replaced.
-  EXPECT_EQ("", ToLocalFrame(helper.GetWebView()->GetPage()->MainFrame())
+  EXPECT_EQ("", To<LocalFrame>(helper.GetWebView()->GetPage()->MainFrame())
                     ->GetDocument()
                     ->documentElement()
                     ->innerText());
@@ -11195,7 +11185,8 @@ TEST_F(WebFrameTest, ImageDocumentDecodeError) {
   Platform::Current()->GetURLLoaderMockFactory()->SetLoaderDelegate(nullptr);
 
   Document* document =
-      ToLocalFrame(helper.GetWebView()->GetPage()->MainFrame())->GetDocument();
+      To<LocalFrame>(helper.GetWebView()->GetPage()->MainFrame())
+          ->GetDocument();
   EXPECT_TRUE(document->IsImageDocument());
   EXPECT_EQ(ResourceStatus::kDecodeError,
             ToImageDocument(document)->CachedImage()->GetContentStatus());
@@ -11430,8 +11421,7 @@ TEST_F(WebFrameSimTest, HitTestWithIgnoreClippingAtNegativeOffset) {
 
   Compositor().BeginFrame();
 
-  LocalFrameView* frame_view =
-      ToLocalFrame(WebView().GetPage()->MainFrame())->View();
+  auto* frame_view = To<LocalFrame>(WebView().GetPage()->MainFrame())->View();
 
   frame_view->GetScrollableArea()->SetScrollOffset(ScrollOffset(0, 600),
                                                    kProgrammaticScroll);
@@ -11474,8 +11464,7 @@ TEST_F(WebFrameSimTest, TickmarksDocumentRelative) {
   Compositor().BeginFrame();
 
   WebLocalFrameImpl* frame = ToWebLocalFrameImpl(WebView().MainFrame());
-  LocalFrameView* frame_view =
-      ToLocalFrame(WebView().GetPage()->MainFrame())->View();
+  auto* frame_view = To<LocalFrame>(WebView().GetPage()->MainFrame())->View();
 
   frame_view->GetScrollableArea()->SetScrollOffset(ScrollOffset(3000, 1000),
                                                    kProgrammaticScroll);
@@ -11531,8 +11520,8 @@ TEST_F(WebFrameSimTest, FindInPageSelectNextMatch) {
   Compositor().BeginFrame();
 
   WebLocalFrameImpl* frame = ToWebLocalFrameImpl(WebView().MainFrame());
-  LocalFrameView* frame_view =
-      ToLocalFrame(WebView().GetPage()->MainFrame())->View();
+  auto* local_frame = To<LocalFrame>(WebView().GetPage()->MainFrame());
+  auto* frame_view = local_frame->View();
 
   Element* box1 = GetDocument().getElementById("box1");
   Element* box2 = GetDocument().getElementById("box2");
@@ -11561,7 +11550,6 @@ TEST_F(WebFrameSimTest, FindInPageSelectNextMatch) {
   frame->EnsureTextFinder().SelectNearestFindMatch(result_rect.Center(),
                                                    nullptr);
 
-  LocalFrame* local_frame = ToLocalFrame(WebView().GetPage()->MainFrame());
   VisualViewport& visual_viewport = local_frame->GetPage()->GetVisualViewport();
   EXPECT_TRUE(visual_viewport.VisibleRectInDocument().Contains(box1_rect));
 
@@ -11675,7 +11663,7 @@ TEST_F(WebFrameSimTest, TestScrollFocusedEditableElementIntoView) {
 
   WebView().AdvanceFocus(false);
 
-  LocalFrame* frame = ToLocalFrame(WebView().GetPage()->MainFrame());
+  auto* frame = To<LocalFrame>(WebView().GetPage()->MainFrame());
   LocalFrameView* frame_view = frame->View();
   VisualViewport& visual_viewport = frame->GetPage()->GetVisualViewport();
   FloatRect inputRect(200, 600, 100, 20);
@@ -11782,7 +11770,7 @@ TEST_F(WebFrameSimTest, TestScrollFocusedEditableInRootScroller) {
   Element* scroller = GetDocument().getElementById("scroller");
   ASSERT_EQ(scroller, rs_controller.GlobalRootScroller());
 
-  LocalFrame* frame = ToLocalFrame(WebView().GetPage()->MainFrame());
+  auto* frame = To<LocalFrame>(WebView().GetPage()->MainFrame());
   VisualViewport& visual_viewport = frame->GetPage()->GetVisualViewport();
 
   WebView().AdvanceFocus(false);
@@ -11868,7 +11856,7 @@ TEST_F(WebFrameSimTest, ScrollFocusedIntoViewClipped) {
   Compositor().BeginFrame();
   WebView().AdvanceFocus(false);
 
-  LocalFrame* frame = ToLocalFrame(WebView().GetPage()->MainFrame());
+  auto* frame = To<LocalFrame>(WebView().GetPage()->MainFrame());
   LocalFrameView* frame_view = frame->View();
   VisualViewport& visual_viewport = frame->GetPage()->GetVisualViewport();
 
@@ -11946,7 +11934,7 @@ TEST_F(WebFrameSimTest, DoubleTapZoomWhileScrolled) {
 
   Compositor().BeginFrame();
 
-  LocalFrame* frame = ToLocalFrame(WebView().GetPage()->MainFrame());
+  auto* frame = To<LocalFrame>(WebView().GetPage()->MainFrame());
   LocalFrameView* frame_view = frame->View();
   VisualViewport& visual_viewport = frame->GetPage()->GetVisualViewport();
   FloatRect target_rect_in_document(2000, 3000, 100, 100);
@@ -12671,8 +12659,8 @@ TEST_F(WebFrameTest, RecordSameDocumentNavigationToHistogram) {
   frame_test_helpers::WebViewHelper web_view_helper;
   HistogramTester tester;
   web_view_helper.InitializeAndLoad("about:blank");
-  LocalFrame* frame =
-      ToLocalFrame(web_view_helper.GetWebView()->GetPage()->MainFrame());
+  auto* frame =
+      To<LocalFrame>(web_view_helper.GetWebView()->GetPage()->MainFrame());
 
   FrameLoader& main_frame_loader =
       web_view_helper.GetWebView()->MainFrameImpl()->GetFrame()->Loader();
@@ -12893,7 +12881,7 @@ TEST_F(WebFrameSimTest, EnterFullscreenResetScrollAndScaleState) {
   EXPECT_EQ(12, WebView().VisualViewportOffset().x);
   EXPECT_EQ(20, WebView().VisualViewportOffset().y);
 
-  LocalFrame* frame = ToLocalFrame(WebView().GetPage()->MainFrame());
+  auto* frame = To<LocalFrame>(WebView().GetPage()->MainFrame());
   Element* element = frame->GetDocument()->body();
   std::unique_ptr<UserGestureIndicator> gesture =
       LocalFrame::NotifyUserActivation(frame);

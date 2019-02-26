@@ -643,7 +643,8 @@ void FrameSelection::SelectFrameElementInParentIfFullySelected() {
     return;
 
   // FIXME: This is not yet implemented for cross-process frame relationships.
-  if (!parent->IsLocalFrame())
+  auto* parent_local_frame = DynamicTo<LocalFrame>(parent);
+  if (!parent_local_frame)
     return;
 
   // Get to the <iframe> or <frame> (or even <object>) element in the parent
@@ -672,9 +673,9 @@ void FrameSelection::SelectFrameElementInParentIfFullySelected() {
   // SetFocusedFrame can dispatch synchronous focus/blur events.  The document
   // tree might be modified.
   if (!owner_element->isConnected() ||
-      owner_element->GetDocument() != ToLocalFrame(parent)->GetDocument())
+      owner_element->GetDocument() != parent_local_frame->GetDocument())
     return;
-  ToLocalFrame(parent)->Selection().SetSelectionAndEndTyping(
+  parent_local_frame->Selection().SetSelectionAndEndTyping(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(Position::BeforeNode(*owner_element),
                             Position::AfterNode(*owner_element))

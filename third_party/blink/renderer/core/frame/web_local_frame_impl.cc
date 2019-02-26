@@ -429,8 +429,8 @@ class ChromePrintContext : public PrintContext {
     HeapVector<Member<Document>> documents;
     for (Frame* current_frame = GetFrame(); current_frame;
          current_frame = current_frame->Tree().TraverseNext(GetFrame())) {
-      if (current_frame->IsLocalFrame())
-        documents.push_back(ToLocalFrame(current_frame)->GetDocument());
+      if (auto* current_local_frame = DynamicTo<LocalFrame>(current_frame))
+        documents.push_back(current_local_frame->GetDocument());
     }
 
     for (auto& doc : documents)
@@ -1495,7 +1495,7 @@ void WebLocalFrameImpl::DispatchPrintEventRecursively(
     Event* event = event_type == event_type_names::kBeforeprint
                        ? static_cast<Event*>(BeforePrintEvent::Create())
                        : static_cast<Event*>(AfterPrintEvent::Create());
-    ToLocalFrame(frame)->DomWindow()->DispatchEvent(*event);
+    To<LocalFrame>(frame.Get())->DomWindow()->DispatchEvent(*event);
   }
 }
 
@@ -1940,7 +1940,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::FromFrameOwnerElement(Element* element) {
   auto* frame_owner_element = DynamicTo<HTMLFrameOwnerElement>(element);
   if (!frame_owner_element)
     return nullptr;
-  return FromFrame(ToLocalFrame(frame_owner_element->ContentFrame()));
+  return FromFrame(To<LocalFrame>(frame_owner_element->ContentFrame()));
 }
 
 WebViewImpl* WebLocalFrameImpl::ViewImpl() const {

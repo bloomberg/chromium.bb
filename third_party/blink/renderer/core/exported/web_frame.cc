@@ -133,12 +133,10 @@ bool WebFrame::Swap(WebFrame* frame) {
   parent_ = nullptr;
 
   if (auto* frame_owner_element = DynamicTo<HTMLFrameOwnerElement>(owner)) {
-    if (new_frame && new_frame->IsLocalFrame()) {
-      probe::frameOwnerContentUpdated(ToLocalFrame(new_frame),
-                                      frame_owner_element);
-    } else if (old_frame && old_frame->IsLocalFrame()) {
-      probe::frameOwnerContentUpdated(ToLocalFrame(old_frame),
-                                      frame_owner_element);
+    if (auto* new_local_frame = DynamicTo<LocalFrame>(new_frame)) {
+      probe::frameOwnerContentUpdated(new_local_frame, frame_owner_element);
+    } else if (auto* old_local_frame = DynamicTo<LocalFrame>(old_frame)) {
+      probe::frameOwnerContentUpdated(old_local_frame, frame_owner_element);
     }
   }
 
@@ -321,8 +319,8 @@ WebFrame* WebFrame::FromFrame(Frame* frame) {
   if (!frame)
     return nullptr;
 
-  if (frame->IsLocalFrame())
-    return WebLocalFrameImpl::FromFrame(ToLocalFrame(*frame));
+  if (auto* local_frame = DynamicTo<LocalFrame>(frame))
+    return WebLocalFrameImpl::FromFrame(*local_frame);
   return WebRemoteFrameImpl::FromFrame(ToRemoteFrame(*frame));
 }
 

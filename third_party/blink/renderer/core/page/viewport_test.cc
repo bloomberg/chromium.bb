@@ -100,7 +100,7 @@ static PageScaleConstraints RunViewportTest(Page* page,
                                             int initial_width,
                                             int initial_height) {
   IntSize initial_viewport_size(initial_width, initial_height);
-  ToLocalFrame(page->MainFrame())
+  To<LocalFrame>(page->MainFrame())
       ->View()
       ->SetFrameRect(IntRect(IntPoint::Zero(), initial_viewport_size));
   ViewportDescription description = page->GetViewportDescription();

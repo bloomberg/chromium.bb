@@ -4322,7 +4322,7 @@ String Document::OutgoingReferrer() const {
   if (LocalFrame* frame = frame_) {
     while (frame->GetDocument()->IsSrcdocDocument()) {
       // Srcdoc documents must be local within the containing frame.
-      frame = ToLocalFrame(frame->Tree().Parent());
+      frame = To<LocalFrame>(frame->Tree().Parent());
       // Srcdoc documents cannot be top-level documents, by definition,
       // because they need to be contained in iframes with the srcdoc.
       DCHECK(frame);
@@ -4344,8 +4344,7 @@ network::mojom::ReferrerPolicy Document::GetReferrerPolicy() const {
       !IsSrcdocDocument()) {
     return policy;
   }
-  LocalFrame* frame = ToLocalFrame(frame_->Tree().Parent());
-  DCHECK(frame);
+  LocalFrame* frame = To<LocalFrame>(frame_->Tree().Parent());
   return frame->GetDocument()->GetReferrerPolicy();
 }
 
@@ -5556,8 +5555,9 @@ const KURL Document::SiteForCookies() const {
   // look at their URL, but we can't because we don't know what it is.
   Frame& top = GetFrame()->Tree().Top();
   KURL top_document_url;
-  if (top.IsLocalFrame()) {
-    top_document_url = ToLocalFrame(top).GetDocument()->Url();
+  auto* top_local_frame = DynamicTo<LocalFrame>(&top);
+  if (top_local_frame) {
+    top_document_url = top_local_frame->GetDocument()->Url();
   } else {
     const SecurityOrigin* origin =
         top.GetSecurityContext()->GetSecurityOrigin();
@@ -5577,21 +5577,24 @@ const KURL Document::SiteForCookies() const {
   // origin, but that shouldn't affect first-/third-party status for cookies
   // and site data.
   base::Optional<OriginAccessEntry> remote_entry;
-  if (!top.IsLocalFrame()) {
+  if (!top_local_frame) {
     remote_entry.emplace(
         top_document_url.Protocol(), top_document_url.Host(),
         network::mojom::CorsOriginAccessMatchMode::kAllowRegisterableDomains);
   }
   const OriginAccessEntry& access_entry =
       remote_entry ? *remote_entry
-                   : ToLocalFrame(top).GetDocument()->AccessEntryFromURL();
+                   : top_local_frame->GetDocument()->AccessEntryFromURL();
 
   const Frame* current_frame = GetFrame();
   while (current_frame) {
     // Skip over srcdoc documents, as they are always same-origin with their
     // closest non-srcdoc parent.
-    while (current_frame->IsLocalFrame() &&
-           ToLocalFrame(current_frame)->GetDocument()->IsSrcdocDocument())
+    auto is_srcdoc = [](const Frame* frame) {
+      const auto* local_frame = DynamicTo<LocalFrame>(frame);
+      return local_frame && local_frame->GetDocument()->IsSrcdocDocument();
+    };
+    while (is_srcdoc(current_frame))
       current_frame = current_frame->Tree().Parent();
     DCHECK(current_frame);
 
@@ -5948,10 +5951,10 @@ void Document::setDesignMode(const String& value) {
 Document* Document::ParentDocument() const {
   if (!frame_)
     return nullptr;
-  Frame* parent = frame_->Tree().Parent();
-  if (!parent || !parent->IsLocalFrame())
+  auto* parent_local_frame = DynamicTo<LocalFrame>(frame_->Tree().Parent());
+  if (!parent_local_frame)
     return nullptr;
-  return ToLocalFrame(parent)->GetDocument();
+  return parent_local_frame->GetDocument();
 }
 
 Document& Document::TopDocument() const {
@@ -7777,9 +7780,9 @@ void Document::NavigateLocalAdsFrames() {
   DCHECK(frame_);
   for (Frame* child = frame_->Tree().FirstChild(); child;
        child = child->Tree().TraverseNext(frame_)) {
-    if (child->IsLocalFrame()) {
-      if (ToLocalFrame(child)->IsAdSubframe()) {
-        ToLocalFrame(child)->Navigate(
+    if (auto* child_local_frame = DynamicTo<LocalFrame>(child)) {
+      if (child_local_frame->IsAdSubframe()) {
+        child_local_frame->Navigate(
             FrameLoadRequest(this, ResourceRequest(BlankURL())),
             WebFrameLoadType::kStandard);
       }

@@ -558,10 +558,11 @@ void TextAutosizer::UpdatePageInfoInAllFrames() {
 
   for (Frame* frame = document_->GetFrame(); frame;
        frame = frame->Tree().TraverseNext()) {
-    if (!frame->IsLocalFrame())
+    auto* local_frame = DynamicTo<LocalFrame>(frame);
+    if (!local_frame)
       continue;
 
-    Document* document = ToLocalFrame(frame)->GetDocument();
+    Document* document = local_frame->GetDocument();
     // If document is being detached, skip updatePageInfo.
     if (!document || !document->IsActive())
       continue;
@@ -592,7 +593,7 @@ void TextAutosizer::UpdatePageInfo() {
     if (frame.IsRemoteFrame())
       return;
 
-    LocalFrame& main_frame = ToLocalFrame(frame);
+    LocalFrame& main_frame = To<LocalFrame>(frame);
     IntSize frame_size =
         document_->GetSettings()->TextAutosizingWindowSizeOverride();
     if (frame_size.IsEmpty())

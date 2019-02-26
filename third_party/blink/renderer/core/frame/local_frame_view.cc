@@ -348,9 +348,10 @@ template <typename Function>
 void LocalFrameView::ForAllChildLocalFrameViews(const Function& function) {
   for (Frame* child = frame_->Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {
-    if (!child->IsLocalFrame())
+    auto* child_local_frame = DynamicTo<LocalFrame>(child);
+    if (!child_local_frame)
       continue;
-    if (LocalFrameView* child_view = ToLocalFrame(child)->View())
+    if (LocalFrameView* child_view = child_local_frame->View())
       function(*child_view);
   }
 }
@@ -366,9 +367,10 @@ void LocalFrameView::ForAllNonThrottledLocalFrameViews(
 
   for (Frame* child = frame_->Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {
-    if (!child->IsLocalFrame())
+    auto* child_local_frame = DynamicTo<LocalFrame>(child);
+    if (!child_local_frame)
       continue;
-    if (LocalFrameView* child_view = ToLocalFrame(child)->View())
+    if (LocalFrameView* child_view = child_local_frame->View())
       child_view->ForAllNonThrottledLocalFrameViews(function);
   }
 }
@@ -1960,8 +1962,8 @@ LocalFrameView* LocalFrameView::ParentFrameView() const {
     return nullptr;
 
   Frame* parent_frame = frame_->Tree().Parent();
-  if (parent_frame && parent_frame->IsLocalFrame())
-    return ToLocalFrame(parent_frame)->View();
+  if (auto* parent_local_frame = DynamicTo<LocalFrame>(parent_frame))
+    return parent_local_frame->View();
 
   return nullptr;
 }
@@ -2104,8 +2106,9 @@ void LocalFrameView::DispatchEventsForPrintingOnAllFrames() {
   DCHECK(frame_->IsMainFrame());
   for (Frame* current_frame = frame_; current_frame;
        current_frame = current_frame->Tree().TraverseNext(frame_)) {
-    if (current_frame->IsLocalFrame())
-      ToLocalFrame(current_frame)->GetDocument()->DispatchEventsForPrinting();
+    auto* current_local_frame = DynamicTo<LocalFrame>(current_frame);
+    if (current_local_frame)
+      current_local_frame->GetDocument()->DispatchEventsForPrinting();
   }
 }
 
@@ -2854,9 +2857,10 @@ void LocalFrameView::UpdateStyleAndLayoutIfNeededRecursive() {
   HeapVector<Member<LocalFrameView>> frame_views;
   for (Frame* child = frame_->Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {
-    if (!child->IsLocalFrame())
+    auto* child_local_frame = DynamicTo<LocalFrame>(child);
+    if (!child_local_frame)
       continue;
-    if (LocalFrameView* view = ToLocalFrame(child)->View())
+    if (LocalFrameView* view = child_local_frame->View())
       frame_views.push_back(view);
   }
 
@@ -3250,9 +3254,10 @@ void LocalFrameView::SetTracksPaintInvalidations(
 
   for (Frame* frame = &frame_->Tree().Top(); frame;
        frame = frame->Tree().TraverseNext()) {
-    if (!frame->IsLocalFrame())
+    auto* local_frame = DynamicTo<LocalFrame>(frame);
+    if (!local_frame)
       continue;
-    if (auto* layout_view = ToLocalFrame(frame)->ContentLayoutObject()) {
+    if (auto* layout_view = local_frame->ContentLayoutObject()) {
       layout_view->GetFrameView()->tracked_object_paint_invalidations_ =
           base::WrapUnique(track_paint_invalidations
                                ? new Vector<ObjectPaintInvalidation>
@@ -4174,10 +4179,11 @@ void LocalFrameView::UpdateSubFrameScrollOnMainReason(
   if (!GetPage()->GetSettings().GetThreadedScrollingEnabled())
     reasons |= cc::MainThreadScrollingReason::kThreadedScrollingDisabled;
 
-  if (!frame.IsLocalFrame())
+  auto* local_frame = DynamicTo<LocalFrame>(&frame);
+  if (!local_frame)
     return;
 
-  LocalFrameView& frame_view = *ToLocalFrame(frame).View();
+  LocalFrameView& frame_view = *local_frame->View();
   if (frame_view.ShouldThrottleRendering())
     return;
 
@@ -4186,7 +4192,7 @@ void LocalFrameView::UpdateSubFrameScrollOnMainReason(
 
   reasons |= frame_view.MainThreadScrollingReasonsPerFrame();
   if (GraphicsLayer* layer_for_scrolling =
-          ToLocalFrame(frame).View()->LayoutViewport()->LayerForScrolling()) {
+          local_frame->View()->LayoutViewport()->LayerForScrolling()) {
     if (cc::Layer* platform_layer_for_scrolling =
             layer_for_scrolling->CcLayer()) {
       if (reasons) {
@@ -4261,10 +4267,10 @@ MainThreadScrollingReasons LocalFrameView::GetMainThreadScrollingReasons()
   // whether the target frame should be scrolled on main thread regardless
   // other subframes on the same page.
   for (Frame* frame = frame_; frame; frame = frame->Tree().Parent()) {
-    if (!frame->IsLocalFrame())
+    auto* local_frame = DynamicTo<LocalFrame>(frame);
+    if (!local_frame)
       continue;
-    reasons |=
-        ToLocalFrame(frame)->View()->MainThreadScrollingReasonsPerFrame();
+    reasons |= local_frame->View()->MainThreadScrollingReasonsPerFrame();
   }
 
   DCHECK(

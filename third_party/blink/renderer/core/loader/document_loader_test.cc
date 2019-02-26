@@ -206,7 +206,7 @@ TEST_F(DocumentLoaderTest, MultiChunkWithReentrancy) {
 TEST_F(DocumentLoaderTest, isCommittedButEmpty) {
   WebViewImpl* web_view_impl =
       web_view_helper_.InitializeAndLoad("about:blank");
-  EXPECT_TRUE(ToLocalFrame(web_view_impl->GetPage()->MainFrame())
+  EXPECT_TRUE(To<LocalFrame>(web_view_impl->GetPage()->MainFrame())
                   ->Loader()
                   .GetDocumentLoader()
                   ->IsCommittedButEmpty());
@@ -222,7 +222,7 @@ TEST_F(DocumentLoaderTest, MixedContentOptOutSetIfHeaderReceived) {
       url, test::CoreTestDataPath("foo.html"), response);
   WebViewImpl* web_view_impl = web_view_helper_.InitializeAndLoad(
       "https://examplenoupgrade.com/foo.html");
-  EXPECT_TRUE(ToLocalFrame(web_view_impl->GetPage()->MainFrame())
+  EXPECT_TRUE(To<LocalFrame>(web_view_impl->GetPage()->MainFrame())
                   ->Loader()
                   .GetDocumentLoader()
                   ->GetFrame()
@@ -233,7 +233,7 @@ TEST_F(DocumentLoaderTest, MixedContentOptOutSetIfHeaderReceived) {
 TEST_F(DocumentLoaderTest, MixedContentOptOutNotSetIfNoHeaderReceived) {
   WebViewImpl* web_view_impl =
       web_view_helper_.InitializeAndLoad("https://example.com/foo.html");
-  EXPECT_FALSE(ToLocalFrame(web_view_impl->GetPage()->MainFrame())
+  EXPECT_FALSE(To<LocalFrame>(web_view_impl->GetPage()->MainFrame())
                    ->Loader()
                    .GetDocumentLoader()
                    ->GetFrame()

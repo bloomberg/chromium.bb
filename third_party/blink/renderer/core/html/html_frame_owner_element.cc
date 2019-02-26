@@ -195,9 +195,8 @@ HTMLFrameOwnerElement::~HTMLFrameOwnerElement() {
 }
 
 Document* HTMLFrameOwnerElement::contentDocument() const {
-  return (content_frame_ && content_frame_->IsLocalFrame())
-             ? ToLocalFrame(content_frame_)->GetDocument()
-             : nullptr;
+  auto* content_local_frame = DynamicTo<LocalFrame>(content_frame_.Get());
+  return content_local_frame ? content_local_frame->GetDocument() : nullptr;
 }
 
 DOMWindow* HTMLFrameOwnerElement::contentWindow() const {

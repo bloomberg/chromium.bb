@@ -55,7 +55,7 @@ void RemoteFrameOwner::ClearContentFrame() {
 }
 
 void RemoteFrameOwner::AddResourceTiming(const ResourceTimingInfo& info) {
-  LocalFrame* frame = ToLocalFrame(frame_);
+  LocalFrame* frame = To<LocalFrame>(frame_.Get());
   WebResourceTimingInfo resource_timing = Performance::GenerateResourceTiming(
       *frame->Tree().Parent()->GetSecurityContext()->GetSecurityOrigin(), info,
       *frame->GetDocument());
@@ -64,7 +64,7 @@ void RemoteFrameOwner::AddResourceTiming(const ResourceTimingInfo& info) {
 
 void RemoteFrameOwner::DispatchLoad() {
   WebLocalFrameImpl* web_frame =
-      WebLocalFrameImpl::FromFrame(ToLocalFrame(*frame_));
+      WebLocalFrameImpl::FromFrame(To<LocalFrame>(*frame_));
   web_frame->Client()->DispatchLoad();
 }
 
@@ -72,7 +72,7 @@ void RemoteFrameOwner::RenderFallbackContent(Frame* failed_frame) {
   if (frame_owner_element_type_ != FrameOwnerElementType::kObject)
     return;
   DCHECK(failed_frame->IsLocalFrame());
-  LocalFrame* local_frame = ToLocalFrame(failed_frame);
+  LocalFrame* local_frame = To<LocalFrame>(failed_frame);
   DCHECK(local_frame->IsProvisional() || ContentFrame() == local_frame);
   WebLocalFrameImpl::FromFrame(local_frame)
       ->Client()
@@ -80,7 +80,7 @@ void RemoteFrameOwner::RenderFallbackContent(Frame* failed_frame) {
 }
 
 void RemoteFrameOwner::IntrinsicSizingInfoChanged() {
-  LocalFrame& local_frame = ToLocalFrame(*frame_);
+  LocalFrame& local_frame = To<LocalFrame>(*frame_);
   IntrinsicSizingInfo intrinsic_sizing_info;
   bool result =
       local_frame.View()->GetIntrinsicSizingInfo(intrinsic_sizing_info);

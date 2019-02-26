@@ -336,8 +336,9 @@ void FrameLoader::DidExplicitOpen() {
   // Only model a document.open() as part of a navigation if its parent is not
   // done or in the process of completing.
   if (Frame* parent = frame_->Tree().Parent()) {
-    if ((parent->IsLocalFrame() &&
-         ToLocalFrame(parent)->GetDocument()->LoadEventStillNeeded()) ||
+    auto* parent_local_frame = DynamicTo<LocalFrame>(parent);
+    if ((parent_local_frame &&
+         parent_local_frame->GetDocument()->LoadEventStillNeeded()) ||
         (parent->IsRemoteFrame() && parent->IsLoading())) {
       progress_tracker_->ProgressStarted();
     }
@@ -815,8 +816,8 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   bool should_navigate_target_frame = policy == kNavigationPolicyCurrentTab;
 
   if (target_frame && target_frame != frame_ && should_navigate_target_frame) {
-    if (target_frame->IsLocalFrame() &&
-        !ToLocalFrame(target_frame)->IsNavigationAllowed()) {
+    auto* target_local_frame = DynamicTo<LocalFrame>(target_frame);
+    if (target_local_frame && !target_local_frame->IsNavigationAllowed()) {
       return;
     }
 
@@ -1119,8 +1120,8 @@ void FrameLoader::StopAllLoaders() {
 
   for (Frame* child = frame_->Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {
-    if (child->IsLocalFrame())
-      ToLocalFrame(child)->Loader().StopAllLoaders();
+    if (auto* child_local_frame = DynamicTo<LocalFrame>(child))
+      child_local_frame->Loader().StopAllLoaders();
   }
 
   frame_->GetDocument()->CancelParsing();
@@ -1151,10 +1152,8 @@ bool FrameLoader::PrepareForCommit() {
   if (frame_->GetDocument()) {
     unsigned node_count = 0;
     for (Frame* frame = frame_; frame; frame = frame->Tree().TraverseNext()) {
-      if (frame->IsLocalFrame()) {
-        LocalFrame* local_frame = ToLocalFrame(frame);
+      if (auto* local_frame = DynamicTo<LocalFrame>(frame))
         node_count += local_frame->GetDocument()->NodeCount();
-      }
     }
     unsigned total_node_count =
         InstanceCounters::CounterValue(InstanceCounters::kNodeCounter);
@@ -1422,11 +1421,8 @@ void FrameLoader::ProcessFragment(const KURL& url,
           : nullptr;
 
   // FIXME: Handle RemoteFrames
-  if (boundary_frame && boundary_frame->IsLocalFrame()) {
-    ToLocalFrame(boundary_frame)
-        ->View()
-        ->SetSafeToPropagateScrollToParent(false);
-  }
+  if (auto* boundary_local_frame = DynamicTo<LocalFrame>(boundary_frame))
+    boundary_local_frame->View()->SetSafeToPropagateScrollToParent(false);
 
   // If scroll position is restored from history fragment or scroll
   // restoration type is manual, then we should not override it unless this
@@ -1441,10 +1437,8 @@ void FrameLoader::ProcessFragment(const KURL& url,
 
   view->ProcessUrlFragment(url, should_scroll_to_fragment);
 
-  if (boundary_frame && boundary_frame->IsLocalFrame())
-    ToLocalFrame(boundary_frame)
-        ->View()
-        ->SetSafeToPropagateScrollToParent(true);
+  if (auto* boundary_local_frame = DynamicTo<LocalFrame>(boundary_frame))
+    boundary_local_frame->View()->SetSafeToPropagateScrollToParent(true);
 }
 
 bool FrameLoader::ShouldClose(bool is_reload) {
@@ -1457,8 +1451,8 @@ bool FrameLoader::ShouldClose(bool is_reload) {
        child = child->Tree().TraverseNext(frame_)) {
     // FIXME: There is not yet any way to dispatch events to out-of-process
     // frames.
-    if (child->IsLocalFrame())
-      descendant_frames.push_back(ToLocalFrame(child));
+    if (auto* child_local_frame = DynamicTo<LocalFrame>(child))
+      descendant_frames.push_back(child_local_frame);
   }
 
   {

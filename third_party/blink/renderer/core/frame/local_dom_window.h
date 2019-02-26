@@ -109,7 +109,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   explicit LocalDOMWindow(LocalFrame&);
   ~LocalDOMWindow() override;
 
-  LocalFrame* GetFrame() const { return ToLocalFrame(DOMWindow::GetFrame()); }
+  LocalFrame* GetFrame() const { return To<LocalFrame>(DOMWindow::GetFrame()); }
 
   void Trace(blink::Visitor*) override;
 

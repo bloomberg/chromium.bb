@@ -91,9 +91,10 @@ void FullscreenController::DidEnterFullscreen() {
   // Notify all local frames that we have entered fullscreen.
   for (Frame* frame = web_view_base_->GetPage()->MainFrame(); frame;
        frame = frame->Tree().TraverseNext()) {
-    if (!frame->IsLocalFrame())
+    auto* local_frame = DynamicTo<LocalFrame>(frame);
+    if (!local_frame)
       continue;
-    if (Document* document = ToLocalFrame(frame)->GetDocument())
+    if (Document* document = local_frame->GetDocument())
       Fullscreen::DidEnterFullscreen(*document);
   }
   pending_frames_->clear();
@@ -124,8 +125,9 @@ void FullscreenController::DidExitFullscreen() {
       continue;
     }
 
-    DCHECK(frame->IsLocalFrame() && ToLocalFrame(frame)->IsLocalRoot());
-    if (Document* document = ToLocalFrame(frame)->GetDocument())
+    auto* local_frame = To<LocalFrame>(frame);
+    DCHECK(local_frame->IsLocalRoot());
+    if (Document* document = local_frame->GetDocument())
       Fullscreen::DidExitFullscreen(*document);
 
     // Skip over all descendant frames.

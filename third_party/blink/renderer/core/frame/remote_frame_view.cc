@@ -40,7 +40,7 @@ LocalFrameView* RemoteFrameView::ParentFrameView() const {
 
   // |is_attached_| is only set from AttachToLayout(), which ensures that the
   // parent is a local frame.
-  return ToLocalFrame(remote_frame_->Tree().Parent())->View();
+  return To<LocalFrame>(remote_frame_->Tree().Parent())->View();
 }
 
 LocalFrameView* RemoteFrameView::ParentLocalRootFrameView() const {
@@ -53,7 +53,9 @@ LocalFrameView* RemoteFrameView::ParentLocalRootFrameView() const {
 
   // |is_attached_| is only set from AttachToLayout(), which ensures that the
   // parent is a local frame.
-  return ToLocalFrame(remote_frame_->Tree().Parent())->LocalFrameRoot().View();
+  return To<LocalFrame>(remote_frame_->Tree().Parent())
+      ->LocalFrameRoot()
+      .View();
 }
 
 void RemoteFrameView::AttachToLayout() {

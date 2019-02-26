@@ -123,17 +123,13 @@ namespace blink {
 namespace {
 
 inline float ParentPageZoomFactor(LocalFrame* frame) {
-  Frame* parent = frame->Tree().Parent();
-  if (!parent || !parent->IsLocalFrame())
-    return 1;
-  return ToLocalFrame(parent)->PageZoomFactor();
+  auto* parent_local_frame = DynamicTo<LocalFrame>(frame->Tree().Parent());
+  return parent_local_frame ? parent_local_frame->PageZoomFactor() : 1;
 }
 
 inline float ParentTextZoomFactor(LocalFrame* frame) {
-  Frame* parent = frame->Tree().Parent();
-  if (!parent || !parent->IsLocalFrame())
-    return 1;
-  return ToLocalFrame(parent)->TextZoomFactor();
+  auto* parent_local_frame = DynamicTo<LocalFrame>(frame->Tree().Parent());
+  return parent_local_frame ? parent_local_frame->TextZoomFactor() : 1;
 }
 
 bool ShouldUseClientLoFiForRequest(
@@ -454,11 +450,11 @@ void LocalFrame::PrintNavigationErrorMessage(const Frame& target_frame,
                                              const char* reason) {
   // URLs aren't available for RemoteFrames, so the error message uses their
   // origin instead.
+  auto* target_local_frame = DynamicTo<LocalFrame>(&target_frame);
   String target_frame_description =
-      target_frame.IsLocalFrame()
+      target_local_frame
           ? "with URL '" +
-                ToLocalFrame(target_frame).GetDocument()->Url().GetString() +
-                "'"
+                target_local_frame->GetDocument()->Url().GetString() + "'"
           : "with origin '" +
                 target_frame.GetSecurityContext()
                     ->GetSecurityOrigin()
@@ -658,9 +654,8 @@ bool LocalFrame::BubbleLogicalScrollFromChildFrame(
 
 LocalFrame& LocalFrame::LocalFrameRoot() const {
   const LocalFrame* cur_frame = this;
-  while (cur_frame && cur_frame->Tree().Parent() &&
-         cur_frame->Tree().Parent()->IsLocalFrame())
-    cur_frame = ToLocalFrame(cur_frame->Tree().Parent());
+  while (cur_frame && IsA<LocalFrame>(cur_frame->Tree().Parent()))
+    cur_frame = To<LocalFrame>(cur_frame->Tree().Parent());
 
   return const_cast<LocalFrame&>(*cur_frame);
 }
@@ -718,11 +713,11 @@ void LocalFrame::SetPrinting(bool printing,
   // Subframes of the one we're printing don't lay out to the page size.
   for (Frame* child = Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {
-    if (child->IsLocalFrame()) {
+    if (auto* child_local_frame = DynamicTo<LocalFrame>(child)) {
       if (printing)
-        ToLocalFrame(child)->StartPrinting();
+        child_local_frame->StartPrinting();
       else
-        ToLocalFrame(child)->EndPrinting();
+        child_local_frame->EndPrinting();
     }
   }
 
@@ -748,10 +743,12 @@ bool LocalFrame::ShouldUsePrintingLayout() const {
   // frame. In such case, we can not check its document or other internal
   // status. However, if the parent is in printing mode, this frame's printing
   // must have started with |use_printing_layout| as false in print context.
-  return !Tree().Parent() ||
-         (Tree().Parent()->IsLocalFrame() &&
-          !ToLocalFrame(Tree().Parent())->GetDocument()->Printing()) ||
-         (!Tree().Parent()->IsLocalFrame() && Client()->UsePrintingLayout());
+  auto* parent = Tree().Parent();
+  if (!parent)
+    return true;
+  auto* local_parent = DynamicTo<LocalFrame>(parent);
+  return local_parent ? !local_parent->GetDocument()->Printing()
+                      : Client()->UsePrintingLayout();
 }
 
 FloatSize LocalFrame::ResizePageRectsKeepingRatio(
@@ -812,9 +809,10 @@ void LocalFrame::SetPageAndTextZoomFactors(float page_zoom_factor,
 
   for (Frame* child = Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {
-    if (child->IsLocalFrame())
-      ToLocalFrame(child)->SetPageAndTextZoomFactors(page_zoom_factor_,
-                                                     text_zoom_factor_);
+    if (auto* child_local_frame = DynamicTo<LocalFrame>(child)) {
+      child_local_frame->SetPageAndTextZoomFactors(page_zoom_factor_,
+                                                   text_zoom_factor_);
+    }
   }
 
   document->MediaQueryAffectingValueChanged();
@@ -832,8 +830,8 @@ void LocalFrame::DeviceScaleFactorChanged() {
       StyleChangeReasonForTracing::Create(style_change_reason::kZoom));
   for (Frame* child = Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {
-    if (child->IsLocalFrame())
-      ToLocalFrame(child)->DeviceScaleFactorChanged();
+    if (auto* child_local_frame = DynamicTo<LocalFrame>(child))
+      child_local_frame->DeviceScaleFactorChanged();
   }
 }
 
@@ -1094,18 +1092,16 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
     if (!RuntimeEnabledFeatures::
             FramebustingNeedsSameOriginOrUserGestureEnabled() ||
         allow_popups_and_redirects) {
+      auto* target_local_frame = DynamicTo<LocalFrame>(&target_frame);
       String target_frame_description =
-          target_frame.IsLocalFrame() ? "with URL '" +
-                                            ToLocalFrame(target_frame)
-                                                .GetDocument()
-                                                ->Url()
-                                                .GetString() +
-                                            "'"
-                                      : "with origin '" +
-                                            target_frame.GetSecurityContext()
-                                                ->GetSecurityOrigin()
-                                                ->ToString() +
-                                            "'";
+          target_local_frame
+              ? "with URL '" +
+                    target_local_frame->GetDocument()->Url().GetString() + "'"
+              : "with origin '" +
+                    target_frame.GetSecurityContext()
+                        ->GetSecurityOrigin()
+                        ->ToString() +
+                    "'";
       String message = "Frame with URL '" + GetDocument()->Url().GetString() +
                        "' attempted to navigate its top-level window " +
                        target_frame_description +
@@ -1271,8 +1267,8 @@ void LocalFrame::SetIsAdSubframeIfNecessary() {
   // If the parent frame is local, directly determine if it's an ad. If it's
   // remote, then it is up to the embedder that moved this frame out-of-
   // process to set this frame as an ad via SetIsAdSubframe before commit.
-  bool parent_is_ad =
-      parent->IsLocalFrame() && ToLocalFrame(parent)->IsAdSubframe();
+  auto* parent_local_frame = DynamicTo<LocalFrame>(parent);
+  bool parent_is_ad = parent_local_frame && parent_local_frame->IsAdSubframe();
 
   if (parent_is_ad || ad_tracker_->IsAdScriptInStack()) {
     SetIsAdSubframe(parent_is_ad ? blink::mojom::AdFrameType::kChildAd

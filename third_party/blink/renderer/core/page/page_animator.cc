@@ -38,8 +38,8 @@ void PageAnimator::ServiceScriptedAnimations(
   HeapVector<Member<Document>, 32> documents;
   for (Frame* frame = page_->MainFrame(); frame;
        frame = frame->Tree().TraverseNext()) {
-    if (frame->IsLocalFrame())
-      documents.push_back(ToLocalFrame(frame)->GetDocument());
+    if (auto* local_frame = DynamicTo<LocalFrame>(frame))
+      documents.push_back(local_frame->GetDocument());
   }
 
   for (auto& document : documents) {

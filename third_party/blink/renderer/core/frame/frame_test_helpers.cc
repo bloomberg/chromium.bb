@@ -423,7 +423,7 @@ WebViewImpl* WebViewHelper::InitializeRemote(
 
 void WebViewHelper::LoadAhem() {
   LocalFrame* local_frame =
-      ToLocalFrame(WebFrame::ToCoreFrame(*LocalMainFrame()));
+      To<LocalFrame>(WebFrame::ToCoreFrame(*LocalMainFrame()));
   DCHECK(local_frame);
   RenderingTest::LoadAhem(*local_frame);
 }

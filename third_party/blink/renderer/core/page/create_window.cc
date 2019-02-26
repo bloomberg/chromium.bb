@@ -282,7 +282,7 @@ static Frame* CreateNewWindow(LocalFrame& opener_frame,
   }
 
   DCHECK(page->MainFrame());
-  LocalFrame& frame = *ToLocalFrame(page->MainFrame());
+  LocalFrame& frame = *To<LocalFrame>(page->MainFrame());
 
   page->SetWindowFeatures(features);
 
@@ -486,12 +486,14 @@ void CreateWindowForRequest(const FrameLoadRequest& request,
       true /* force_new_foreground_tab */, created);
   if (!new_frame)
     return;
+  auto* new_local_frame = DynamicTo<LocalFrame>(new_frame);
   if (request.GetShouldSendReferrer() == kMaybeSendReferrer) {
     // TODO(japhet): Does network::mojom::ReferrerPolicy need to be proagated
     // for RemoteFrames?
-    if (new_frame->IsLocalFrame())
-      ToLocalFrame(new_frame)->GetDocument()->SetReferrerPolicy(
+    if (new_local_frame) {
+      new_local_frame->GetDocument()->SetReferrerPolicy(
           opener_frame.GetDocument()->GetReferrerPolicy());
+    }
   }
 
   // TODO(japhet): Form submissions on RemoteFrames don't work yet.
@@ -503,8 +505,8 @@ void CreateWindowForRequest(const FrameLoadRequest& request,
   auto blob_url_token = request.GetBlobURLToken();
   if (blob_url_token)
     new_request.SetBlobURLToken(std::move(blob_url_token));
-  if (new_frame->IsLocalFrame())
-    ToLocalFrame(new_frame)->Loader().StartNavigation(new_request);
+  if (new_local_frame)
+    new_local_frame->Loader().StartNavigation(new_request);
 }
 
 }  // namespace blink

@@ -189,16 +189,18 @@ void Frame::NotifyUserActivationInLocalTree() {
     node->user_activation_state_.Activate();
 
   // See FrameTreeNode::NotifyUserActivation() for details about this block.
-  if (IsLocalFrame() && RuntimeEnabledFeatures::UserActivationV2Enabled() &&
+  auto* local_frame = DynamicTo<LocalFrame>(this);
+  if (local_frame && RuntimeEnabledFeatures::UserActivationV2Enabled() &&
       RuntimeEnabledFeatures::UserActivationSameOriginVisibilityEnabled()) {
     const SecurityOrigin* security_origin =
-        ToLocalFrame(this)->GetSecurityContext()->GetSecurityOrigin();
+        local_frame->GetSecurityContext()->GetSecurityOrigin();
 
     Frame& root = Tree().Top();
     for (Frame* node = &root; node; node = node->Tree().TraverseNext(&root)) {
-      if (node->IsLocalFrame() &&
+      auto* local_frame_node = DynamicTo<LocalFrame>(node);
+      if (local_frame_node &&
           security_origin->CanAccess(
-              ToLocalFrame(node)->GetSecurityContext()->GetSecurityOrigin())) {
+              local_frame_node->GetSecurityContext()->GetSecurityOrigin())) {
         node->user_activation_state_.Activate();
       }
     }
