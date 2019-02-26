@@ -111,8 +111,8 @@ FloatSize StyleFetchedImage::ImageSize(
   return ApplyZoom(size, multiplier);
 }
 
-bool StyleFetchedImage::ImageHasRelativeSize() const {
-  return image_->GetImage()->HasRelativeSize();
+bool StyleFetchedImage::HasIntrinsicSize() const {
+  return image_->GetImage()->HasIntrinsicSize();
 }
 
 void StyleFetchedImage::AddClient(ImageResourceObserver* observer) {

@@ -413,8 +413,7 @@ void LayoutImage::ComputeIntrinsicSizingInfo(
     // Our intrinsicSize is empty if we're laying out generated images with
     // relative width/height. Figure out the right intrinsic size to use.
     if (intrinsic_sizing_info.size.IsEmpty() &&
-        image_resource_->ImageHasRelativeSize() &&
-        !IsLayoutNGListMarkerImage()) {
+        !image_resource_->HasIntrinsicSize() && !IsLayoutNGListMarkerImage()) {
       if (HasOverrideContainingBlockContentLogicalWidth() &&
           HasOverrideContainingBlockContentLogicalHeight()) {
         intrinsic_sizing_info.size.SetWidth(

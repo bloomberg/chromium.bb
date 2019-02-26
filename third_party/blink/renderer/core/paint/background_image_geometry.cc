@@ -744,10 +744,11 @@ void BackgroundImageGeometry::CalculateFillTileSize(
   StyleImage* image = fill_layer.GetImage();
   EFillSizeType type = fill_layer.SizeType();
 
-  // Tile size is snapped for relative sized images (typically generated
-  // content) and unsnapped for intrinsically sized content. Once we choose
-  // here we stop tracking whether the tile size is snapped or unsnapped.
-  LayoutSize positioning_area_size = image->ImageHasRelativeSize()
+  // Tile size is snapped for images without intrinsic dimensions (typically
+  // generated content) and unsnapped for content that has intrinsic
+  // dimensions. Once we choose here we stop tracking whether the tile size is
+  // snapped or unsnapped.
+  LayoutSize positioning_area_size = !image->HasIntrinsicSize()
                                          ? snapped_positioning_area_size
                                          : unsnapped_positioning_area_size;
   LayoutSize image_intrinsic_size(image->ImageSize(
@@ -777,7 +778,7 @@ void BackgroundImageGeometry::CalculateFillTileSize(
       // If one of the values is auto we have to use the appropriate
       // scale to maintain our aspect ratio.
       if (layer_width.IsAuto() && !layer_height.IsAuto()) {
-        if (image->ImageHasRelativeSize()) {
+        if (!image->HasIntrinsicSize()) {
           // Spec says that auto should be 100% in the absence of
           // an intrinsic ratio or size.
           tile_size_.SetWidth(positioning_area_size.Width());
@@ -790,7 +791,7 @@ void BackgroundImageGeometry::CalculateFillTileSize(
           tile_size_.SetWidth(LayoutUnit(adjusted_width));
         }
       } else if (!layer_width.IsAuto() && layer_height.IsAuto()) {
-        if (image->ImageHasRelativeSize()) {
+        if (!image->HasIntrinsicSize()) {
           // Spec says that auto should be 100% in the absence of
           // an intrinsic ratio or size.
           tile_size_.SetHeight(positioning_area_size.Height());

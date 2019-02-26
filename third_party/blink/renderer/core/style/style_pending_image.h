@@ -82,7 +82,7 @@ class StylePendingImage final : public StyleImage {
                       const LayoutSize& /*defaultObjectSize*/) const override {
     return FloatSize();
   }
-  bool ImageHasRelativeSize() const override { return false; }
+  bool HasIntrinsicSize() const override { return true; }
   void AddClient(ImageResourceObserver*) override {}
   void RemoveClient(ImageResourceObserver*) override {}
   scoped_refptr<Image> GetImage(const ImageResourceObserver&,

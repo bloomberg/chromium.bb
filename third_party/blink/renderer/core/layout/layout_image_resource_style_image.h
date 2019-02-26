@@ -50,8 +50,8 @@ class LayoutImageResourceStyleImage final : public LayoutImageResource {
   scoped_refptr<Image> GetImage(const FloatSize&) const override;
   bool ErrorOccurred() const override { return style_image_->ErrorOccurred(); }
 
-  bool ImageHasRelativeSize() const override {
-    return style_image_->ImageHasRelativeSize();
+  bool HasIntrinsicSize() const override {
+    return style_image_->HasIntrinsicSize();
   }
   FloatSize ImageSize(float multiplier) const override;
   FloatSize ImageSizeWithDefaultSize(float multiplier,

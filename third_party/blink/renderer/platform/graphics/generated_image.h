@@ -36,7 +36,7 @@ class PLATFORM_EXPORT GeneratedImage : public Image {
  public:
   bool CurrentFrameHasSingleSecurityOrigin() const override { return true; }
 
-  bool HasRelativeSize() const override { return true; }
+  bool HasIntrinsicSize() const override { return false; }
 
   IntSize Size() const override { return RoundedIntSize(size_); }
 

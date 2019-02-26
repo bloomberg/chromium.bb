@@ -89,8 +89,11 @@ class CORE_EXPORT StyleImage : public GarbageCollectedFinalized<StyleImage> {
                               float multiplier,
                               const LayoutSize& default_object_size) const = 0;
 
-  // The <image> does not have any intrinsic dimensions.
-  virtual bool ImageHasRelativeSize() const = 0;
+  // The <image> has intrinsic dimensions.
+  //
+  // If this returns false, then a call to ImageSize() is expected to return
+  // the |default_object_size| argument that it was passed unmodified.
+  virtual bool HasIntrinsicSize() const = 0;
 
   virtual void AddClient(ImageResourceObserver*) = 0;
   virtual void RemoveClient(ImageResourceObserver*) = 0;

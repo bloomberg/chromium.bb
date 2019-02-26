@@ -11,7 +11,7 @@
 namespace blink {
 
 FloatSize StyleImage::ApplyZoom(const FloatSize& size, float multiplier) const {
-  if (multiplier == 1.0f || ImageHasRelativeSize())
+  if (multiplier == 1.0f || !HasIntrinsicSize())
     return size;
 
   float width = size.Width() * multiplier;
