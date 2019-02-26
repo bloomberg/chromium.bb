@@ -15,7 +15,10 @@ GamepadSharedMemoryReader::GamepadSharedMemoryReader(LocalFrame& frame)
   frame.GetInterfaceProvider().GetInterface(
       mojo::MakeRequest(&gamepad_monitor_));
   device::mojom::blink::GamepadObserverPtr observer;
-  binding_.Bind(mojo::MakeRequest(&observer));
+  // See https://bit.ly/2S0zRAS for task types
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      frame.GetTaskRunner(TaskType::kMiscPlatformAPI);
+  binding_.Bind(mojo::MakeRequest(&observer, task_runner), task_runner);
   gamepad_monitor_->SetObserver(std::move(observer));
 }
 

@@ -13,12 +13,6 @@ namespace blink {
 
 using device::mojom::blink::GamepadHapticsManager;
 
-GamepadDispatcher& GamepadDispatcher::Instance() {
-  DEFINE_STATIC_LOCAL(Persistent<GamepadDispatcher>, gamepad_dispatcher,
-                      (MakeGarbageCollected<GamepadDispatcher>()));
-  return *gamepad_dispatcher;
-}
-
 void GamepadDispatcher::SampleGamepads(device::Gamepads& gamepads) {
   if (reader_) {
     reader_->SampleGamepads(gamepads);
@@ -43,14 +37,16 @@ void GamepadDispatcher::ResetVibrationActuator(
                                                    std::move(callback));
 }
 
-GamepadDispatcher::GamepadDispatcher() = default;
+GamepadDispatcher::GamepadDispatcher(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : task_runner_(std::move(task_runner)) {}
 
 GamepadDispatcher::~GamepadDispatcher() = default;
 
 void GamepadDispatcher::InitializeHaptics() {
   if (!gamepad_haptics_manager_) {
     Platform::Current()->GetInterfaceProvider()->GetInterface(
-        mojo::MakeRequest(&gamepad_haptics_manager_));
+        mojo::MakeRequest(&gamepad_haptics_manager_, task_runner_));
   }
 }
 

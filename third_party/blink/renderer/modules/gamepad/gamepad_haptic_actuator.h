@@ -17,6 +17,8 @@
 
 namespace blink {
 
+class GamepadDispatcher;
+
 class GamepadHapticActuator final : public ScriptWrappable,
                                     public ContextClient {
   DEFINE_WRAPPERTYPEINFO();
@@ -52,6 +54,8 @@ class GamepadHapticActuator final : public ScriptWrappable,
   int pad_index_;
   String type_;
   bool should_reset_ = false;
+
+  Member<GamepadDispatcher> gamepad_dispatcher_;
 };
 
 typedef HeapVector<Member<GamepadHapticActuator>> GamepadHapticActuatorVector;
