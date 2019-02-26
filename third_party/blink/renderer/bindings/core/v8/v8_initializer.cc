@@ -136,9 +136,9 @@ size_t NearHeapLimitCallbackOnMainThread(void* data,
   Document* document = nullptr;
   int pages = 0;
   for (Page* page : Page::OrdinaryPages()) {
-    if (page->MainFrame()->IsLocalFrame()) {
+    if (auto* main_local_frame = DynamicTo<LocalFrame>(page->MainFrame())) {
       ++pages;
-      document = ToLocalFrame(page->MainFrame())->GetDocument();
+      document = main_local_frame->GetDocument();
     }
   }
   ukm::UkmRecorder* ukm_recorder = nullptr;

@@ -71,7 +71,7 @@ KURL MainResourceUrlForFrame(Frame* frame) {
     return KURL(NullURL(),
                 frame->GetSecurityContext()->GetSecurityOrigin()->ToString());
   }
-  return ToLocalFrame(frame)->GetDocument()->Url();
+  return To<LocalFrame>(frame)->GetDocument()->Url();
 }
 
 const char* RequestContextName(mojom::RequestContextType context) {

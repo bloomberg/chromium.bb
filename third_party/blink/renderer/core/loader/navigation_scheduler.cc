@@ -340,8 +340,9 @@ bool NavigationScheduler::MustReplaceCurrentItem(LocalFrame* target_frame) {
   // https://bugs.webkit.org/show_bug.cgi?id=14957 for the original motivation
   // for this.
   Frame* parent_frame = target_frame->Tree().Parent();
-  return parent_frame && parent_frame->IsLocalFrame() &&
-         !ToLocalFrame(parent_frame)->Loader().AllAncestorsAreComplete();
+  auto* parent_local_frame = DynamicTo<LocalFrame>(parent_frame);
+  return parent_local_frame &&
+         !parent_local_frame->Loader().AllAncestorsAreComplete();
 }
 
 base::TimeTicks NavigationScheduler::InputTimestamp() {

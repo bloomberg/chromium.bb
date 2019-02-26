@@ -256,7 +256,7 @@ TEST_F(DragControllerTest, DragImageForSelectionClipsChildFrameToViewport) {
     <div>abcdefg</div>
   )HTML");
   UpdateAllLifecyclePhasesForTest();
-  auto& child_frame = *ToLocalFrame(GetFrame().Tree().FirstChild());
+  auto& child_frame = *To<LocalFrame>(GetFrame().Tree().FirstChild());
   child_frame.Selection().SelectAll();
 
   // The iframe's selection rect is in the frame's local coordinates and should
@@ -336,7 +336,7 @@ TEST_F(DragControllerTest,
   const int page_scale_factor = 2;
   GetFrame().GetPage()->SetPageScaleFactor(page_scale_factor);
   UpdateAllLifecyclePhasesForTest();
-  auto& child_frame = *ToLocalFrame(GetFrame().Tree().FirstChild());
+  auto& child_frame = *To<LocalFrame>(GetFrame().Tree().FirstChild());
   child_frame.Selection().SelectAll();
 
   // The iframe's selection rect is in the frame's local coordinates and should

@@ -265,7 +265,7 @@ TEST_F(AnchorElementMetricsTest, AnchorFeatureInIframe) {
   Element* iframe = GetDocument().getElementById("iframe");
   HTMLIFrameElement* iframe_element = ToHTMLIFrameElement(iframe);
   Frame* sub = iframe_element->ContentFrame();
-  LocalFrame* subframe = ToLocalFrame(sub);
+  auto* subframe = To<LocalFrame>(sub);
 
   Element* anchor = subframe->GetDocument()->getElementById("anchor");
   HTMLAnchorElement* anchor_element = ToHTMLAnchorElement(anchor);
@@ -339,7 +339,7 @@ TEST_F(AnchorElementMetricsTest, AnchorFeatureInIframeNonHttp) {
   Element* iframe = GetDocument().getElementById("iframe");
   HTMLIFrameElement* iframe_element = ToHTMLIFrameElement(iframe);
   Frame* sub = iframe_element->ContentFrame();
-  LocalFrame* subframe = ToLocalFrame(sub);
+  auto* subframe = To<LocalFrame>(sub);
 
   Element* anchor = subframe->GetDocument()->getElementById("anchor");
   HTMLAnchorElement* anchor_element = ToHTMLAnchorElement(anchor);

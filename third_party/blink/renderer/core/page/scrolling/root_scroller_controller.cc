@@ -331,7 +331,7 @@ void RootScrollerController::ApplyRootScrollerProperties(Node& node) {
   if (!frame_owner->ContentFrame())
     return;
 
-  if (frame_owner->ContentFrame()->IsLocalFrame()) {
+  if (IsA<LocalFrame>(frame_owner->ContentFrame())) {
     LocalFrameView* frame_view =
         To<LocalFrameView>(frame_owner->OwnedEmbeddedContentView());
 
@@ -443,9 +443,10 @@ void RootScrollerController::ForAllNonThrottledLocalControllers(
   LocalFrame* frame = document_->GetFrame();
   for (Frame* child = frame->Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {
-    if (!child->IsLocalFrame())
+    auto* child_local_frame = DynamicTo<LocalFrame>(child);
+    if (!child_local_frame)
       continue;
-    if (Document* child_document = ToLocalFrame(child)->GetDocument()) {
+    if (Document* child_document = child_local_frame->GetDocument()) {
       child_document->GetRootScrollerController()
           .ForAllNonThrottledLocalControllers(function);
     }

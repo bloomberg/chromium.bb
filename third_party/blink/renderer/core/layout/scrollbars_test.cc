@@ -227,7 +227,7 @@ TEST_F(ScrollbarsTest, ScrollbarSizeForUseZoomDSF) {
       WebWidget::LifecycleUpdateReason::kTest);
 
   Document* document =
-      ToLocalFrame(web_view_impl->GetPage()->MainFrame())->GetDocument();
+      To<LocalFrame>(web_view_impl->GetPage()->MainFrame())->GetDocument();
 
   VisualViewport& visual_viewport = document->GetPage()->GetVisualViewport();
   int horizontal_scrollbar = clampTo<int>(std::floor(

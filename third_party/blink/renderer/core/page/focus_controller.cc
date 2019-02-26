@@ -309,7 +309,6 @@ ScopedFocusNavigation ScopedFocusNavigation::OwnedByIFrame(
     const HTMLFrameOwnerElement& frame,
     FocusController::OwnerMap& owner_map) {
   DCHECK(frame.ContentFrame());
-  DCHECK(frame.ContentFrame()->IsLocalFrame());
   To<LocalFrame>(frame.ContentFrame())
       ->GetDocument()
       ->UpdateDistributionForLegacyDistributedNodes();
@@ -813,9 +812,7 @@ void FocusController::FocusDocumentView(Frame* frame, bool notify_embedder) {
   if (focused_frame_ == frame)
     return;
 
-  LocalFrame* focused_frame = (focused_frame_ && focused_frame_->IsLocalFrame())
-                                  ? ToLocalFrame(focused_frame_.Get())
-                                  : nullptr;
+  auto* focused_frame = DynamicTo<LocalFrame>(focused_frame_.Get());
   if (focused_frame && focused_frame->View()) {
     Document* document = focused_frame->GetDocument();
     Element* focused_element = document ? document->FocusedElement() : nullptr;
@@ -823,8 +820,7 @@ void FocusController::FocusDocumentView(Frame* frame, bool notify_embedder) {
       document->ClearFocusedElement();
   }
 
-  LocalFrame* new_focused_frame =
-      (frame && frame->IsLocalFrame()) ? ToLocalFrame(frame) : nullptr;
+  auto* new_focused_frame = DynamicTo<LocalFrame>(frame);
   if (new_focused_frame && new_focused_frame->View()) {
     Document* document = new_focused_frame->GetDocument();
     Element* focused_element = document ? document->FocusedElement() : nullptr;
@@ -842,9 +838,7 @@ void FocusController::FocusDocumentView(Frame* frame, bool notify_embedder) {
 
 LocalFrame* FocusController::FocusedFrame() const {
   // All callsites only care about *local* focused frames.
-  if (focused_frame_ && focused_frame_->IsRemoteFrame())
-    return nullptr;
-  return ToLocalFrame(focused_frame_.Get());
+  return DynamicTo<LocalFrame>(focused_frame_.Get());
 }
 
 Frame* FocusController::FocusedOrMainFrame() const {
@@ -857,7 +851,8 @@ Frame* FocusController::FocusedOrMainFrame() const {
   // cross-process focus transfers.
   for (Frame* frame = &page_->MainFrame()->Tree().Top(); frame;
        frame = frame->Tree().TraverseNext()) {
-    if (frame->IsLocalFrame() && ToLocalFrame(frame)->IsLocalRoot())
+    auto* local_frame = DynamicTo<LocalFrame>(frame);
+    if (local_frame)
       return frame;
   }
 
@@ -891,8 +886,11 @@ bool FocusController::IsDocumentFocused(const Document& document) const {
 
 void FocusController::FocusHasChanged() {
   bool focused = IsFocused();
-  if (!focused && FocusedOrMainFrame()->IsLocalFrame())
-    ToLocalFrame(FocusedOrMainFrame())->GetEventHandler().StopAutoscroll();
+  if (!focused) {
+    if (auto* focused_or_main_local_frame =
+            DynamicTo<LocalFrame>(FocusedOrMainFrame()))
+      focused_or_main_local_frame->GetEventHandler().StopAutoscroll();
+  }
 
   // Do not set a focused frame when being unfocused. This might reset
   // is_focused_ to true.
@@ -901,11 +899,11 @@ void FocusController::FocusHasChanged() {
 
   // SetFocusedFrame above might reject to update focused_frame_, or
   // focused_frame_ might be changed by blur/focus event handlers.
-  if (focused_frame_ && focused_frame_->IsLocalFrame() &&
-      ToLocalFrame(focused_frame_.Get())->View()) {
-    ToLocalFrame(focused_frame_.Get())->Selection().SetFrameIsFocused(focused);
-    DispatchEventsOnWindowAndFocusedElement(
-        ToLocalFrame(focused_frame_.Get())->GetDocument(), focused);
+  auto* focused_local_frame = DynamicTo<LocalFrame>(focused_frame_.Get());
+  if (focused_local_frame && focused_local_frame->View()) {
+    focused_local_frame->Selection().SetFrameIsFocused(focused);
+    DispatchEventsOnWindowAndFocusedElement(focused_local_frame->GetDocument(),
+                                            focused);
   }
 
   NotifyFocusChangedObservers();
@@ -939,8 +937,9 @@ bool FocusController::SetInitialFocus(WebFocusType type) {
   // change within WebCore.  PostNotification is called instead of
   // handleFocusedUIElementChanged, because this will send the notification even
   // if the element is the same.
-  if (FocusedOrMainFrame()->IsLocalFrame()) {
-    Document* document = ToLocalFrame(FocusedOrMainFrame())->GetDocument();
+  if (auto* focused_or_main_local_frame =
+          DynamicTo<LocalFrame>(FocusedOrMainFrame())) {
+    Document* document = focused_or_main_local_frame->GetDocument();
     if (AXObjectCache* cache = document->ExistingAXObjectCache())
       cache->HandleInitialFocus();
   }
@@ -958,7 +957,7 @@ bool FocusController::AdvanceFocus(
       // We should never hit this when a RemoteFrame is focused, since the key
       // event that initiated focus advancement should've been routed to that
       // frame's process from the beginning.
-      LocalFrame* starting_frame = ToLocalFrame(FocusedOrMainFrame());
+      auto* starting_frame = To<LocalFrame>(FocusedOrMainFrame());
       return AdvanceFocusInDocumentOrder(starting_frame, nullptr, type,
                                          initial_focus, source_capabilities);
     }
@@ -1049,7 +1048,7 @@ bool FocusController::AdvanceFocusInDocumentOrder(
 
     // Chrome doesn't want focus, so we should wrap focus.
     ScopedFocusNavigation scope = ScopedFocusNavigation::CreateForDocument(
-        *ToLocalFrame(page_->MainFrame())->GetDocument(), owner_map);
+        *To<LocalFrame>(page_->MainFrame())->GetDocument(), owner_map);
     element = FindFocusableElementRecursively(type, scope, owner_map);
     element = FindFocusableElementDescendingDownIntoFrameDocument(type, element,
                                                                   owner_map);

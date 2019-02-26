@@ -404,12 +404,9 @@ int InspectorDOMSnapshotAgent::VisitNode(Node* node,
 
     if (auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(node)) {
       if (LocalFrame* frame =
-              frame_owner->ContentFrame() &&
-                      frame_owner->ContentFrame()->IsLocalFrame()
-                  ? ToLocalFrame(frame_owner->ContentFrame())
-                  : nullptr) {
+              DynamicTo<LocalFrame>(frame_owner->ContentFrame()))
         value->setFrameId(IdentifiersFactory::FrameId(frame));
-      }
+
       if (Document* doc = frame_owner->contentDocument()) {
         value->setContentDocumentIndex(VisitNode(
             doc, include_event_listeners, include_user_agent_shadow_tree));

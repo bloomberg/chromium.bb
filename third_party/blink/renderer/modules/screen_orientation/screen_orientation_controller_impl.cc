@@ -147,8 +147,8 @@ void ScreenOrientationControllerImpl::NotifyOrientationChanged() {
   HeapVector<Member<LocalFrame>> child_frames;
   for (Frame* child = GetFrame()->Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {
-    if (child->IsLocalFrame())
-      child_frames.push_back(ToLocalFrame(child));
+    if (auto* child_local_frame = DynamicTo<LocalFrame>(child))
+      child_frames.push_back(child_local_frame);
   }
 
   // Notify current orientation object.

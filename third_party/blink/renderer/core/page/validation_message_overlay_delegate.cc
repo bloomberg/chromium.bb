@@ -92,7 +92,7 @@ ValidationMessageOverlayDelegate::~ValidationMessageOverlayDelegate() {
 LocalFrameView& ValidationMessageOverlayDelegate::FrameView() const {
   DCHECK(page_)
       << "Do not call FrameView() before the first call of EnsurePage()";
-  return *ToLocalFrame(page_->MainFrame())->View();
+  return *To<LocalFrame>(page_->MainFrame())->View();
 }
 
 void ValidationMessageOverlayDelegate::PaintFrameOverlay(
@@ -239,7 +239,7 @@ void ValidationMessageOverlayDelegate::WriteDocument(SharedBuffer* data) {
 Element& ValidationMessageOverlayDelegate::GetElementById(
     const AtomicString& id) const {
   Element* element =
-      ToLocalFrame(page_->MainFrame())->GetDocument()->getElementById(id);
+      To<LocalFrame>(page_->MainFrame())->GetDocument()->getElementById(id);
   DCHECK(element) << "No element with id=" << id
                   << ". Failed to load the document?";
   return *element;
@@ -249,7 +249,7 @@ void ValidationMessageOverlayDelegate::AdjustBubblePosition(
     const IntRect& view_rect) {
   if (IsHiding())
     return;
-  float zoom_factor = ToLocalFrame(page_->MainFrame())->PageZoomFactor();
+  float zoom_factor = To<LocalFrame>(page_->MainFrame())->PageZoomFactor();
   IntRect anchor_rect = anchor_->VisibleBoundsInVisualViewport();
   bool show_bottom_arrow = false;
   double bubble_y = anchor_rect.MaxY();

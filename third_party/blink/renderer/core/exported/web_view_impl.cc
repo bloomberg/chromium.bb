@@ -341,9 +341,10 @@ WebDevToolsAgentImpl* WebViewImpl::MainFrameDevToolsAgentImpl() {
 
 WebLocalFrameImpl* WebViewImpl::MainFrameImpl() const {
   Page* page = AsView().page.Get();
-  return page && page->MainFrame() && page->MainFrame()->IsLocalFrame()
-             ? WebLocalFrameImpl::FromFrame(page->DeprecatedLocalMainFrame())
-             : nullptr;
+  if (!page || !IsA<LocalFrame>(page->MainFrame()))
+    return nullptr;
+
+  return WebLocalFrameImpl::FromFrame(page->DeprecatedLocalMainFrame());
 }
 
 bool WebViewImpl::TabKeyCyclesThroughElements() const {
@@ -456,10 +457,10 @@ void WebViewImpl::MouseContextMenu(const WebMouseEvent& event) {
   else
     target_frame = AsView().page->GetFocusController().FocusedOrMainFrame();
 
-  if (!target_frame->IsLocalFrame())
+  auto* target_local_frame = DynamicTo<LocalFrame>(target_frame);
+  if (!target_local_frame)
     return;
 
-  LocalFrame* target_local_frame = ToLocalFrame(target_frame);
   {
     ContextMenuAllowedScope scope;
     target_local_frame->GetEventHandler().SendContextMenuEvent(
@@ -727,12 +728,12 @@ WebInputEventResult WebViewImpl::HandleKeyEvent(const WebKeyboardEvent& event) {
   }
 
   Frame* focused_frame = FocusedCoreFrame();
-  if (!focused_frame || !focused_frame->IsLocalFrame())
+  auto* focused_local_frame = DynamicTo<LocalFrame>(focused_frame);
+  if (!focused_local_frame)
     return WebInputEventResult::kNotHandled;
 
-  LocalFrame* frame = ToLocalFrame(focused_frame);
-
-  WebInputEventResult result = frame->GetEventHandler().KeyEvent(event);
+  WebInputEventResult result =
+      focused_local_frame->GetEventHandler().KeyEvent(event);
   if (result != WebInputEventResult::kNotHandled) {
     if (WebInputEvent::kRawKeyDown == event.GetType()) {
       // Suppress the next keypress event unless the focused node is a plugin
@@ -802,7 +803,7 @@ WebInputEventResult WebViewImpl::HandleCharEvent(
   if (page_popup_)
     return page_popup_->HandleKeyEvent(event);
 
-  LocalFrame* frame = ToLocalFrame(FocusedCoreFrame());
+  auto* frame = To<LocalFrame>(FocusedCoreFrame());
   if (!frame) {
     return suppress ? WebInputEventResult::kHandledSuppressed
                     : WebInputEventResult::kNotHandled;
@@ -1124,16 +1125,16 @@ WebInputEventResult WebViewImpl::SendContextMenuEvent() {
   {
     ContextMenuAllowedScope scope;
     Frame* focused_frame = GetPage()->GetFocusController().FocusedOrMainFrame();
-    if (!focused_frame->IsLocalFrame())
+    auto* focused_local_frame = DynamicTo<LocalFrame>(focused_frame);
+    if (!focused_local_frame)
       return WebInputEventResult::kNotHandled;
     // Firefox reveal focus based on "keydown" event but not "contextmenu"
     // event, we match FF.
     if (Element* focused_element =
-            ToLocalFrame(focused_frame)->GetDocument()->FocusedElement())
+            focused_local_frame->GetDocument()->FocusedElement())
       focused_element->scrollIntoViewIfNeeded();
-    return ToLocalFrame(focused_frame)
-        ->GetEventHandler()
-        .ShowNonLocatedContextMenu(nullptr, kMenuSourceKeyboard);
+    return focused_local_frame->GetEventHandler().ShowNonLocatedContextMenu(
+        nullptr, kMenuSourceKeyboard);
   }
 }
 #else
@@ -1149,7 +1150,7 @@ void WebViewImpl::ShowContextMenuForElement(WebElement element) {
   GetPage()->GetContextMenuController().ClearContextMenu();
   {
     ContextMenuAllowedScope scope;
-    if (LocalFrame* focused_frame = ToLocalFrame(
+    if (LocalFrame* focused_frame = To<LocalFrame>(
             GetPage()->GetFocusController().FocusedOrMainFrame())) {
       focused_frame->GetEventHandler().ShowNonLocatedContextMenu(
           element.Unwrap<Element>());
@@ -1737,12 +1738,10 @@ WebInputEventResult WebViewImpl::HandleInputEvent(
     // Notify the focus frame of the input. Note that the other frames are not
     // notified as input is only handled by the focused frame.
     Frame* frame = FocusedCoreFrame();
-    if (frame && frame->IsLocalFrame()) {
-      LocalFrame* local_frame = ToLocalFrame(frame);
-      if (local_frame && local_frame->View() &&
-          local_frame->View()
-              ->GetPaintTimingDetector()
-              .NeedToNotifyInputOrScroll()) {
+    if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
+      if (local_frame->View() && local_frame->View()
+                                     ->GetPaintTimingDetector()
+                                     .NeedToNotifyInputOrScroll()) {
         local_frame->View()->GetPaintTimingDetector().NotifyInputEvent(
             input_event.GetType());
       }
@@ -1872,10 +1871,7 @@ void WebViewImpl::SetFocus(bool enable) {
     if (!AsView().page)
       return;
 
-    LocalFrame* frame =
-        AsView().page->MainFrame() && AsView().page->MainFrame()->IsLocalFrame()
-            ? ToLocalFrame(AsView().page->MainFrame())
-            : nullptr;
+    LocalFrame* frame = DynamicTo<LocalFrame>(AsView().page->MainFrame());
     if (!frame)
       return;
 
@@ -1900,9 +1896,7 @@ void WebViewImpl::SetFocus(bool enable) {
 bool WebViewImpl::SelectionBounds(WebRect& anchor_web,
                                   WebRect& focus_web) const {
   const Frame* frame = FocusedCoreFrame();
-  if (!frame || !frame->IsLocalFrame())
-    return false;
-  const LocalFrame* local_frame = ToLocalFrame(frame);
+  const auto* local_frame = DynamicTo<LocalFrame>(frame);
   if (!local_frame)
     return false;
 
@@ -1966,10 +1960,9 @@ WebString WebViewImpl::PageEncoding() const {
   if (!AsView().page)
     return WebString();
 
-  if (!AsView().page->MainFrame()->IsLocalFrame())
+  auto* main_frame = DynamicTo<LocalFrame>(AsView().page->MainFrame());
+  if (!main_frame)
     return WebString();
-
-  LocalFrame* main_frame = ToLocalFrame(AsView().page->MainFrame());
 
   // FIXME: Is this check needed?
   if (!main_frame->GetDocument()->Loader())
@@ -1988,17 +1981,15 @@ WebLocalFrame* WebViewImpl::FocusedFrame() {
   // TODO(yabinh): focusedCoreFrame() should always return a local frame, and
   // the following check should be unnecessary.
   // See crbug.com/625068
-  if (!frame || !frame->IsLocalFrame())
-    return nullptr;
-  return WebLocalFrameImpl::FromFrame(ToLocalFrame(frame));
+  return WebLocalFrameImpl::FromFrame(DynamicTo<LocalFrame>(frame));
 }
 
 void WebViewImpl::SetFocusedFrame(WebFrame* frame) {
   if (!frame) {
     // Clears the focused frame if any.
     Frame* focused_frame = FocusedCoreFrame();
-    if (focused_frame && focused_frame->IsLocalFrame())
-      ToLocalFrame(focused_frame)->Selection().SetFrameIsFocused(false);
+    if (auto* focused_local_frame = DynamicTo<LocalFrame>(focused_frame))
+      focused_local_frame->Selection().SetFrameIsFocused(false);
     return;
   }
   LocalFrame* core_frame = ToWebLocalFrameImpl(frame)->GetFrame();
@@ -2018,8 +2009,8 @@ void WebViewImpl::SetInitialFocus(bool reverse) {
   if (!AsView().page)
     return;
   Frame* frame = GetPage()->GetFocusController().FocusedOrMainFrame();
-  if (frame->IsLocalFrame()) {
-    if (Document* document = ToLocalFrame(frame)->GetDocument())
+  if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
+    if (Document* document = local_frame->GetDocument())
       document->ClearFocusedElement();
   }
   GetPage()->GetFocusController().SetInitialFocus(
@@ -2028,10 +2019,10 @@ void WebViewImpl::SetInitialFocus(bool reverse) {
 
 void WebViewImpl::ClearFocusedElement() {
   Frame* frame = FocusedCoreFrame();
-  if (!frame || !frame->IsLocalFrame())
-    return;
 
-  LocalFrame* local_frame = ToLocalFrame(frame);
+  auto* local_frame = DynamicTo<LocalFrame>(frame);
+  if (!local_frame)
+    return;
 
   Document* document = local_frame->GetDocument();
   if (!document)
@@ -2283,8 +2274,8 @@ double WebViewImpl::ZoomLevel() {
 
 void WebViewImpl::PropagateZoomFactorToLocalFrameRoots(Frame* frame,
                                                        float zoom_factor) {
-  if (frame->IsLocalFrame() && ToLocalFrame(frame)->IsLocalRoot()) {
-    LocalFrame* local_frame = ToLocalFrame(frame);
+  auto* local_frame = DynamicTo<LocalFrame>(frame);
+  if (local_frame && local_frame->IsLocalRoot()) {
     if (Document* document = local_frame->GetDocument()) {
       if (!document->IsPluginDocument() ||
           !ToPluginDocument(document)->GetPluginView()) {
@@ -2644,9 +2635,10 @@ IntSize WebViewImpl::ContentsSize() const {
 }
 
 WebSize WebViewImpl::ContentsPreferredMinimumSize() {
-  if (!AsView().page->MainFrame()->IsLocalFrame())
+  auto* main_local_frame = DynamicTo<LocalFrame>(AsView().page->MainFrame());
+  if (!main_local_frame)
     return WebSize();
-  Document* document = ToLocalFrame(AsView().page->MainFrame())->GetDocument();
+  Document* document = main_local_frame->GetDocument();
   if (!document || !document->GetLayoutView() || !document->documentElement() ||
       !document->documentElement()->GetLayoutBox())
     return WebSize();
@@ -2688,19 +2680,18 @@ void WebViewImpl::ResetScaleStateImmediately() {
 void WebViewImpl::ResetScrollAndScaleState() {
   GetPage()->GetVisualViewport().Reset();
 
-  if (!GetPage()->MainFrame()->IsLocalFrame())
+  auto* main_local_frame = DynamicTo<LocalFrame>(GetPage()->MainFrame());
+  if (!main_local_frame)
     return;
 
-  if (LocalFrameView* frame_view =
-          ToLocalFrame(GetPage()->MainFrame())->View()) {
+  if (LocalFrameView* frame_view = main_local_frame->View()) {
     ScrollableArea* scrollable_area = frame_view->LayoutViewport();
 
     if (!scrollable_area->GetScrollOffset().IsZero())
       scrollable_area->SetScrollOffset(ScrollOffset(), kProgrammaticScroll);
   }
 
-  if (Document* document =
-          ToLocalFrame(GetPage()->MainFrame())->GetDocument()) {
+  if (Document* document = main_local_frame->GetDocument()) {
     if (DocumentLoader* loader = document->Loader()) {
       if (HistoryItem* item = loader->GetHistoryItem())
         item->ClearViewState();
@@ -2868,8 +2859,10 @@ SkColor WebViewImpl::BackgroundColor() const {
   if (background_color_override_enabled_)
     return background_color_override_;
   Page* page = AsView().page.Get();
-  if (page && page->MainFrame() && page->MainFrame()->IsLocalFrame()) {
-    LocalFrameView* view = ToLocalFrame(page->MainFrame())->View();
+  if (!page)
+    return BaseBackgroundColor().Rgb();
+  if (auto* main_local_frame = DynamicTo<LocalFrame>(page->MainFrame())) {
+    LocalFrameView* view = main_local_frame->View();
     if (view)
       return view->DocumentBackgroundColor().Rgb();
   }
@@ -2927,9 +2920,8 @@ void WebViewImpl::ClearBaseBackgroundColorOverride() {
 
 void WebViewImpl::UpdateBaseBackgroundColor() {
   Color color = BaseBackgroundColor();
-  if (AsView().page->MainFrame() &&
-      AsView().page->MainFrame()->IsLocalFrame()) {
-    LocalFrameView* view = ToLocalFrame(AsView().page->MainFrame())->View();
+  if (auto* local_frame = DynamicTo<LocalFrame>(AsView().page->MainFrame())) {
+    LocalFrameView* view = local_frame->View();
     view->SetBaseBackgroundColor(color);
     view->UpdateBaseBackgroundColorRecursively(color);
   }
@@ -3027,10 +3019,11 @@ void WebViewImpl::MainFrameLayoutUpdated() {
 }
 
 void WebViewImpl::DidChangeContentsSize() {
-  if (!GetPage()->MainFrame()->IsLocalFrame())
+  auto* local_frame = DynamicTo<LocalFrame>(GetPage()->MainFrame());
+  if (!local_frame)
     return;
 
-  LocalFrameView* view = ToLocalFrame(GetPage()->MainFrame())->View();
+  LocalFrameView* view = local_frame->View();
 
   int vertical_scrollbar_width = 0;
   if (view && view->LayoutViewport()) {
@@ -3072,8 +3065,8 @@ void WebViewImpl::SetZoomFactorOverride(float zoom_factor) {
 
 void WebViewImpl::SetMainFrameOverlayColor(SkColor color) {
   DCHECK(AsView().page->MainFrame());
-  if (AsView().page->MainFrame()->IsLocalFrame())
-    ToLocalFrame(AsView().page->MainFrame())->SetMainFrameColorOverlay(color);
+  if (auto* local_frame = DynamicTo<LocalFrame>(AsView().page->MainFrame()))
+    local_frame->SetMainFrameColorOverlay(color);
 }
 
 WebPageImportanceSignals* WebViewImpl::PageImportanceSignals() {
@@ -3094,9 +3087,9 @@ Element* WebViewImpl::FocusedElement() const {
 
 HitTestResult WebViewImpl::HitTestResultForRootFramePos(
     const LayoutPoint& pos_in_root_frame) {
-  if (!AsView().page->MainFrame()->IsLocalFrame())
+  auto* main_frame = DynamicTo<LocalFrame>(AsView().page->MainFrame());
+  if (!main_frame)
     return HitTestResult();
-  LocalFrame* main_frame = ToLocalFrame(AsView().page->MainFrame());
   HitTestLocation location(
       main_frame->View()->ConvertFromRootFrame(pos_in_root_frame));
   HitTestResult result = main_frame->GetEventHandler().HitTestResultAtLocation(
@@ -3108,7 +3101,8 @@ HitTestResult WebViewImpl::HitTestResultForRootFramePos(
 WebHitTestResult WebViewImpl::HitTestResultForTap(
     const gfx::Point& tap_point_window_pos,
     const WebSize& tap_area) {
-  if (!AsView().page->MainFrame()->IsLocalFrame())
+  auto* main_frame = DynamicTo<LocalFrame>(AsView().page->MainFrame());
+  if (!main_frame)
     return HitTestResult();
 
   WebGestureEvent tap_event(
@@ -3123,7 +3117,6 @@ WebHitTestResult WebViewImpl::HitTestResultForTap(
   WebGestureEvent scaled_event =
       TransformWebGestureEvent(MainFrameImpl()->GetFrameView(), tap_event);
 
-  LocalFrame* main_frame = ToLocalFrame(AsView().page->MainFrame());
   HitTestResult result =
       main_frame->GetEventHandler()
           .HitTestResultForGestureEvent(
@@ -3428,7 +3421,7 @@ LocalFrame* WebViewImpl::FocusedLocalFrameInWidget() const {
   if (!MainFrameImpl())
     return nullptr;
 
-  LocalFrame* focused_frame = ToLocalFrame(FocusedCoreFrame());
+  auto* focused_frame = To<LocalFrame>(FocusedCoreFrame());
   if (focused_frame->LocalFrameRoot() != MainFrameImpl()->GetFrame())
     return nullptr;
   return focused_frame;

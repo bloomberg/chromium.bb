@@ -19,9 +19,9 @@ namespace {
 // navigation prediction.
 bool ShouldDiscardAnchorElement(const HTMLAnchorElement& anchor_element) {
   Frame* frame = anchor_element.GetDocument().GetFrame();
-  if (!frame || !frame->IsLocalFrame())
+  auto* local_frame = DynamicTo<LocalFrame>(frame);
+  if (!local_frame)
     return true;
-  LocalFrame* local_frame = ToLocalFrame(frame);
   return local_frame->IsAdSubframe();
 }
 

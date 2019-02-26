@@ -87,9 +87,9 @@ void OomInterventionImpl::Check(OomInterventionMetrics current_memory) {
       for (const auto& page : Page::OrdinaryPages()) {
         for (Frame* frame = page->MainFrame(); frame;
              frame = frame->Tree().TraverseNext()) {
-          if (!frame->IsLocalFrame())
+          auto* local_frame = DynamicTo<LocalFrame>(frame);
+          if (!local_frame)
             continue;
-          LocalFrame* local_frame = ToLocalFrame(frame);
           if (navigate_ads_enabled_)
             local_frame->GetDocument()->NavigateLocalAdsFrames();
           if (purge_v8_memory_enabled_)

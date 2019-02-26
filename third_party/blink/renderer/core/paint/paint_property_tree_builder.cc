@@ -360,7 +360,7 @@ static bool NeedsIsolationNodes(const LayoutObject& object) {
   // they are already essentially isolated).
   if (object.IsLayoutView()) {
     const auto* parent_frame = object.GetFrame()->Tree().Parent();
-    return parent_frame && parent_frame->IsLocalFrame();
+    return IsA<LocalFrame>(parent_frame);
   }
   return false;
 }
@@ -1220,15 +1220,14 @@ static bool IsPrintingRootLayoutView(const LayoutObject& object) {
     return false;
 
   const auto* parent_frame = frame.Tree().Parent();
-  if (!parent_frame)
-    return true;
   // TODO(crbug.com/455764): The local frame may be not the root frame of
   // printing when it's printing under a remote frame.
-  if (!parent_frame->IsLocalFrame())
+  auto* parent_local_frame = DynamicTo<LocalFrame>(parent_frame);
+  if (!parent_local_frame)
     return true;
 
   // If the parent frame is printing, this frame should clip normally.
-  return !ToLocalFrame(parent_frame)->GetDocument()->Printing();
+  return !parent_local_frame->GetDocument()->Printing();
 }
 
 // TODO(wangxianzhu): Combine the logic by overriding LayoutBox::

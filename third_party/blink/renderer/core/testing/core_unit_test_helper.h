@@ -94,7 +94,7 @@ class RenderingTest : public PageTestBase, public UseMockScrollbarSettings {
   }
 
   LocalFrame& ChildFrame() {
-    return *ToLocalFrame(GetFrame().Tree().FirstChild());
+    return *To<LocalFrame>(GetFrame().Tree().FirstChild());
   }
   Document& ChildDocument() { return *ChildFrame().GetDocument(); }
 

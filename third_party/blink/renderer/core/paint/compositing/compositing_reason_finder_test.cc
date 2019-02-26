@@ -241,8 +241,8 @@ TEST_F(CompositingReasonFinderTest, DontPromoteEmptyIframe) {
   )HTML");
   UpdateAllLifecyclePhasesForTest();
 
-  LocalFrame* child_frame =
-      ToLocalFrame(GetDocument().GetFrame()->Tree().FirstChild());
+  auto* child_frame =
+      To<LocalFrame>(GetDocument().GetFrame()->Tree().FirstChild());
   ASSERT_TRUE(child_frame);
   LocalFrameView* child_frame_view = child_frame->View();
   ASSERT_TRUE(child_frame_view);

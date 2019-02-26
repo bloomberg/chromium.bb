@@ -80,9 +80,10 @@ void ValidationMessageClientImpl::ShowValidationMessage(
       std::max(kMinimumTimeToShowValidationMessage,
                (message.length() + sub_message.length()) * kTimePerCharacter);
 
-  auto* target_frame = page_->MainFrame() && page_->MainFrame()->IsLocalFrame()
-                           ? ToLocalFrame(page_->MainFrame())
-                           : &anchor.GetDocument().GetFrame()->LocalFrameRoot();
+  auto* target_frame = DynamicTo<LocalFrame>(page_->MainFrame());
+  if (!target_frame)
+    target_frame = &anchor.GetDocument().GetFrame()->LocalFrameRoot();
+
   allow_initial_empty_anchor_ = !target_frame->IsMainFrame();
   auto delegate = ValidationMessageOverlayDelegate::Create(
       *page_, anchor, message_, message_dir, sub_message, sub_message_dir);

@@ -129,7 +129,8 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
 
   web_view->SetPageScaleFactor(3);
 
-  LocalFrameView* view = ToLocalFrame(web_view->GetPage()->MainFrame())->View();
+  LocalFrameView* view =
+      To<LocalFrame>(web_view->GetPage()->MainFrame())->View();
 
   {
     WebMouseEvent web_mouse_event(WebInputEvent::kMouseMove,
@@ -343,7 +344,8 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
 
   web_view->SetPageScaleFactor(2);
 
-  LocalFrameView* view = ToLocalFrame(web_view->GetPage()->MainFrame())->View();
+  LocalFrameView* view =
+      To<LocalFrame>(web_view->GetPage()->MainFrame())->View();
 
   {
     WebMouseEvent web_mouse_event(WebInputEvent::kMouseMove,
@@ -597,7 +599,8 @@ TEST(WebInputEventConversionTest, InputEventsConversions) {
   web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
       WebWidget::LifecycleUpdateReason::kTest);
 
-  LocalFrameView* view = ToLocalFrame(web_view->GetPage()->MainFrame())->View();
+  LocalFrameView* view =
+      To<LocalFrame>(web_view->GetPage()->MainFrame())->View();
   {
     WebGestureEvent web_gesture_event(
         WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
@@ -640,7 +643,8 @@ TEST(WebInputEventConversionTest, VisualViewportOffset) {
   FloatPoint visual_offset(35, 60);
   web_view->GetPage()->GetVisualViewport().SetLocation(visual_offset);
 
-  LocalFrameView* view = ToLocalFrame(web_view->GetPage()->MainFrame())->View();
+  LocalFrameView* view =
+      To<LocalFrame>(web_view->GetPage()->MainFrame())->View();
 
   {
     WebMouseEvent web_mouse_event(WebInputEvent::kMouseMove,
@@ -734,7 +738,8 @@ TEST(WebInputEventConversionTest, ElasticOverscroll) {
   web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
       WebWidget::LifecycleUpdateReason::kTest);
 
-  LocalFrameView* view = ToLocalFrame(web_view->GetPage()->MainFrame())->View();
+  LocalFrameView* view =
+      To<LocalFrame>(web_view->GetPage()->MainFrame())->View();
 
   gfx::Vector2dF elastic_overscroll(10, -20);
   web_view->MainFrameWidget()->ApplyViewportChanges(
@@ -815,7 +820,8 @@ TEST(WebInputEventConversionTest, ElasticOverscrollWithPageReload) {
       {gfx::ScrollOffset(), elastic_overscroll, 1.0f, 0.0f});
   frame_test_helpers::ReloadFrame(
       web_view_helper.GetWebView()->MainFrameImpl());
-  LocalFrameView* view = ToLocalFrame(web_view->GetPage()->MainFrame())->View();
+  LocalFrameView* view =
+      To<LocalFrame>(web_view->GetPage()->MainFrame())->View();
 
   // Just elastic overscroll.
   {

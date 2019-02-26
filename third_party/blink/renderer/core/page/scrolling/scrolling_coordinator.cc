@@ -124,11 +124,12 @@ ScrollingCoordinator::ScrollableAreaWithElementIdInAllLocalFrames(
     const CompositorElementId& id) {
   for (auto* frame = page_->MainFrame(); frame;
        frame = frame->Tree().TraverseNext()) {
-    if (!frame->IsLocalFrame())
+    auto* local_frame = DynamicTo<LocalFrame>(frame);
+    if (!local_frame)
       continue;
 
     // Find the associated scrollable area using the element id.
-    if (LocalFrameView* view = ToLocalFrame(frame)->View()) {
+    if (LocalFrameView* view = local_frame->View()) {
       if (auto* scrollable = view->ScrollableAreaWithElementId(id)) {
         return scrollable;
       }
@@ -844,10 +845,9 @@ Region ScrollingCoordinator::ComputeShouldHandleScrollGestureOnMainThreadRegion(
   const FrameTree& tree = frame->Tree();
   for (Frame* sub_frame = tree.FirstChild(); sub_frame;
        sub_frame = sub_frame->Tree().NextSibling()) {
-    if (sub_frame->IsLocalFrame()) {
+    if (auto* sub_local_frame = DynamicTo<LocalFrame>(sub_frame)) {
       should_handle_scroll_gesture_on_main_thread_region.Unite(
-          ComputeShouldHandleScrollGestureOnMainThreadRegion(
-              ToLocalFrame(sub_frame)));
+          ComputeShouldHandleScrollGestureOnMainThreadRegion(sub_local_frame));
     }
   }
 
@@ -879,7 +879,7 @@ void ScrollingCoordinator::FrameViewFixedObjectsDidChange(
 
 bool ScrollingCoordinator::IsForRootLayer(
     ScrollableArea* scrollable_area) const {
-  if (!page_->MainFrame()->IsLocalFrame())
+  if (!IsA<LocalFrame>(page_->MainFrame()))
     return false;
 
   // FIXME(305811): Refactor for OOPI.
@@ -891,7 +891,7 @@ bool ScrollingCoordinator::IsForRootLayer(
 
 bool ScrollingCoordinator::IsForMainFrame(
     ScrollableArea* scrollable_area) const {
-  if (!page_->MainFrame()->IsLocalFrame())
+  if (!IsA<LocalFrame>(page_->MainFrame()))
     return false;
 
   // FIXME(305811): Refactor for OOPI.

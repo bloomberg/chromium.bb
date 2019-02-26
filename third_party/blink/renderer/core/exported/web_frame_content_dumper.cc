@@ -54,9 +54,9 @@ void FrameContentAsPlainText(size_t max_chars,
   const FrameTree& frame_tree = frame->Tree();
   for (Frame* cur_child = frame_tree.FirstChild(); cur_child;
        cur_child = cur_child->Tree().NextSibling()) {
-    if (!cur_child->IsLocalFrame())
+    auto* cur_local_child = DynamicTo<LocalFrame>(cur_child);
+    if (!cur_local_child)
       continue;
-    LocalFrame* cur_local_child = ToLocalFrame(cur_child);
     // Ignore the text of non-visible frames.
     LayoutView* layout_view = cur_local_child->ContentLayoutObject();
     LayoutObject* owner_layout_object = cur_local_child->OwnerLayoutObject();

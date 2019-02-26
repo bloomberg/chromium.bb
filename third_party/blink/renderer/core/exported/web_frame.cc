@@ -183,8 +183,8 @@ void WebFrame::SetFrameOwnerProperties(
   Frame* frame = ToCoreFrame(*this);
   DCHECK(frame);
 
-  if (frame->IsLocalFrame()) {
-    ToLocalFrame(frame)->GetDocument()->WillChangeFrameOwnerProperties(
+  if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
+    local_frame->GetDocument()->WillChangeFrameOwnerProperties(
         properties.margin_width, properties.margin_height,
         static_cast<ScrollbarMode>(properties.scrolling_mode),
         properties.is_display_none);

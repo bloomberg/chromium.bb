@@ -203,9 +203,9 @@ void PaintLayerCompositor::UpdateIfNeededRecursiveInternal(
   for (Frame* child =
            layout_view_.GetFrameView()->GetFrame().Tree().FirstChild();
        child; child = child->Tree().NextSibling()) {
-    if (!child->IsLocalFrame())
+    auto* local_frame = DynamicTo<LocalFrame>(child);
+    if (!local_frame)
       continue;
-    LocalFrame* local_frame = ToLocalFrame(child);
     // It's possible for trusted Pepper plugins to force hit testing in
     // situations where the frame tree is in an inconsistent state, such as in
     // the middle of frame detach.
@@ -286,9 +286,9 @@ void PaintLayerCompositor::UpdateIfNeededRecursiveInternal(
   for (Frame* child =
            layout_view_.GetFrameView()->GetFrame().Tree().FirstChild();
        child; child = child->Tree().NextSibling()) {
-    if (!child->IsLocalFrame())
+    auto* local_frame = DynamicTo<LocalFrame>(child);
+    if (!local_frame)
       continue;
-    LocalFrame* local_frame = ToLocalFrame(child);
     if (local_frame->ShouldThrottleRendering() ||
         !local_frame->ContentLayoutObject())
       continue;
@@ -1002,9 +1002,9 @@ bool PaintLayerCompositor::IsRootScrollerAncestor() const {
   if (root_scroller_layer) {
     Frame* frame = root_scroller_layer->GetLayoutObject().GetFrame();
     while (frame) {
-      if (frame->IsLocalFrame()) {
+      if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
         PaintLayerCompositor* plc =
-            ToLocalFrame(frame)->View()->GetLayoutView()->Compositor();
+            local_frame->View()->GetLayoutView()->Compositor();
         if (plc == this)
           return true;
       }

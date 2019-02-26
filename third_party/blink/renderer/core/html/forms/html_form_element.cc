@@ -508,10 +508,9 @@ void HTMLFormElement::ScheduleFormSubmission(FormSubmission* submission) {
   // TODO(lukasza): Investigate if the code below can uniformly handle remote
   // and local frames (i.e. by calling virtual Frame::navigate from a timer).
   // See also https://goo.gl/95d2KA.
-  if (target_frame->IsLocalFrame()) {
-    ToLocalFrame(target_frame)
-        ->GetNavigationScheduler()
-        .ScheduleFormSubmission(&GetDocument(), submission);
+  if (auto* target_local_frame = DynamicTo<LocalFrame>(target_frame)) {
+    target_local_frame->GetNavigationScheduler().ScheduleFormSubmission(
+        &GetDocument(), submission);
   } else {
     FrameLoadRequest frame_load_request =
         submission->CreateFrameLoadRequest(&GetDocument());

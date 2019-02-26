@@ -1562,7 +1562,7 @@ TEST_F(WebPluginContainerTest, IFramePluginDocumentDisplayNone) {
   UpdateAllLifecyclePhases(web_view);
 
   WebFrame* web_iframe = web_view->MainFrame()->FirstChild();
-  LocalFrame* iframe = ToLocalFrame(WebFrame::ToCoreFrame(*web_iframe));
+  LocalFrame* iframe = To<LocalFrame>(WebFrame::ToCoreFrame(*web_iframe));
   EXPECT_TRUE(iframe->GetWebPluginContainer());
 }
 

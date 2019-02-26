@@ -110,8 +110,8 @@ std::unique_ptr<TextResourceDecoder> BuildTextResourceDecoderFor(
 
   LocalFrame* frame = document->GetFrame();
   LocalFrame* parent_frame = nullptr;
-  if (frame && frame->Tree().Parent() && frame->Tree().Parent()->IsLocalFrame())
-    parent_frame = ToLocalFrame(frame->Tree().Parent());
+  if (frame)
+    parent_frame = DynamicTo<LocalFrame>(frame->Tree().Parent());
 
   // Set the hint encoding to the parent frame encoding only if the parent and
   // the current frames share the security origin. We impose this condition

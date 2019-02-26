@@ -105,9 +105,10 @@ void DOMPluginArray::refresh(bool reload) {
 
   for (Frame* frame = GetFrame()->GetPage()->MainFrame(); frame;
        frame = frame->Tree().TraverseNext()) {
-    if (!frame->IsLocalFrame())
+    auto* local_frame = DynamicTo<LocalFrame>(frame);
+    if (!local_frame)
       continue;
-    Navigator& navigator = *ToLocalFrame(frame)->DomWindow()->navigator();
+    Navigator& navigator = *local_frame->DomWindow()->navigator();
     NavigatorPlugins::plugins(navigator)->UpdatePluginData();
     NavigatorPlugins::mimeTypes(navigator)->UpdatePluginData();
   }

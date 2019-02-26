@@ -1225,7 +1225,7 @@ TEST_F(StyleEngineTest, ViewportDescriptionForZoomDSF) {
       WebWidget::LifecycleUpdateReason::kTest);
 
   Document* document =
-      ToLocalFrame(web_view_impl->GetPage()->MainFrame())->GetDocument();
+      To<LocalFrame>(web_view_impl->GetPage()->MainFrame())->GetDocument();
 
   auto desc = document->GetViewportData().GetViewportDescription();
   float min_width = desc.min_width.GetFloatValue();

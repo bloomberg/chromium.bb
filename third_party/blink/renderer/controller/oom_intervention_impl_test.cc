@@ -270,10 +270,10 @@ TEST_F(OomInterventionImplTest, V1DetectionAdsNavigation) {
   WebFrame* non_ad_iframe = web_view_helper_.LocalMainFrame()->FindFrameByName(
       WebString::FromUTF8("non-ad"));
 
-  LocalFrame* local_adframe = ToLocalFrame(WebFrame::ToCoreFrame(*ad_iframe));
+  auto* local_adframe = To<LocalFrame>(WebFrame::ToCoreFrame(*ad_iframe));
   local_adframe->SetIsAdSubframe(blink::mojom::AdFrameType::kRootAd);
-  LocalFrame* local_non_adframe =
-      ToLocalFrame(WebFrame::ToCoreFrame(*non_ad_iframe));
+  auto* local_non_adframe =
+      To<LocalFrame>(WebFrame::ToCoreFrame(*non_ad_iframe));
 
   EXPECT_TRUE(local_adframe->IsAdSubframe());
   EXPECT_FALSE(local_non_adframe->IsAdSubframe());
@@ -298,7 +298,7 @@ TEST_F(OomInterventionImplTest, V2DetectionV8PurgeMemory) {
 
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad("about:blank");
   Page* page = web_view->MainFrameImpl()->GetFrame()->GetPage();
-  LocalFrame* frame = ToLocalFrame(page->MainFrame());
+  auto* frame = To<LocalFrame>(page->MainFrame());
   EXPECT_FALSE(frame->GetDocument()->ExecutionContext::IsContextDestroyed());
   RunDetection(true, true, true);
   EXPECT_TRUE(frame->GetDocument()->ExecutionContext::IsContextDestroyed());
