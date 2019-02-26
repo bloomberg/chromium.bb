@@ -63,9 +63,24 @@ class WritableStreamDefaultWriter final : public ScriptWrappable {
   ScriptPromise write(ScriptState*);
   ScriptPromise write(ScriptState*, ScriptValue chunk);
 
-  // Methods exposed for use by PipeTo(). These do not appear in the standard.
+  //
+  // Methods used by WritableStreamNative
+  //
+
+  // https://streams.spec.whatwg.org/#writable-stream-default-writer-ensure-ready-promise-rejected
+  static void EnsureReadyPromiseRejected(ScriptState*,
+                                         WritableStreamDefaultWriter*,
+                                         v8::Local<v8::Value> error);
+
+  //
+  // Accessors used by ReadableStreamNative and WritableStreamNative. These do
+  // not appear in the standard.
+  //
+
   StreamPromiseResolver* ClosedPromise() const { return closed_promise_; }
   StreamPromiseResolver* ReadyPromise() const { return ready_promise_; }
+
+  void SetReadyPromise(StreamPromiseResolver*);
 
   void Trace(Visitor*) override;
 
@@ -89,10 +104,6 @@ class WritableStreamDefaultWriter final : public ScriptWrappable {
                                           WritableStreamDefaultWriter*,
                                           v8::Local<v8::Value> error);
 
-  // https://streams.spec.whatwg.org/#writable-stream-default-writer-ensure-ready-promise-rejected
-  static void EnsureReadyPromiseRejected(ScriptState*,
-                                         WritableStreamDefaultWriter*,
-                                         v8::Local<v8::Value> error);
 
   // https://streams.spec.whatwg.org/#writable-stream-default-writer-get-desired-size
   static v8::Local<v8::Value> GetDesiredSize(
@@ -106,8 +117,6 @@ class WritableStreamDefaultWriter final : public ScriptWrappable {
   static v8::Local<v8::Promise> Write(ScriptState*,
                                       WritableStreamDefaultWriter*,
                                       v8::Local<v8::Value> chunk);
-
-  friend class WritableStreamNative;
 
   // |closed_promise_| and |ready_promise_| are implemented as resolvers. The
   // names come from the slots [[closedPromise]] and [[readyPromise]] in the

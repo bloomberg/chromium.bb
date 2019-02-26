@@ -86,15 +86,15 @@ WritableStreamDefaultWriter::WritableStreamDefaultWriter(
     : owner_writable_stream_(stream) {
   // https://streams.spec.whatwg.org/#default-writer-constructor 2. If !
   //  IsWritableStreamLocked(stream) is true, throw a TypeError exception.
-  if (WritableStreamNative::IsLockedInternal(stream)) {
+  if (WritableStreamNative::IsLocked(stream)) {
     exception_state.ThrowTypeError("Illegal constructor");
     return;
   }
   //  4. Set stream.[[writer]] to this.
-  stream->writer_ = this;
+  stream->SetWriter(this);
 
   //  5. Let state be stream.[[state]].
-  const auto state = stream->state_;
+  const auto state = stream->GetState();
   auto* isolate = script_state->GetIsolate();
 
   switch (state) {
@@ -104,7 +104,7 @@ WritableStreamDefaultWriter::WritableStreamDefaultWriter(
       //         stream.[[backpressure]] is true, set this.[[readyPromise]] to
       //         a new promise.
       if (!WritableStreamNative::CloseQueuedOrInFlight(stream) &&
-          stream->has_backpressure_) {
+          stream->HasBackpressure()) {
         ready_promise_ =
             MakeGarbageCollected<StreamPromiseResolver>(script_state);
       } else {
@@ -124,7 +124,7 @@ WritableStreamDefaultWriter::WritableStreamDefaultWriter(
       //      a. Set this.[[readyPromise]] to a promise rejected with
       //         stream.[[storedError]].
       ready_promise_ = StreamPromiseResolver::CreateRejected(
-          script_state, stream->stored_error_.NewLocal(isolate));
+          script_state, stream->GetStoredError(isolate));
 
       //      b. Set this.[[readyPromise]].[[PromiseIsHandled]] to true.
       ready_promise_->MarkAsHandled(isolate);
@@ -154,7 +154,7 @@ WritableStreamDefaultWriter::WritableStreamDefaultWriter(
       // Check omitted as it is not meaningful.
 
       //      b. Let storedError be stream.[[storedError]].
-      const auto stored_error = stream->stored_error_.NewLocal(isolate);
+      const auto stored_error = stream->GetStoredError(isolate);
 
       //      c. Set this.[[readyPromise]] to a promise rejected with
       //         storedError.
@@ -269,7 +269,7 @@ void WritableStreamDefaultWriter::releaseLock(ScriptState* script_state) {
   }
 
   //  4. Assert: stream.[[writer]] is not undefined.
-  DCHECK(stream->writer_);
+  DCHECK(stream->Writer());
 
   //  5. Perform ! WritableStreamDefaultWriterRelease(this).
   Release(script_state, this);
@@ -295,6 +295,11 @@ ScriptPromise WritableStreamDefaultWriter::write(ScriptState* script_state,
   //  3. Return ! WritableStreamDefaultWriterWrite(this, chunk).
   return ScriptPromise(script_state,
                        Write(script_state, this, chunk.V8Value()));
+}
+
+void WritableStreamDefaultWriter::SetReadyPromise(
+    StreamPromiseResolver* ready_promise) {
+  ready_promise_ = ready_promise;
 }
 
 void WritableStreamDefaultWriter::Trace(Visitor* visitor) {
@@ -332,7 +337,7 @@ v8::Local<v8::Promise> WritableStreamDefaultWriter::Close(
   DCHECK(stream);
 
   //  3. Let state be stream.[[state]].
-  const auto state = stream->state_;
+  const auto state = stream->GetState();
 
   //  4. If state is "closed" or "errored", return a promise rejected with a
   //     TypeError exception.
@@ -354,18 +359,17 @@ v8::Local<v8::Promise> WritableStreamDefaultWriter::Close(
   auto* promise = MakeGarbageCollected<StreamPromiseResolver>(script_state);
 
   //  8. Set stream.[[closeRequest]] to promise.
-  stream->close_request_ = promise;
+  stream->SetCloseRequest(promise);
 
   //  9. If stream.[[backpressure]] is true and state is "writable", resolve
   //     writer.[[readyPromise]] with undefined.
-  if (stream->has_backpressure_ && state == WritableStreamNative::kWritable) {
+  if (stream->HasBackpressure() && state == WritableStreamNative::kWritable) {
     writer->ready_promise_->ResolveWithUndefined(script_state);
   }
 
   // 10. Perform ! WritableStreamDefaultControllerClose(
   //     stream.[[writableStreamController]]).
-  WritableStreamDefaultController::Close(script_state,
-                                         stream->writable_stream_controller_);
+  WritableStreamDefaultController::Close(script_state, stream->Controller());
 
   // 11. Return promise.
   return promise->V8Promise(script_state->GetIsolate());
@@ -382,7 +386,7 @@ v8::Local<v8::Promise> WritableStreamDefaultWriter::CloseWithErrorPropagation(
   DCHECK(stream);
 
   //  3. Let state be stream.[[state]].
-  const auto state = stream->state_;
+  const auto state = stream->GetState();
 
   //  4. If ! WritableStreamCloseQueuedOrInFlight(stream) is true or state is
   //     "closed", return a promise resolved with undefined.
@@ -394,8 +398,8 @@ v8::Local<v8::Promise> WritableStreamDefaultWriter::CloseWithErrorPropagation(
   //  5. If state is "errored", return a promise rejected with
   //     stream.[[storedError]].
   if (state == WritableStreamNative::kErrored) {
-    return PromiseReject(script_state, stream->stored_error_.NewLocal(
-                                           script_state->GetIsolate()));
+    return PromiseReject(script_state,
+                         stream->GetStoredError(script_state->GetIsolate()));
   }
 
   //  6. Assert: state is "writable" or "erroring".
@@ -456,7 +460,7 @@ v8::Local<v8::Value> WritableStreamDefaultWriter::GetDesiredSize(
   const WritableStreamNative* stream = writer->owner_writable_stream_;
 
   //  2. Let state be stream.[[state]].
-  const auto state = stream->state_;
+  const auto state = stream->GetState();
 
   //  3. If state is "errored" or "erroring", return null.
   if (state == WritableStreamNative::kErrored ||
@@ -471,8 +475,8 @@ v8::Local<v8::Value> WritableStreamDefaultWriter::GetDesiredSize(
 
   //  5. Return ! WritableStreamDefaultControllerGetDesiredSize(
   //     stream.[[writableStreamController]]).
-  double desired_size = WritableStreamDefaultController::GetDesiredSize(
-      stream->writable_stream_controller_);
+  double desired_size =
+      WritableStreamDefaultController::GetDesiredSize(stream->Controller());
   return v8::Number::New(isolate, desired_size);
 }
 
@@ -486,7 +490,7 @@ void WritableStreamDefaultWriter::Release(ScriptState* script_state,
   DCHECK(stream);
 
   //  3. Assert: stream.[[writer]] is writer.
-  DCHECK_EQ(stream->writer_, writer);
+  DCHECK_EQ(stream->Writer(), writer);
 
   //  4. Let releasedError be a new TypeError.
   const auto released_error = v8::Exception::TypeError(V8String(
@@ -504,7 +508,7 @@ void WritableStreamDefaultWriter::Release(ScriptState* script_state,
   EnsureClosedPromiseRejected(script_state, writer, released_error);
 
   //  7. Set stream.[[writer]] to undefined.
-  stream->writer_ = nullptr;
+  stream->SetWriter(nullptr);
 
   //  8. Set writer.[[ownerWritableStream]] to undefined.
   writer->owner_writable_stream_ = nullptr;
@@ -522,8 +526,7 @@ v8::Local<v8::Promise> WritableStreamDefaultWriter::Write(
   DCHECK(stream);
 
   //  3. Let controller be stream.[[writableStreamController]].
-  WritableStreamDefaultController* controller =
-      stream->writable_stream_controller_;
+  WritableStreamDefaultController* controller = stream->Controller();
 
   auto* isolate = script_state->GetIsolate();
   //  4. Let chunkSize be !
@@ -539,12 +542,12 @@ v8::Local<v8::Promise> WritableStreamDefaultWriter::Write(
   }
 
   //  6. Let state be stream.[[state]].
-  const auto state = stream->state_;
+  const auto state = stream->GetState();
 
   //  7. If state is "errored", return a promise rejected with
   //     stream.[[storedError]].
   if (state == WritableStreamNative::kErrored) {
-    return PromiseReject(script_state, stream->stored_error_.NewLocal(isolate));
+    return PromiseReject(script_state, stream->GetStoredError(isolate));
   }
 
   //  8. If ! WritableStreamCloseQueuedOrInFlight(stream) is true or state is
@@ -565,7 +568,7 @@ v8::Local<v8::Promise> WritableStreamDefaultWriter::Write(
   //  9. If state is "erroring", return a promise rejected with
   //     stream.[[storedError]].
   if (state == WritableStreamNative::kErroring) {
-    return PromiseReject(script_state, stream->stored_error_.NewLocal(isolate));
+    return PromiseReject(script_state, stream->GetStoredError(isolate));
   }
 
   // 10. Assert: state is "writable".

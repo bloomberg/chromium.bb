@@ -73,37 +73,24 @@ class CORE_EXPORT WritableStreamNative : public WritableStream {
   // Inherited methods used internally.
 
   // https://streams.spec.whatwg.org/#is-writable-stream-locked
+  // TODO(ricea): Delete this variant once the V8 extras implementation is
+  // removed.
   base::Optional<bool> IsLocked(ScriptState*, ExceptionState&) const override {
-    return IsLockedInternal(this);
+    return IsLocked(this);
+  }
+
+  // This version can't fail.
+  static bool IsLocked(const WritableStreamNative* stream) {
+    return stream->writer_;
   }
 
   void Serialize(ScriptState*, MessagePort*, ExceptionState&) override {
     // TODO(ricea): Implement this.
   }
 
-  // Accessors for use by other stream classes.
-  State GetState() const { return state_; }
-
-  bool IsClosingOrClosed() const {
-    return CloseQueuedOrInFlight(this) || state_ == kClosed;
-  }
-
-  v8::Local<v8::Value> GetStoredError();
-
-  WritableStreamDefaultController* Controller() {
-    return writable_stream_controller_;
-  }
-
-  void Trace(Visitor*) override;
-
- private:
-  using PromiseQueue = HeapDeque<TraceWrapperMember<StreamPromiseResolver>>;
-
-  class PendingAbortRequest;
-
-  // https://streams.spec.whatwg.org/#acquire-writable-stream-default-writer
-  static WritableStreamDefaultWriter*
-  AcquireDefaultWriter(ScriptState*, WritableStreamNative*, ExceptionState&);
+  //
+  // Methods used by WritableStreamDefaultWriter.
+  //
 
   // https://streams.spec.whatwg.org/#writable-stream-abort
   static v8::Local<v8::Promise> Abort(ScriptState*,
@@ -113,6 +100,13 @@ class CORE_EXPORT WritableStreamNative : public WritableStream {
   // https://streams.spec.whatwg.org/#writable-stream-add-write-request
   static v8::Local<v8::Promise> AddWriteRequest(ScriptState*,
                                                 WritableStreamNative*);
+
+  // https://streams.spec.whatwg.org/#writable-stream-close-queued-or-in-flight
+  static bool CloseQueuedOrInFlight(const WritableStreamNative*);
+
+  //
+  // Methods used by WritableStreamDefaultController.
+  //
 
   // https://streams.spec.whatwg.org/#writable-stream-deal-with-rejection
   static void DealWithRejection(ScriptState*,
@@ -143,34 +137,62 @@ class CORE_EXPORT WritableStreamNative : public WritableStream {
                                            WritableStreamNative*,
                                            v8::Local<v8::Value> error);
 
-  // https://streams.spec.whatwg.org/#writable-stream-close-queued-or-in-flight
-  static bool CloseQueuedOrInFlight(const WritableStreamNative*);
-
-  // https://streams.spec.whatwg.org/#writable-stream-has-operation-marked-in-flight
-  static bool HasOperationMarkedInFlight(const WritableStreamNative*);
-
   // https://streams.spec.whatwg.org/#writable-stream-mark-close-request-in-flight
   static void MarkCloseRequestInFlight(WritableStreamNative*);
 
   // https://streams.spec.whatwg.org/#writable-stream-mark-first-write-request-in-flight
   static void MarkFirstWriteRequestInFlight(WritableStreamNative*);
 
-  // https://streams.spec.whatwg.org/#writable-stream-reject-close-and-closed-promise-if-needed
-  static void RejectCloseAndClosedPromiseIfNeeded(ScriptState*,
-                                                  WritableStreamNative*);
 
   // https://streams.spec.whatwg.org/#writable-stream-update-backpressure
   static void UpdateBackpressure(ScriptState*,
                                  WritableStreamNative*,
                                  bool backpressure);
 
-  // Functions that don't appear in the standard.
+  // Accessors for use by other stream classes.
+  State GetState() const { return state_; }
 
-  // The IsLocked operation can't fail in this implementation. The public
-  // methods delegate to this one.
-  static bool IsLockedInternal(const WritableStreamNative* stream) {
-    return stream->writer_;
+  bool HasBackpressure() const { return has_backpressure_; }
+
+  StreamPromiseResolver* InFlightWriteRequest() const {
+    return in_flight_write_request_;
   }
+
+  bool IsClosingOrClosed() const {
+    return CloseQueuedOrInFlight(this) || state_ == kClosed;
+  }
+
+  v8::Local<v8::Value> GetStoredError(v8::Isolate*) const;
+
+  WritableStreamDefaultController* Controller() const {
+    return writable_stream_controller_;
+  }
+
+  WritableStreamDefaultWriter* Writer() const { return writer_; }
+
+  void SetCloseRequest(StreamPromiseResolver*);
+  void SetController(WritableStreamDefaultController*);
+  void SetWriter(WritableStreamDefaultWriter*);
+
+  void Trace(Visitor*) override;
+
+ private:
+  using PromiseQueue = HeapDeque<TraceWrapperMember<StreamPromiseResolver>>;
+
+  class PendingAbortRequest;
+
+  // https://streams.spec.whatwg.org/#acquire-writable-stream-default-writer
+  static WritableStreamDefaultWriter*
+  AcquireDefaultWriter(ScriptState*, WritableStreamNative*, ExceptionState&);
+
+  // https://streams.spec.whatwg.org/#writable-stream-has-operation-marked-in-flight
+  static bool HasOperationMarkedInFlight(const WritableStreamNative*);
+
+  // https://streams.spec.whatwg.org/#writable-stream-reject-close-and-closed-promise-if-needed
+  static void RejectCloseAndClosedPromiseIfNeeded(ScriptState*,
+                                                  WritableStreamNative*);
+
+  // Functions that don't appear in the standard.
 
   // Rejects all the promises in |queue| with value |e|.
   static void RejectPromises(ScriptState*,
@@ -196,9 +218,6 @@ class CORE_EXPORT WritableStreamNative : public WritableStream {
       writable_stream_controller_;
   TraceWrapperMember<WritableStreamDefaultWriter> writer_;
   PromiseQueue write_requests_;
-
-  friend class WritableStreamDefaultController;
-  friend class WritableStreamDefaultWriter;
 };
 
 }  // namespace blink
