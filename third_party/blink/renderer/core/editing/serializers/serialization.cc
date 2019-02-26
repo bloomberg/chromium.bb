@@ -217,6 +217,13 @@ static HTMLElement* HighestAncestorToWrapMarkup(
   Node* check_ancestor =
       special_common_ancestor ? special_common_ancestor : common_ancestor;
   if (check_ancestor->GetLayoutObject()) {
+    // We want to constrain the ancestor to the enclosing block.
+    // Ex: <b><p></p></b> is an ill-formed html and we don't want to return <b>
+    // as the ancestor because paragraph element is the enclosing block of the
+    // start and end positions provided to this API.
+    constraining_ancestor = constraining_ancestor
+                                ? constraining_ancestor
+                                : EnclosingBlock(check_ancestor);
     HTMLElement* new_special_common_ancestor =
         ToHTMLElement(HighestEnclosingNodeOfType(
             Position::FirstPositionInNode(*check_ancestor),
