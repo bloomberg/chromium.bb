@@ -479,8 +479,12 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
       (chrome::FindBrowserWithWebContents(contents_) != nullptr);
   // TODO(loyso): Reparenting must be implemented in
   // chrome/browser/ui/web_applications/ UI layer as a post-install step.
-  if (reparent_tab)
-    BookmarkAppReparentTab(profile_, contents_, extension, launch_type);
+  if (reparent_tab) {
+    DCHECK(!profile_->IsOffTheRecord());
+    BookmarkAppReparentTab(contents_, extension);
+    if (CanBookmarkAppRevealAppShim())
+      BookmarkAppRevealAppShim(profile_, extension);
+  }
 
   callback_.Run(extension, web_app_info_);
 }

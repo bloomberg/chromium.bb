@@ -131,6 +131,7 @@ class WebAppInstallManagerTest : public WebAppTest {
     web_app_info->description = base::UTF8ToUTF16(description);
     web_app_info->scope = scope;
     web_app_info->theme_color = theme_color;
+    web_app_info->open_as_window = true;
 
     auto data_retriever =
         std::make_unique<TestDataRetriever>(std::move(web_app_info));
@@ -613,7 +614,8 @@ TEST_F(WebAppInstallManagerTest, FinalizerMethodsCalled) {
   InstallWebApp();
 
   EXPECT_EQ(1, install_finalizer_->num_create_os_shortcuts_calls());
-  EXPECT_EQ(1, install_finalizer_->num_reparent_tab_num_calls());
+  EXPECT_EQ(1, install_finalizer_->num_reparent_tab_calls());
+  EXPECT_EQ(1, install_finalizer_->num_reveal_appshim_calls());
 }
 
 TEST_F(WebAppInstallManagerTest, FinalizerMethodsNotCalled) {
@@ -627,7 +629,8 @@ TEST_F(WebAppInstallManagerTest, FinalizerMethodsNotCalled) {
   EXPECT_EQ(InstallResultCode::kFailedUnknownReason, result.code);
 
   EXPECT_EQ(0, install_finalizer_->num_create_os_shortcuts_calls());
-  EXPECT_EQ(0, install_finalizer_->num_reparent_tab_num_calls());
+  EXPECT_EQ(0, install_finalizer_->num_reparent_tab_calls());
+  EXPECT_EQ(0, install_finalizer_->num_reveal_appshim_calls());
 }
 
 // TODO(loyso): Convert more tests from bookmark_app_helper_unittest.cc

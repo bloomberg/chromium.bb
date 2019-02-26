@@ -29,9 +29,10 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
   void FinalizeInstall(const WebApplicationInfo& web_app_info,
                        InstallFinalizedCallback callback) override;
   void CreateOsShortcuts(const AppId& app_id) override;
-  void ReparentTab(const WebApplicationInfo& web_app_info,
-                   const AppId& app_id,
+  void ReparentTab(const AppId& app_id,
                    content::WebContents* web_contents) override;
+  bool CanRevealAppShim() const override;
+  void RevealAppShim(const AppId& app_id) override;
 
  private:
   void OnDataWritten(InstallFinalizedCallback callback,

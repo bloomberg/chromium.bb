@@ -33,9 +33,10 @@ class InstallFinalizer {
                                InstallFinalizedCallback callback) = 0;
 
   virtual void CreateOsShortcuts(const AppId& app_id) = 0;
-  virtual void ReparentTab(const WebApplicationInfo& web_app_info,
-                           const AppId& app_id,
+  virtual void ReparentTab(const AppId& app_id,
                            content::WebContents* web_contents) = 0;
+  virtual bool CanRevealAppShim() const = 0;
+  virtual void RevealAppShim(const AppId& app_id) = 0;
 
   virtual ~InstallFinalizer() = default;
 };

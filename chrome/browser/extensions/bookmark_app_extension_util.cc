@@ -50,25 +50,34 @@ void BookmarkAppCreateOsShortcuts(Profile* profile,
 #endif  // !defined(OS_CHROMEOS)
 }
 
-void BookmarkAppReparentTab(Profile* profile,
-                            content::WebContents* contents,
-                            const Extension* extension,
-                            LaunchType launch_type) {
-#if defined(OS_MACOSX)
+void BookmarkAppReparentTab(content::WebContents* contents,
+                            const Extension* extension) {
+#if !defined(OS_MACOSX)
+  // Reparent the tab into an app window immediately when opening as a window.
   // TODO(https://crbug.com/915571): Reparent the tab on Mac just like the
   // other platforms.
+  if (base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing))
+    ReparentWebContentsIntoAppBrowser(contents, extension);
+#endif  // !defined(OS_MACOSX)
+}
+
+bool CanBookmarkAppRevealAppShim() {
+#if defined(OS_MACOSX)
+  return true;
+#else   // defined(OS_MACOSX)
+  return false;
+#endif  // !defined(OS_MACOSX)
+}
+
+void BookmarkAppRevealAppShim(Profile* profile, const Extension* extension) {
+  DCHECK(CanBookmarkAppRevealAppShim());
+#if defined(OS_MACOSX)
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           ::switches::kDisableHostedAppShimCreation)) {
     Profile* current_profile = profile->GetOriginalProfile();
     web_app::RevealAppShimInFinderForApp(current_profile, extension);
   }
-#else
-  // Reparent the tab into an app window immediately when opening as a window.
-  if (base::FeatureList::IsEnabled(::features::kDesktopPWAWindowing) &&
-      launch_type == LAUNCH_TYPE_WINDOW && !profile->IsOffTheRecord()) {
-    ReparentWebContentsIntoAppBrowser(contents, extension);
-  }
-#endif  // !defined(OS_MACOSX)
+#endif  // defined(OS_MACOSX)
 }
 
 }  // namespace extensions

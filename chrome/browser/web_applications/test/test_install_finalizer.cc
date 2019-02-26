@@ -44,10 +44,17 @@ void TestInstallFinalizer::CreateOsShortcuts(const AppId& app_id) {
   ++num_create_os_shortcuts_calls_;
 }
 
-void TestInstallFinalizer::ReparentTab(const WebApplicationInfo& web_app_info,
-                                       const AppId& app_id,
+void TestInstallFinalizer::ReparentTab(const AppId& app_id,
                                        content::WebContents* web_contents) {
-  ++num_reparent_tab_num_calls_;
+  ++num_reparent_tab_calls_;
+}
+
+bool TestInstallFinalizer::CanRevealAppShim() const {
+  return true;
+}
+
+void TestInstallFinalizer::RevealAppShim(const AppId& app_id) {
+  ++num_reveal_appshim_calls_;
 }
 
 void TestInstallFinalizer::SetNextFinalizeInstallResult(
