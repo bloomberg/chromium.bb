@@ -223,7 +223,7 @@ AtomicString PerformanceNavigationTiming::type() const {
   return "navigate";
 }
 
-unsigned short PerformanceNavigationTiming::redirectCount() const {
+uint16_t PerformanceNavigationTiming::redirectCount() const {
   bool allow_redirect_details = GetAllowRedirectDetails();
   DocumentLoadTiming* timing = GetDocumentLoadTiming();
   if (!allow_redirect_details || !timing)

@@ -81,7 +81,7 @@ double WebPerformance::RedirectEnd() const {
   return MillisecondsToSeconds(private_->timing()->redirectEnd());
 }
 
-unsigned short WebPerformance::RedirectCount() const {
+uint16_t WebPerformance::RedirectCount() const {
   return private_->navigation()->redirectCount();
 }
 
