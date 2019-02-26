@@ -20,7 +20,9 @@ import android.preference.PreferenceGroup;
 import android.provider.Settings;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.content.res.AppCompatResources;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -150,6 +152,12 @@ public class SyncAndServicesPreferences extends PreferenceFragment
 
         getActivity().setTitle(R.string.prefs_sync_and_services);
         setHasOptionsMenu(true);
+        if (mIsFromSigninScreen) {
+            ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+            assert actionBar != null;
+            actionBar.setHomeActionContentDescription(
+                    R.string.prefs_sync_and_services_content_description);
+        }
 
         PreferenceUtils.addPreferencesFromResource(this, R.xml.sync_and_services_preferences);
 
@@ -282,6 +290,11 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         bottomBarShadow.setVisibility(View.GONE);
         View bottomBarButtonContainer = getView().findViewById(R.id.bottom_bar_button_container);
         bottomBarButtonContainer.setVisibility(View.GONE);
+
+        ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+        assert actionBar != null;
+        // Content description was overridden in onCreate, reset it to the standard one.
+        actionBar.setHomeActionContentDescription(null);
     }
 
     @Override
