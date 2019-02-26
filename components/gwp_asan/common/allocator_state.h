@@ -67,7 +67,7 @@ class AllocatorState {
     struct AllocationInfo {
       // (De)allocation thread id or base::kInvalidThreadId if no (de)allocation
       // occurred.
-      base::PlatformThreadId tid = base::kInvalidThreadId;
+      uint64_t tid = base::kInvalidThreadId;
       // Packed stack trace.
       uint8_t packed_trace[kMaxPackedTraceLength];
       // Length used to encode the packed stack trace.
