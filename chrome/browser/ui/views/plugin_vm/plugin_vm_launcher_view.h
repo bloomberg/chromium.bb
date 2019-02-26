@@ -10,6 +10,7 @@
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 namespace views {
+class ImageView;
 class Label;
 class ProgressBar;
 }  // namespace views
@@ -28,7 +29,7 @@ class PluginVmLauncherView : public views::BubbleDialogDelegateView,
   // views::BubbleDialogDelegateView implementation.
   int GetDialogButtons() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
-  base::string16 GetWindowTitle() const override;
+  bool ShouldShowWindowTitle() const override;
   bool Accept() override;
   bool Cancel() override;
   gfx::Size CalculatePreferredSize() const override;
@@ -42,7 +43,9 @@ class PluginVmLauncherView : public views::BubbleDialogDelegateView,
   void OnUnzipped() override;
   void OnUnzippingFailed() override;
 
+  // Public for testing purposes.
   plugin_vm::PluginVmImageManager* GetPluginVmImageManagerForTesting();
+  base::string16 GetBigMessage();
 
  protected:
   // views::BubbleDialogDelegateView implementation.
@@ -52,6 +55,9 @@ class PluginVmLauncherView : public views::BubbleDialogDelegateView,
   ~PluginVmLauncherView() override;
 
   base::string16 GetMessage() const;
+  void SetBigMessageLabel();
+  void SetMessageLabel();
+  void SetBigImage();
   void OnStateUpdated();
 
   void StartPluginVmImageDownload();
@@ -65,9 +71,11 @@ class PluginVmLauncherView : public views::BubbleDialogDelegateView,
   };
 
   State state_ = State::START_DOWNLOADING;
+  plugin_vm::PluginVmImageManager* plugin_vm_image_manager_ = nullptr;
+  views::Label* big_message_label_ = nullptr;
   views::Label* message_label_ = nullptr;
   views::ProgressBar* progress_bar_ = nullptr;
-  plugin_vm::PluginVmImageManager* plugin_vm_image_manager_ = nullptr;
+  views::ImageView* big_image_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(PluginVmLauncherView);
 };

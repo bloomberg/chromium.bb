@@ -34,7 +34,7 @@ class PluginVmLauncherViewBrowserTest : public DialogBrowserTest {
   void CheckSetupIsInProgress() {
     EXPECT_TRUE(HasCancelButton());
     EXPECT_FALSE(HasAcceptButton());
-    EXPECT_EQ(view_->GetWindowTitle(),
+    EXPECT_EQ(view_->GetBigMessage(),
               l10n_util::GetStringUTF16(
                   IDS_PLUGIN_VM_LAUNCHER_ENVIRONMENT_SETTING_TITLE));
   }
@@ -44,7 +44,7 @@ class PluginVmLauncherViewBrowserTest : public DialogBrowserTest {
     EXPECT_TRUE(HasCancelButton());
     EXPECT_EQ(view_->GetDialogButtonLabel(ui::DIALOG_BUTTON_OK),
               l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_RETRY_BUTTON));
-    EXPECT_EQ(view_->GetWindowTitle(),
+    EXPECT_EQ(view_->GetBigMessage(),
               l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_ERROR_TITLE));
   }
 
@@ -53,7 +53,7 @@ class PluginVmLauncherViewBrowserTest : public DialogBrowserTest {
     EXPECT_FALSE(HasCancelButton());
     EXPECT_EQ(view_->GetDialogButtonLabel(ui::DIALOG_BUTTON_OK),
               l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_LAUNCH_BUTTON));
-    EXPECT_EQ(view_->GetWindowTitle(),
+    EXPECT_EQ(view_->GetBigMessage(),
               l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_FINISHED_TITLE));
   }
 
