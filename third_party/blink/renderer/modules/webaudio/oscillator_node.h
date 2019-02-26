@@ -106,10 +106,8 @@ class OscillatorHandler final : public AudioScheduledSourceHandler {
   AudioFloatArray phase_increments_;
   AudioFloatArray detune_values_;
 
-  // This Persistent doesn't make a reference cycle including the owner
-  // OscillatorNode. It is cross-thread, as it will be accessed by the audio
-  // thread.
-  CrossThreadPersistent<PeriodicWave> periodic_wave_;
+  // PeriodicWave is held alive by OscillatorNode.
+  CrossThreadWeakPersistent<PeriodicWave> periodic_wave_;
 };
 
 class OscillatorNode final : public AudioScheduledSourceNode {
@@ -140,6 +138,9 @@ class OscillatorNode final : public AudioScheduledSourceNode {
  private:
   Member<AudioParam> frequency_;
   Member<AudioParam> detune_;
+  // This PeriodicWave is held alive here to allow referencing it from
+  // OscillatorHandler via weak reference.
+  Member<PeriodicWave> periodic_wave_;
 };
 
 }  // namespace blink

@@ -24,6 +24,7 @@
  */
 
 #include <algorithm>
+#include <limits>
 
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
 #include "third_party/blink/renderer/modules/webaudio/oscillator_node.h"
@@ -525,7 +526,8 @@ OscillatorNode::OscillatorNode(BaseAudioContext& context,
                              AudioParamHandler::AutomationRate::kAudio,
                              AudioParamHandler::AutomationRateMode::kVariable,
                              -1200 * log2f(std::numeric_limits<float>::max()),
-                             1200 * log2f(std::numeric_limits<float>::max()))) {
+                             1200 * log2f(std::numeric_limits<float>::max()))),
+      periodic_wave_(wave_table) {
   SetHandler(OscillatorHandler::Create(
       *this, context.sampleRate(), oscillator_type, wave_table,
       frequency_->Handler(), detune_->Handler()));
@@ -568,6 +570,7 @@ OscillatorNode* OscillatorNode::Create(BaseAudioContext* context,
 void OscillatorNode::Trace(blink::Visitor* visitor) {
   visitor->Trace(frequency_);
   visitor->Trace(detune_);
+  visitor->Trace(periodic_wave_);
   AudioScheduledSourceNode::Trace(visitor);
 }
 
@@ -593,6 +596,7 @@ AudioParam* OscillatorNode::detune() {
 }
 
 void OscillatorNode::setPeriodicWave(PeriodicWave* wave) {
+  periodic_wave_ = wave;
   GetOscillatorHandler().SetPeriodicWave(wave);
 }
 
