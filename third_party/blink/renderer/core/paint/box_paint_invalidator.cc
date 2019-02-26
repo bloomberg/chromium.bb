@@ -30,8 +30,8 @@ static bool ShouldFullyInvalidateFillLayersOnWidthChange(
     return true;
 
   // The layer properties checked below apply only when there is a valid image.
-  StyleImage* img = layer.GetImage();
-  if (!img || !img->CanRender())
+  const StyleImage* image = layer.GetImage();
+  if (!image || !image->CanRender())
     return false;
 
   if (layer.RepeatX() != EFillRepeat::kRepeatFill &&
@@ -58,7 +58,7 @@ static bool ShouldFullyInvalidateFillLayersOnWidthChange(
   if (width.IsPercentOrCalc() && !width.IsZero())
     return true;
 
-  if (width.IsAuto() && img->IsGeneratedImage())
+  if (width.IsAuto() && !image->HasIntrinsicSize())
     return true;
 
   return false;
@@ -72,8 +72,8 @@ static bool ShouldFullyInvalidateFillLayersOnHeightChange(
     return true;
 
   // The layer properties checked below apply only when there is a valid image.
-  StyleImage* img = layer.GetImage();
-  if (!img || !img->CanRender())
+  const StyleImage* image = layer.GetImage();
+  if (!image || !image->CanRender())
     return false;
 
   if (layer.RepeatY() != EFillRepeat::kRepeatFill &&
@@ -100,7 +100,7 @@ static bool ShouldFullyInvalidateFillLayersOnHeightChange(
   if (height.IsPercentOrCalc() && !height.IsZero())
     return true;
 
-  if (height.IsAuto() && img->IsGeneratedImage())
+  if (height.IsAuto() && !image->HasIntrinsicSize())
     return true;
 
   return false;
