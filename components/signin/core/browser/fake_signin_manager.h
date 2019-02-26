@@ -33,13 +33,6 @@ class FakeSigninManager : public SigninManager {
                     signin::AccountConsistencyMethod account_consistency);
 
   ~FakeSigninManager() override;
-
- protected:
-  void OnSignoutDecisionReached(
-      signin_metrics::ProfileSignout signout_source_metric,
-      signin_metrics::SignoutDelete signout_delete_metric,
-      RemoveAccountsOption remove_option,
-      SigninClient::SignoutDecision signout_decision) override;
 };
 
 #endif  // !defined (OS_CHROMEOS)
