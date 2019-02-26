@@ -50,6 +50,7 @@
 
 using extensions::Extension;
 using extensions::api::file_manager_private::Verb;
+using extensions::app_file_handler_util::FindFileHandlerMatchesForEntries;
 using extensions::app_file_handler_util::FindFileHandlersForEntries;
 using storage::FileSystemURL;
 
@@ -221,13 +222,15 @@ FullTaskDescriptor::FullTaskDescriptor(const TaskDescriptor& task_descriptor,
                                        const Verb task_verb,
                                        const GURL& icon_url,
                                        bool is_default,
-                                       bool is_generic_file_handler)
+                                       bool is_generic_file_handler,
+                                       bool is_file_extension_match)
     : task_descriptor_(task_descriptor),
       task_title_(task_title),
       task_verb_(task_verb),
       icon_url_(icon_url),
       is_default_(is_default),
-      is_generic_file_handler_(is_generic_file_handler) {}
+      is_generic_file_handler_(is_generic_file_handler),
+      is_file_extension_match_(is_file_extension_match) {}
 
 FullTaskDescriptor::~FullTaskDescriptor() = default;
 
@@ -460,33 +463,35 @@ void FindFileHandlerTasks(Profile* profile,
         !extensions::util::IsIncognitoEnabled(extension->id(), profile))
       continue;
 
-    typedef std::vector<const extensions::FileHandlerInfo*> FileHandlerList;
-    FileHandlerList file_handlers =
-        FindFileHandlersForEntries(*extension, entries);
+    typedef std::vector<extensions::FileHandlerMatch> FileHandlerMatchList;
+    FileHandlerMatchList file_handlers =
+        FindFileHandlerMatchesForEntries(*extension, entries);
     if (file_handlers.empty())
       continue;
 
     // A map which has as key a handler verb, and as value a pair of the
     // handler with which to open the given entries and a boolean marking
     // if the handler is a good match.
-    std::map<std::string, std::pair<const extensions::FileHandlerInfo*, bool>>
+    std::map<std::string, std::pair<const extensions::FileHandlerMatch*, bool>>
         handlers_for_entries;
     // Show the first good matching handler of each verb supporting the given
     // entries that corresponds to the app. If there doesn't exist such handler,
     // show the first matching handler of the verb.
-    for (const extensions::FileHandlerInfo* handler : file_handlers) {
+    for (const auto& handler_match : file_handlers) {
+      const extensions::FileHandlerInfo* handler = handler_match.handler;
       bool good_match = IsGoodMatchFileHandler(*handler, entries);
       auto it = handlers_for_entries.find(handler->verb);
       if (it == handlers_for_entries.end() ||
           (!it->second.second /* existing handler not a good match */ &&
            good_match)) {
         handlers_for_entries[handler->verb] =
-            std::make_pair(handler, good_match);
+            std::make_pair(&handler_match, good_match);
       }
     }
 
     for (const auto& entry : handlers_for_entries) {
-      const extensions::FileHandlerInfo* handler = entry.second.first;
+      const extensions::FileHandlerMatch* match = entry.second.first;
+      const extensions::FileHandlerInfo* handler = match->handler;
       std::string task_id = file_tasks::MakeTaskID(
           extension->id(), file_tasks::TASK_TYPE_FILE_HANDLER, handler->id);
 
@@ -512,12 +517,16 @@ void FindFileHandlerTasks(Profile* profile,
         DCHECK(handler->verb == extensions::file_handler_verbs::kOpenWith);
         verb = Verb::VERB_OPEN_WITH;
       }
+      // If the handler was matched purely on the file name extension then
+      // the manifest declared its 'file_handler' to match. Used for fallback
+      // selection of the handler when we don't have a default handler set
+      const bool is_file_extension_match = match->matched_file_extension;
 
       result_list->push_back(FullTaskDescriptor(
           TaskDescriptor(extension->id(), file_tasks::TASK_TYPE_FILE_HANDLER,
                          handler->id),
           extension->name(), verb, best_icon, false /* is_default */,
-          is_generic_file_handler));
+          is_generic_file_handler, is_file_extension_match));
     }
   }
 }
@@ -556,7 +565,8 @@ void FindFileBrowserHandlerTasks(
         TaskDescriptor(extension_id, file_tasks::TASK_TYPE_FILE_BROWSER_HANDLER,
                        handler->id()),
         handler->title(), Verb::VERB_NONE /* no verb for FileBrowserHandler */,
-        icon_url, false /* is_default */, false /* is_generic_file_handler */));
+        icon_url, false /* is_default */, false /* is_generic_file_handler */,
+        false /* is_file_extension_match */));
   }
 }
 
@@ -620,6 +630,18 @@ void ChooseAndSetDefaultTask(const PrefService& pref_service,
     const std::string task_id = TaskDescriptorToId(task->task_descriptor());
     if (base::ContainsKey(default_task_ids, task_id)) {
       task->set_is_default(true);
+      return;
+    }
+  }
+
+  // No default task, check for an explicit file extension match (without
+  // MIME match) in the extension manifest and pick that over the fallback
+  // handlers below (see crbug.com/803930)
+  for (size_t i = 0; i < tasks->size(); ++i) {
+    FullTaskDescriptor& task = (*tasks)[i];
+    if (task.is_file_extension_match() && !task.is_generic_file_handler() &&
+        !IsFallbackFileHandler(task)) {
+      task.set_is_default(true);
       return;
     }
   }

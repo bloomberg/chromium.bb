@@ -158,7 +158,8 @@ class FullTaskDescriptor {
       const extensions::api::file_manager_private::Verb task_verb,
       const GURL& icon_url,
       bool is_default,
-      bool is_generic_file_handler);
+      bool is_generic_file_handler,
+      bool is_file_extension_match);
 
   ~FullTaskDescriptor();
 
@@ -186,6 +187,13 @@ class FullTaskDescriptor {
   void set_is_generic_file_handler(bool is_generic_file_handler) {
     is_generic_file_handler_ = is_generic_file_handler;
   }
+  // True if this task is from a file extension only. e.g. an extension/app
+  // that declares no MIME types in its manifest, but matches with the
+  // file_handlers "extensions" instead.
+  bool is_file_extension_match() const { return is_file_extension_match_; }
+  void set_is_file_extension_match(bool is_file_extension_match) {
+    is_file_extension_match_ = is_file_extension_match;
+  }
 
  private:
   TaskDescriptor task_descriptor_;
@@ -194,6 +202,7 @@ class FullTaskDescriptor {
   GURL icon_url_;
   bool is_default_;
   bool is_generic_file_handler_;
+  bool is_file_extension_match_;
 };
 
 // Update the default file handler for the given sets of suffixes and MIME

@@ -77,7 +77,8 @@ void OnAppIconsLoaded(Profile* profile,
         registry_service->GetRegistration(app_ids[i])->Name(),
         extensions::api::file_manager_private::Verb::VERB_OPEN_WITH,
         GeneratePNGDataUrl(icons[i].GetRepresentation(scale).GetBitmap()),
-        false /* is_default */, false /* is_generic */));
+        false /* is_default */, false /* is_generic */,
+        false /* is_file_extension_match */));
   }
 
   std::move(completion_closure).Run();

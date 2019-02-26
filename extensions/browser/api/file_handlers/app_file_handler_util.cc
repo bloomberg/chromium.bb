@@ -219,29 +219,65 @@ const FileHandlerInfo* FileHandlerForId(const Extension& app,
   return NULL;
 }
 
+std::vector<FileHandlerMatch> FindFileHandlerMatchesForEntries(
+    const Extension& app,
+    const std::vector<EntryInfo>& entries) {
+  std::vector<FileHandlerMatch> matches;
+  if (entries.empty())
+    return matches;
+
+  // Look for file handlers which can handle all the MIME types
+  // or file name extensions specified.
+  const FileHandlersInfo* file_handlers = FileHandlers::GetFileHandlers(&app);
+  if (!file_handlers)
+    return matches;
+
+  for (const FileHandlerInfo& handler : *file_handlers) {
+    bool handles_all_types = true;
+    FileHandlerMatch match;
+
+    // Lifetime of the handler should be the same as usage of the matches
+    // so the pointer shouldn't end up stale.
+    match.handler = &handler;
+    match.matched_mime = match.matched_file_extension = false;
+    for (const auto& entry : entries) {
+      if (entry.is_directory) {
+        if (!handler.include_directories) {
+          handles_all_types = false;
+          break;
+        }
+      } else {
+        match.matched_mime =
+            FileHandlerCanHandleFileWithMimeType(handler, entry.mime_type);
+        if (!match.matched_mime) {
+          match.matched_file_extension =
+              FileHandlerCanHandleFileWithExtension(handler, entry.path);
+          if (!match.matched_file_extension) {
+            handles_all_types = false;
+            break;
+          }
+        }
+      }
+    }
+    if (handles_all_types) {
+      matches.push_back(match);
+    }
+  }
+  return matches;
+}
+
 std::vector<const FileHandlerInfo*> FindFileHandlersForEntries(
     const Extension& app,
     const std::vector<EntryInfo> entries) {
   std::vector<const FileHandlerInfo*> handlers;
+
   if (entries.empty())
     return handlers;
-
-  // Look for file handlers which can handle all the MIME types specified.
-  const FileHandlersInfo* file_handlers = FileHandlers::GetFileHandlers(&app);
-  if (!file_handlers)
-    return handlers;
-
-  for (auto data = file_handlers->cbegin(); data != file_handlers->cend();
-       ++data) {
-    bool handles_all_types = true;
-    for (auto it = entries.cbegin(); it != entries.cend(); ++it) {
-      if (!FileHandlerCanHandleEntry(*data, *it)) {
-        handles_all_types = false;
-        break;
-      }
-    }
-    if (handles_all_types)
-      handlers.push_back(&*data);
+  // Get the matching handlers and extract the handler info from them.
+  std::vector<FileHandlerMatch> matches =
+      FindFileHandlerMatchesForEntries(app, entries);
+  for (const auto& match : matches) {
+    handlers.push_back(match.handler);
   }
   return handlers;
 }
