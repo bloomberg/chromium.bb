@@ -71,7 +71,7 @@ class CWVSyncControllerTest : public PlatformTest {
           initWithSyncService:profile_sync_service_.get()
               identityManager:identity_test_env_.identity_manager()
         signinErrorController:&signin_error_controller_];
-  };
+  }
 
   ~CWVSyncControllerTest() override {
     EXPECT_CALL(*profile_sync_service_, RemoveObserver(_));

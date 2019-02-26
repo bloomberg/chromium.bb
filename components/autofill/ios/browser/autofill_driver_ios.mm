@@ -104,7 +104,7 @@ void AutofillDriverIOS::SendFormDataToRenderer(
 void AutofillDriverIOS::PropagateAutofillPredictions(
     const std::vector<autofill::FormStructure*>& forms) {
   autofill_manager_.client()->PropagateAutofillPredictions(nullptr, forms);
-};
+}
 
 void AutofillDriverIOS::SendAutofillTypePredictionsToRenderer(
     const std::vector<FormStructure*>& forms) {

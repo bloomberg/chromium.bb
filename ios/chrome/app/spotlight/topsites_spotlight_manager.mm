@@ -111,12 +111,12 @@ class SpotlightTopSitesBridge : public history::TopSitesObserver {
                           history::TopSites* top_sites)
       : owner_(owner), top_sites_(top_sites) {
     top_sites->AddObserver(this);
-  };
+  }
 
   ~SpotlightTopSitesBridge() override {
     top_sites_->RemoveObserver(this);
     top_sites_ = nullptr;
-  };
+  }
 
   void TopSitesLoaded(history::TopSites* top_sites) override {}
 

@@ -31,7 +31,7 @@ class OmniboxTextFieldTest : public PlatformTest {
     CGRect rect = CGRectMake(0, 0, 100, 20);
     textfield_ = [[OmniboxTextFieldIOS alloc] initWithFrame:rect];
     [[[UIApplication sharedApplication] keyWindow] addSubview:textfield_];
-  };
+  }
 
   void TearDown() override { [textfield_ removeFromSuperview]; }
 

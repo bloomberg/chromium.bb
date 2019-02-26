@@ -44,7 +44,6 @@ class IOSImageDecoderImpl : public ImageDecoder {
       base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
-  ;
 
   // The WeakPtrFactory is used to cancel callbacks if ImageFetcher is
   // destroyed during WebP decoding.

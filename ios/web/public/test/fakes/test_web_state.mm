@@ -52,7 +52,7 @@ TestWebState::~TestWebState() {
     observer.WebStateDestroyed();
   for (auto& observer : policy_deciders_)
     observer.ResetWebState();
-};
+}
 
 WebStateDelegate* TestWebState::GetDelegate() {
   return nil;

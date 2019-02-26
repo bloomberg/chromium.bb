@@ -16,10 +16,10 @@
 WebOmniboxEditControllerImpl::WebOmniboxEditControllerImpl(
     id<LocationBarDelegate> delegate)
     : delegate_(delegate){
-          // TODO(crbug.com/818645): add security icon and its a11y labels
-      };
+  // TODO(crbug.com/818645): add security icon and its a11y labels
+}
 
-WebOmniboxEditControllerImpl::~WebOmniboxEditControllerImpl(){};
+WebOmniboxEditControllerImpl::~WebOmniboxEditControllerImpl() {}
 
 web::WebState* WebOmniboxEditControllerImpl::GetWebState() {
   return [delegate_ webState];

@@ -73,7 +73,7 @@ class ProfileOAuth2TokenServiceIOSDelegateTest
   void OnGetTokenFailure(const GoogleServiceAuthError& error) override {
     ++access_token_failure_;
     last_access_token_error_ = error;
-  };
+  }
 
   // OAuth2TokenService::Observer implementation.
   void OnRefreshTokenAvailable(const std::string& account_id) override {

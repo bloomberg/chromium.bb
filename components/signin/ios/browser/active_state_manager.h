@@ -51,7 +51,7 @@ class ActiveStateManager {
   virtual void RemoveObserver(Observer* observer) = 0;
 
  protected:
-  virtual ~ActiveStateManager(){};
+  virtual ~ActiveStateManager() {}
 };
 
 #endif  // COMPONENTS_SIGNIN_IOS_BROWSER_ACTIVE_STATE_MANAGER_H_

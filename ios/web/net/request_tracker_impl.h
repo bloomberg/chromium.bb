@@ -39,15 +39,15 @@ class CertificatePolicyCache;
 // Structure to capture the current state of a page.
 struct PageCounts {
  public:
-  PageCounts() : finished(0),
-                 finished_bytes(0),
-                 unfinished(0),
-                 unfinished_no_estimate(0),
-                 unfinished_no_estimate_bytes_done(0),
-                 unfinished_estimated_bytes_left(0),
-                 unfinished_estimate_bytes_done(0),
-                 largest_byte_size_known(0) {
-  };
+  PageCounts()
+      : finished(0),
+        finished_bytes(0),
+        unfinished(0),
+        unfinished_no_estimate(0),
+        unfinished_no_estimate_bytes_done(0),
+        unfinished_estimated_bytes_left(0),
+        unfinished_estimate_bytes_done(0),
+        largest_byte_size_known(0) {}
 
   // Count of finished requests.
   uint64_t finished;

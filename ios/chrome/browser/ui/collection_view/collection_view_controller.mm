@@ -207,7 +207,7 @@
   [item configureCell:cell];
   cell.accessibilityTraits |= traits;
   return cell;
-};
+}
 
 #pragma mark - UICollectionViewDelegateFlowLayout
 

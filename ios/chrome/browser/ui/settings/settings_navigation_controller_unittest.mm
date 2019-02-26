@@ -64,7 +64,7 @@ class SettingsNavigationControllerTest : public PlatformTest {
     initialValueForSpdyProxyEnabled_ =
         [[defaults stringForKey:kSpdyProxyEnabled] copy];
     [defaults setObject:@"Disabled" forKey:kSpdyProxyEnabled];
-  };
+  }
 
   ~SettingsNavigationControllerTest() override {
     if (initialValueForSpdyProxyEnabled_) {

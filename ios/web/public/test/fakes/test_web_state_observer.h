@@ -69,11 +69,11 @@ class TestWebStateObserver : public WebStateObserver {
   // Arguments passed to |RenderProcessGone|.
   web::TestRenderProcessGoneInfo* render_process_gone_info() {
     return render_process_gone_info_.get();
-  };
+  }
   // Arguments passed to |WebStateDestroyed|.
   web::TestWebStateDestroyedInfo* web_state_destroyed_info() {
     return web_state_destroyed_info_.get();
-  };
+  }
   // Arguments passed to |DidStartLoading|.
   web::TestStopLoadingInfo* stop_loading_info() {
     return stop_loading_info_.get();

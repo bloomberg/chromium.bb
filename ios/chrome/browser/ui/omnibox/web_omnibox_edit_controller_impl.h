@@ -22,7 +22,7 @@ class WebOmniboxEditControllerImpl : public WebOmniboxEditController {
 
   void SetURLLoader(id<LocationBarURLLoader> URLLoader) {
     URLLoader_ = URLLoader;
-  };
+  }
 
   // WebOmniboxEditController methods.
   web::WebState* GetWebState() override;

@@ -103,7 +103,7 @@ struct TrackerCounts {
     is_subrequest =
         tracked_request->site_for_cookies().is_valid() &&
         tracked_request->url() != tracked_request->site_for_cookies();
-  };
+  }
 
   // The resource url.
   const GURL url;

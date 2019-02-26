@@ -21,13 +21,13 @@ constexpr LayoutSides operator|(LayoutSides lhs, LayoutSides rhs) {
   return static_cast<LayoutSides>(
       static_cast<std::underlying_type<LayoutSides>::type>(lhs) |
       static_cast<std::underlying_type<LayoutSides>::type>(rhs));
-};
+}
 
 constexpr LayoutSides operator&(LayoutSides lhs, LayoutSides rhs) {
   return static_cast<LayoutSides>(
       static_cast<std::underlying_type<LayoutSides>::type>(lhs) &
       static_cast<std::underlying_type<LayoutSides>::type>(rhs));
-};
+}
 
 // Returns whether the |flag| is set in |mask|.
 constexpr bool IsLayoutSidesMaskSet(LayoutSides mask, LayoutSides flag) {

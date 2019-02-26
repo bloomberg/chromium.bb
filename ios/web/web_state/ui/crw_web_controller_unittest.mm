@@ -142,7 +142,7 @@ class ProgrammaticWebTestWithWebController : public WebTestWithWebController,
   INSTANTIATE_TEST_SUITE_P(                              \
       Programmatic##cls, cls,                            \
       ::testing::Values(NavigationManagerChoice::LEGACY, \
-                        NavigationManagerChoice::WK_BASED));
+                        NavigationManagerChoice::WK_BASED))
 
 }  // namespace
 
@@ -375,7 +375,7 @@ TEST_P(JavaScriptDialogPresenterTest, Alert) {
   EXPECT_EQ(JAVASCRIPT_DIALOG_TYPE_ALERT, dialog.java_script_dialog_type);
   EXPECT_NSEQ(@"test", dialog.message_text);
   EXPECT_FALSE(dialog.default_prompt_text);
-};
+}
 
 // Tests that window.confirm dialog is shown and its result is true.
 TEST_P(JavaScriptDialogPresenterTest, ConfirmWithTrue) {
@@ -1078,7 +1078,7 @@ TEST_P(CRWWebControllerTitleTest, TitleChange) {
   ExecuteJavaScript(@"window.document.title = 'Title2';");
   EXPECT_EQ("Title2", base::UTF16ToUTF8(web_state()->GetTitle()));
   EXPECT_GE(observer.title_change_count(), 3);
-};
+}
 
 // Tests that fragment change navigations use title from the previous page.
 TEST_P(CRWWebControllerTitleTest, FragmentChangeNavigationsUsePreviousTitle) {
@@ -1126,7 +1126,7 @@ TEST_P(ScriptExecutionTest, UserScriptOnHttpPage) {
   EXPECT_FALSE(error);
 
   EXPECT_NSEQ(@0, ExecuteJavaScript(@"window.w"));
-};
+}
 
 // Tests evaluating user script on app-specific page. Pages with app-specific
 // URLs have elevated privileges and JavaScript execution should not be allowed
@@ -1150,7 +1150,7 @@ TEST_P(ScriptExecutionTest, UserScriptOnAppSpecificPage) {
   EXPECT_EQ(JS_EVALUATION_ERROR_CODE_NO_WEB_VIEW, error.code);
 
   EXPECT_FALSE(ExecuteJavaScript(@"window.w"));
-};
+}
 
 INSTANTIATE_TEST_SUITES(ScriptExecutionTest);
 
@@ -1191,7 +1191,7 @@ TEST_P(CRWWebControllerWebProcessTest, Crash) {
   EXPECT_TRUE([web_controller() isWebProcessCrashed]);
   EXPECT_TRUE(web_state()->IsCrashed());
   EXPECT_TRUE(web_state()->IsEvicted());
-};
+}
 
 // Tests that WebState is considered as evicted but not crashed when calling
 // SetWebUsageEnabled(false).
@@ -1206,7 +1206,7 @@ TEST_P(CRWWebControllerWebProcessTest, Eviction) {
   EXPECT_FALSE([web_controller() isWebProcessCrashed]);
   EXPECT_FALSE(web_state()->IsCrashed());
   EXPECT_TRUE(web_state()->IsEvicted());
-};
+}
 
 INSTANTIATE_TEST_SUITES(CRWWebControllerWebProcessTest);
 

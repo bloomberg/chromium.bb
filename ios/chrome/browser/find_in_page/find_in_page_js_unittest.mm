@@ -131,7 +131,7 @@ TEST_F(FindInPageJsTest, IncrementIndex) {
   // Increment index one more time and it should wrap back to zero.
   ExecuteJavaScript(kJavaScriptIncrementIndex);
   AssertJavaScriptValue(kJavaScriptIndex, 0);
-};
+}
 
 // Performs a search, then calls |decrementIndex| to loop through the
 // matches, ensuring that when the beginning is reached the index wraps back to
@@ -149,7 +149,7 @@ TEST_F(FindInPageJsTest, DecrementIndex) {
     ExecuteJavaScript(kJavaScriptDecrementIndex);
     AssertJavaScriptValue(kJavaScriptIndex, i);
   }
-};
+}
 
 // Performs a search, then calls |goNext| to loop through the visible matches,
 // ensuring that hidden matches are skipped and that when the end is reached the
@@ -169,7 +169,7 @@ TEST_F(FindInPageJsTest, GoNext) {
   // Calling |goNext| again wraps around to the first visible foo.
   ExecuteJavaScript(kJavaScriptGoNext);
   AssertJavaScriptValue(kJavaScriptIndex, 1);
-};
+}
 
 // Performs a search, then calls |goPrev| to loop through the visible matches,
 // ensuring that hidden matches are skipped and that when the beginning is
@@ -185,7 +185,7 @@ TEST_F(FindInPageJsTest, GoPrev) {
   // Since every other 'foo' is hidden, the prior visible 'foo' is at index 3.
   ExecuteJavaScript(kJavaScriptGoPrev);
   AssertJavaScriptValue(kJavaScriptIndex, 3);
-};
+}
 
 TEST_F(FindInPageJsTest, NoneVisible) {
   LoadHtml(kHtmlWithNoVisibleFoos);

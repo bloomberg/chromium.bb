@@ -51,7 +51,7 @@ class IOSChromeUpdatePasswordInfoBarDelegate
 
   void set_selected_account(base::string16 account) {
     selected_account_ = account;
-  };
+  }
 
  private:
   IOSChromeUpdatePasswordInfoBarDelegate(

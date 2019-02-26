@@ -36,13 +36,13 @@ class FindInPageControllerTest : public ChromeWebTest {
     find_in_page_controller_ =
         [[FindInPageController alloc] initWithWebState:web_state()];
     ukm::InitializeSourceUrlRecorderForWebState(web_state());
-  };
+  }
 
   void TearDown() override {
     [find_in_page_controller_ detachFromWebState];
     test_ukm_recorder_.Purge();
     ChromeWebTest::TearDown();
-  };
+  }
 
   FindInPageController* find_in_page_controller_ = nil;
   ukm::TestAutoSetUkmRecorder test_ukm_recorder_;

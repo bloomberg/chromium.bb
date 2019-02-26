@@ -81,7 +81,7 @@ TEST_F(FindInPageManagerTest, FindMatchInMainFrame) {
     EXPECT_EQ(1, delegate_.state()->match_count);
     EXPECT_EQ(web_state(), delegate_.state()->web_state);
   }
-};
+}
 
 // Checks that find in page finds text that exists within the main frame and
 // an iframe.
@@ -105,7 +105,7 @@ TEST_F(FindInPageManagerTest, FindMatchInMainFrameAndIFrame) {
     EXPECT_EQ(2, delegate_.state()->match_count);
     EXPECT_EQ(web_state(), delegate_.state()->web_state);
   }
-};
+}
 
 // Checks that find in page returns no matches for text not contained on the
 // page.
@@ -130,6 +130,6 @@ TEST_F(FindInPageManagerTest, FindNoMatch) {
     EXPECT_EQ(0, delegate_.state()->match_count);
     EXPECT_EQ(web_state(), delegate_.state()->web_state);
   }
-};
+}
 
 }  // namespace web
