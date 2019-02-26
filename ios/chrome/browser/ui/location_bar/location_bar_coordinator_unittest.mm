@@ -111,11 +111,11 @@ class LocationBarCoordinatorTest : public PlatformTest {
 };
 
 TEST_F(LocationBarCoordinatorTest, Stops) {
-  EXPECT_TRUE(coordinator_.view == nil);
+  EXPECT_TRUE(coordinator_.locationBarViewController == nil);
   [coordinator_ start];
-  EXPECT_TRUE(coordinator_.view != nil);
+  EXPECT_TRUE(coordinator_.locationBarViewController != nil);
   [coordinator_ stop];
-  EXPECT_TRUE(coordinator_.view == nil);
+  EXPECT_TRUE(coordinator_.locationBarViewController == nil);
 }
 
 // Calls -loadGURLFromLocationBar:transition: with https://www.google.com/ URL.
