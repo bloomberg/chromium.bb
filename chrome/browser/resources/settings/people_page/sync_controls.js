@@ -171,8 +171,8 @@ Polymer({
 
     // Navigate to main sync page when the sync controls page should *not* be
     // available.
-    if (!syncStatus.signedIn || !!syncStatus.disabled ||
-        (!!syncStatus.hasError &&
+    if (!syncStatus.signedIn || syncStatus.disabled ||
+        (syncStatus.hasError &&
          syncStatus.statusAction !== settings.StatusAction.ENTER_PASSPHRASE)) {
       settings.navigateTo(settings.routes.SYNC);
     }

@@ -295,7 +295,7 @@ Polymer({
       // When the user is about to cancel the sync setup, but hasn't confirmed
       // the cancellation, navigate back and show the 'Cancel sync?' dialog.
       if (this.unifiedConsentEnabled && this.syncStatus &&
-          !!this.syncStatus.setupInProgress && this.didAbort_ &&
+          this.syncStatus.setupInProgress && this.didAbort_ &&
           !this.setupCancelConfirmed_) {
         chrome.metricsPrivate.recordUserAction(
             'Signin_Signin_BackOnAdvancedSyncSettings');
@@ -346,7 +346,7 @@ Polymer({
         // When the user tries to leave the sync setup, show the 'Leave site'
         // dialog.
         if (this.unifiedConsentEnabled && this.syncStatus &&
-            !!this.syncStatus.setupInProgress) {
+            this.syncStatus.setupInProgress) {
           event.preventDefault();
           event.returnValue = '';
 

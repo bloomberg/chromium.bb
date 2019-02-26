@@ -310,7 +310,7 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
         var wpDocument = wallpaperPickerWindow.contentWindow.document;
         var messageContainer = wpDocument.querySelector('#message-container');
 
-        if (!!appName) {
+        if (appName) {
           chrome.wallpaperPrivate.getStrings(function(strings) {
             var message =
                 strings.currentWallpaperSetByMessage.replace(/\$1/g, appName);

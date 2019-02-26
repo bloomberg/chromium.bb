@@ -538,7 +538,7 @@ speech.handleRecognitionResult_ = function(responseEvent) {
 
   // Force-stop long queries.
   if (speech.interimResult_.length > speech.QUERY_LENGTH_LIMIT_) {
-    if (!!speech.finalResult_) {
+    if (speech.finalResult_) {
       speech.submitFinalResult_();
     } else {
       speech.onErrorReceived_(RecognitionError.NO_MATCH);
@@ -749,7 +749,7 @@ speech.onKeyDown = function(event) {
  * @private
  */
 speech.onIdleTimeout_ = function() {
-  if (!!speech.finalResult_) {
+  if (speech.finalResult_) {
     speech.submitFinalResult_();
     return;
   }
@@ -1167,7 +1167,7 @@ text.showErrorMessage = function(error) {
 
   const linkElement = text.getErrorLink_(error);
   // Setting textContent removes all children (no need to clear link elements).
-  if (!!linkElement) {
+  if (linkElement) {
     text.interim_.textContent += ' ';
     text.interim_.appendChild(linkElement);
   }

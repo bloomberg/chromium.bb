@@ -369,7 +369,7 @@ Polymer({
 
     this.lastDestinationCapabilities_ = this.destination.capabilities;
 
-    const caps = !!this.destination.capabilities ?
+    const caps = this.destination.capabilities ?
         this.destination.capabilities.printer :
         null;
     this.updateSettingsAvailabilityFromDestination_(caps);
@@ -386,8 +386,8 @@ Polymer({
    * @private
    */
   updateSettingsAvailabilityFromDestination_: function(caps) {
-    this.set('settings.copies.available', !!caps && !!(caps.copies));
-    this.set('settings.collate.available', !!caps && !!(caps.collate));
+    this.set('settings.copies.available', !!caps && !!caps.copies);
+    this.set('settings.collate.available', !!caps && !!caps.collate);
     this.set('settings.layout.available', this.isLayoutAvailable_(caps));
     this.set('settings.color.available', this.destination.hasColorCapability);
 
@@ -424,7 +424,7 @@ Polymer({
         'settings.fitToPage.available',
         !knownSizeToSaveAsPdf && !this.documentSettings.isModifiable);
     this.set('settings.scaling.available', !knownSizeToSaveAsPdf);
-    const caps = (!!this.destination && !!this.destination.capabilities) ?
+    const caps = this.destination && this.destination.capabilities ?
         this.destination.capabilities.printer :
         null;
     this.set(
@@ -602,17 +602,17 @@ Polymer({
       const vendorSettings = {};
       for (const item of caps.vendor_capability) {
         let defaultValue = null;
-        if (item.type == 'SELECT' && !!item.select_cap &&
-            !!item.select_cap.option) {
+        if (item.type == 'SELECT' && item.select_cap &&
+            item.select_cap.option) {
           const defaultOption =
               item.select_cap.option.find(o => !!o.is_default);
-          defaultValue = !!defaultOption ? defaultOption.value : null;
+          defaultValue = defaultOption ? defaultOption.value : null;
         } else if (item.type == 'RANGE') {
-          if (!!item.range_cap) {
+          if (item.range_cap) {
             defaultValue = item.range_cap.default || null;
           }
         } else if (item.type == 'TYPED_VALUE') {
-          if (!!item.typed_value_cap) {
+          if (item.typed_value_cap) {
             defaultValue = item.typed_value_cap.default || null;
           }
         }

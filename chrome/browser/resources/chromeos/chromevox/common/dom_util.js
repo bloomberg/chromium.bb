@@ -371,7 +371,7 @@ cvox.DomUtil.isLeafNode = function(node, opt_allowHidden) {
       return true;
   }
 
-  if (!!cvox.DomPredicates.linkPredicate([element])) {
+  if (cvox.DomPredicates.linkPredicate([element])) {
     return !cvox.DomUtil.findNode(element, function(node) {
       return !!cvox.DomPredicates.headingPredicate([node]);
     });
@@ -584,9 +584,9 @@ cvox.DomUtil.getName = function(
  * @private
  */
 cvox.DomUtil.hasChildrenBasedName_ = function(node, opt_allowHidden) {
-  if (!!cvox.DomPredicates.linkPredicate([node]) ||
-      !!cvox.DomPredicates.headingPredicate([node]) ||
-      node.tagName == 'BUTTON' || cvox.AriaUtil.isControlWidget(node) ||
+  if (cvox.DomPredicates.linkPredicate([node]) ||
+      cvox.DomPredicates.headingPredicate([node]) || node.tagName == 'BUTTON' ||
+      cvox.AriaUtil.isControlWidget(node) ||
       !cvox.DomUtil.isLeafNode(node, opt_allowHidden)) {
     return true;
   } else {
@@ -1112,7 +1112,7 @@ cvox.DomUtil.computeHasContent_ = function(node) {
     }
   }
 
-  if (!!cvox.DomPredicates.linkPredicate([node])) {
+  if (cvox.DomPredicates.linkPredicate([node])) {
     return true;
   }
 

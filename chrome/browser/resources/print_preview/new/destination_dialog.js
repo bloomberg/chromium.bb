@@ -214,7 +214,7 @@ Polymer({
                 'Failed to resolve provisional destination: ' + destination.id);
           })
           .then(() => {
-            if (this.$.dialog.open && !!listItem && !listItem.hidden) {
+            if (this.$.dialog.open && listItem && !listItem.hidden) {
               listItem.focus();
             }
           });

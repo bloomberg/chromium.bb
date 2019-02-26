@@ -126,7 +126,7 @@ Polymer({
    * @private
    */
   getNetworkDetails_: function() {
-    assert(!!this.guid);
+    assert(this.guid);
     this.networkingPrivate.getManagedProperties(
         this.guid, this.getPropertiesCallback_.bind(this));
   },
@@ -167,7 +167,7 @@ Polymer({
     if (!this.networkPropertiesReceived_)
       return;
 
-    assert(!!this.guid);
+    assert(this.guid);
     this.networkingPrivate.setProperties(this.guid, onc, () => {
       if (chrome.runtime.lastError) {
         // An error typically indicates invalid input; request the properties
@@ -487,7 +487,7 @@ Polymer({
   getInfoFields_: function() {
     /** @type {!Array<string>} */ var fields = [];
     var type = this.networkProperties.Type;
-    if (type == CrOnc.Type.CELLULAR && !!this.networkProperties.Cellular) {
+    if (type == CrOnc.Type.CELLULAR && this.networkProperties.Cellular) {
       fields.push(
           'Cellular.HomeProvider.Name', 'Cellular.ServingOperator.Name',
           'Cellular.ActivationState', 'Cellular.RoamingState',

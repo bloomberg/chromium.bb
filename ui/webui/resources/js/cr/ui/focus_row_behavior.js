@@ -125,7 +125,7 @@ cr.define('cr.ui', function() {
 
       Polymer.RenderStatus.afterNextRender(this, function() {
         const rowContainer = this.root.querySelector('[focus-row-container]');
-        assert(!!rowContainer);
+        assert(rowContainer);
         this.row_ = new VirtualFocusRow(
             rowContainer, new FocusRowBehaviorDelegate(this));
         this.ironListTabIndexChanged_();

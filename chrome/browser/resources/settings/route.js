@@ -528,7 +528,7 @@ cr.define('settings', function() {
           Object.keys(this.routes_)
               .find((key) => this.routes_[key].path == canonicalPath);
 
-      return !!matchingKey ? this.routes_[matchingKey] : null;
+      return matchingKey ? this.routes_[matchingKey] : null;
     }
 
     /**

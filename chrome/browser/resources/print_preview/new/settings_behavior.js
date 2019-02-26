@@ -60,7 +60,7 @@ const SettingsBehavior = {
   getSetting: function(settingName) {
     const setting = /** @type {print_preview_new.Setting} */ (
         this.get(settingName, this.settings));
-    assert(!!setting, 'Setting is missing: ' + settingName);
+    assert(setting, 'Setting is missing: ' + settingName);
     return setting;
   },
 

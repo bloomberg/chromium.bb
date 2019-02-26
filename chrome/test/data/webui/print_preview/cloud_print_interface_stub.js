@@ -95,7 +95,7 @@ cr.define('print_preview', function() {
           this.initialized_ = true;
         }
       }
-      if (!!printer) {
+      if (printer) {
         printer.capabilities =
             print_preview_test_utils.getCddTemplate(printerId);
         this.eventTarget_.dispatchEvent(new CustomEvent(

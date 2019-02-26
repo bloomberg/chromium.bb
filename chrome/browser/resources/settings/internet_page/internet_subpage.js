@@ -545,6 +545,7 @@ Polymer({
 
   /**
    * @param {!CrOnc.NetworkStateProperties} state The network state.
+   * @return {boolean}
    * @private
    */
   isBlockedByPolicy_: function(state) {

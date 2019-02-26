@@ -190,7 +190,7 @@ Polymer({
    * @private
    */
   getPromoHeaderClass_: function() {
-    return !!this.subLabel_ ? 'two-line': '';
+    return this.subLabel_ ? 'two-line' : '';
   },
 
   /**
@@ -210,7 +210,7 @@ Polymer({
    * @private
    */
   getAccountLabel_: function(label, account) {
-    if(!!this.unifiedConsentEnabled && !!this.syncStatus.setupInProgress) {
+    if (this.unifiedConsentEnabled && this.syncStatus.setupInProgress) {
       return this.syncStatus.statusText || account;
     }
     return this.syncStatus.signedIn && !this.syncStatus.hasError &&
@@ -235,16 +235,16 @@ Polymer({
    * @private
    */
   getSyncIconStyle_: function() {
-    if (!!this.syncStatus.hasUnrecoverableError) {
+    if (this.syncStatus.hasUnrecoverableError) {
       return 'sync-problem';
     }
-    if (!!this.syncStatus.hasError) {
+    if (this.syncStatus.hasError) {
       return this.syncStatus.statusAction ==
               settings.StatusAction.REAUTHENTICATE ?
           'sync-paused' :
           'sync-problem';
     }
-    if (!!this.syncStatus.disabled) {
+    if (this.syncStatus.disabled) {
       return 'sync-disabled';
     }
     return 'sync';

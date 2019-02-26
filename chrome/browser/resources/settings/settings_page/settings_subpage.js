@@ -64,7 +64,7 @@ Polymer({
 
   /** @override */
   attached: function() {
-    if (!!this.searchLabel) {
+    if (this.searchLabel) {
       // |searchLabel| should not change dynamically.
       this.listen(this, 'clear-subpage-search', 'onClearSubpageSearch_');
     }
@@ -72,7 +72,7 @@ Polymer({
 
   /** @override */
   detached: function() {
-    if (!!this.searchLabel) {
+    if (this.searchLabel) {
       // |searchLabel| should not change dynamically.
       this.unlisten(this, 'clear-subpage-search', 'onClearSubpageSearch_');
     }

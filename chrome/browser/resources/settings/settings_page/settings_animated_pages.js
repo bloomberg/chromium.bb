@@ -61,9 +61,9 @@ Polymer({
     //  1) Not a direct navigation (such that the search box stays focused), and
     //  2) Not a "back" navigation, in which case the anchor element should be
     //     focused (further below in this function).
-    if (!!this.previousRoute_ && !settings.lastRouteChangeWasPopstate()) {
+    if (this.previousRoute_ && !settings.lastRouteChangeWasPopstate()) {
       const subpage = this.querySelector('settings-subpage.iron-selected');
-      if (!!subpage) {
+      if (subpage) {
         subpage.initialFocus();
         return;
       }
