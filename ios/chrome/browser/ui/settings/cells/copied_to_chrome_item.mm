@@ -77,7 +77,7 @@
           constraintEqualToAnchor:_textLabel.firstBaselineAnchor],
     ]];
     AddOptionalVerticalPadding(contentView, _textLabel,
-                               kTableViewLargeVerticalSpacing);
+                               kTableViewOneLabelCellVerticalSpacing);
   }
   return self;
 }
