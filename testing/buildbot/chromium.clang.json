@@ -1795,35 +1795,6 @@
             {
               "os": "Windows-10-15063"
             }
-          ],
-          "shards": 10
-        },
-        "test": "browser_tests"
-      },
-      {
-        "args": [
-          "--disable-features=WebUIPolymer2",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer1_browser_tests.filter"
-        ],
-        "name": "webui_polymer1_browser_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Windows-10-15063"
-            }
-          ],
-          "shards": 4
-        },
-        "test": "browser_tests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Windows-10-15063"
-            }
           ]
         },
         "test": "cacheinvalidation_unittests"
@@ -1951,18 +1922,6 @@
           ]
         },
         "test": "compositor_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Windows-10-15063"
-            }
-          ],
-          "shards": 6
-        },
-        "test": "content_browsertests"
       },
       {
         "args": [
@@ -2099,17 +2058,6 @@
             }
           ]
         },
-        "test": "extensions_browsertests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Windows-10-15063"
-            }
-          ]
-        },
         "test": "extensions_unittests"
       },
       {
@@ -2198,17 +2146,6 @@
             }
           ]
         },
-        "test": "headless_browsertests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Windows-10-15063"
-            }
-          ]
-        },
         "test": "headless_unittests"
       },
       {
@@ -2233,18 +2170,6 @@
           ]
         },
         "test": "installer_util_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Windows-10-15063"
-            }
-          ],
-          "shards": 3
-        },
-        "test": "interactive_ui_tests"
       },
       {
         "args": [
@@ -2604,17 +2529,6 @@
           ]
         },
         "test": "storage_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Windows-10-15063"
-            }
-          ]
-        },
-        "test": "sync_integration_tests"
       },
       {
         "swarming": {

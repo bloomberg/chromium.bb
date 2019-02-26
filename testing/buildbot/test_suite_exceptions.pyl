@@ -77,6 +77,7 @@
   'browser_tests': {
     'remove_from': [
       # chromium.clang
+      'CrWinAsan(dll)', # https://crbug.com/935598
       'CrWinAsanCov',
       'linux-win_cross-rel',
       'ToTLinuxTSan',  # https://crbug.com/368525
@@ -364,6 +365,10 @@
     },
   },
   'content_browsertests': {
+    'remove_from': [
+      # chromium.clang
+      'CrWinAsan(dll)', # https://crbug.com/935598
+    ],
     'modifications': {
       # chromium.linux
       'Cast Audio Linux': {
@@ -446,6 +451,10 @@
     ],
   },
   'extensions_browsertests': {
+    'remove_from': [
+      # chromium.clang
+      'CrWinAsan(dll)', # https://crbug.com/935598
+    ],
     'modifications': {
       'Win10 Tests x64 (dbg)': {
         'experiment_percentage': 100, # https://crbug.com/876615
@@ -595,6 +604,12 @@
       'Linux ChromiumOS MSan Tests',
     ],
   },
+  'headless_browsertests': {
+    'remove_from': [
+      # chromium.clang
+      'CrWinAsan(dll)', # https://crbug.com/935598
+    ],
+  },
   'info_collection_tests': {
     'remove_from': [
       # chromium.gpu.fyi
@@ -610,6 +625,10 @@
     ],
   },
   'interactive_ui_tests': {
+    'remove_from': [
+      # chromium.clang
+      'CrWinAsan(dll)', # https://crbug.com/935598
+    ],
     'modifications': {
       # chromium.clang
       'ToTLinuxTSan': {
@@ -758,6 +777,7 @@
   'network_service_browser_tests': {
     'remove_from': [
       # chromium.clang
+      'CrWinAsan(dll)', # https://crbug.com/935598
       'ToTLinuxTSan',  # https://crbug.com/368525
       # chromium.memory
       'Linux ASan LSan Tests (1)',  # No capacity, https://crbug.com/852442
@@ -841,6 +861,7 @@
   'network_service_content_browsertests': {
     'remove_from': [
       # chromium.clang
+      'CrWinAsan(dll)', # https://crbug.com/935598
       'ToTLinuxTSan',  # Match 'Linux TSan Tests' below since this is slow.
       # chromium.memory
       'Linux ASan LSan Tests (1)',  # No capacity, https://crbug.com/852442
@@ -878,6 +899,8 @@
   },
   'network_service_extensions_browsertests': {
     'remove_from': [
+      # chromium.clang
+      'CrWinAsan(dll)', # https://crbug.com/935598
       # chromium.memory
       'Linux ASan LSan Tests (1)',  # No capacity, https://crbug.com/852442
       'Linux TSan Tests',  # No capacity, https://crbug.com/852442
@@ -895,9 +918,16 @@
       'ToTMacASan',
     ],
   },
+  'network_service_headless_browsertests': {
+    'remove_from': [
+      # chromium.clang
+      'CrWinAsan(dll)', # https://crbug.com/935598
+    ],
+  },
   'network_service_interactive_ui_tests': {
     'remove_from': [
       # chromium.clang
+      'CrWinAsan(dll)', # https://crbug.com/935598
       'ToTLinuxTSan',  # Match 'Linux TSan Tests' below since this is slow.
       # chromium.memory
       'Linux ASan LSan Tests (1)',  # No capacity, https://crbug.com/852442
@@ -1065,6 +1095,10 @@
     ],
   },
   'sync_integration_tests': {
+    'remove_from': [
+      # chromium.clang
+      'CrWinAsan(dll)', # https://crbug.com/935598
+    ],
     'modifications': {
       # chromium.clang
       'ToTLinuxTSan': {
@@ -1705,6 +1739,8 @@
     'remove_from': [
       # chromium.win
       'Win10 Tests x64 (dbg)',  # Matches browser_tests.
+      # chromium.clang
+      'CrWinAsan(dll)', # https://crbug.com/935598
     ],
   },
   'webui_polymer1_interactive_ui_tests': {
