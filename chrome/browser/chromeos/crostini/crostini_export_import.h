@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/crostini/crostini_export_import_notification.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -22,9 +23,24 @@ class WebContents;
 
 namespace crostini {
 
-enum class CrostiniResult;
+enum class ExportContainerResult;
+enum class ImportContainerResult;
 
 enum class ExportImportType { EXPORT, IMPORT };
+
+// ExportContainerResult and ImportContainerResult are used for UMA.  Adding new
+// fields is OK, but do not delete or renumber.
+enum class ExportContainerResult {
+  kSuccess = 0,
+  kFailed = 1,
+  kMaxValue = kFailed,
+};
+
+enum class ImportContainerResult {
+  kSuccess = 0,
+  kFailed = 1,
+  kMaxValue = kFailed,
+};
 
 // CrostiniExportImport is a keyed profile service to manage exporting and
 // importing containers with crostini.  It manages a file dialog for selecting
@@ -86,13 +102,17 @@ class CrostiniExportImport : public KeyedService,
                           const base::FilePath& container_path,
                           bool result,
                           const std::string failure_reason);
-  void OnExportComplete(const ContainerId& container_id, CrostiniResult result);
+  void OnExportComplete(const base::Time& start,
+                        const ContainerId& container_id,
+                        CrostiniResult result);
 
   void ImportAfterSharing(const ContainerId& container_id,
                           const base::FilePath& container_path,
                           bool result,
                           const std::string failure_reason);
-  void OnImportComplete(const ContainerId& container_id, CrostiniResult result);
+  void OnImportComplete(const base::Time& start,
+                        const ContainerId& container_id,
+                        CrostiniResult result);
 
   void OpenFileDialog(ExportImportType type,
                       content::WebContents* web_contents);
