@@ -13,6 +13,11 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "ui/accessibility/accessibility_switches.h"
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
+#else
+#include "content/public/browser/browser_accessibility_state.h"
+#endif  // defined(OS_CHROMEOS)
 
 class AccessibilityLabelsBrowserTest : public InProcessBrowserTest {
  public:
@@ -24,11 +29,30 @@ class AccessibilityLabelsBrowserTest : public InProcessBrowserTest {
     command_line->AppendSwitch(
         switches::kEnableExperimentalAccessibilityLabels);
   }
+
+  void TearDownOnMainThread() override { EnableScreenReader(false); }
+
+  void EnableScreenReader(bool enabled) {
+#if defined(OS_CHROMEOS)
+    // Enable Chromevox.
+    chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(enabled);
+#else
+    // Spoof a screen reader.
+    if (enabled) {
+      content::BrowserAccessibilityState::GetInstance()
+          ->AddAccessibilityModeFlags(ui::AXMode::kScreenReader);
+    } else {
+      content::BrowserAccessibilityState::GetInstance()
+          ->RemoveAccessibilityModeFlags(ui::AXMode::kScreenReader);
+    }
+#endif  // defined(OS_CHROMEOS)
+  }
 };
 
 // Changing the kAccessibilityImageLabelsEnabled pref should affect the
 // accessibility mode of a new WebContents for this profile.
 IN_PROC_BROWSER_TEST_F(AccessibilityLabelsBrowserTest, NewWebContents) {
+  EnableScreenReader(true);
   ui::AXMode ax_mode =
       content::BrowserAccessibilityState::GetInstance()->GetAccessibilityMode();
   EXPECT_FALSE(ax_mode.has_mode(ui::AXMode::kLabelImages));
@@ -59,6 +83,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityLabelsBrowserTest, NewWebContents) {
 // Changing the kAccessibilityImageLabelsEnabled pref should affect the
 // accessibility mode of existing WebContents in this profile.
 IN_PROC_BROWSER_TEST_F(AccessibilityLabelsBrowserTest, ExistingWebContents) {
+  EnableScreenReader(true);
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ui::AXMode ax_mode = web_contents->GetAccessibilityMode();
@@ -75,4 +100,23 @@ IN_PROC_BROWSER_TEST_F(AccessibilityLabelsBrowserTest, ExistingWebContents) {
 
   ax_mode = web_contents->GetAccessibilityMode();
   EXPECT_FALSE(ax_mode.has_mode(ui::AXMode::kLabelImages));
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityLabelsBrowserTest,
+                       NotEnabledWithoutScreenReader) {
+  EnableScreenReader(false);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ui::AXMode ax_mode = web_contents->GetAccessibilityMode();
+  EXPECT_FALSE(ax_mode.has_mode(ui::AXMode::kLabelImages));
+
+  browser()->profile()->GetPrefs()->SetBoolean(
+      prefs::kAccessibilityImageLabelsEnabled, true);
+
+  ax_mode = web_contents->GetAccessibilityMode();
+  EXPECT_FALSE(ax_mode.has_mode(ui::AXMode::kLabelImages));
+
+  // Reset state.
+  browser()->profile()->GetPrefs()->SetBoolean(
+      prefs::kAccessibilityImageLabelsEnabled, false);
 }
