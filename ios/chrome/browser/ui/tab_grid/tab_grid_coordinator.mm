@@ -285,8 +285,7 @@
                                                 completion:nil];
   }
   // Record when the tab switcher is presented.
-  // TODO(crbug.com/856965) : Rename metrics.
-  base::RecordAction(base::UserMetricsAction("MobileTabSwitcherPresented"));
+  base::RecordAction(base::UserMetricsAction("MobileTabGridEntered"));
 }
 
 - (void)showTabViewController:(UIViewController*)viewController
@@ -294,8 +293,7 @@
   DCHECK(viewController);
 
   // Record when the tab switcher is dismissed.
-  // TODO(crbug.com/856965) : Rename metrics.
-  base::RecordAction(base::UserMetricsAction("MobileTabSwitcherDismissed"));
+  base::RecordAction(base::UserMetricsAction("MobileTabGridExited"));
 
   // If another BVC is already being presented, swap this one into the
   // container.
