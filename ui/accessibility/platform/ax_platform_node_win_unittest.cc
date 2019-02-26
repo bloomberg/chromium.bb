@@ -3245,6 +3245,34 @@ TEST_F(AXPlatformNodeWinTest, TestUIAGetFlowsToPropertyId) {
                                    UIA_NamePropertyId, expected_names);
 }
 
+TEST_F(AXPlatformNodeWinTest, TestGetPropertyValue_LabeledByTest) {
+  AXNodeData root;
+  root.role = ax::mojom::Role::kListItem;
+  root.id = 1;
+  std::vector<int32_t> labeledby_ids = {2};
+  root.AddIntListAttribute(ax::mojom::IntListAttribute::kLabelledbyIds,
+                           labeledby_ids);
+
+  AXNodeData referenced_node;
+  referenced_node.SetName("Name");
+  referenced_node.role = ax::mojom::Role::kNone;
+  referenced_node.id = 2;
+
+  root.child_ids.push_back(referenced_node.id);
+  Init(root, referenced_node);
+
+  ComPtr<IRawElementProviderSimple> root_node =
+      GetRootIRawElementProviderSimple();
+  ScopedVariant propertyValue;
+  EXPECT_EQ(S_OK, root_node->GetPropertyValue(UIA_LabeledByPropertyId,
+                                              propertyValue.Receive()));
+  ASSERT_EQ(propertyValue.type(), VT_UNKNOWN);
+  ComPtr<IRawElementProviderSimple> referenced_element;
+  EXPECT_EQ(S_OK, propertyValue.ptr()->punkVal->QueryInterface(
+                      IID_PPV_ARGS(&referenced_element)));
+  EXPECT_UIA_BSTR_EQ(referenced_element, UIA_NamePropertyId, L"Name");
+}
+
 TEST_F(AXPlatformNodeWinTest, TestUIAGetProviderOptions) {
   AXNodeData root_data;
   Init(root_data);

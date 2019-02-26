@@ -73,6 +73,9 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
   // Get whether this node is offscreen.
   bool IsOffscreen() const override;
 
+  // Get whether this node is in web content.
+  bool IsWebContent() const override;
+
   AXPlatformNode* GetFromNodeID(int32_t id) override;
 
   // Given a node ID attribute (one where IsNodeIdIntAttribute is true), return

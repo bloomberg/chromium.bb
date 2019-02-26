@@ -3304,4 +3304,41 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestIScrollProvider) {
   }
 }
 
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
+                       TestIsContentElementPropertyId) {
+  LoadInitialAccessibilityTreeFromHtml(
+      R"HTML(<!DOCTYPE html>
+      <html>
+        <table>
+          <tr>
+              <th aria-label="header">
+                  header
+              </th>
+              <td> data </td>
+          </tr>
+        </table>
+      </html>)HTML");
+
+  BrowserAccessibility* target =
+      FindNode(ax::mojom::Role::kRowHeader, "header");
+  EXPECT_NE(nullptr, target);
+  BrowserAccessibilityComWin* accessibility_com_win =
+      ToBrowserAccessibilityWin(target)->GetCOM();
+  EXPECT_NE(nullptr, accessibility_com_win);
+
+  base::win::ScopedVariant result;
+  accessibility_com_win->GetPropertyValue(UIA_IsContentElementPropertyId,
+                                          result.Receive());
+
+  BrowserAccessibility* child = target->PlatformDeepestFirstChild();
+  EXPECT_NE(nullptr, child);
+  accessibility_com_win = ToBrowserAccessibilityWin(child)->GetCOM();
+  EXPECT_NE(nullptr, accessibility_com_win);
+
+  result.Release();
+  accessibility_com_win->GetPropertyValue(UIA_IsContentElementPropertyId,
+                                          result.Receive());
+  EXPECT_EQ(VT_BOOL, result.type());
+  EXPECT_EQ(VARIANT_FALSE, result.ptr()->boolVal);
+}
 }  // namespace content

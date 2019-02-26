@@ -392,6 +392,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   base::string16 GetLocalizedRoleDescriptionForUnlabeledImage() const override;
   bool ShouldIgnoreHoveredStateForTesting() override;
   bool IsOffscreen() const override;
+  bool IsWebContent() const override;
   ui::AXPlatformNode* GetTargetNodeForRelation(
       ax::mojom::IntAttribute attr) override;
   std::set<ui::AXPlatformNode*> GetTargetNodesForRelation(

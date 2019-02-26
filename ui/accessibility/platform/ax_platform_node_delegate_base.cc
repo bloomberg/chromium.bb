@@ -209,6 +209,10 @@ bool AXPlatformNodeDelegateBase::IsOffscreen() const {
   return false;
 }
 
+bool AXPlatformNodeDelegateBase::IsWebContent() const {
+  return false;
+}
+
 AXPlatformNode* AXPlatformNodeDelegateBase::GetTargetNodeForRelation(
     ax::mojom::IntAttribute attr) {
   DCHECK(IsNodeIdIntAttribute(attr));

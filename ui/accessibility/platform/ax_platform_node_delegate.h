@@ -95,6 +95,9 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // Get whether this node is offscreen.
   virtual bool IsOffscreen() const = 0;
 
+  // Get whether this node is in web content.
+  virtual bool IsWebContent() const = 0;
+
   virtual AXPlatformNode* GetFromNodeID(int32_t id) = 0;
 
   // Given a node ID attribute (one where IsNodeIdIntAttribute is true), return
