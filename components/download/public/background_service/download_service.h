@@ -99,6 +99,8 @@ class DownloadService : public KeyedService {
   // components in the larger system.
   virtual Logger* GetLogger() = 0;
 
+  ~DownloadService() override = default;
+
  protected:
   DownloadService() = default;
 
