@@ -51,7 +51,7 @@ const base::Feature kWebViewConnectionlessSafeBrowsing{
 // Kill switch for feature to call onPageFinished for browser-initiated
 // navigations when the navigation commits.
 const base::Feature kWebViewPageStartedOnCommit{
-    "WebViewPageStartedOnCommit", base::FEATURE_DISABLED_BY_DEFAULT};
+    "WebViewPageStartedOnCommit", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Whether the application package name is logged in UMA.
 const base::Feature kWebViewUmaLogAppPackageName{
