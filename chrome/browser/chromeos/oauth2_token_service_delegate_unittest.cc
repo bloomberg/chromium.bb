@@ -224,7 +224,7 @@ TEST_F(CrOSOAuthDelegateTest,
   EXPECT_FALSE(
       base::ContainsValue(delegate_->GetAccounts(), account_info_.account_id));
 
-  account_manager_.UpsertToken(gaia_account_key_, kGaiaToken);
+  account_manager_.UpsertAccount(gaia_account_key_, kUserEmail, kGaiaToken);
 
   EXPECT_TRUE(delegate_->RefreshTokenIsAvailable(account_info_.account_id));
   EXPECT_TRUE(
@@ -241,8 +241,8 @@ TEST_F(CrOSOAuthDelegateTest,
   EXPECT_FALSE(
       base::ContainsValue(delegate_->GetAccounts(), account_info_.account_id));
 
-  account_manager_.UpsertToken(gaia_account_key_,
-                               AccountManager::kInvalidToken);
+  account_manager_.UpsertAccount(gaia_account_key_, kUserEmail,
+                                 AccountManager::kInvalidToken);
 
   EXPECT_TRUE(delegate_->RefreshTokenIsAvailable(account_info_.account_id));
   EXPECT_TRUE(
@@ -340,16 +340,18 @@ TEST_F(CrOSOAuthDelegateTest,
 TEST_F(CrOSOAuthDelegateTest, BatchChangeObserversAreNotifiedOncePerBatch) {
   // Setup
   AccountInfo account1 = CreateAccountInfoTestFixture(
-      "1" /* gaia_id */, "test1@gmail.com" /* email */);
+      "1" /* gaia_id */, "user1@example.com" /* email */);
   AccountInfo account2 = CreateAccountInfoTestFixture(
-      "2" /* gaia_id */, "test2@gmail.com" /* email */);
+      "2" /* gaia_id */, "user2@example.com" /* email */);
 
   account_tracker_service_.SeedAccountInfo(account1);
   account_tracker_service_.SeedAccountInfo(account2);
-  account_manager_.UpsertToken(
-      AccountManager::AccountKey{account1.gaia, ACCOUNT_TYPE_GAIA}, "token1");
-  account_manager_.UpsertToken(
-      AccountManager::AccountKey{account2.gaia, ACCOUNT_TYPE_GAIA}, "token2");
+  account_manager_.UpsertAccount(
+      AccountManager::AccountKey{account1.gaia, ACCOUNT_TYPE_GAIA},
+      "user1@example.com", "token1");
+  account_manager_.UpsertAccount(
+      AccountManager::AccountKey{account2.gaia, ACCOUNT_TYPE_GAIA},
+      "user2@example.com", "token2");
   thread_bundle_.RunUntilIdle();
 
   AccountManager account_manager;
@@ -388,8 +390,8 @@ TEST_F(CrOSOAuthDelegateTest, GetAccountsShouldNotReturnAdAccounts) {
   EXPECT_TRUE(delegate_->GetAccounts().empty());
 
   // Insert an Active Directory account into AccountManager.
-  account_manager_.UpsertToken(ad_account_key_,
-                               AccountManager::kActiveDirectoryDummyToken);
+  account_manager_.UpsertAccount(ad_account_key_, kUserEmail,
+                                 AccountManager::kActiveDirectoryDummyToken);
 
   // OAuth delegate should not return Active Directory accounts.
   EXPECT_TRUE(delegate_->GetAccounts().empty());
@@ -398,7 +400,7 @@ TEST_F(CrOSOAuthDelegateTest, GetAccountsShouldNotReturnAdAccounts) {
 TEST_F(CrOSOAuthDelegateTest, GetAccountsReturnsGaiaAccounts) {
   EXPECT_TRUE(delegate_->GetAccounts().empty());
 
-  account_manager_.UpsertToken(gaia_account_key_, kGaiaToken);
+  account_manager_.UpsertAccount(gaia_account_key_, kUserEmail, kGaiaToken);
 
   std::vector<std::string> accounts = delegate_->GetAccounts();
   EXPECT_EQ(1UL, accounts.size());
@@ -410,8 +412,8 @@ TEST_F(CrOSOAuthDelegateTest, GetAccountsReturnsGaiaAccounts) {
 TEST_F(CrOSOAuthDelegateTest, GetAccountsReturnsGaiaAccountsWithInvalidTokens) {
   EXPECT_TRUE(delegate_->GetAccounts().empty());
 
-  account_manager_.UpsertToken(gaia_account_key_,
-                               AccountManager::kInvalidToken);
+  account_manager_.UpsertAccount(gaia_account_key_, kUserEmail,
+                                 AccountManager::kInvalidToken);
 
   std::vector<std::string> accounts = delegate_->GetAccounts();
   EXPECT_EQ(1UL, accounts.size());
@@ -424,20 +426,22 @@ TEST_F(CrOSOAuthDelegateTest,
                 LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
             delegate_->load_credentials_state());
   EXPECT_TRUE(delegate_->GetAccounts().empty());
+  const std::string kUserEmail2 = "random-email2@example.com";
+  const std::string kUserEmail3 = "random-email3@example.com";
 
   // Insert 2 Gaia accounts and 1 Active Directory Account. Of the 2 Gaia
   // accounts, 1 has a valid refresh token and 1 has a dummy token.
-  account_manager_.UpsertToken(gaia_account_key_, kGaiaToken);
+  account_manager_.UpsertAccount(gaia_account_key_, kUserEmail, kGaiaToken);
 
   AccountManager::AccountKey gaia_account_key2{"random-gaia-id",
                                                ACCOUNT_TYPE_GAIA};
-  account_tracker_service_.SeedAccountInfo(CreateAccountInfoTestFixture(
-      gaia_account_key2.id, "random-email@domain.com"));
-  account_manager_.UpsertToken(gaia_account_key2,
-                               AccountManager::kInvalidToken);
+  account_tracker_service_.SeedAccountInfo(
+      CreateAccountInfoTestFixture(gaia_account_key2.id, kUserEmail2));
+  account_manager_.UpsertAccount(gaia_account_key2, kUserEmail2,
+                                 AccountManager::kInvalidToken);
 
-  account_manager_.UpsertToken(ad_account_key_,
-                               AccountManager::kActiveDirectoryDummyToken);
+  account_manager_.UpsertAccount(ad_account_key_, kUserEmail3,
+                                 AccountManager::kActiveDirectoryDummyToken);
 
   // Verify.
   const std::vector<std::string> accounts = delegate_->GetAccounts();

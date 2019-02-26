@@ -125,14 +125,16 @@ class AccountMigrationBaseStep : public AccountMigrationRunner::Step {
     account_info.email = email;
     account_info.gaia = gaia_id;
     identity_manager_->LegacySeedAccountInfo(account_info);
-    account_manager_->UpsertToken(
+    account_manager_->UpsertAccount(
         AccountManager::AccountKey{
             gaia_id, account_manager::AccountType::ACCOUNT_TYPE_GAIA},
-        AccountManager::kInvalidToken);
+        email, AccountManager::kInvalidToken);
     VLOG(1) << "Successfully migrated: " << email;
   }
 
   AccountManager* account_manager() { return account_manager_; }
+
+  identity::IdentityManager* identity_manager() { return identity_manager_; }
 
  private:
   // Implementations should use this to start their migration flow, instead of
@@ -239,7 +241,9 @@ class DeviceAccountMigration : public AccountMigrationBaseStep,
         continue;
       }
 
-      account_manager()->UpsertToken(device_account_, it->second /* token */);
+      account_manager()->UpsertAccount(
+          device_account_, identity_manager()->GetPrimaryAccountInfo().email,
+          it->second /* token */);
       is_success = true;
       break;
     }

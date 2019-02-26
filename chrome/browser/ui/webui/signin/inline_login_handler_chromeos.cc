@@ -68,11 +68,12 @@ class SigninHelper : public GaiaAuthConsumer {
     account_info.gaia = account_key_.id;
     account_info.email = email_;
     // TODO(crbug.com/922026): SigninHelper and InlineLoginHandlerChromeOS
-    // must be refactored to remove this use of LegacySeedAccountInfo.
+    // must be refactored to remove this use of LegacySeedAccountInfo. It should
+    // be possible to replace these two calls with a call to
+    // |AccountsMutator::AddOrUpdateAccount()|.
     IdentityManagerFactory::GetForProfile(profile_)->LegacySeedAccountInfo(
         account_info);
-
-    account_manager_->UpsertToken(account_key_, result.refresh_token);
+    account_manager_->UpsertAccount(account_key_, email_, result.refresh_token);
 
     close_dialog_closure_.Run();
     base::SequencedTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);

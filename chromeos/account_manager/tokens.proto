@@ -21,7 +21,13 @@ message Account {
   optional string id = 1;
   optional AccountType account_type = 2;
 
+  // An authentication token for this |Account|. It is a login scoped refresh
+  // token for Gaia accounts and a dummy token for Active Directory accounts.
   optional string token = 3;
+
+  // Raw, un-canonicalized email id for this |Account|. This is guaranteed to be
+  // present for Gaia accounts.
+  optional string raw_email = 4;
 }
 
 message Accounts {
