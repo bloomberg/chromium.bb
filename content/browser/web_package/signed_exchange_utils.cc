@@ -118,14 +118,6 @@ SignedExchangeLoadResult GetLoadResultFromSignatureVerifierResult(
       //     requestUrlBytes, and signed exchange version version, return
       //     "signature_verification_error"." [spec text]
       return SignedExchangeLoadResult::kSignatureVerificationError;
-    case SignedExchangeSignatureVerifier::Result::kErrInvalidSignatureIntegrity:
-      // "Creating the response stream.
-      //   - If signature’s integrity header is:
-      //     - "digest", "mi-sha256-03"
-      //       ...
-      //     - Anything else
-      //       Return an error string "invalid_integrity_header". " [spec text]
-      return SignedExchangeLoadResult::kInvalidIntegrityHeader;
     case SignedExchangeSignatureVerifier::Result::kErrUnsupportedCertType:
       // "Validating a signature
       //   ...
@@ -172,6 +164,8 @@ SignedExchangeLoadResult GetLoadResultFromSignatureVerifierResult(
         kErrNoCertificateSHA256_deprecated:
     case SignedExchangeSignatureVerifier::Result::
         kErrInvalidSignatureFormat_deprecated:
+    case SignedExchangeSignatureVerifier::Result::
+        kErrInvalidSignatureIntegrity_deprecated:
     case SignedExchangeSignatureVerifier::Result::
         kErrInvalidTimestamp_deprecated:
       NOTREACHED();

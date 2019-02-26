@@ -4,6 +4,7 @@
 
 #include "content/browser/web_package/signed_exchange_handler.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -53,7 +54,7 @@ namespace content {
 
 namespace {
 
-constexpr char kDigestHeader[] = "Digest";
+constexpr char kDigestHeader[] = "digest";
 constexpr char kHistogramSignatureVerificationResult[] =
     "SignedExchange.SignatureVerificationResult";
 constexpr char kHistogramCertVerificationResult[] =
@@ -653,11 +654,12 @@ void SignedExchangeHandler::OnVerifyCert(
   response_head.load_timing.send_end = now;
   response_head.load_timing.receive_headers_end = now;
 
-  std::string digest_header_value;
-  response_head.headers->EnumerateHeader(nullptr, kDigestHeader,
-                                         &digest_header_value);
-  auto mi_stream = std::make_unique<MerkleIntegritySourceStream>(
-      digest_header_value, std::move(source_));
+  auto body_stream = CreateResponseBodyStream();
+  if (!body_stream) {
+    RunErrorCallback(SignedExchangeLoadResult::kInvalidIntegrityHeader,
+                     net::ERR_INVALID_SIGNED_EXCHANGE);
+    return;
+  }
 
   net::SSLInfo ssl_info;
   ssl_info.cert = cv_result.verified_cert;
@@ -679,8 +681,50 @@ void SignedExchangeHandler::OnVerifyCert(
   response_head.ssl_info = std::move(ssl_info);
   std::move(headers_callback_)
       .Run(SignedExchangeLoadResult::kSuccess, net::OK,
-           envelope_->request_url().url, response_head, std::move(mi_stream));
+           envelope_->request_url().url, response_head, std::move(body_stream));
   state_ = State::kHeadersCallbackCalled;
+}
+
+// https://wicg.github.io/webpackage/loading.html#read-a-body
+std::unique_ptr<net::SourceStream>
+SignedExchangeHandler::CreateResponseBodyStream() {
+  if (!base::EqualsCaseInsensitiveASCII(envelope_->signature().integrity,
+                                        "digest/mi-sha256-03")) {
+    signed_exchange_utils::ReportErrorAndTraceEvent(
+        devtools_proxy_.get(),
+        "The current implemention only supports \"digest/mi-sha256-03\" "
+        "integrity scheme.",
+        std::make_pair(0 /* signature_index */,
+                       SignedExchangeError::Field::kSignatureIintegrity));
+    return nullptr;
+  }
+  const auto& headers = envelope_->response_headers();
+  auto digest_iter = headers.find(kDigestHeader);
+  if (digest_iter == headers.end()) {
+    signed_exchange_utils::ReportErrorAndTraceEvent(
+        devtools_proxy_.get(), "Signed exchange has no Digest: header");
+    return nullptr;
+  }
+
+  // For now, we allow only mi-sha256-03 content encoding.
+  // TODO(crbug.com/934629): Handle other content codings, such as gzip and br.
+  auto content_encoding_iter = headers.find("content-encoding");
+  if (content_encoding_iter == headers.end()) {
+    signed_exchange_utils::ReportErrorAndTraceEvent(
+        devtools_proxy_.get(),
+        "Signed exchange has no Content-Encoding: header");
+    return nullptr;
+  }
+  if (!base::LowerCaseEqualsASCII(content_encoding_iter->second,
+                                  "mi-sha256-03")) {
+    signed_exchange_utils::ReportErrorAndTraceEvent(
+        devtools_proxy_.get(),
+        "Exchange's Content-Encoding must be \"mi-sha256-03\".");
+    return nullptr;
+  }
+
+  return std::make_unique<MerkleIntegritySourceStream>(digest_iter->second,
+                                                       std::move(source_));
 }
 
 }  // namespace content

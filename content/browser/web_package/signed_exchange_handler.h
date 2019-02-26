@@ -128,6 +128,7 @@ class CONTENT_EXPORT SignedExchangeHandler {
   void OnVerifyCert(int32_t error_code,
                     const net::CertVerifyResult& cv_result,
                     const net::ct::CTVerifyResult& ct_result);
+  std::unique_ptr<net::SourceStream> CreateResponseBodyStream();
 
   const bool is_secure_transport_;
   const bool has_nosniff_;

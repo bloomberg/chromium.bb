@@ -262,13 +262,6 @@ bool ParseResponseMap(const cbor::Value& value,
     return false;
   }
 
-  found = out->response_headers().find("digest");
-  if (found == out->response_headers().end()) {
-    signed_exchange_utils::ReportErrorAndTraceEvent(
-        devtools_proxy, "Signed exchange has no Digest: header");
-    return false;
-  }
-
   return true;
 }
 
