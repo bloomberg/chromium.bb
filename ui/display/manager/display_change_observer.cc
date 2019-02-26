@@ -137,10 +137,6 @@ DisplayChangeObserver::GetExternalManagedDisplayModeList(
     }
   }
 
-  ManagedDisplayInfo::ManagedDisplayModeList display_mode_list;
-  for (const auto& display_mode_pair : display_mode_map)
-    display_mode_list.push_back(std::move(display_mode_pair.second));
-
   if (output.native_mode()) {
     const gfx::Size size = native_mode.size();
 
@@ -148,10 +144,17 @@ DisplayChangeObserver::GetExternalManagedDisplayModeList(
     DCHECK(it != display_mode_map.end())
         << "Native mode must be part of the mode list.";
 
-    // If the native mode was replaced re-add it.
+    // If the native mode was replaced (e.g. by a mode with similar size but
+    // higher refresh rate), we overwrite that mode with the native mode. The
+    // native mode will always be chosen as the best mode for this size (see
+    // DisplayConfigurator::FindDisplayModeMatchingSize()).
     if (!it->second.native())
-      display_mode_list.push_back(native_mode);
+      it->second = native_mode;
   }
+
+  ManagedDisplayInfo::ManagedDisplayModeList display_mode_list;
+  for (const auto& display_mode_pair : display_mode_map)
+    display_mode_list.push_back(std::move(display_mode_pair.second));
 
   return display_mode_list;
 }
