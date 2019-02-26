@@ -139,14 +139,15 @@ public class FeedProcessScopeFactory {
         NetworkClient networkClient = sTestNetworkClient == null ?
             new FeedNetworkBridge(profile) : sTestNetworkClient;
         sFeedLoggingBridge = new FeedLoggingBridge(profile);
-        sFeedProcessScope = new FeedProcessScope
-                                    .Builder(configHostApi, Executors.newSingleThreadExecutor(),
-                                            new LoggingApiImpl(), networkClient, schedulerBridge,
-                                            lifecycleListener, DebugBehavior.SILENT,
-                                            ContextUtils.getApplicationContext(), applicationInfo)
-                                    .setContentStorage(contentStorage)
-                                    .setJournalStorage(journalStorage)
-                                    .build();
+        sFeedProcessScope =
+                new FeedProcessScope
+                        .Builder(configHostApi, Executors.newSingleThreadExecutor(),
+                                new LoggingApiImpl(), sFeedLoggingBridge, networkClient,
+                                schedulerBridge, lifecycleListener, DebugBehavior.SILENT,
+                                ContextUtils.getApplicationContext(), applicationInfo)
+                        .setContentStorage(contentStorage)
+                        .setJournalStorage(journalStorage)
+                        .build();
         schedulerBridge.initializeFeedDependencies(sFeedProcessScope.getRequestManager());
 
         sFeedOfflineIndicator =
@@ -172,18 +173,18 @@ public class FeedProcessScopeFactory {
         Configuration configHostApi = FeedConfiguration.createConfiguration();
 
         sFeedScheduler = feedScheduler;
+        sFeedLoggingBridge = loggingBridge;
+        sFeedOfflineIndicator = feedOfflineIndicator;
+        sFeedAppLifecycle = feedAppLifecycle;
         ApplicationInfo applicationInfo =
                 new ApplicationInfo.Builder(ContextUtils.getApplicationContext()).build();
 
         sFeedProcessScope = new FeedProcessScope
                                     .Builder(configHostApi, Executors.newSingleThreadExecutor(),
-                                            new LoggingApiImpl(), networkClient, sFeedScheduler,
-                                            lifecycleListener, DebugBehavior.SILENT,
+                                            new LoggingApiImpl(), sFeedLoggingBridge, networkClient,
+                                            sFeedScheduler, lifecycleListener, DebugBehavior.SILENT,
                                             ContextUtils.getApplicationContext(), applicationInfo)
                                     .build();
-        sFeedOfflineIndicator = feedOfflineIndicator;
-        sFeedAppLifecycle = feedAppLifecycle;
-        sFeedLoggingBridge = loggingBridge;
     }
 
     /** Use supplied NetworkClient instead of real one, for tests. */

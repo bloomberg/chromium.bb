@@ -14,6 +14,7 @@ import com.google.android.libraries.feed.host.logging.ElementLoggingData;
 import com.google.android.libraries.feed.host.logging.ElementType;
 import com.google.android.libraries.feed.host.logging.InternalFeedError;
 import com.google.android.libraries.feed.host.logging.RequestReason;
+import com.google.android.libraries.feed.host.logging.SessionEvent;
 import com.google.android.libraries.feed.host.logging.SpinnerType;
 import com.google.android.libraries.feed.host.logging.ZeroStateShowReason;
 
@@ -252,6 +253,12 @@ public class FeedLoggingBridge implements BasicLoggingApi {
 
     @Override
     public void onZeroStateRefreshCompleted(int newContentCount, int newTokenCount) {
+        // TODO(https://crbug.com/924739): Implementation.
+    }
+
+    @Override
+    public void onInitialSessionEvent(
+            @SessionEvent int sessionEvent, int timeFromRegisteringMs, int sessionCount) {
         // TODO(https://crbug.com/924739): Implementation.
     }
 
