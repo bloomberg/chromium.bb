@@ -28,6 +28,7 @@ component("common") {
     "learning_session.h",
     "learning_task.cc",
     "learning_task.h",
+    "learning_task_controller.h",
     "value.cc",
     "value.h",
   ]

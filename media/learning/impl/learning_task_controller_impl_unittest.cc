@@ -112,6 +112,11 @@ class LearningTaskControllerImplTest : public testing::Test {
     controller_->SetTrainerForTesting(std::move(fake_trainer));
   }
 
+  void AddExample(const LabelledExample& example) {
+    std::move(controller_->BeginObservation(example.features))
+        .Run(example.target_value, example.weight);
+  }
+
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   // Number of models that we trained.
@@ -139,7 +144,7 @@ TEST_F(LearningTaskControllerImplTest, AddingExamplesTrainsModelAndReports) {
   example.target_value = predicted_target_;
   int count = static_cast<int>(1.0 / task_.min_new_data_fraction);
   for (int i = 0; i < count; i++) {
-    controller_->AddExample(example);
+    AddExample(example);
     EXPECT_EQ(num_models_, i + 1);
     // All examples except the first should be reported as correct.  For the
     // first, there's no model to test again.
@@ -148,14 +153,14 @@ TEST_F(LearningTaskControllerImplTest, AddingExamplesTrainsModelAndReports) {
   }
   // The next |count| should train every other one.
   for (int i = 0; i < count; i++) {
-    controller_->AddExample(example);
+    AddExample(example);
     EXPECT_EQ(num_models_, count + (i + 1) / 2);
   }
 
   // The next |count| should be the same, since we've reached the max training
   // set size.
   for (int i = 0; i < count; i++) {
-    controller_->AddExample(example);
+    AddExample(example);
     EXPECT_EQ(num_models_, count + count / 2 + (i + 1) / 2);
   }
 
@@ -167,7 +172,7 @@ TEST_F(LearningTaskControllerImplTest, AddingExamplesTrainsModelAndReports) {
   // Adding a value that doesn't match should report one more attempt, with an
   // incorrect prediction.
   example.target_value = not_predicted_target_;
-  controller_->AddExample(example);
+  AddExample(example);
   EXPECT_EQ(reporter_raw_->num_reported_, count * 3);
   EXPECT_EQ(reporter_raw_->num_correct_, count * 3 - 1);  // Unchanged.
 }
@@ -182,7 +187,7 @@ TEST_F(LearningTaskControllerImplTest, FeatureProviderIsUsed) {
   LabelledExample example;
   example.features.push_back(FeatureValue(123));
   example.weight = 321u;
-  controller_->AddExample(example);
+  AddExample(example);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ(trainer_raw_->training_data()[0].features[0], FeatureValue(124));
   EXPECT_EQ(trainer_raw_->training_data()[0].weight, example.weight);

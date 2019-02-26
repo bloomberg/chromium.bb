@@ -9,8 +9,8 @@
 #include "base/bind.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "media/learning/common/learning_task_controller.h"
 #include "media/learning/impl/learning_session_impl.h"
-#include "media/learning/impl/learning_task_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -32,8 +32,17 @@ class LearningSessionImplTest : public testing::Test {
       }
     }
 
-    void AddExample(const LabelledExample& example) override {
-      example_ = example;
+    SetTargetValueCB BeginObservation(const FeatureVector& features) override {
+      return base::BindOnce(&FakeLearningTaskController::AddExample,
+                            base::Unretained(this), features);
+    }
+
+    void AddExample(FeatureVector features,
+                    TargetValue target,
+                    WeightType weight) {
+      example_.features = std::move(features);
+      example_.target_value = target;
+      example_.weight = weight;
     }
 
     SequenceBoundFeatureProvider feature_provider_;

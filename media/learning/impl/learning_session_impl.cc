@@ -34,8 +34,12 @@ void LearningSessionImpl::SetTaskControllerFactoryCBForTesting(
 void LearningSessionImpl::AddExample(const std::string& task_name,
                                      const LabelledExample& example) {
   auto iter = task_map_.find(task_name);
-  if (iter != task_map_.end())
-    iter->second->AddExample(example);
+  if (iter != task_map_.end()) {
+    // TODO(liberato): We shouldn't be adding examples.  We should provide the
+    // LearningTaskController instead, although ownership gets a bit weird.
+    iter->second->BeginObservation(example.features)
+        .Run(example.target_value, example.weight);
+  }
 }
 
 void LearningSessionImpl::RegisterTask(

@@ -10,8 +10,8 @@
 #include "base/component_export.h"
 #include "base/threading/sequence_bound.h"
 #include "media/learning/common/learning_session.h"
+#include "media/learning/common/learning_task_controller.h"
 #include "media/learning/impl/feature_provider.h"
-#include "media/learning/impl/learning_task_controller.h"
 
 namespace media {
 namespace learning {
