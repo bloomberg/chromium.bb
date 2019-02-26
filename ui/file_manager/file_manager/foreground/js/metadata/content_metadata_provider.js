@@ -82,7 +82,7 @@ ContentMetadataProvider.WORKER_SCRIPT =
  * @return {!MetadataItem} Converted metadata.
  */
 ContentMetadataProvider.convertContentMetadata = function(metadata) {
-  var item = new MetadataItem();
+  const item = new MetadataItem();
   item.contentImageTransform = metadata['imageTransform'];
   item.contentThumbnailTransform = metadata['thumbnailTransform'];
   item.contentThumbnailUrl = metadata['thumbnailURL'];
@@ -104,8 +104,8 @@ ContentMetadataProvider.prototype.get = function(requests) {
     return Promise.resolve([]);
   }
 
-  var promises = [];
-  for (var i = 0; i < requests.length; i++) {
+  const promises = [];
+  for (let i = 0; i < requests.length; i++) {
     promises.push(new Promise(function(request, fulfill) {
       this.getImpl_(request.entry, request.names, fulfill);
     }.bind(this, requests[i])));
@@ -132,9 +132,9 @@ ContentMetadataProvider.prototype.getImpl_ = function(entry, names, callback) {
   // image metadata correctly.
   // We parse it in our pure js parser.
   // chrome/browser/media_galleries/fileapi/supported_image_type_validator.cc
-  var type = FileType.getType(entry);
+  const type = FileType.getType(entry);
   if (type && type.type === 'image') {
-    var url = entry.toURL();
+    const url = entry.toURL();
     if (this.callbacks_[url]) {
       this.callbacks_[url].push(callback);
     } else {
@@ -157,10 +157,10 @@ ContentMetadataProvider.prototype.getImpl_ = function(entry, names, callback) {
  */
 ContentMetadataProvider.prototype.getFromMediaGalleries_ =
     function(entry, names) {
-  var self = this;
+  const self = this;
   return new Promise(function(resolve, reject) {
     entry.file(function(blob) {
-      var metadataType = 'mimeTypeOnly';
+      let metadataType = 'mimeTypeOnly';
       if (names.indexOf('mediaArtist') !== -1 ||
           names.indexOf('mediaTitle') !== -1 ||
           names.indexOf('mediaTrack') !== -1 ||
@@ -195,7 +195,7 @@ ContentMetadataProvider.prototype.getFromMediaGalleries_ =
  * @private
  */
 ContentMetadataProvider.prototype.onMessage_ = function(event) {
-  var data = event.data;
+  const data = event.data;
   switch (data.verb) {
     case 'initialized':
       this.onInitialized_(data.arguments[0]);
@@ -208,7 +208,7 @@ ContentMetadataProvider.prototype.onMessage_ = function(event) {
           new MetadataItem());
       break;
     case 'error':
-      var error = this.createError_(
+      const error = this.createError_(
           data.arguments[0],
           data.arguments[1],
           data.arguments[2]);
@@ -250,9 +250,9 @@ ContentMetadataProvider.prototype.onInitialized_ = function(regexp) {
  * @private
  */
 ContentMetadataProvider.prototype.onResult_ = function(url, metadataItem) {
-  var callbacks = this.callbacks_[url];
+  const callbacks = this.callbacks_[url];
   delete this.callbacks_[url];
-  for (var i = 0; i < callbacks.length; i++) {
+  for (let i = 0; i < callbacks.length; i++) {
     callbacks[i](metadataItem);
   }
 };
@@ -282,11 +282,11 @@ ContentMetadataProvider.prototype.convertMediaMetadataToMetadataItem_ =
           "Failed to parse metadata"));
       return;
     }
-    var item = new MetadataItem();
-    var mimeType = metadata['mimeType'];
+    const item = new MetadataItem();
+    const mimeType = metadata['mimeType'];
     item.contentMimeType = mimeType;
     item.mediaMimeType = mimeType;
-    var trans = {scaleX: 1, scaleY: 1, rotate90: 0};
+    const trans = {scaleX: 1, scaleY: 1, rotate90: 0};
     if (metadata.rotation) {
       switch (metadata.rotation) {
         case 0:
@@ -335,7 +335,7 @@ ContentMetadataProvider.prototype.convertMediaMetadataToMetadataItem_ =
       });
     }
     if (metadata.attachedImages && metadata.attachedImages.length > 0) {
-      var reader = new FileReader();
+      const reader = new FileReader();
       reader.onload = function(e) {
         item.contentThumbnailUrl = e.target.result;
         resolve(item);
@@ -362,8 +362,8 @@ ContentMetadataProvider.prototype.convertMediaMetadataToMetadataItem_ =
 ContentMetadataProvider.prototype.createError_ = function(
     url, step, errorDescription) {
   // For error case, fill all fields with error object.
-  var error = new ContentMetadataProvider.Error(url, step, errorDescription);
-  var item = new MetadataItem();
+  const error = new ContentMetadataProvider.Error(url, step, errorDescription);
+  const item = new MetadataItem();
   item.contentImageTransformError = error;
   item.contentThumbnailTransformError = error;
   item.contentThumbnailUrlError = error;

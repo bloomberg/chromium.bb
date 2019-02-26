@@ -65,11 +65,11 @@ FunctionParallel.prototype.start = function(var_args) {
   this.logger.vlog('Starting [' + this.steps_.length + '] parallel tasks ' +
                    'with ' + arguments.length + ' argument(s)');
   if (this.logger.verbose) {
-    for (var j = 0; j < arguments.length; j++) {
+    for (let j = 0; j < arguments.length; j++) {
       this.logger.vlog(arguments[j]);
     }
   }
-  for (var i = 0; i < this.steps_.length; i++) {
+  for (let i = 0; i < this.steps_.length; i++) {
     this.logger.vlog('Attempting to start step [' + this.steps_[i].name + ']');
     try {
       this.steps_[i].apply(this, arguments);

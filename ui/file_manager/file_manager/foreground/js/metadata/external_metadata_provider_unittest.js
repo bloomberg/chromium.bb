@@ -60,7 +60,7 @@ function testExternalMetadataProviderBasic(callback) {
 
   installMockChrome(mockChrome);
 
-  var provider = new ExternalMetadataProvider();
+  const provider = new ExternalMetadataProvider();
   reportPromise(provider.get([
     new MetadataRequest(entryA, ['modificationTime', 'size']),
     new MetadataRequest(entryB, ['modificationTime', 'size']),

@@ -85,9 +85,9 @@ ByteReader.validateRead = function(pos, size, end) {
 ByteReader.readString = function(dataView, pos, size, opt_end) {
   ByteReader.validateRead(pos, size, opt_end || dataView.byteLength);
 
-  var codes = [];
+  const codes = [];
 
-  for (var i = 0; i < size; ++i) {
+  for (let i = 0; i < size; ++i) {
     codes.push(dataView.getUint8(pos + i));
   }
 
@@ -109,10 +109,10 @@ ByteReader.readString = function(dataView, pos, size, opt_end) {
 ByteReader.readNullTerminatedString = function(dataView, pos, size, opt_end) {
   ByteReader.validateRead(pos, size, opt_end || dataView.byteLength);
 
-  var codes = [];
+  const codes = [];
 
-  for (var i = 0; i < size; ++i) {
-    var code = dataView.getUint8(pos + i);
+  for (let i = 0; i < size; ++i) {
+    const code = dataView.getUint8(pos + i);
     if (code == 0) break;
     codes.push(code);
   }
@@ -137,18 +137,18 @@ ByteReader.readNullTerminatedStringUTF16 = function(
     dataView, pos, bom, size, opt_end) {
   ByteReader.validateRead(pos, size, opt_end || dataView.byteLength);
 
-  var littleEndian = false;
-  var start = 0;
+  let littleEndian = false;
+  let start = 0;
 
   if (bom) {
     littleEndian = (dataView.getUint8(pos) == 0xFF);
     start = 2;
   }
 
-  var codes = [];
+  const codes = [];
 
-  for (var i = start; i < size; i += 2) {
-    var code = dataView.getUint16(pos + i, littleEndian);
+  for (let i = start; i < size; i += 2) {
+    const code = dataView.getUint16(pos + i, littleEndian);
     if (code == 0) break;
     codes.push(code);
   }
@@ -181,12 +181,12 @@ ByteReader.base64Alphabet_ =
 ByteReader.readBase64 = function(dataView, pos, size, opt_end) {
   ByteReader.validateRead(pos, size, opt_end || dataView.byteLength);
 
-  var rv = [];
-  var chars = [];
-  var padding = 0;
+  const rv = [];
+  const chars = [];
+  let padding = 0;
 
-  for (var i = 0; i < size; /* incremented inside */) {
-    var bits = dataView.getUint8(pos + (i++)) << 16;
+  for (let i = 0; i < size; /* incremented inside */) {
+    let bits = dataView.getUint8(pos + (i++)) << 16;
 
     if (i < size) {
       bits |= dataView.getUint8(pos + (i++)) << 8;
@@ -235,18 +235,18 @@ ByteReader.readImage = function(dataView, pos, size, opt_end) {
   ByteReader.validateRead(pos, size, opt_end);
 
   // Two bytes is enough to identify the mime type.
-  var prefixToMime = {
+  const prefixToMime = {
     '\x89P' : 'png',
     '\xFF\xD8' : 'jpeg',
     'BM' : 'bmp',
     'GI' : 'gif'
   };
 
-  var prefix = ByteReader.readString(dataView, pos, 2, opt_end);
-  var mime = prefixToMime[prefix] ||
+  const prefix = ByteReader.readString(dataView, pos, 2, opt_end);
+  const mime = prefixToMime[prefix] ||
       dataView.getUint16(pos, false).toString(16);  // For debugging.
 
-  var b64 = ByteReader.readBase64(dataView, pos, size, opt_end);
+  const b64 = ByteReader.readBase64(dataView, pos, size, opt_end);
   return 'data:image/' + mime + ';base64,' + b64;
 };
 
@@ -319,7 +319,7 @@ ByteReader.prototype.validateRead = function(size, opt_end) {
  * @return {number} Scalar value.
  */
 ByteReader.prototype.readScalar = function(width, opt_signed, opt_end) {
-  var method = opt_signed ? 'getInt' : 'getUint';
+  let method = opt_signed ? 'getInt' : 'getUint';
 
   switch (width) {
     case 1:
@@ -344,7 +344,7 @@ ByteReader.prototype.readScalar = function(width, opt_signed, opt_end) {
   }
 
   this.validateRead(width, opt_end);
-  var rv = this.view_[method](this.pos_, this.littleEndian_);
+  const rv = this.view_[method](this.pos_, this.littleEndian_);
   this.pos_ += width;
   return rv;
 };
@@ -360,7 +360,7 @@ ByteReader.prototype.readScalar = function(width, opt_signed, opt_end) {
  * @return {string} String value.
  */
 ByteReader.prototype.readString = function(size, opt_end) {
-  var rv = ByteReader.readString(this.view_, this.pos_, size, opt_end);
+  const rv = ByteReader.readString(this.view_, this.pos_, size, opt_end);
   this.pos_ += size;
   return rv;
 };
@@ -377,7 +377,7 @@ ByteReader.prototype.readString = function(size, opt_end) {
  * @return {string} Null-terminated string value.
  */
 ByteReader.prototype.readNullTerminatedString = function(size, opt_end) {
-  var rv = ByteReader.readNullTerminatedString(this.view_,
+  const rv = ByteReader.readNullTerminatedString(this.view_,
                                                this.pos_,
                                                size,
                                                opt_end);
@@ -406,7 +406,7 @@ ByteReader.prototype.readNullTerminatedString = function(size, opt_end) {
  */
 ByteReader.prototype.readNullTerminatedStringUTF16 =
     function(bom, size, opt_end) {
-  var rv = ByteReader.readNullTerminatedStringUTF16(
+  const rv = ByteReader.readNullTerminatedStringUTF16(
       this.view_, this.pos_, bom, size, opt_end);
 
   if (bom) {
@@ -441,8 +441,8 @@ ByteReader.prototype.readSlice = function(size, opt_end,
                                           opt_arrayConstructor) {
   this.validateRead(size, opt_end);
 
-  var arrayConstructor = opt_arrayConstructor || Uint8Array;
-  var slice = new arrayConstructor(
+  const arrayConstructor = opt_arrayConstructor || Uint8Array;
+  const slice = new arrayConstructor(
       this.view_.buffer, this.view_.byteOffset + this.pos_, size);
   this.pos_ += size;
 
@@ -461,7 +461,7 @@ ByteReader.prototype.readSlice = function(size, opt_end,
  * @return {string} Base 64 encoded value.
  */
 ByteReader.prototype.readBase64 = function(size, opt_end) {
-  var rv = ByteReader.readBase64(this.view_, this.pos_, size, opt_end);
+  const rv = ByteReader.readBase64(this.view_, this.pos_, size, opt_end);
   this.pos_ += size;
   return rv;
 };
@@ -477,7 +477,7 @@ ByteReader.prototype.readBase64 = function(size, opt_end) {
  * @return {string} Image as a data url.
  */
 ByteReader.prototype.readImage = function(size, opt_end) {
-  var rv = ByteReader.readImage(this.view_, this.pos_, size, opt_end);
+  const rv = ByteReader.readImage(this.view_, this.pos_, size, opt_end);
   this.pos_ += size;
   return rv;
 };
@@ -492,7 +492,7 @@ ByteReader.prototype.readImage = function(size, opt_end) {
 ByteReader.prototype.seek = function(pos, opt_seekStart, opt_end) {
   opt_end = opt_end || this.view_.byteLength;
 
-  var newPos;
+  let newPos;
   if (opt_seekStart == ByteReader.SEEK_CUR) {
     newPos = this.pos_ + pos;
   } else if (opt_seekStart == ByteReader.SEEK_END) {
@@ -518,7 +518,7 @@ ByteReader.prototype.seek = function(pos, opt_seekStart, opt_end) {
  * @param {number=} opt_seekStart Relative position in bytes.
  */
 ByteReader.prototype.pushSeek = function(pos, opt_seekStart) {
-  var oldPos = this.pos_;
+  const oldPos = this.pos_;
   this.seek(pos, opt_seekStart);
   // Alter the seekStack_ after the call to seek(), in case it throws.
   this.seekStack_.push(oldPos);

@@ -25,8 +25,8 @@ const entryB = /** @type {!Entry} */ ({
 });
 
 function testFileSystemMetadataProviderBasic(callback) {
-  var provider = new FileSystemMetadataProvider();
-  var names = [
+  const provider = new FileSystemMetadataProvider();
+  const names = [
     'modificationTime', 'size', 'contentMimeType', 'present',
     'availableOffline'];
   reportPromise(provider.get([
@@ -50,7 +50,7 @@ function testFileSystemMetadataProviderBasic(callback) {
 }
 
 function testFileSystemMetadataProviderPartialRequest(callback) {
-  var provider = new FileSystemMetadataProvider();
+  const provider = new FileSystemMetadataProvider();
   reportPromise(provider.get(
       [new MetadataRequest(entryA, ['modificationTime', 'size'])]).then(
       function(results) {

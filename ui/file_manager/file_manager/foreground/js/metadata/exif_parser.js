@@ -54,8 +54,8 @@ ExifParser.prototype.requestSlice = function(
   // Read at least 1Kb so that we do not issue too many read requests.
   opt_length = Math.max(1024, opt_length || 0);
 
-  var self = this;
-  var reader = new FileReader();
+  const self = this;
+  const reader = new FileReader();
   reader.onerror = errorCallback;
   reader.onload = function() {
     self.parseSlice(
@@ -76,7 +76,7 @@ ExifParser.prototype.requestSlice = function(
 ExifParser.prototype.parseSlice = function(
     file, callback, errorCallback, metadata, filePos, buf) {
   try {
-    var br = new ByteReader(buf);
+    const br = new ByteReader(buf);
 
     if (!br.canRead(4)) {
       // We never ask for less than 4 bytes. This can only mean we reached EOF.
@@ -85,19 +85,19 @@ ExifParser.prototype.parseSlice = function(
 
     if (filePos === 0) {
       // First slice, check for the SOI mark.
-      var firstMark = this.readMark(br);
+      const firstMark = this.readMark(br);
       if (firstMark !== Exif.Mark.SOI) {
         throw new Error('Invalid file header: ' + firstMark.toString(16));
       }
     }
 
-    var self = this;
+    const self = this;
 
     /**
      * @param {number=} opt_offset
      * @param {number=} opt_bytes
      */
-    var reread = function(opt_offset, opt_bytes) {
+    const reread = function(opt_offset, opt_bytes) {
       self.requestSlice(file, callback, errorCallback, metadata,
           filePos + br.tell() + (opt_offset || 0), opt_bytes);
     };
@@ -109,14 +109,14 @@ ExifParser.prototype.parseSlice = function(
         return;
       }
 
-      var mark = this.readMark(br);
+      const mark = this.readMark(br);
       if (mark === Exif.Mark.SOS) {
         throw new Error('SOS marker found before SOF');
       }
 
-      var markLength = this.readMarkLength(br);
+      const markLength = this.readMarkLength(br);
 
-      var nextSectionStart = br.tell() + markLength;
+      const nextSectionStart = br.tell() + markLength;
       if (!br.canRead(markLength)) {
         // Get the entire section.
         if (filePos + br.tell() + markLength > file.size) {
@@ -132,8 +132,8 @@ ExifParser.prototype.parseSlice = function(
       } else if (ExifParser.isSOF_(mark)) {
         // The most reliable size information is encoded in the SOF section.
         br.seek(1, ByteReader.SEEK_CUR); // Skip the precision byte.
-        var height = br.readScalar(2);
-        var width = br.readScalar(2);
+        const height = br.readScalar(2);
+        const width = br.readScalar(2);
         ExifParser.setImageSize(metadata, width, height);
         callback(metadata);  // We are done!
         return;
@@ -157,7 +157,7 @@ ExifParser.isSOF_ = function(mark) {
   if ((mark & ~0xF) !== Exif.Mark.SOF) return false;
 
   // If the last digit is 4, 8 or 12 it is not really a SOF.
-  var type = mark & 0xF;
+  const type = mark & 0xF;
   return (type !== 4 && type !== 8 && type !== 12);
 };
 
@@ -167,7 +167,7 @@ ExifParser.isSOF_ = function(mark) {
  * @param {ByteReader} br Byte reader to be used.
  */
 ExifParser.prototype.parseExifSection = function(metadata, buf, br) {
-  var magic = br.readString(6);
+  const magic = br.readString(6);
   if (magic !== 'Exif\0\0') {
     // Some JPEG files may have sections marked with EXIF_MARK_EXIF
     // but containing something else (e.g. XML text). Ignore such sections.
@@ -180,7 +180,7 @@ ExifParser.prototype.parseExifSection = function(metadata, buf, br) {
   // calculations simpler.
   br = new ByteReader(buf, br.tell());
 
-  var order = br.readScalar(2);
+  const order = br.readScalar(2);
   if (order === Exif.Align.LITTLE) {
     br.setByteOrder(ByteReader.LITTLE_ENDIAN);
   } else if (order !== Exif.Align.BIG) {
@@ -188,7 +188,7 @@ ExifParser.prototype.parseExifSection = function(metadata, buf, br) {
     return;
   }
 
-  var tag = br.readScalar(2);
+  const tag = br.readScalar(2);
   if (tag !== Exif.Tag.TIFF) {
     this.log('Invalid TIFF tag: ' + tag.toString(16));
     return;
@@ -199,7 +199,7 @@ ExifParser.prototype.parseExifSection = function(metadata, buf, br) {
     image: {},
     thumbnail: {}
   };
-  var directoryOffset = br.readScalar(4);
+  let directoryOffset = br.readScalar(4);
 
   // Image directory.
   this.vlog('Read image directory.');
@@ -287,10 +287,10 @@ ExifParser.prototype.readMarkLength = function(br) {
  * @return {number} Directory offset.
  */
 ExifParser.prototype.readDirectory = function(br, tags) {
-  var entryCount = br.readScalar(2);
-  for (var i = 0; i < entryCount; i++) {
-    var tagId = /** @type Exif.Tag<number> */ (br.readScalar(2));
-    var tag = tags[tagId] = {id: tagId};
+  const entryCount = br.readScalar(2);
+  for (let i = 0; i < entryCount; i++) {
+    const tagId = /** @type Exif.Tag<number> */ (br.readScalar(2));
+    const tag = tags[tagId] = {id: tagId};
     tag.format = br.readScalar(2);
     tag.componentCount = br.readScalar(4);
     this.readTagValue(br, tag);
@@ -304,7 +304,7 @@ ExifParser.prototype.readDirectory = function(br, tags) {
  * @param {ExifEntry} tag Tag object.
  */
 ExifParser.prototype.readTagValue = function(br, tag) {
-  var self = this;
+  const self = this;
 
   /**
    * @param {number} size
@@ -328,11 +328,11 @@ ExifParser.prototype.readTagValue = function(br, tag) {
    * @param {boolean=} opt_signed
    */
   function unsafeRead(size, opt_readFunction, opt_signed) {
-    var readFunction = opt_readFunction || function(size) {
+    const readFunction = opt_readFunction || function(size) {
       return br.readScalar(size, opt_signed);
     };
 
-    var totalSize = tag.componentCount * size;
+    const totalSize = tag.componentCount * size;
     if (totalSize < 1) {
       // This is probably invalid exif data, skip it.
       tag.componentCount = 1;
@@ -351,7 +351,7 @@ ExifParser.prototype.readTagValue = function(br, tag) {
     } else {
       // Read multiple components into an array.
       tag.value = [];
-      for (var i = 0; i < tag.componentCount; i++) {
+      for (let i = 0; i < tag.componentCount; i++) {
         tag.value[i] = readFunction(size);
       }
     }
@@ -467,7 +467,7 @@ ExifParser.ROTATE90 = [0, 0, 0, 0, 1, 1, 1, 1];
  */
 ExifParser.prototype.parseOrientation = function(ifd) {
   if (ifd[Exif.Tag.ORIENTATION]) {
-    var index = (ifd[Exif.Tag.ORIENTATION].value || 1) - 1;
+    const index = (ifd[Exif.Tag.ORIENTATION].value || 1) - 1;
     return {
       scaleX: ExifParser.SCALEX[index],
       scaleY: ExifParser.SCALEY[index],

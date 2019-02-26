@@ -62,7 +62,7 @@ MetadataParser.prototype.createDefaultMetadata = function() {
  * @param {function(string)} onError Error handler.
  */
 MetadataParser.readFileBytes = function(file, begin, end, callback, onError) {
-  var fileReader = new FileReader();
+  const fileReader = new FileReader();
   fileReader.onerror = function(event) {
     onError(event.type);
   };

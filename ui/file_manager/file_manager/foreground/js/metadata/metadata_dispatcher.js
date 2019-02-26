@@ -13,7 +13,7 @@
  * @type {string}
  * @const
  */
-var FILE_MANAGER_HOST__METADATA_DISPATCHER =
+const FILE_MANAGER_HOST__METADATA_DISPATCHER =
     'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj';
 
 // All of these scripts could be imported with a single call to importScripts,
@@ -53,12 +53,12 @@ function MetadataDispatcher(port) {
       FILE_MANAGER_HOST__METADATA_DISPATCHER +
       '/foreground/js/metadata/id3_parser.js');
 
-  var patterns = [];
+  const patterns = [];
 
   this.parserInstances_ = [];
-  for (var i = 0; i < MetadataDispatcher.parserClasses_.length; i++) {
-    var parserClass = MetadataDispatcher.parserClasses_[i];
-    var parser = new parserClass(this);
+  for (let i = 0; i < MetadataDispatcher.parserClasses_.length; i++) {
+    const parserClass = MetadataDispatcher.parserClasses_[i];
+    const parser = new parserClass(this);
     this.parserInstances_.push(parser);
     patterns.push(parser.urlFilter.source);
   }
@@ -117,7 +117,7 @@ MetadataDispatcher.prototype.request_ = function(fileURL) {
  * @param {...(Object|string)} var_args Arguments.
  */
 MetadataDispatcher.prototype.error = function(var_args) {
-  var ary = Array.apply(null, arguments);
+  const ary = Array.apply(null, arguments);
   this.postMessage('error', ary);
 };
 
@@ -128,7 +128,7 @@ MetadataDispatcher.prototype.error = function(var_args) {
  * @param {...(Object|string)} var_args Arguments.
  */
 MetadataDispatcher.prototype.log = function(var_args) {
-  var ary = Array.apply(null, arguments);
+  const ary = Array.apply(null, arguments);
   this.postMessage('log', ary);
 };
 
@@ -156,7 +156,7 @@ MetadataDispatcher.prototype.postMessage = function(verb, args) {
  * @param {Event} event Event object.
  */
 MetadataDispatcher.prototype.onMessage = function(event) {
-  var data = event.data;
+  const data = event.data;
 
   if (this.messageHandlers_.hasOwnProperty(data.verb)) {
     this.messageHandlers_[data.verb].apply(this, data.arguments);
@@ -170,8 +170,8 @@ MetadataDispatcher.prototype.onMessage = function(event) {
  * @param {function(Object)} callback Completion callback.
  */
 MetadataDispatcher.prototype.processOneFile = function(fileURL, callback) {
-  var self = this;
-  var currentStep = -1;
+  const self = this;
+  let currentStep = -1;
 
   /**
    * @param {...} var_args Arguments.
@@ -181,7 +181,7 @@ MetadataDispatcher.prototype.processOneFile = function(fileURL, callback) {
     steps[++currentStep].apply(self, arguments);
   }
 
-  var metadata;
+  let metadata;
 
   /**
    * @param {*} err An error.
@@ -192,11 +192,11 @@ MetadataDispatcher.prototype.processOneFile = function(fileURL, callback) {
         metadata);
   }
 
-  var steps = [
+  const steps = [
     // Step one, find the parser matching the url.
     function detectFormat() {
-      for (var i = 0; i != self.parserInstances_.length; i++) {
-        var parser = self.parserInstances_[i];
+      for (let i = 0; i != self.parserInstances_.length; i++) {
+        const parser = self.parserInstances_[i];
         if (fileURL.match(parser.urlFilter)) {
           // Create the metadata object as early as possible so that we can
           // pass it with the error message.
@@ -239,11 +239,11 @@ MetadataDispatcher.prototype.processOneFile = function(fileURL, callback) {
 // Webworker spec says that the worker global object is called self.  That's
 // a terrible name since we use it all over the chrome codebase to capture
 // the 'this' keyword in lambdas.
-var global = self;
+const global = self;
 
 if (global.constructor.name == 'SharedWorkerGlobalScope') {
   global.addEventListener('connect', function(e) {
-    var port = e.ports[0];
+    const port = e.ports[0];
     new MetadataDispatcher(port);
     port.start();
   });

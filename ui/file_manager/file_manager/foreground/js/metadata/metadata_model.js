@@ -94,14 +94,14 @@ class MetadataModel {
 
     // The LRU cache may be cached out when the callback is completed.
     // To hold cached values, create snapshot of the cache for entries.
-    var requestId = this.cache_.generateRequestId();
-    var snapshot = this.cache_.createSnapshot(entries);
-    var requests = snapshot.createRequests(entries, names);
+    const requestId = this.cache_.generateRequestId();
+    const snapshot = this.cache_.createSnapshot(entries);
+    const requests = snapshot.createRequests(entries, names);
     snapshot.startRequests(requestId, requests);
     this.cache_.startRequests(requestId, requests);
 
     // Register callback.
-    var promise = new Promise(function(fulfill) {
+    const promise = new Promise(function(fulfill) {
       this.callbackRequests_.push(new MetadataProviderCallbackRequest(
           entries, names, snapshot, fulfill));
     }.bind(this));
@@ -111,11 +111,11 @@ class MetadataModel {
       this.rawProvider_.get(requests).then(function(list) {
         // Obtain requested entries and ensure all the requested properties are
         // contained in the result.
-        var requestedEntries = [];
-        for (var i = 0; i < requests.length; i++) {
+        const requestedEntries = [];
+        for (let i = 0; i < requests.length; i++) {
           requestedEntries.push(requests[i].entry);
-          for (var j = 0; j < requests[i].names.length; j++) {
-            var name = requests[i].names[j];
+          for (let j = 0; j < requests[i].names.length; j++) {
+            const name = requests[i].names[j];
             if (!(name in list[i])) {
               list[i][name] = undefined;
             }
@@ -126,7 +126,7 @@ class MetadataModel {
         this.cache_.storeProperties(requestId, requestedEntries, list, names);
 
         // Invoke callbacks.
-        var i = 0;
+        let i = 0;
         while (i < this.callbackRequests_.length) {
           if (this.callbackRequests_[i].storeProperties(
                   requestId, requestedEntries, list)) {
