@@ -18,6 +18,7 @@ mojom("interfaces_internal") {
     "accessibility_controller_enums.mojom",
     "accessibility_focus_ring_controller.mojom",
     "app_list.mojom",
+    "arc_custom_tab.mojom",
     "ash_display_controller.mojom",
     "ash_message_center_controller.mojom",
     "ash_window_manager.mojom",

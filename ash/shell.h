@@ -94,6 +94,7 @@ class AcceleratorController;
 class AccessibilityController;
 class AccessibilityDelegate;
 class AccessibilityFocusRingController;
+class ArcCustomTabController;
 class AshDBusServices;
 class AshDisplayController;
 class AppListControllerImpl;
@@ -342,6 +343,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   ::wm::ActivationClient* activation_client();
   AppListControllerImpl* app_list_controller() {
     return app_list_controller_.get();
+  }
+  ArcCustomTabController* arc_custom_tab_controller() {
+    return arc_custom_tab_controller_.get();
   }
   AshDisplayController* ash_display_controller() {
     return ash_display_controller_.get();
@@ -704,6 +708,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<AccessibilityFocusRingController>
       accessibility_focus_ring_controller_;
   std::unique_ptr<AppListControllerImpl> app_list_controller_;
+  std::unique_ptr<ArcCustomTabController> arc_custom_tab_controller_;
   std::unique_ptr<AshDBusServices> ash_dbus_services_;
   std::unique_ptr<AshDisplayController> ash_display_controller_;
   std::unique_ptr<AssistantController> assistant_controller_;
