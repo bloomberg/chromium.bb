@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_thread.h"
 #include "third_party/blink/renderer/platform/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -30,6 +31,8 @@ namespace {
 // BundledReceivers. It is created to read the script body or metadata from a
 // data pipe, and is destroyed when the read finishes.
 class Receiver {
+  DISALLOW_NEW();
+
  public:
   using BytesChunk = Vector<char>;
 
