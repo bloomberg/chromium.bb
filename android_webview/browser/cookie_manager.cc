@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_cookie_access_policy.h"
 #include "android_webview/browser/net/init_native_callback.h"
 #include "android_webview/browser/net_network_service/aw_cookie_manager_wrapper.h"
@@ -18,8 +19,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/feature_list.h"
-#include "base/files/file_path.h"
-#include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -47,7 +46,6 @@
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "url/url_constants.h"
 
-using base::FilePath;
 using base::WaitableEvent;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertJavaStringToUTF16;
@@ -157,12 +155,6 @@ static base::RepeatingCallback<void(int)> IntCallbackAdapter(
 // Are cookies allowed for file:// URLs by default?
 const bool kDefaultFileSchemeAllowed = false;
 
-void GetUserDataDir(FilePath* user_data_dir) {
-  if (!base::PathService::Get(base::DIR_ANDROID_APP_DATA, user_data_dir)) {
-    NOTREACHED() << "Failed to get app data directory for Android WebView";
-  }
-}
-
 net::CookieStore::SetCookiesCallback StatusToBool(
     base::OnceCallback<void(bool)> callback) {
   return base::BindOnce(
@@ -258,13 +250,10 @@ net::CookieStore* CookieManager::GetCookieStore() {
   DCHECK(cookie_store_task_runner_->RunsTasksInCurrentSequence());
 
   if (!cookie_store_) {
-    FilePath user_data_dir;
-    GetUserDataDir(&user_data_dir);
-    FilePath cookie_store_path =
-        user_data_dir.Append(FILE_PATH_LITERAL("Cookies"));
-
-    content::CookieStoreConfig cookie_config(cookie_store_path, true, true,
-                                             nullptr);
+    content::CookieStoreConfig cookie_config(
+        AwBrowserContext::GetCookieStorePath(),
+        true /* restore_old_session_cookies */,
+        true /* persist_session_cookies */, nullptr /* storage_policy */);
     cookie_config.client_task_runner = cookie_store_task_runner_;
     cookie_config.background_task_runner =
         cookie_store_backend_thread_.task_runner();

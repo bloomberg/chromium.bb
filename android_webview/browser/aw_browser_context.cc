@@ -130,10 +130,22 @@ AwBrowserContext* AwBrowserContext::FromWebContents(
 // static
 base::FilePath AwBrowserContext::GetCacheDir() {
   FilePath cache_path;
-  base::PathService::Get(base::DIR_CACHE, &cache_path);
+  if (!base::PathService::Get(base::DIR_CACHE, &cache_path)) {
+    NOTREACHED() << "Failed to get app cache directory for Android WebView";
+  }
   cache_path =
       cache_path.Append(FILE_PATH_LITERAL("org.chromium.android_webview"));
   return cache_path;
+}
+
+// static
+base::FilePath AwBrowserContext::GetCookieStorePath() {
+  FilePath cookie_store_path;
+  if (!base::PathService::Get(base::DIR_ANDROID_APP_DATA, &cookie_store_path)) {
+    NOTREACHED() << "Failed to get app data directory for Android WebView";
+  }
+  cookie_store_path = cookie_store_path.Append(FILE_PATH_LITERAL("Cookies"));
+  return cookie_store_path;
 }
 
 void AwBrowserContext::PreMainMessageLoopRun(net::NetLog* net_log) {
