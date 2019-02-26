@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/modules/storage/storage_area.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -44,6 +45,8 @@ class WebStorageArea;
 // AddLocalStorageInspectorStorageAgent,
 // RemoveLocalStorageInspectorStorageAgent, DidDispatchLocalStorageEvent
 class MODULES_EXPORT StorageController {
+  USING_FAST_MALLOC(StorageController);
+
  public:
   // Returns the one global StorageController instance.
   static StorageController* GetInstance();
