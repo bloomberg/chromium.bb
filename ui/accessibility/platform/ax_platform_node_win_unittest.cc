@@ -126,6 +126,21 @@ void AXPlatformNodeWinTest::TearDown() {
 }
 
 template <typename T>
+ComPtr<T> AXPlatformNodeWinTest::QueryInterfaceFromNodeId(int32_t id) {
+  const TestAXNodeWrapper* wrapper =
+      TestAXNodeWrapper::GetOrCreate(tree_.get(), tree_->GetFromId(id));
+  if (!wrapper)
+    return ComPtr<T>();
+
+  AXPlatformNode* ax_platform_node = wrapper->ax_platform_node();
+  ComPtr<T> result;
+  EXPECT_HRESULT_SUCCEEDED(
+      ax_platform_node->GetNativeViewAccessible()->QueryInterface(__uuidof(T),
+                                                                  &result));
+  return result;
+}
+
+template <typename T>
 ComPtr<T> AXPlatformNodeWinTest::QueryInterfaceFromNode(AXNode* node) {
   const TestAXNodeWrapper* wrapper =
       TestAXNodeWrapper::GetOrCreate(tree_.get(), node);
@@ -284,6 +299,33 @@ void AXPlatformNodeWinTest::InitListBox(
   listbox.child_ids.push_back(option_3.id);
 
   Init(listbox, option_1, option_2, option_3);
+}
+
+AXPlatformNodeWinTest::PatternSet
+AXPlatformNodeWinTest::GetSupportedPatternsFromNodeId(int32_t id) {
+  ComPtr<IRawElementProviderSimple> raw_element_provider_simple =
+      QueryInterfaceFromNodeId<IRawElementProviderSimple>(id);
+  PatternSet supported_patterns;
+  static const std::vector<long> all_supported_patterns_ = {
+      UIA_TextChildPatternId,  UIA_TextEditPatternId,
+      UIA_TextPatternId,       UIA_WindowPatternId,
+      UIA_InvokePatternId,     UIA_ExpandCollapsePatternId,
+      UIA_GridPatternId,       UIA_GridItemPatternId,
+      UIA_RangeValuePatternId, UIA_ScrollPatternId,
+      UIA_ScrollItemPatternId, UIA_TablePatternId,
+      UIA_TableItemPatternId,  UIA_SelectionItemPatternId,
+      UIA_SelectionPatternId,  UIA_TogglePatternId,
+      UIA_ValuePatternId,
+  };
+  for (long property_id : all_supported_patterns_) {
+    CComPtr<IUnknown> provider = nullptr;
+    if (SUCCEEDED(raw_element_provider_simple->GetPatternProvider(property_id,
+                                                                  &provider)) &&
+        provider) {
+      supported_patterns.insert(property_id);
+    }
+  }
+  return supported_patterns;
 }
 
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleDetachedObject) {
@@ -3937,6 +3979,93 @@ TEST_F(AXPlatformNodeWinTest, TestUIAErrorHandling) {
             window_provider->get_WindowInteractionState(nullptr));
   ASSERT_EQ(static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE),
             window_provider->get_IsTopmost(nullptr));
+}
+
+TEST_F(AXPlatformNodeWinTest, TestGetPatternProviderSupportedPatterns) {
+  ui::AXNodeData root;
+  int32_t root_id = 0;
+  root.id = root_id;
+  root.role = ax::mojom::Role::kRootWebArea;
+
+  ui::AXNodeData text_field_with_combo_box;
+  int32_t text_field_with_combo_box_id = 1;
+  text_field_with_combo_box.id = text_field_with_combo_box_id;
+  text_field_with_combo_box.role = ax::mojom::Role::kTextFieldWithComboBox;
+  root.child_ids.push_back(text_field_with_combo_box_id);
+
+  ui::AXNodeData table;
+  int32_t table_id = 2;
+  table.id = table_id;
+  table.role = ax::mojom::Role::kTable;
+  root.child_ids.push_back(table_id);
+
+  ui::AXNodeData table_cell;
+  int32_t table_cell_id = 3;
+  table_cell.id = table_cell_id;
+  table_cell.role = ax::mojom::Role::kCell;
+  table.child_ids.push_back(table_cell_id);
+
+  ui::AXNodeData meter;
+  int32_t meter_id = 4;
+  meter.id = meter_id;
+  meter.role = ax::mojom::Role::kMeter;
+  root.child_ids.push_back(meter_id);
+
+  ui::AXNodeData group_with_scroll;
+  int32_t group_with_scroll_id = 5;
+  group_with_scroll.id = group_with_scroll_id;
+  group_with_scroll.role = ax::mojom::Role::kGroup;
+  group_with_scroll.AddIntAttribute(ax::mojom::IntAttribute::kScrollXMin, 10);
+  group_with_scroll.AddIntAttribute(ax::mojom::IntAttribute::kScrollXMax, 10);
+  group_with_scroll.AddIntAttribute(ax::mojom::IntAttribute::kScrollX, 10);
+  root.child_ids.push_back(group_with_scroll_id);
+
+  ui::AXNodeData grid;
+  int32_t grid_id = 6;
+  grid.id = grid_id;
+  grid.role = ax::mojom::Role::kGrid;
+  root.child_ids.push_back(grid_id);
+
+  ui::AXNodeData checkbox;
+  int32_t checkbox_id = 7;
+  checkbox.id = checkbox_id;
+  checkbox.role = ax::mojom::Role::kCheckBox;
+  root.child_ids.push_back(checkbox_id);
+
+  Init(root, text_field_with_combo_box, table, table_cell, meter,
+       group_with_scroll, grid, checkbox);
+
+  EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ValuePatternId}),
+            GetSupportedPatternsFromNodeId(root_id));
+
+  EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ValuePatternId,
+                        UIA_ExpandCollapsePatternId}),
+            GetSupportedPatternsFromNodeId(text_field_with_combo_box_id));
+
+  EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ValuePatternId,
+                        UIA_GridPatternId, UIA_TablePatternId}),
+            GetSupportedPatternsFromNodeId(table_id));
+
+  EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ValuePatternId,
+                        UIA_GridItemPatternId, UIA_TableItemPatternId}),
+            GetSupportedPatternsFromNodeId(table_cell_id));
+
+  EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ValuePatternId,
+                        UIA_RangeValuePatternId}),
+            GetSupportedPatternsFromNodeId(meter_id));
+
+  EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ValuePatternId,
+                        UIA_ScrollPatternId}),
+            GetSupportedPatternsFromNodeId(group_with_scroll_id));
+
+  EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ValuePatternId,
+                        UIA_SelectionPatternId, UIA_GridPatternId,
+                        UIA_TablePatternId}),
+            GetSupportedPatternsFromNodeId(grid_id));
+
+  EXPECT_EQ(PatternSet({UIA_ScrollItemPatternId, UIA_ValuePatternId,
+                        UIA_TogglePatternId}),
+            GetSupportedPatternsFromNodeId(checkbox_id));
 }
 
 }  // namespace ui
