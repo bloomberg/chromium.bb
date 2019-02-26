@@ -1013,30 +1013,6 @@ void LocalPersistentMemoryAllocator::DeallocateLocalMemory(void* memory,
 #endif
 }
 
-//----- SharedPersistentMemoryAllocator ----------------------------------------
-
-SharedPersistentMemoryAllocator::SharedPersistentMemoryAllocator(
-    std::unique_ptr<SharedMemory> memory,
-    uint64_t id,
-    base::StringPiece name,
-    bool read_only)
-    : PersistentMemoryAllocator(
-          Memory(static_cast<uint8_t*>(memory->memory()), MEM_SHARED),
-          memory->mapped_size(),
-          0,
-          id,
-          name,
-          read_only),
-      shared_memory_(std::move(memory)) {}
-
-SharedPersistentMemoryAllocator::~SharedPersistentMemoryAllocator() = default;
-
-// static
-bool SharedPersistentMemoryAllocator::IsSharedMemoryAcceptable(
-    const SharedMemory& memory) {
-  return IsMemoryAcceptable(memory.memory(), memory.mapped_size(), 0, false);
-}
-
 //----- WritableSharedPersistentMemoryAllocator --------------------------------
 
 WritableSharedPersistentMemoryAllocator::
