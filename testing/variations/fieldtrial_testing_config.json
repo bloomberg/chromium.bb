@@ -3023,18 +3023,6 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_List",
-                    "params": {
-                        "ui-alternate": "content_list"
-                    },
-                    "enable_features": [
-                        "NewNetErrorPageUI"
-                    ],
-                    "disable_features": [
-                        "AutoFetchOnNetErrorPage"
-                    ]
-                },
-                {
                     "name": "Enabled_AutoFetch",
                     "enable_features": [
                         "AutoFetchOnNetErrorPage"
