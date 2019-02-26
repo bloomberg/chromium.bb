@@ -424,7 +424,10 @@ TEST_F(ArcSessionManagerTest, CancelFetchingDisablesArc) {
   EXPECT_FALSE(IsArcPlayStoreEnabledForProfile(profile()));
 
   // Emulate the preference handling.
+  const bool enable_requested = arc_session_manager()->enable_requested();
   arc_session_manager()->RequestDisable();
+  if (enable_requested)
+    arc_session_manager()->RequestArcDataRemoval();
 
   // Wait until data is removed.
   ASSERT_TRUE(WaitForDataRemoved(ArcSessionManager::State::STOPPED));
@@ -700,7 +703,10 @@ TEST_F(ArcSessionManagerTest, ClearArcTransitionOnShutdown) {
       prefs::kArcSupervisionTransition,
       static_cast<int>(ArcSupervisionTransition::CHILD_TO_REGULAR));
   // Simulate ARC shutdown.
+  const bool enable_requested = arc_session_manager()->enable_requested();
   arc_session_manager()->RequestDisable();
+  if (enable_requested)
+    arc_session_manager()->RequestArcDataRemoval();
   EXPECT_EQ(
       static_cast<int>(ArcSupervisionTransition::NO_TRANSITION),
       profile()->GetPrefs()->GetInteger(prefs::kArcSupervisionTransition));
@@ -886,6 +892,26 @@ TEST_F(ArcSessionManagerTest, DataCleanUpOnNextStart) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
+  arc_session_manager()->Shutdown();
+}
+
+TEST_F(ArcSessionManagerTest, RequestDisableDoesNotRemoveData) {
+  // Start ARC.
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->Initialize();
+  arc_session_manager()->RequestEnable();
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(ArcSessionManager::State::NEGOTIATING_TERMS_OF_SERVICE,
+            arc_session_manager()->state());
+
+  // Disable ARC.
+  arc_session_manager()->RequestDisable();
+
+  // Data removal is not requested.
+  EXPECT_FALSE(
+      profile()->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested));
+
+  // Correctly stop service.
   arc_session_manager()->Shutdown();
 }
 

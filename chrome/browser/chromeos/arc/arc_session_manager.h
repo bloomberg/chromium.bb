@@ -188,7 +188,8 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
 
   // Requests to disable ARC session. This stops ARC instance, or quits Terms
   // Of Service negotiation if it is the middle of the process (e.g. closing
-  // UI for manual negotiation if it is shown).
+  // UI for manual negotiation if it is shown). This does not remove user ARC
+  // data.
   // If it is already requested to disable, no-op.
   void RequestDisable();
 

@@ -753,6 +753,8 @@ void ArcSessionManager::RequestDisable() {
     return;
   }
 
+  VLOG(1) << "Disabling ARC.";
+
   directly_started_ = false;
   enable_requested_ = false;
   UpdatePersistentUMAState();
@@ -763,14 +765,13 @@ void ArcSessionManager::RequestDisable() {
   // Reset any pending request to re-enable ARC.
   reenable_arc_ = false;
   StopArc();
-  VLOG(1) << "ARC opt-out. Removing user data.";
-  RequestArcDataRemoval();
 }
 
 void ArcSessionManager::RequestArcDataRemoval() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile_);
   DCHECK(data_remover_);
+  VLOG(1) << "Removing user ARC data.";
 
   // TODO(hidehiko): DCHECK the previous state. This is called for four cases;
   // 1) Supporting managed user initial disabled case (Please see also
