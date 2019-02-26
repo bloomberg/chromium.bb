@@ -177,7 +177,7 @@ DEFINE_UI_CLASS_PROPERTY_KEY(bool, kIsDraggingTabsKey, false)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kIsShowingInOverviewKey, false)
 DEFINE_UI_CLASS_PROPERTY_KEY(mojom::WindowStateType,
                              kPrePipWindowStateTypeKey,
-                             mojom::WindowStateType::DEFAULT);
+                             mojom::WindowStateType::DEFAULT)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kRenderTitleAreaProperty, false)
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Rect,
                                    kRestoreBoundsOverrideKey,
