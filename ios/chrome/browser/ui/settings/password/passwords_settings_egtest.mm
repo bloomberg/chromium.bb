@@ -1105,12 +1105,15 @@ PasswordForm CreateSampleFormWithIndex(int index) {
   [GetInteractionForPasswordDetailItem(CopyUsernameButton())
       assertWithMatcher:grey_layout(@[ Below() ], usernameCell)];
 
-  [GetInteractionForPasswordDetailItem(PasswordHeader())
+  id<GREYMatcher> passwordHeader =
+      grey_allOf(PasswordHeader(),
+                 grey_kindOfClass([UITableViewHeaderFooterView class]), nil);
+  [GetInteractionForPasswordDetailItem(passwordHeader)
       assertWithMatcher:grey_layout(@[ Below() ], CopyUsernameButton())];
   id<GREYMatcher> passwordCell = grey_accessibilityLabel(
       l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_HIDDEN_LABEL));
   [GetInteractionForPasswordDetailItem(passwordCell)
-      assertWithMatcher:grey_layout(@[ Below() ], PasswordHeader())];
+      assertWithMatcher:grey_layout(@[ Below() ], passwordHeader)];
   [GetInteractionForPasswordDetailItem(CopyPasswordButton())
       assertWithMatcher:grey_layout(@[ Below() ], passwordCell)];
   [GetInteractionForPasswordDetailItem(ShowPasswordButton())
@@ -1253,6 +1256,13 @@ PasswordForm CreateSampleFormWithIndex(int index) {
                                    @"savePasswordsItem_switch", expected_state),
                                kGREYDirectionUp)
         performAction:TurnSettingsSwitchOn(!expected_state)];
+
+    // Check that the switch has been modified.
+    [GetInteractionForListItem(
+        chrome_test_util::SettingsSwitchCell(@"savePasswordsItem_switch",
+                                             !expected_state),
+        kGREYDirectionUp) assertWithMatcher:grey_sufficientlyVisible()];
+
     // Check the stored items. Scroll down if needed.
     [GetInteractionForPasswordEntry(@"example.com, concrete username")
         assertWithMatcher:grey_notNil()];

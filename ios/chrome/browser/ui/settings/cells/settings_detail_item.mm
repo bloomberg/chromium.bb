@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #import "ios/chrome/browser/ui/settings/cells/settings_cells_constants.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
@@ -17,15 +18,8 @@
 
 namespace {
 
-// Padding used on the leading and trailing edges of the cell and between the
-// two labels.
-const CGFloat kHorizontalPadding = 16;
-
 // Padding used between the icon and the text labels.
 const CGFloat kIconTrailingPadding = 12;
-
-// Padding used on the top and bottom edges of the cell.
-const CGFloat kVerticalPadding = 16;
 
 // Size of the icon image.
 const CGFloat kIconImageSize = 28;
@@ -141,7 +135,7 @@ const CGFloat kMinDetailTextWidthRatio = 0.25f;
     // these will be active at a time, defaulting to hidden.
     _iconHiddenConstraint = [_labelContainerGuide.leadingAnchor
         constraintEqualToAnchor:contentView.leadingAnchor
-                       constant:kHorizontalPadding];
+                       constant:kTableViewHorizontalSpacing];
     _iconVisibleConstraint = [_labelContainerGuide.leadingAnchor
         constraintEqualToAnchor:_iconImageView.trailingAnchor
                        constant:kIconTrailingPadding];
@@ -160,29 +154,30 @@ const CGFloat kMinDetailTextWidthRatio = 0.25f;
     ];
 
     _accessibilityConstraints = @[
-      [_textLabel.topAnchor constraintEqualToAnchor:self.contentView.topAnchor
-                                           constant:kVerticalPadding],
+      [_textLabel.topAnchor
+          constraintEqualToAnchor:self.contentView.topAnchor
+                         constant:kTableViewLargeVerticalSpacing],
       [_detailTextLabel.bottomAnchor
           constraintEqualToAnchor:self.contentView.bottomAnchor
-                         constant:-kVerticalPadding],
+                         constant:-kTableViewLargeVerticalSpacing],
       [_textLabel.bottomAnchor
           constraintEqualToAnchor:_detailTextLabel.topAnchor
-                         constant:-kVerticalPadding],
+                         constant:-kTableViewLargeVerticalSpacing],
       [_textLabel.trailingAnchor
           constraintLessThanOrEqualToAnchor:self.contentView.trailingAnchor
-                                   constant:-kHorizontalPadding],
+                                   constant:-kTableViewHorizontalSpacing],
       [_detailTextLabel.leadingAnchor
           constraintEqualToAnchor:self.contentView.leadingAnchor
-                         constant:kHorizontalPadding],
+                         constant:kTableViewHorizontalSpacing],
       [_detailTextLabel.trailingAnchor
           constraintLessThanOrEqualToAnchor:_labelContainerGuide.trailingAnchor
-                                   constant:-kHorizontalPadding],
+                                   constant:-kTableViewHorizontalSpacing],
     ];
 
     [NSLayoutConstraint activateConstraints:@[
       [_iconImageView.leadingAnchor
           constraintEqualToAnchor:contentView.leadingAnchor
-                         constant:kHorizontalPadding],
+                         constant:kTableViewHorizontalSpacing],
       [_iconImageView.widthAnchor constraintEqualToConstant:kIconImageSize],
       [_iconImageView.heightAnchor constraintEqualToConstant:kIconImageSize],
 
@@ -191,14 +186,15 @@ const CGFloat kMinDetailTextWidthRatio = 0.25f;
           constraintEqualToAnchor:_labelContainerGuide.leadingAnchor],
       [_labelContainerGuide.trailingAnchor
           constraintEqualToAnchor:contentView.trailingAnchor
-                         constant:-kHorizontalPadding],
+                         constant:-kTableViewHorizontalSpacing],
 
       [_iconImageView.centerYAnchor
           constraintEqualToAnchor:contentView.centerYAnchor],
       _iconHiddenConstraint,
     ]];
 
-    AddOptionalVerticalPadding(contentView, _textLabel, kVerticalPadding);
+    AddOptionalVerticalPadding(contentView, _textLabel,
+                               kTableViewOneLabelCellVerticalSpacing);
 
     [self updateForAccessibilityContentSizeCategory:
               UIContentSizeCategoryIsAccessibilityCategory(
@@ -286,8 +282,8 @@ const CGFloat kMinDetailTextWidthRatio = 0.25f;
 }
 
 - (CGFloat)textLabelTargetWidth {
-  CGFloat availableWidth =
-      CGRectGetWidth(_labelContainerGuide.layoutFrame) - kHorizontalPadding;
+  CGFloat availableWidth = CGRectGetWidth(_labelContainerGuide.layoutFrame) -
+                           kTableViewHorizontalSpacing;
   CGFloat textLabelWidth = self.textLabel.frame.size.width;
   CGFloat detailTextLabelWidth = self.detailTextLabel.frame.size.width;
 
@@ -300,8 +296,8 @@ const CGFloat kMinDetailTextWidthRatio = 0.25f;
 }
 
 - (CGFloat)detailTextLabelTargetWidth {
-  CGFloat availableWidth =
-      CGRectGetWidth(_labelContainerGuide.layoutFrame) - kHorizontalPadding;
+  CGFloat availableWidth = CGRectGetWidth(_labelContainerGuide.layoutFrame) -
+                           kTableViewHorizontalSpacing;
   CGFloat textLabelWidth = self.textLabel.frame.size.width;
   CGFloat detailTextLabelWidth = self.detailTextLabel.frame.size.width;
 
