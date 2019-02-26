@@ -877,10 +877,11 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
              value_id == CSSValueRl || value_id == CSSValueTb;
     case CSSPropertyWhiteSpace:
       return value_id == CSSValueNormal || value_id == CSSValuePre ||
-             value_id == CSSValuePreWrap || value_id == CSSValuePreLine ||
-             value_id == CSSValueNowrap;
+             value_id == CSSValuePreWrap || value_id == CSSValueBbPreWrapText ||
+             value_id == CSSValuePreLine || value_id == CSSValueNowrap;
     case CSSPropertyWordBreak:
       return value_id == CSSValueNormal || value_id == CSSValueBreakAll ||
+             value_id == CSSValueBbKeepAllIfKorean ||
              value_id == CSSValueKeepAll || value_id == CSSValueBreakWord;
     case CSSPropertyScrollSnapStop:
       DCHECK(RuntimeEnabledFeatures::CSSScrollSnapPointsEnabled());
