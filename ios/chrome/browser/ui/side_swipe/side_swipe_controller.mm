@@ -596,6 +596,9 @@ const NSUInteger kIpadGreySwipeTabCount = 8;
     return;
   }
 
+  if (!webState)
+    return;
+
   // With slim nav enabled, disable SideSwipeController's edge swipe for a
   // typical navigation.  Continue to use SideSwipeController when on, before,
   // or after a native page.
