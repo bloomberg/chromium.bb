@@ -191,6 +191,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   DCHECK(!self.accountItem);
   self.accountItem =
       [[TableViewAccountItem alloc] initWithType:IdentityItemType];
+  self.accountItem.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
   [model addItem:self.accountItem
       toSectionWithIdentifier:IdentitySectionIdentifier];
 }
