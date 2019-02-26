@@ -112,6 +112,7 @@
 #include "third_party/blink/public/web/web_associated_url_loader_options.h"
 #include "third_party/blink/public/web/web_autofill_client.h"
 #include "third_party/blink/public/web/web_console_message.h"
+#include "third_party/blink/public/web/web_content_capture_client.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_dom_event.h"
 #include "third_party/blink/public/web/web_form_element.h"
@@ -1994,6 +1995,15 @@ void WebLocalFrameImpl::SetAutofillClient(WebAutofillClient* autofill_client) {
 
 WebAutofillClient* WebLocalFrameImpl::AutofillClient() {
   return autofill_client_;
+}
+
+void WebLocalFrameImpl::SetContentCaptureClient(
+    WebContentCaptureClient* content_capture_client) {
+  content_capture_client_ = content_capture_client;
+}
+
+WebContentCaptureClient* WebLocalFrameImpl::ContentCaptureClient() const {
+  return content_capture_client_;
 }
 
 bool WebLocalFrameImpl::IsLocalRoot() const {

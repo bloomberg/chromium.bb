@@ -36,6 +36,7 @@ class FrameScheduler;
 class InterfaceRegistry;
 class WebAssociatedURLLoader;
 class WebAutofillClient;
+class WebContentCaptureClient;
 class WebContentSettingsClient;
 class WebDocument;
 class WebDoubleSize;
@@ -139,6 +140,9 @@ class WebLocalFrame : public WebFrame {
 
   virtual void SetAutofillClient(WebAutofillClient*) = 0;
   virtual WebAutofillClient* AutofillClient() = 0;
+
+  virtual void SetContentCaptureClient(WebContentCaptureClient*) = 0;
+  virtual WebContentCaptureClient* ContentCaptureClient() const = 0;
 
   // Closing -------------------------------------------------------------
 

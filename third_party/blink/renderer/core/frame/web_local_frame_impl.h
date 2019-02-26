@@ -253,6 +253,8 @@ class CORE_EXPORT WebLocalFrameImpl final
                                       mojo::ScopedMessagePipeHandle) override;
   void SetAutofillClient(WebAutofillClient*) override;
   WebAutofillClient* AutofillClient() override;
+  void SetContentCaptureClient(WebContentCaptureClient*) override;
+  WebContentCaptureClient* ContentCaptureClient() const override;
   bool IsLocalRoot() const override;
   bool IsProvisional() const override;
   WebLocalFrameImpl* LocalRoot() override;
@@ -482,6 +484,9 @@ class CORE_EXPORT WebLocalFrameImpl final
   Member<WebDevToolsAgentImpl> dev_tools_agent_;
 
   WebAutofillClient* autofill_client_;
+
+  WebContentCaptureClient* content_capture_client_ = nullptr;
+
   WebContentSettingsClient* content_settings_client_ = nullptr;
 
   Member<FindInPage> find_in_page_;

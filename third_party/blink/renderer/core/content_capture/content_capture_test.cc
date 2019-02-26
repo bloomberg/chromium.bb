@@ -4,7 +4,8 @@
 
 #include "third_party/blink/renderer/core/content_capture/content_capture_manager.h"
 
-#include "third_party/blink/renderer/core/content_capture/content_capture_client.h"
+#include "third_party/blink/public/web/web_content_capture_client.h"
+#include "third_party/blink/public/web/web_content_holder.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
@@ -13,20 +14,19 @@
 
 namespace blink {
 
-class ContentCaptureClientTestHelper : public ContentCaptureClient {
+class WebContentCaptureClientTestHelper : public WebContentCaptureClient {
  public:
-  ContentCaptureClientTestHelper(NodeHolder::Type type)
+  WebContentCaptureClientTestHelper(NodeHolder::Type type)
       : node_holder_type_(type) {}
-  ~ContentCaptureClientTestHelper() override = default;
-
-  bool IsContentCaptureEnabled() override { return true; }
+  ~WebContentCaptureClientTestHelper() override = default;
 
   NodeHolder::Type GetNodeHolderType() const override {
     return node_holder_type_;
   }
 
-  void DidCaptureContent(const std::vector<scoped_refptr<ContentHolder>>& data,
-                         bool first_data) override {
+  void DidCaptureContent(
+      const std::vector<scoped_refptr<WebContentHolder>>& data,
+      bool first_data) override {
     data_ = data;
     first_data_ = first_data;
   }
@@ -37,7 +37,7 @@ class ContentCaptureClientTestHelper : public ContentCaptureClient {
 
   bool FirstData() const { return first_data_; }
 
-  const std::vector<scoped_refptr<ContentHolder>>& Data() const {
+  const std::vector<scoped_refptr<WebContentHolder>>& Data() const {
     return data_;
   }
 
@@ -51,7 +51,7 @@ class ContentCaptureClientTestHelper : public ContentCaptureClient {
 
  private:
   bool first_data_ = false;
-  std::vector<scoped_refptr<ContentHolder>> data_;
+  std::vector<scoped_refptr<WebContentHolder>> data_;
   std::vector<int64_t> removed_data_;
   NodeHolder::Type node_holder_type_;
 };
@@ -60,7 +60,7 @@ class ContentCaptureTaskTestHelper : public ContentCaptureTask {
  public:
   ContentCaptureTaskTestHelper(Document& document,
                                Delegate& delegate,
-                               ContentCaptureClient& content_capture_client)
+                               WebContentCaptureClient& content_capture_client)
       : ContentCaptureTask(document, delegate),
         content_capture_client_(&content_capture_client) {}
 
@@ -82,7 +82,7 @@ class ContentCaptureTaskTestHelper : public ContentCaptureTask {
     return true;
   }
 
-  ContentCaptureClient* GetContentCaptureClient() override {
+  WebContentCaptureClient* GetWebContentCaptureClient() override {
     return content_capture_client_;
   }
 
@@ -92,7 +92,7 @@ class ContentCaptureTaskTestHelper : public ContentCaptureTask {
 
  private:
   std::vector<cc::NodeHolder> captured_content_;
-  UntracedMember<ContentCaptureClient> content_capture_client_;
+  WebContentCaptureClient* content_capture_client_;
   TaskState task_stop_state_ = TaskState::kStop;
   bool is_capture_content_called_ = false;
 };
@@ -101,10 +101,9 @@ class ContentCaptureManagerTestHelper : public ContentCaptureManager {
  public:
   ContentCaptureManagerTestHelper(
       Document& document,
-      ContentCaptureClientTestHelper& content_capture_client)
+      WebContentCaptureClientTestHelper& content_capture_client)
       : ContentCaptureManager(document,
-                              content_capture_client.GetNodeHolderType()),
-        content_capture_client_(&content_capture_client) {
+                              content_capture_client.GetNodeHolderType()) {
     content_capture_task_ = base::MakeRefCounted<ContentCaptureTaskTestHelper>(
         document, *this, content_capture_client);
   }
@@ -120,7 +119,6 @@ class ContentCaptureManagerTestHelper : public ContentCaptureManager {
 
  private:
   scoped_refptr<ContentCaptureTaskTestHelper> content_capture_task_;
-  UntracedMember<ContentCaptureClientTestHelper> content_capture_client_;
 };
 
 class ContentCaptureTest
@@ -144,7 +142,7 @@ class ContentCaptureTest
     platform()->SetAutoAdvanceNowToPendingTasks(false);
     // TODO(michaelbai): ContentCaptureManager should be get from Document.
     content_capture_client_ =
-        MakeGarbageCollected<ContentCaptureClientTestHelper>(GetParam());
+        std::make_unique<WebContentCaptureClientTestHelper>(GetParam());
     content_capture_manager_ =
         MakeGarbageCollected<ContentCaptureManagerTestHelper>(
             GetDocument(), *content_capture_client_);
@@ -160,8 +158,8 @@ class ContentCaptureTest
     return content_capture_manager_;
   }
 
-  ContentCaptureClientTestHelper* GetContentCaptureClient() const {
-    return content_capture_client_;
+  WebContentCaptureClientTestHelper* GetWebContentCaptureClient() const {
+    return content_capture_client_.get();
   }
 
   scoped_refptr<ContentCaptureTaskTestHelper> GetContentCaptureTask() const {
@@ -198,7 +196,7 @@ class ContentCaptureTest
  private:
   void ResetResult() {
     GetContentCaptureTask()->ResetIsCaptureContentCalled();
-    GetContentCaptureClient()->ResetResults();
+    GetWebContentCaptureClient()->ResetResults();
   }
 
   // TODO(michaelbai): Remove this once integrate with LayoutText.
@@ -218,7 +216,7 @@ class ContentCaptureTest
 
   std::vector<Node*> nodes_;
   std::vector<NodeHolder> node_holders_;
-  Persistent<ContentCaptureClientTestHelper> content_capture_client_;
+  std::unique_ptr<WebContentCaptureClientTestHelper> content_capture_client_;
   Persistent<ContentCaptureManagerTestHelper> content_capture_manager_;
 };
 
@@ -231,9 +229,9 @@ TEST_P(ContentCaptureTest, Basic) {
   RunContentCaptureTask();
   EXPECT_EQ(ContentCaptureTask::TaskState::kStop,
             GetContentCaptureTask()->GetTaskStateForTesting());
-  EXPECT_FALSE(GetContentCaptureClient()->Data().empty());
+  EXPECT_FALSE(GetWebContentCaptureClient()->Data().empty());
   EXPECT_EQ(GetExpectedSecondResultSize(),
-            GetContentCaptureClient()->Data().size());
+            GetWebContentCaptureClient()->Data().size());
 }
 
 TEST_P(ContentCaptureTest, PauseAndResume) {
@@ -241,18 +239,18 @@ TEST_P(ContentCaptureTest, PauseAndResume) {
   GetContentCaptureTask()->SetTaskStopState(
       ContentCaptureTask::TaskState::kCaptureContent);
   RunContentCaptureTask();
-  EXPECT_FALSE(GetContentCaptureClient()->FirstData());
-  EXPECT_TRUE(GetContentCaptureClient()->Data().empty());
-  EXPECT_TRUE(GetContentCaptureClient()->RemovedData().empty());
+  EXPECT_FALSE(GetWebContentCaptureClient()->FirstData());
+  EXPECT_TRUE(GetWebContentCaptureClient()->Data().empty());
+  EXPECT_TRUE(GetWebContentCaptureClient()->RemovedData().empty());
   EXPECT_FALSE(GetContentCaptureTask()->IsCaptureContentCalled());
 
   // The task stops before sends the captured content out.
   GetContentCaptureTask()->SetTaskStopState(
       ContentCaptureTask::TaskState::kProcessCurrentSession);
   RunContentCaptureTask();
-  EXPECT_FALSE(GetContentCaptureClient()->FirstData());
-  EXPECT_TRUE(GetContentCaptureClient()->Data().empty());
-  EXPECT_TRUE(GetContentCaptureClient()->RemovedData().empty());
+  EXPECT_FALSE(GetWebContentCaptureClient()->FirstData());
+  EXPECT_TRUE(GetWebContentCaptureClient()->Data().empty());
+  EXPECT_TRUE(GetWebContentCaptureClient()->RemovedData().empty());
   EXPECT_TRUE(GetContentCaptureTask()->IsCaptureContentCalled());
 
   // The task should be stop at kProcessRetryTask because the captured content
@@ -260,38 +258,38 @@ TEST_P(ContentCaptureTest, PauseAndResume) {
   GetContentCaptureTask()->SetTaskStopState(
       ContentCaptureTask::TaskState::kProcessRetryTask);
   RunContentCaptureTask();
-  EXPECT_TRUE(GetContentCaptureClient()->FirstData());
-  EXPECT_FALSE(GetContentCaptureClient()->Data().empty());
-  EXPECT_TRUE(GetContentCaptureClient()->RemovedData().empty());
+  EXPECT_TRUE(GetWebContentCaptureClient()->FirstData());
+  EXPECT_FALSE(GetWebContentCaptureClient()->Data().empty());
+  EXPECT_TRUE(GetWebContentCaptureClient()->RemovedData().empty());
   EXPECT_EQ(GetExpectedFirstResultSize(),
-            GetContentCaptureClient()->Data().size());
+            GetWebContentCaptureClient()->Data().size());
 
   // Run task until it stops, task will not capture content, because there is no
   // content change, so we have 3 NodeHolders.
   GetContentCaptureTask()->SetTaskStopState(
       ContentCaptureTask::TaskState::kStop);
   RunContentCaptureTask();
-  EXPECT_FALSE(GetContentCaptureClient()->FirstData());
-  EXPECT_FALSE(GetContentCaptureClient()->Data().empty());
-  EXPECT_TRUE(GetContentCaptureClient()->RemovedData().empty());
+  EXPECT_FALSE(GetWebContentCaptureClient()->FirstData());
+  EXPECT_FALSE(GetWebContentCaptureClient()->Data().empty());
+  EXPECT_TRUE(GetWebContentCaptureClient()->RemovedData().empty());
   EXPECT_EQ(GetExpectedSecondResultSize(),
-            GetContentCaptureClient()->Data().size());
+            GetWebContentCaptureClient()->Data().size());
   EXPECT_FALSE(GetContentCaptureTask()->IsCaptureContentCalled());
 }
 
 TEST_P(ContentCaptureTest, NodeOnlySendOnce) {
   // Send all nodes
   RunContentCaptureTask();
-  EXPECT_FALSE(GetContentCaptureClient()->Data().empty());
+  EXPECT_FALSE(GetWebContentCaptureClient()->Data().empty());
   EXPECT_EQ(GetExpectedSecondResultSize(),
-            GetContentCaptureClient()->Data().size());
+            GetWebContentCaptureClient()->Data().size());
   EXPECT_TRUE(GetContentCaptureTask()->IsCaptureContentCalled());
 
   GetContentCaptureManager()->OnScrollPositionChanged();
   RunContentCaptureTask();
   EXPECT_TRUE(GetContentCaptureTask()->IsCaptureContentCalled());
-  EXPECT_TRUE(GetContentCaptureClient()->Data().empty());
-  EXPECT_TRUE(GetContentCaptureClient()->RemovedData().empty());
+  EXPECT_TRUE(GetWebContentCaptureClient()->Data().empty());
+  EXPECT_TRUE(GetWebContentCaptureClient()->RemovedData().empty());
 }
 
 TEST_P(ContentCaptureTest, RemoveNodeBeforeSendingOut) {
@@ -299,7 +297,7 @@ TEST_P(ContentCaptureTest, RemoveNodeBeforeSendingOut) {
   GetContentCaptureTask()->SetTaskStopState(
       ContentCaptureTask::TaskState::kProcessCurrentSession);
   RunContentCaptureTask();
-  EXPECT_TRUE(GetContentCaptureClient()->Data().empty());
+  EXPECT_TRUE(GetWebContentCaptureClient()->Data().empty());
   EXPECT_TRUE(GetContentCaptureTask()->IsCaptureContentCalled());
 
   // Remove the node and sent the captured content out.
@@ -308,17 +306,17 @@ TEST_P(ContentCaptureTest, RemoveNodeBeforeSendingOut) {
       ContentCaptureTask::TaskState::kProcessRetryTask);
   RunContentCaptureTask();
   EXPECT_EQ(GetExpectedFirstResultSize(),
-            GetContentCaptureClient()->Data().size());
-  EXPECT_EQ(0u, GetContentCaptureClient()->RemovedData().size());
+            GetWebContentCaptureClient()->Data().size());
+  EXPECT_EQ(0u, GetWebContentCaptureClient()->RemovedData().size());
   RunContentCaptureTask();
   // Total 7 content returned instead of 8.
   EXPECT_EQ(GetExpectedSecondResultSize() - 1,
-            GetContentCaptureClient()->Data().size());
-  EXPECT_EQ(0u, GetContentCaptureClient()->RemovedData().size());
+            GetWebContentCaptureClient()->Data().size());
+  EXPECT_EQ(0u, GetWebContentCaptureClient()->RemovedData().size());
   RunContentCaptureTask();
   // No removed node because it hasn't been sent out.
-  EXPECT_EQ(0u, GetContentCaptureClient()->Data().size());
-  EXPECT_EQ(0u, GetContentCaptureClient()->RemovedData().size());
+  EXPECT_EQ(0u, GetWebContentCaptureClient()->Data().size());
+  EXPECT_EQ(0u, GetWebContentCaptureClient()->RemovedData().size());
 }
 
 TEST_P(ContentCaptureTest, RemoveNodeAfterSendingOut) {
@@ -326,7 +324,7 @@ TEST_P(ContentCaptureTest, RemoveNodeAfterSendingOut) {
   GetContentCaptureTask()->SetTaskStopState(
       ContentCaptureTask::TaskState::kProcessCurrentSession);
   RunContentCaptureTask();
-  EXPECT_TRUE(GetContentCaptureClient()->Data().empty());
+  EXPECT_TRUE(GetWebContentCaptureClient()->Data().empty());
   EXPECT_TRUE(GetContentCaptureTask()->IsCaptureContentCalled());
 
   // Sends first batch.
@@ -334,20 +332,20 @@ TEST_P(ContentCaptureTest, RemoveNodeAfterSendingOut) {
       ContentCaptureTask::TaskState::kProcessRetryTask);
   RunContentCaptureTask();
   EXPECT_EQ(GetExpectedFirstResultSize(),
-            GetContentCaptureClient()->Data().size());
-  EXPECT_EQ(0u, GetContentCaptureClient()->RemovedData().size());
+            GetWebContentCaptureClient()->Data().size());
+  EXPECT_EQ(0u, GetWebContentCaptureClient()->RemovedData().size());
 
   // Sends second batch.
   RunContentCaptureTask();
   EXPECT_EQ(GetExpectedSecondResultSize(),
-            GetContentCaptureClient()->Data().size());
-  EXPECT_EQ(0u, GetContentCaptureClient()->RemovedData().size());
+            GetWebContentCaptureClient()->Data().size());
+  EXPECT_EQ(0u, GetWebContentCaptureClient()->RemovedData().size());
 
   // Remove the node.
   RemoveNode(NodeHolders().at(0), Nodes().at(0));
   RunLongDelayContentCaptureTask();
-  EXPECT_EQ(0u, GetContentCaptureClient()->Data().size());
-  EXPECT_EQ(1u, GetContentCaptureClient()->RemovedData().size());
+  EXPECT_EQ(0u, GetWebContentCaptureClient()->Data().size());
+  EXPECT_EQ(1u, GetWebContentCaptureClient()->RemovedData().size());
 }
 
 }  // namespace blink

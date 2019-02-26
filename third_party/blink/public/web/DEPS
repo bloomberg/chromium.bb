@@ -9,6 +9,7 @@ include_rules = [
     "+base/strings",
     "+base/time/time.h",
     "+cc/input/browser_controls_state.h",
+    "+cc/paint/node_holder.h",
     "+cc/paint/paint_canvas.h",
     "+cc/paint/paint_flags.h",
     "+cc/trees/element_id.h",
