@@ -850,16 +850,8 @@ void SitePerProcessInteractiveBrowserTest::FullscreenElementInABA(
   EXPECT_EQ("none", GetFullscreenElementId(grandchild));
 }
 
-// This is flaky on Linux (crbug.com/854294)
-#if defined(OS_LINUX)
-#define MAYBE_FullscreenElementInABAAndExitViaEscapeKey \
-  DISABLED_FullscreenElementInABAAndExitViaEscapeKey
-#else
-#define MAYBE_FullscreenElementInABAAndExitViaEscapeKey \
-  FullscreenElementInABAAndExitViaEscapeKey
-#endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
-                       MAYBE_FullscreenElementInABAAndExitViaEscapeKey) {
+                       FullscreenElementInABAAndExitViaEscapeKey) {
   if (IsMacViewsBrowser())
     return;
   FullscreenElementInABA(FullscreenExitMethod::ESC_PRESS);
