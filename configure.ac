@@ -541,7 +541,7 @@ else
     AC_DEFINE(HAVE_VISIBILITY, 0)
 fi
 
-CFLAGS="$CFLAGS -include config.h"
+CPPFLAGS="$CPPFLAGS -include config.h"
 
 AC_SUBST(WARN_CFLAGS)
 AC_CONFIG_FILES([
