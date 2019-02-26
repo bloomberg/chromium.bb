@@ -12086,7 +12086,7 @@ TEST_F(WebFrameSimTest, DisplayNoneIFrameHasNoLayoutObjects) {
       "<html><body>This is a visible iframe.</body></html>");
 
   Element* element = GetDocument().QuerySelector("iframe");
-  HTMLFrameOwnerElement* frame_owner_element = ToHTMLFrameOwnerElement(element);
+  auto* frame_owner_element = To<HTMLFrameOwnerElement>(element);
   Document* iframe_doc = frame_owner_element->contentDocument();
   EXPECT_FALSE(iframe_doc->documentElement()->GetLayoutObject());
 
@@ -12119,7 +12119,7 @@ TEST_F(WebFrameSimTest, DisplayNoneIFramePrints) {
       "<html><body>This is a visible iframe.</body></html>");
 
   Element* element = GetDocument().QuerySelector("iframe");
-  HTMLFrameOwnerElement* frame_owner_element = ToHTMLFrameOwnerElement(element);
+  auto* frame_owner_element = To<HTMLFrameOwnerElement>(element);
   Document* iframe_doc = frame_owner_element->contentDocument();
   EXPECT_FALSE(iframe_doc->documentElement()->GetLayoutObject());
 
@@ -12146,7 +12146,7 @@ TEST_F(WebFrameSimTest, NormalIFrameHasLayoutObjects) {
       "<html><body>This is a visible iframe.</body></html>");
 
   Element* element = GetDocument().QuerySelector("iframe");
-  HTMLFrameOwnerElement* frame_owner_element = ToHTMLFrameOwnerElement(element);
+  auto* frame_owner_element = To<HTMLFrameOwnerElement>(element);
   Document* iframe_doc = frame_owner_element->contentDocument();
   EXPECT_TRUE(iframe_doc->documentElement()->GetLayoutObject());
 

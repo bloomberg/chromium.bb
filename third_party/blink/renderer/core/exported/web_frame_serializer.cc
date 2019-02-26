@@ -277,10 +277,11 @@ bool MHTMLFrameSerializerDelegate::ShouldIgnoreAttribute(
 
 bool MHTMLFrameSerializerDelegate::RewriteLink(const Element& element,
                                                String& rewritten_link) {
-  if (!element.IsFrameOwnerElement())
+  auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(element);
+  if (!frame_owner)
     return false;
 
-  Frame* frame = ToHTMLFrameOwnerElement(&element)->ContentFrame();
+  Frame* frame = frame_owner->ContentFrame();
   if (!frame)
     return false;
 

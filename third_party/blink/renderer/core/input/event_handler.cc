@@ -1582,8 +1582,7 @@ void EventHandler::UpdateGestureHoverActiveState(const HitTestRequest& request,
       if (index_frame_chain > 0)
         new_hover_frame = new_hover_frame_chain[--index_frame_chain];
 
-      HTMLFrameOwnerElement* owner =
-          ToHTMLFrameOwnerElement(old_hover_element_in_cur_doc);
+      auto* owner = To<HTMLFrameOwnerElement>(old_hover_element_in_cur_doc);
       if (!owner->ContentFrame() || !owner->ContentFrame()->IsLocalFrame())
         break;
 
@@ -1649,9 +1648,7 @@ void EventHandler::UpdateGestureTargetNodeForMouseEvent(
       break;
 
     LocalFrame* next_exited_frame_in_document = nullptr;
-    if (last_node_under_tap->IsFrameOwnerElement()) {
-      HTMLFrameOwnerElement* owner =
-          ToHTMLFrameOwnerElement(last_node_under_tap);
+    if (auto* owner = DynamicTo<HTMLFrameOwnerElement>(last_node_under_tap)) {
       if (owner->ContentFrame() && owner->ContentFrame()->IsLocalFrame())
         next_exited_frame_in_document = ToLocalFrame(owner->ContentFrame());
     }
@@ -1696,7 +1693,7 @@ void EventHandler::UpdateGestureTargetNodeForMouseEvent(
       ToLocalFrame(parent_frame)
           ->GetEventHandler()
           .mouse_event_manager_->SetElementUnderMouse(
-              EffectiveMouseEventTargetElement(ToHTMLFrameOwnerElement(
+              EffectiveMouseEventTargetElement(To<HTMLFrameOwnerElement>(
                   entered_frame_chain[index_entered_frame_chain]->Owner())),
               String(), fake_mouse_move);
     }

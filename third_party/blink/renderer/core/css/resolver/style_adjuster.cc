@@ -542,8 +542,8 @@ static void AdjustEffectiveTouchAction(ComputedStyle& style,
                                 enforced_by_policy);
 
   // Propagate touch action to child frames.
-  if (element->IsFrameOwnerElement()) {
-    Frame* content_frame = ToHTMLFrameOwnerElement(element)->ContentFrame();
+  if (auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(element)) {
+    Frame* content_frame = frame_owner->ContentFrame();
     if (content_frame) {
       content_frame->SetInheritedEffectiveTouchAction(
           style.GetEffectiveTouchAction());

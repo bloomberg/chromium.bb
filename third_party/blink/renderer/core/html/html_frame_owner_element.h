@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/hash_counted_set.h"
 
 namespace blink {
@@ -183,8 +184,6 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   bool should_lazy_load_children_;
 };
 
-DEFINE_ELEMENT_TYPE_CASTS(HTMLFrameOwnerElement, IsFrameOwnerElement());
-
 class SubframeLoadingDisabler {
   STACK_ALLOCATED();
 
@@ -223,11 +222,11 @@ class SubframeLoadingDisabler {
   Member<Node> root_;
 };
 
-DEFINE_TYPE_CASTS(HTMLFrameOwnerElement,
-                  FrameOwner,
-                  owner,
-                  owner->IsLocal(),
-                  owner.IsLocal());
+template <>
+struct DowncastTraits<HTMLFrameOwnerElement> {
+  static bool AllowFrom(const FrameOwner& owner) { return owner.IsLocal(); }
+  static bool AllowFrom(const Node& node) { return node.IsFrameOwnerElement(); }
+};
 
 }  // namespace blink
 

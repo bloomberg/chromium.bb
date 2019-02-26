@@ -326,8 +326,9 @@ Node* SpatialNavigationController::StartingNode() {
       // This matches the behavior in the focus case below where focusing a
       // frame means the focused document doesn't have a focused element and so
       // we return the document itself.
-      if (interest_element_->IsFrameOwnerElement())
-        return ToHTMLFrameOwnerElement(interest_element_)->contentDocument();
+      if (auto* frame_owner =
+              DynamicTo<HTMLFrameOwnerElement>(interest_element_.Get()))
+        return frame_owner->contentDocument();
 
       return interest_element_;
     }

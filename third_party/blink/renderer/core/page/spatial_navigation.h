@@ -59,9 +59,6 @@ struct FocusCandidate {
   FocusCandidate(Node*, SpatialNavigationDirection);
   explicit FocusCandidate(HTMLAreaElement*, SpatialNavigationDirection);
   bool IsNull() const { return !visible_node; }
-  bool IsFrameOwnerElement() const {
-    return visible_node && visible_node->IsFrameOwnerElement();
-  }
   Document* GetDocument() const {
     return visible_node ? &visible_node->GetDocument() : nullptr;
   }

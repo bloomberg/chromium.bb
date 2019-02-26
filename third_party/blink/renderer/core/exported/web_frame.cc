@@ -108,9 +108,8 @@ bool WebFrame::Swap(WebFrame* frame) {
     if (owner) {
       owner->SetContentFrame(local_frame);
 
-      if (owner->IsLocal()) {
-        ToHTMLFrameOwnerElement(owner)->SetEmbeddedContentView(
-            local_frame.View());
+      if (auto* frame_owner_element = DynamicTo<HTMLFrameOwnerElement>(owner)) {
+        frame_owner_element->SetEmbeddedContentView(local_frame.View());
       }
     } else {
       Page* other_page = local_frame.GetPage();
@@ -133,13 +132,13 @@ bool WebFrame::Swap(WebFrame* frame) {
 
   parent_ = nullptr;
 
-  if (owner && owner->IsLocal()) {
+  if (auto* frame_owner_element = DynamicTo<HTMLFrameOwnerElement>(owner)) {
     if (new_frame && new_frame->IsLocalFrame()) {
       probe::frameOwnerContentUpdated(ToLocalFrame(new_frame),
-                                      ToHTMLFrameOwnerElement(owner));
+                                      frame_owner_element);
     } else if (old_frame && old_frame->IsLocalFrame()) {
       probe::frameOwnerContentUpdated(ToLocalFrame(old_frame),
-                                      ToHTMLFrameOwnerElement(owner));
+                                      frame_owner_element);
     }
   }
 
@@ -205,8 +204,7 @@ void WebFrame::SetFrameOwnerProperties(
 
 void WebFrame::Collapse(bool collapsed) {
   FrameOwner* owner = ToCoreFrame(*this)->Owner();
-  DCHECK(owner->IsLocal());
-  ToHTMLFrameOwnerElement(owner)->SetCollapsed(collapsed);
+  To<HTMLFrameOwnerElement>(owner)->SetCollapsed(collapsed);
 }
 
 WebFrame* WebFrame::Opener() const {
@@ -308,9 +306,9 @@ WebFrame* WebFrame::TraverseNext() const {
 WebFrame* WebFrame::FromFrameOwnerElement(const WebNode& web_node) {
   Node* node = web_node;
 
-  if (!node->IsFrameOwnerElement())
-    return nullptr;
-  return FromFrame(ToHTMLFrameOwnerElement(node)->ContentFrame());
+  if (auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(node))
+    return FromFrame(frame_owner->ContentFrame());
+  return nullptr;
 }
 
 bool WebFrame::IsLoading() const {

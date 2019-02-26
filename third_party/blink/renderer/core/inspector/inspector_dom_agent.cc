@@ -311,9 +311,8 @@ void InspectorDOMAgent::Unbind(Node* node, NodeToIdMap* nodes_map) {
   if (IsA<Document>(node) && dom_listener_)
     dom_listener_->DidRemoveDocument(To<Document>(node));
 
-  if (node->IsFrameOwnerElement()) {
-    Document* content_document =
-        ToHTMLFrameOwnerElement(node)->contentDocument();
+  if (auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(node)) {
+    Document* content_document = frame_owner->contentDocument();
     if (content_document)
       Unbind(content_document, nodes_map);
   }
@@ -1465,8 +1464,7 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::BuildObjectForNode(
     Element* element = ToElement(node);
     value->setAttributes(BuildArrayForElementAttributes(element));
 
-    if (node->IsFrameOwnerElement()) {
-      HTMLFrameOwnerElement* frame_owner = ToHTMLFrameOwnerElement(node);
+    if (auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(node)) {
       if (frame_owner->ContentFrame()) {
         value->setFrameId(
             IdentifiersFactory::FrameId(frame_owner->ContentFrame()));
@@ -1764,8 +1762,7 @@ void InspectorDOMAgent::CollectNodes(
 
   if (pierce && node->IsElementNode()) {
     Element* element = ToElement(node);
-    if (node->IsFrameOwnerElement()) {
-      HTMLFrameOwnerElement* frame_owner = ToHTMLFrameOwnerElement(node);
+    if (auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(node)) {
       if (frame_owner->ContentFrame() &&
           frame_owner->ContentFrame()->IsLocalFrame()) {
         if (Document* doc = frame_owner->contentDocument())
@@ -2235,11 +2232,13 @@ protocol::Response InspectorDOMAgent::getFrameOwner(
     if (IdentifiersFactory::FrameId(frame) == frame_id)
       break;
   }
-  if (!frame || !frame->Owner()->IsLocal())
-    return Response::Error("Frame with given id does not belong to target.");
-  HTMLFrameOwnerElement* frame_owner = ToHTMLFrameOwnerElement(frame->Owner());
-  if (!frame_owner)
-    return Response::Error("No iframe owner for given node");
+  if (!frame)
+    return Response::Error("Frame with the given id was not found.");
+  auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(frame->Owner());
+  if (!frame_owner) {
+    return Response::Error(
+        "Frame with the given id does not belong to the target.");
+  }
 
   *backend_node_id = IdentifiersFactory::IntIdForNode(frame_owner);
 

@@ -614,10 +614,10 @@ DOMSelection* LocalDOMWindow::getSelection() {
 }
 
 Element* LocalDOMWindow::frameElement() const {
-  if (!(GetFrame() && GetFrame()->Owner() && GetFrame()->Owner()->IsLocal()))
+  if (!GetFrame())
     return nullptr;
 
-  return ToHTMLFrameOwnerElement(GetFrame()->Owner());
+  return DynamicTo<HTMLFrameOwnerElement>(GetFrame()->Owner());
 }
 
 void LocalDOMWindow::blur() {}

@@ -2272,9 +2272,9 @@ static void PrintSubTreeAcrossFrame(const Node* node,
   if (node == marked_node)
     stream << "*";
   stream << indent.Utf8().data() << *node << "\n";
-  if (node->IsFrameOwnerElement()) {
-    PrintSubTreeAcrossFrame(ToHTMLFrameOwnerElement(node)->contentDocument(),
-                            marked_node, indent + "\t", stream);
+  if (auto* frame_owner_element = DynamicTo<HTMLFrameOwnerElement>(node)) {
+    PrintSubTreeAcrossFrame(frame_owner_element->contentDocument(), marked_node,
+                            indent + "\t", stream);
   }
   if (ShadowRoot* shadow_root = node->GetShadowRoot())
     PrintSubTreeAcrossFrame(shadow_root, marked_node, indent + "\t", stream);

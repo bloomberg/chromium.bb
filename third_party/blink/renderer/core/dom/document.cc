@@ -1365,9 +1365,8 @@ Node* Document::adoptNode(Node* source, ExceptionState& exception_state) {
         return nullptr;
       }
 
-      if (source->IsFrameOwnerElement()) {
-        HTMLFrameOwnerElement* frame_owner_element =
-            ToHTMLFrameOwnerElement(source);
+      if (auto* frame_owner_element =
+              DynamicTo<HTMLFrameOwnerElement>(source)) {
         if (GetFrame() && GetFrame()->Tree().IsDescendantOf(
                               frame_owner_element->ContentFrame())) {
           exception_state.ThrowDOMException(

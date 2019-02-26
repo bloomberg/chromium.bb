@@ -130,8 +130,7 @@ bool Frame::IsMainFrame() const {
 }
 
 HTMLFrameOwnerElement* Frame::DeprecatedLocalOwner() const {
-  return owner_ && owner_->IsLocal() ? ToHTMLFrameOwnerElement(owner_)
-                                     : nullptr;
+  return DynamicTo<HTMLFrameOwnerElement>(owner_.Get());
 }
 
 static ChromeClient& GetEmptyChromeClient() {
@@ -231,9 +230,10 @@ void Frame::SetOwner(FrameOwner* owner) {
 }
 
 void Frame::UpdateInertIfPossible() {
-  if (owner_ && owner_->IsLocal()) {
-    ToHTMLFrameOwnerElement(owner_)->UpdateDistributionForFlatTreeTraversal();
-    if (ToHTMLFrameOwnerElement(owner_)->IsInert())
+  if (auto* frame_owner_element =
+          DynamicTo<HTMLFrameOwnerElement>(owner_.Get())) {
+    frame_owner_element->UpdateDistributionForFlatTreeTraversal();
+    if (frame_owner_element->IsInert())
       SetIsInert(true);
   }
 }

@@ -228,12 +228,12 @@ bool IsOffscreenAfterFrameScroll(const Node* node,
 }
 
 bool HasRemoteFrame(const Node* node) {
-  if (!node)
+  auto* frame_owner_element = DynamicTo<HTMLFrameOwnerElement>(node);
+  if (!frame_owner_element)
     return false;
 
-  return node->IsFrameOwnerElement() &&
-         ToHTMLFrameOwnerElement(node)->ContentFrame() &&
-         ToHTMLFrameOwnerElement(node)->ContentFrame()->IsRemoteFrame();
+  return frame_owner_element->ContentFrame() &&
+         frame_owner_element->ContentFrame()->IsRemoteFrame();
 }
 
 bool ScrollInDirection(Node* container, SpatialNavigationDirection direction) {
@@ -335,9 +335,9 @@ bool IsScrollableAreaOrDocument(const Node* node) {
   if (!node)
     return false;
 
+  auto* frame_owner_element = DynamicTo<HTMLFrameOwnerElement>(node);
   return node->IsDocumentNode() ||
-         (node->IsFrameOwnerElement() &&
-          ToHTMLFrameOwnerElement(node)->ContentFrame()) ||
+         (frame_owner_element && frame_owner_element->ContentFrame()) ||
          IsScrollableNode(node);
 }
 
@@ -671,9 +671,7 @@ LayoutRect StartEdgeForAreaElement(const HTMLAreaElement& area,
 }
 
 HTMLFrameOwnerElement* FrameOwnerElement(const FocusCandidate& candidate) {
-  return candidate.IsFrameOwnerElement()
-             ? ToHTMLFrameOwnerElement(candidate.visible_node)
-             : nullptr;
+  return DynamicTo<HTMLFrameOwnerElement>(candidate.visible_node.Get());
 }
 
 // The visual viewport's rect (given in the root frame's coordinate space).
