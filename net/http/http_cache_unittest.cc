@@ -9511,6 +9511,7 @@ TEST_F(HttpCacheTest, SplitCache) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(net::features::kSplitCacheByTopFrameOrigin);
 
+  base::HistogramTester histograms;
   MockHttpCache cache;
   HttpResponseInfo response;
 
@@ -9524,6 +9525,7 @@ TEST_F(HttpCacheTest, SplitCache) {
   RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
                                 trans_info, &response);
   EXPECT_FALSE(response.was_cached);
+  histograms.ExpectUniqueSample("HttpCache.TopFrameOriginPresent", false, 1);
 
   RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
                                 trans_info, &response);
@@ -9535,6 +9537,8 @@ TEST_F(HttpCacheTest, SplitCache) {
   RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
                                 trans_info, &response);
   EXPECT_FALSE(response.was_cached);
+  histograms.ExpectBucketCount("HttpCache.TopFrameOriginPresent", true, 1);
+  histograms.ExpectTotalCount("HttpCache.TopFrameOriginPresent", 3);
 
   // The second request should be cached.
   RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
@@ -9594,6 +9598,7 @@ TEST_F(HttpCacheTest, NonSplitCache) {
   feature_list.InitAndDisableFeature(
       net::features::kSplitCacheByTopFrameOrigin);
 
+  base::HistogramTester histograms;
   MockHttpCache cache;
   HttpResponseInfo response;
 
@@ -9614,6 +9619,8 @@ TEST_F(HttpCacheTest, NonSplitCache) {
   RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
                                 trans_info, &response);
   EXPECT_TRUE(response.was_cached);
+  histograms.ExpectBucketCount("HttpCache.TopFrameOriginPresent", true, 1);
+  histograms.ExpectTotalCount("HttpCache.TopFrameOriginPresent", 3);
 }
 
 // Tests that we can write metadata to an entry.
