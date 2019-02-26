@@ -51,7 +51,7 @@ class ApplicationCache final : public EventTargetWithInlineData,
   explicit ApplicationCache(LocalFrame*);
   ~ApplicationCache() override = default;
 
-  unsigned short status() const;
+  uint16_t status() const;
   void update(ExceptionState&);
   void swapCache(ExceptionState&);
   void abort();
