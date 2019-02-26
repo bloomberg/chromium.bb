@@ -39,44 +39,4 @@ FakeSigninManager::FakeSigninManager(
 
 FakeSigninManager::~FakeSigninManager() {}
 
-void FakeSigninManager::OnSignoutDecisionReached(
-    signin_metrics::ProfileSignout signout_source_metric,
-    signin_metrics::SignoutDelete signout_delete_metric,
-    RemoveAccountsOption remove_option,
-    SigninClient::SignoutDecision signout_decision) {
-  if (!IsAuthenticated()) {
-    return;
-  }
-
-  // TODO(crbug.com/887756): Consider moving this higher up, or document why
-  // the above blocks are exempt from the |signout_decision| early return.
-  if (signout_decision == SigninClient::SignoutDecision::DISALLOW_SIGNOUT)
-    return;
-
-  AccountInfo account_info = GetAuthenticatedAccountInfo();
-  const std::string account_id = GetAuthenticatedAccountId();
-  const std::string username = account_info.email;
-  authenticated_account_id_.clear();
-  switch (remove_option) {
-    case RemoveAccountsOption::kRemoveAllAccounts:
-      if (token_service())
-        token_service()->RevokeAllCredentials();
-      break;
-    case RemoveAccountsOption::kRemoveAuthenticatedAccountIfInError:
-      if (token_service() && token_service()->RefreshTokenHasError(account_id))
-        token_service()->RevokeCredentials(account_id);
-      break;
-    case RemoveAccountsOption::kKeepAllAccounts:
-      // Do nothing.
-      break;
-  }
-  ClearAuthenticatedAccountId();
-  client_->GetPrefs()->ClearPref(prefs::kGoogleServicesHostedDomain);
-  client_->GetPrefs()->ClearPref(prefs::kGoogleServicesAccountId);
-  client_->GetPrefs()->ClearPref(prefs::kGoogleServicesUserAccountId);
-  client_->GetPrefs()->ClearPref(prefs::kSignedInTime);
-
-  FireGoogleSignedOut(account_info);
-}
-
 #endif  // !defined (OS_CHROMEOS)
