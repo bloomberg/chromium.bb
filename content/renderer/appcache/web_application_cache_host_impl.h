@@ -25,9 +25,11 @@ class WebApplicationCacheHostImpl : public blink::WebApplicationCacheHost,
   // Returns the host having given id or NULL if there is no such host.
   static WebApplicationCacheHostImpl* FromId(int id);
 
-  WebApplicationCacheHostImpl(blink::WebApplicationCacheHostClient* client,
-                              int appcache_host_id,
-                              int render_frame_id);
+  WebApplicationCacheHostImpl(
+      blink::WebApplicationCacheHostClient* client,
+      int appcache_host_id,
+      int render_frame_id,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~WebApplicationCacheHostImpl() override;
 
   int host_id() const { return host_id_; }

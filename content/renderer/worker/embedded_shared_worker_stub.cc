@@ -54,10 +54,12 @@ class SharedWorkerWebApplicationCacheHostImpl
  public:
   SharedWorkerWebApplicationCacheHostImpl(
       blink::WebApplicationCacheHostClient* client,
-      int appcache_host_id)
+      int appcache_host_id,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
       : WebApplicationCacheHostImpl(client,
                                     appcache_host_id,
-                                    MSG_ROUTING_NONE) {}
+                                    MSG_ROUTING_NONE,
+                                    std::move(task_runner)) {}
 
   // Main resource loading is different for workers. The main resource is
   // loaded by the worker using WorkerClassicScriptLoader.
@@ -247,7 +249,8 @@ EmbeddedSharedWorkerStub::CreateApplicationCacheHost(
     blink::WebApplicationCacheHostClient* client) {
   std::unique_ptr<WebApplicationCacheHostImpl> host =
       std::make_unique<SharedWorkerWebApplicationCacheHostImpl>(
-          client, appcache_host_id_);
+          client, appcache_host_id_,
+          impl_->GetTaskRunner(blink::TaskType::kNetworking));
   app_cache_host_ = host.get();
   return std::move(host);
 }

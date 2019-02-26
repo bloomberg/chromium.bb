@@ -14,6 +14,7 @@
 #include "content/common/appcache_interfaces.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/render_thread.h"
+#include "content/renderer/render_frame_impl.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
@@ -65,7 +66,8 @@ WebApplicationCacheHostImpl* WebApplicationCacheHostImpl::FromId(int id) {
 WebApplicationCacheHostImpl::WebApplicationCacheHostImpl(
     WebApplicationCacheHostClient* client,
     int appcache_host_id,
-    int render_frame_id)
+    int render_frame_id,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : binding_(this),
       client_(client),
       status_(blink::mojom::AppCacheStatus::APPCACHE_STATUS_UNCACHED),
@@ -93,9 +95,10 @@ WebApplicationCacheHostImpl::WebApplicationCacheHostImpl(
   backend_ = backend_ptr->get();
 
   blink::mojom::AppCacheFrontendPtr frontend_ptr;
-  binding_.Bind(mojo::MakeRequest(&frontend_ptr));
-  backend_->RegisterHost(mojo::MakeRequest(&backend_host_),
-                         std::move(frontend_ptr), host_id_, render_frame_id);
+  binding_.Bind(mojo::MakeRequest(&frontend_ptr, task_runner), task_runner);
+  backend_->RegisterHost(
+      mojo::MakeRequest(&backend_host_, std::move(task_runner)),
+      std::move(frontend_ptr), host_id_, render_frame_id);
 }
 
 WebApplicationCacheHostImpl::~WebApplicationCacheHostImpl() {

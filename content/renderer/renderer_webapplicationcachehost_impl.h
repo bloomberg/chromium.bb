@@ -20,7 +20,8 @@ class RendererWebApplicationCacheHostImpl : public WebApplicationCacheHostImpl {
       RenderViewImpl* render_view,
       blink::WebApplicationCacheHostClient* client,
       int appcache_host_id,
-      int frame_routing_id);
+      int frame_routing_id,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // blink::mojom::AppCacheHostFrontend:
   void LogMessage(blink::mojom::ConsoleMessageLevel log_level,
