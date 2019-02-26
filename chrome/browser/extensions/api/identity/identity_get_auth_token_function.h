@@ -89,12 +89,12 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
       const OAuth2AccessTokenConsumer::TokenResponse& token_response) override;
   void OnGetTokenFailure(const OAuth2TokenService::Request* request,
                          const GoogleServiceAuthError& error) override;
+#endif
 
   void OnAccessTokenFetchCompleted(GoogleServiceAuthError error,
                                    identity::AccessTokenInfo access_token_info);
-#endif
 
-  // Invoked on completion of IdentityManager::GetAccessToken().
+  // Invoked on completion of the access token fetcher.
   // Exposed for testing.
   void OnGetAccessTokenComplete(const base::Optional<std::string>& access_token,
                                 base::Time expiration_time,

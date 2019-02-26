@@ -710,6 +710,7 @@ void IdentityGetAuthTokenFunction::OnGetTokenFailure(
   device_access_token_request_.reset();
   OnGetAccessTokenComplete(base::nullopt, base::Time(), error);
 }
+#endif
 
 void IdentityGetAuthTokenFunction::OnAccessTokenFetchCompleted(
     GoogleServiceAuthError error,
@@ -723,7 +724,6 @@ void IdentityGetAuthTokenFunction::OnAccessTokenFetchCompleted(
     OnGetAccessTokenComplete(base::nullopt, base::Time(), error);
   }
 }
-#endif
 
 void IdentityGetAuthTokenFunction::OnIdentityAPIShutdown() {
   gaia_web_auth_flow_.reset();
@@ -766,6 +766,7 @@ bool IdentityGetAuthTokenFunction::IsOriginWhitelistedInPublicSession() {
 #endif
 
 void IdentityGetAuthTokenFunction::StartTokenKeyAccountAccessTokenRequest() {
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(GetProfile());
 #if defined(OS_CHROMEOS)
   if (chrome::IsRunningInForcedAppMode()) {
     std::string app_client_id;
@@ -774,25 +775,27 @@ void IdentityGetAuthTokenFunction::StartTokenKeyAccountAccessTokenRequest() {
             GetAppModeChromeClientOAuthInfo(&app_client_id,
                                             &app_client_secret)) {
       token_key_account_access_token_fetcher_ =
-          IdentityManagerFactory::GetForProfile(GetProfile())
-              ->CreateAccessTokenFetcherForClient(
-                  token_key_.account_id, app_client_id, app_client_secret,
-                  kExtensionsIdentityAPIOAuthConsumerName,
-                  OAuth2TokenService::ScopeSet(),
-                  base::BindOnce(&IdentityGetAuthTokenFunction::
-                                     OnAccessTokenFetchCompleted,
-                                 base::Unretained(this)),
-                  identity::AccessTokenFetcher::Mode::kImmediate);
+          identity_manager->CreateAccessTokenFetcherForClient(
+              token_key_.account_id, app_client_id, app_client_secret,
+              kExtensionsIdentityAPIOAuthConsumerName,
+              OAuth2TokenService::ScopeSet(),
+              base::BindOnce(
+                  &IdentityGetAuthTokenFunction::OnAccessTokenFetchCompleted,
+                  base::Unretained(this)),
+              identity::AccessTokenFetcher::Mode::kImmediate);
       return;
     }
   }
 #endif
 
-  GetMojoIdentityManager()->GetAccessToken(
-      token_key_.account_id, ::identity::ScopeSet(),
-      kExtensionsIdentityAPIOAuthConsumerName,
-      base::BindOnce(&IdentityGetAuthTokenFunction::OnGetAccessTokenComplete,
-                     base::Unretained(this)));
+  token_key_account_access_token_fetcher_ =
+      identity_manager->CreateAccessTokenFetcherForAccount(
+          token_key_.account_id, kExtensionsIdentityAPIOAuthConsumerName,
+          ::identity::ScopeSet(),
+          base::BindOnce(
+              &IdentityGetAuthTokenFunction::OnAccessTokenFetchCompleted,
+              base::Unretained(this)),
+          identity::AccessTokenFetcher::Mode::kImmediate);
 }
 
 void IdentityGetAuthTokenFunction::StartGaiaRequest(
