@@ -273,8 +273,6 @@
             },
           ],
           'expiration': 10800,
-          # This is the most common hard_timeout on this device.
-          'hard_timeout': 120,
         },
         'os_type': 'android',
       },
