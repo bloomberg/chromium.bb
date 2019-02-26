@@ -411,7 +411,10 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
       if self._test_instance.wait_for_java_debugger:
         timeout = None
 
-      flags = list(self._test_instance.flags)
+      flags = [
+          f for f in self._test_instance.flags
+          if f not in ['--wait-for-debugger', '--wait-for-java-debugger']
+      ]
       flags.append('--gtest_list_tests')
 
       # TODO(crbug.com/726880): Remove retries when no longer necessary.
