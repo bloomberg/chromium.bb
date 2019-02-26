@@ -2764,6 +2764,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="10" label="Card and/or addresses had conflicting names"/>
   <int value="11" label="Get upload details RPC failed"/>
   <int value="12" label="User requested to provide cardholder name"/>
+  <int value="13" label="Max strikes, did not show infobar (mobile only)"/>
+  <int value="14" label="User requested to provide expiration date"/>
 </enum>
 
 <enum name="AutofillCreditCardInfoBar">
