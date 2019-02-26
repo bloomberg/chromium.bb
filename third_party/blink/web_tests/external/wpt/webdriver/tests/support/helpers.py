@@ -14,8 +14,7 @@ def ignore_exceptions(f):
         try:
             return f(*args, **kwargs)
         except webdriver.error.WebDriverException as e:
-            #Remove it temporaryily because of the wpt lint
-            return
+            print("Ignored exception %s" % e, file=sys.stderr)
     inner.__name__ = f.__name__
     return inner
 

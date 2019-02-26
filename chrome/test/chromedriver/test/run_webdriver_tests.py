@@ -112,7 +112,7 @@ def set_up_config(chromedriver_server):
 
 def run_test(path):
   subtests = SubtestResultRecorder()
-  pytest.main(["-s", path], plugins=[subtests])
+  pytest.main([path], plugins=[subtests])
   return subtests.result
 
 if __name__ == '__main__':
@@ -207,11 +207,15 @@ if __name__ == '__main__':
 
     success_count = 0
     for test_result in test_results:
+      # TODO(crbug.com/934919): is_unexpected needs to be set for
+      # unexpected failures once expectations have been supported.
       output['tests'][test_result.test_name] = {
         'expected': 'PASS',
         'actual': test_result.test_status,
-        'message': test_result.message
       }
+
+      if test_result.message:
+        output['tests'][test_result.test_name]['message'] = test_result.message
 
       if test_result.test_status == 'PASS':
         success_count += 1

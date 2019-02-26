@@ -623,7 +623,7 @@
       "-v",
       "--chromedriver=chromedriver",
       "--isolated-script-test-output=${ISOLATED_OUTDIR}/results.json",
-      "--test-path=../../third_party/blink/web_tests/external/wpt/webdriver/tests/navigate_to/navigate.py",
+      "--test-path=../../third_party/blink/web_tests/external/wpt/webdriver/tests/",
     ],
   },
   "chromedriver_replay_unittests": {
