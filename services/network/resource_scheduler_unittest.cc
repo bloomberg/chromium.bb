@@ -1460,6 +1460,7 @@ TEST_F(ResourceSchedulerTest,
 // Verify that when |max_queuing_time| is set, requests queued for too long
 // duration are dispatched to the network.
 TEST_F(ResourceSchedulerTest, MaxQueuingDelaySet) {
+  base::HistogramTester histogram_tester;
   base::TimeDelta max_queuing_time = base::TimeDelta::FromSeconds(15);
   InitializeMaxQueuingDelayExperiment(max_queuing_time);
   network_quality_estimator_.SetAndNotifyObserversOfEffectiveConnectionType(
@@ -1503,6 +1504,23 @@ TEST_F(ResourceSchedulerTest, MaxQueuingDelaySet) {
   for (int i = 1; i < max_low_priority_requests_allowed + 10; ++i) {
     EXPECT_TRUE(lows_singlehost[i]->started());
   }
+
+  histogram_tester.ExpectUniqueSample(
+      "ResourceScheduler.DelayableRequests."
+      "WaitTimeToAvoidContentionWithNonDelayableRequest",
+      0, 1);
+
+  // Delete the requests. This should trigger the end of the requests which in
+  // turn would trigger recording of the metrics.
+  for (int i = 1; i < max_low_priority_requests_allowed + 10; ++i)
+    lows_singlehost[i].reset();
+
+  // No non-delayable request started after the start of the delayable request.
+  // Metric should be recorded as 0 milliseconds.
+  histogram_tester.ExpectUniqueSample(
+      "ResourceScheduler.DelayableRequests."
+      "WaitTimeToAvoidContentionWithNonDelayableRequest",
+      0, max_low_priority_requests_allowed + 10);
 }
 
 // Verify that when |max_queuing_time| is not set, requests queued for too long
@@ -1711,6 +1729,58 @@ TEST_F(ResourceSchedulerTest, MaxQueuingDelayTimerRunsOnRequestSchedule) {
     lows_singlehost.push_back(NewRequest(url.c_str(), net::LOWEST));
   }
   EXPECT_TRUE(scheduler()->IsLongQueuedRequestsDispatchTimerRunning());
+}
+
+// Starts a delayable request followed by a non-delayable request. The delayable
+// request finishes after the start of the non-delayable request. Verifies that
+// the histogram that records the time difference between the start of delayable
+// requests and the start of non-delayable requests is recorded properly.
+TEST_F(ResourceSchedulerTest, NonDelayableRequestArrivesAfterDelayableStarts) {
+  base::HistogramTester histogram_tester;
+
+  base::TimeDelta max_queuing_time = base::TimeDelta::FromSeconds(15);
+  InitializeMaxQueuingDelayExperiment(max_queuing_time);
+  network_quality_estimator_.SetAndNotifyObserversOfEffectiveConnectionType(
+      net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+
+  InitializeScheduler();
+
+  // Throw in one low priority request. When the request finishes histograms
+  // should be recorded.
+  std::unique_ptr<TestRequest> low(NewRequest("http://host/low", net::LOWEST));
+  EXPECT_TRUE(low->started());
+
+  const base::TimeDelta delay = base::TimeDelta::FromSeconds(5);
+  tick_clock_.SetNowTicks(base::TimeTicks::Now() + delay);
+
+  // Start a high priority request before |low| finishes.
+  std::unique_ptr<TestRequest> high(
+      NewRequest("http://host/high", net::HIGHEST));
+  EXPECT_TRUE(high->started());
+
+  histogram_tester.ExpectTotalCount(
+      "ResourceScheduler.DelayableRequests."
+      "WaitTimeToAvoidContentionWithNonDelayableRequest",
+      0);
+
+  // When the delayable request finishes, metrics should be recorded.
+  low.reset();
+
+  // Verify that (i) Exactly one sample is recorded; and, (ii) The sample value
+  // is at least |delay|. This is guaranteed because the delay between the start
+  // of |low| and |high| is guaranteed to be more than |delay|.
+  const std::vector<base::Bucket> buckets = histogram_tester.GetAllSamples(
+      "ResourceScheduler.DelayableRequests."
+      "WaitTimeToAvoidContentionWithNonDelayableRequest");
+  EXPECT_EQ(1u, buckets.size());
+  bool non_zero_sample_found = false;
+  for (const auto& bucket : buckets) {
+    if (bucket.min > 0 and bucket.count > 0) {
+      non_zero_sample_found = true;
+      EXPECT_LE(bucket.min, delay.InMilliseconds());
+    }
+  }
+  EXPECT_TRUE(non_zero_sample_found);
 }
 
 }  // unnamed namespace

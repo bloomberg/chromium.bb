@@ -523,6 +523,8 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
   }
 
   void EraseInFlightRequest(ScheduledResourceRequestImpl* request) {
+    if (request)
+      RecordNetworkContentionMetrics(*request);
     size_t erased = in_flight_requests_.erase(request);
     DCHECK_EQ(1u, erased);
     // Clear any special state that we were tracking for this request.
@@ -686,12 +688,16 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
 
     DCHECK(!request->url_request()->creation_time().is_null());
     base::TimeDelta queuing_duration =
-        base::TimeTicks::Now() - request->url_request()->creation_time();
+        tick_clock_->NowTicks() - request->url_request()->creation_time();
     base::UmaHistogramMediumTimes(
         "ResourceScheduler.RequestQueuingDuration.Priority" +
             base::NumberToString(
                 request->get_request_priority_params().priority),
         queuing_duration);
+
+    // Update the start time of the non-delayble request.
+    if (!RequestAttributesAreSet(request->attributes(), kAttributeDelayable))
+      last_non_delayable_request_start_ = tick_clock_->NowTicks();
 
     InsertInFlightRequest(request);
     request->Start(start_mode);
@@ -880,6 +886,41 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
     }
   }
 
+  // If |request| was delayable, this method records how long after |request|
+  // started, a non-delayable request also started. This is the duration of time
+  // that |request| should have been queued for so as to avoid any network
+  // contention with all later-arriving non-delayable requests. Must be called
+  // after |request| is finished.
+  void RecordNetworkContentionMetrics(
+      const ScheduledResourceRequestImpl& request) const {
+    if (!RequestAttributesAreSet(request.attributes(), kAttributeDelayable))
+      return;
+
+    base::TimeDelta ideal_duration_to_wait;
+    if (!last_non_delayable_request_start_) {
+      // No non-delayable request has been started in this client so far.
+      // |request| did not have to wait at all to avoid network contention.
+      ideal_duration_to_wait = base::TimeDelta();
+    } else if (request.url_request()->creation_time() >
+               last_non_delayable_request_start_) {
+      // Last non-delayable request in this client started before |request|
+      // was created. |request| did not have to wait at all to avoid network
+      // contention with non-delayable requests.
+      ideal_duration_to_wait = base::TimeDelta();
+    } else {
+      // The latest non-delayable request started at
+      // |last_non_delayable_request_start_| which happened after the
+      // creation of |request|.
+      ideal_duration_to_wait = last_non_delayable_request_start_.value() -
+                               request.url_request()->creation_time();
+    }
+
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "ResourceScheduler.DelayableRequests."
+        "WaitTimeToAvoidContentionWithNonDelayableRequest",
+        ideal_duration_to_wait);
+  }
+
   // Tracks if the main HTML parser has reached the body which marks the end of
   // layout-blocking resources.
   // This is disabled and the is always true when kRendererSideResourceScheduler
@@ -910,6 +951,9 @@ class ResourceScheduler::Client : public net::EffectiveConnectionTypeObserver {
 
   // Guaranteed to be non-null.
   const base::TickClock* tick_clock_;
+
+  // Time when the last non-delayble request started in this client.
+  base::Optional<base::TimeTicks> last_non_delayable_request_start_;
 
   base::WeakPtrFactory<ResourceScheduler::Client> weak_ptr_factory_;
 };
