@@ -354,6 +354,8 @@ used when committed.
     integrating new and existing subsystems into Chromium as services
 *   [Converting Legacy IPC to Mojo](mojo_ipc_conversion.md) - Tips and common
     patterns for practical IPC conversion work
+*   [Mojo “Style” Guide](security/mojo.md) - Recommendations for best practices
+    from Mojo and IPC reviewers
 
 ### Probably Obsolete
 *   [TPM Quick Reference](tpm_quick_ref.md) - Trusted Platform Module notes.
