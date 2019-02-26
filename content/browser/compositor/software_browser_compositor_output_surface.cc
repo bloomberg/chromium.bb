@@ -123,13 +123,6 @@ SoftwareBrowserCompositorOutputSurface::GetFramebufferCopyTextureFormat() {
   return 0;
 }
 
-#if BUILDFLAG(ENABLE_VULKAN)
-gpu::VulkanSurface* SoftwareBrowserCompositorOutputSurface::GetVulkanSurface() {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-#endif
-
 unsigned SoftwareBrowserCompositorOutputSurface::UpdateGpuFence() {
   return 0;
 }

@@ -16,7 +16,6 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "gpu/vulkan/buildflags.h"
 #include "ui/gfx/swap_result.h"
 
 namespace viz {
@@ -33,14 +32,6 @@ OutputSurface::OutputSurface(
     : software_device_(std::move(software_device)) {
   DCHECK(software_device_);
 }
-
-#if BUILDFLAG(ENABLE_VULKAN)
-OutputSurface::OutputSurface(
-    scoped_refptr<VulkanContextProvider> vulkan_context_provider)
-    : vulkan_context_provider_(std::move(vulkan_context_provider)) {
-  DCHECK(vulkan_context_provider_);
-}
-#endif
 
 OutputSurface::~OutputSurface() = default;
 

@@ -198,13 +198,6 @@ GpuBrowserCompositorOutputSurface::GetCommandBufferProxy() {
   return command_buffer_proxy;
 }
 
-#if BUILDFLAG(ENABLE_VULKAN)
-gpu::VulkanSurface* GpuBrowserCompositorOutputSurface::GetVulkanSurface() {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-#endif
-
 unsigned GpuBrowserCompositorOutputSurface::UpdateGpuFence() {
   return 0;
 }

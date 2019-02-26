@@ -42,9 +42,6 @@ class VIZ_SERVICE_EXPORT SoftwareOutputSurface : public OutputSurface {
   bool HasExternalStencilTest() const override;
   void ApplyExternalStencil() override;
   uint32_t GetFramebufferCopyTextureFormat() override;
-#if BUILDFLAG(ENABLE_VULKAN)
-  gpu::VulkanSurface* GetVulkanSurface() override;
-#endif
   unsigned UpdateGpuFence() override;
 
  private:

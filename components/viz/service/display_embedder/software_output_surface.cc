@@ -140,13 +140,6 @@ void SoftwareOutputSurface::UpdateVSyncParametersCallback(
   synthetic_begin_frame_source_->OnUpdateVSyncParameters(timebase, interval);
 }
 
-#if BUILDFLAG(ENABLE_VULKAN)
-gpu::VulkanSurface* SoftwareOutputSurface::GetVulkanSurface() {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-#endif
-
 unsigned SoftwareOutputSurface::UpdateGpuFence() {
   return 0;
 }

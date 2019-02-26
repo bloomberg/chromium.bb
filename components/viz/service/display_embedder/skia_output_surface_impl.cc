@@ -27,6 +27,7 @@
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/ipc/command_buffer_task_executor.h"
+#include "gpu/vulkan/buildflags.h"
 #include "third_party/skia/include/core/SkYUVAIndex.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gl/gl_bindings.h"
@@ -450,14 +451,6 @@ bool SkiaOutputSurfaceImpl::HasExternalStencilTest() const {
 void SkiaOutputSurfaceImpl::ApplyExternalStencil() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
-
-#if BUILDFLAG(ENABLE_VULKAN)
-gpu::VulkanSurface* SkiaOutputSurfaceImpl::GetVulkanSurface() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  return nullptr;
-}
-#endif
 
 unsigned SkiaOutputSurfaceImpl::UpdateGpuFence() {
   return 0;

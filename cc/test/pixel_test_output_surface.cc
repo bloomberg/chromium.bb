@@ -106,13 +106,6 @@ uint32_t PixelTestOutputSurface::GetFramebufferCopyTextureFormat() {
   return GL_RGB;
 }
 
-#if BUILDFLAG(ENABLE_VULKAN)
-gpu::VulkanSurface* PixelTestOutputSurface::GetVulkanSurface() {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-#endif
-
 unsigned PixelTestOutputSurface::UpdateGpuFence() {
   return 0;
 }

@@ -12,7 +12,6 @@
 #include "components/viz/service/display/direct_renderer.h"
 #include "components/viz/service/display/sync_query_collection.h"
 #include "components/viz/service/viz_service_export.h"
-#include "gpu/vulkan/buildflags.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "ui/latency/latency_info.h"
 
@@ -30,7 +29,6 @@ class SkiaOutputSurface;
 class SolidColorDrawQuad;
 class TextureDrawQuad;
 class TileDrawQuad;
-class VulkanContextProvider;
 class YUVVideoDrawQuad;
 
 // TODO(795132): SkColorSpace is only a subset comparing to gfx::ColorSpace.
@@ -39,7 +37,7 @@ class YUVVideoDrawQuad;
 class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
  public:
   // Different draw modes that are supported by SkiaRenderer right now.
-  enum DrawMode { GL, DDL, VULKAN, SKPRECORD };
+  enum DrawMode { GL, DDL, SKPRECORD };
 
   // TODO(penghuang): Remove skia_output_surface when DDL is used everywhere.
   SkiaRenderer(const RendererSettings* settings,
@@ -121,14 +119,12 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   bool ShouldApplyBackgroundFilters(
       const RenderPassDrawQuad* quad,
       const cc::FilterOperations* backdrop_filters) const;
-  bool IsUsingVulkan() const;
   const TileDrawQuad* CanPassBeDrawnDirectly(const RenderPass* pass) override;
 
-  // Get corresponding GrContext in DrawMode::GL or DrawMode::VULKAN. Returns
-  // nullptr when there is no GrContext.
+  // Get corresponding GrContext in DrawMode::GL. Returns nullptr when there is
+  // no GrContext.
   GrContext* GetGrContext();
   bool is_using_ddl() const { return draw_mode_ == DrawMode::DDL; }
-  bool is_using_vulkan() const { return draw_mode_ == DrawMode::VULKAN; }
 
   // A map from RenderPass id to the texture used to draw the RenderPass from.
   struct RenderPassBacking {
@@ -193,11 +189,6 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   };
   BatchedTileState batched_tile_state_;
   std::vector<SkCanvas::ImageSetEntry> batched_tiles_;
-
-// Specific for Vulkan.
-#if BUILDFLAG(ENABLE_VULKAN)
-  VulkanContextProvider* vulkan_context_provider_ = nullptr;
-#endif
 
   // Specific for SkDDL.
   SkiaOutputSurface* const skia_output_surface_ = nullptr;

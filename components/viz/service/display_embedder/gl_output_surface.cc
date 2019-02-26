@@ -193,13 +193,6 @@ void GLOutputSurface::OnPresentation(
   client_->DidReceivePresentationFeedback(feedback);
 }
 
-#if BUILDFLAG(ENABLE_VULKAN)
-gpu::VulkanSurface* GLOutputSurface::GetVulkanSurface() {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-#endif
-
 unsigned GLOutputSurface::UpdateGpuFence() {
   if (!use_gpu_fence_)
     return 0;

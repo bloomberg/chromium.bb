@@ -108,14 +108,6 @@ void FakeSkiaOutputSurface::ApplyExternalStencil() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
-#if BUILDFLAG(ENABLE_VULKAN)
-gpu::VulkanSurface* FakeSkiaOutputSurface::GetVulkanSurface() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-#endif
-
 unsigned FakeSkiaOutputSurface::UpdateGpuFence() {
   NOTIMPLEMENTED();
   return 0;

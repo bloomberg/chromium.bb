@@ -953,8 +953,7 @@ sk_sp<SkImage> GLRenderer::ApplyBackgroundFilters(
 }
 
 const TileDrawQuad* GLRenderer::CanPassBeDrawnDirectly(const RenderPass* pass) {
-  return DirectRenderer::CanPassBeDrawnDirectly(pass, false,
-                                                resource_provider_);
+  return DirectRenderer::CanPassBeDrawnDirectly(pass, resource_provider_);
 }
 
 void GLRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,

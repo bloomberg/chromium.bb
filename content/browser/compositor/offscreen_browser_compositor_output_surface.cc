@@ -197,14 +197,6 @@ void OffscreenBrowserCompositorOutputSurface::OnSwapBuffersComplete(
   client_->DidReceivePresentationFeedback(gfx::PresentationFeedback());
 }
 
-#if BUILDFLAG(ENABLE_VULKAN)
-gpu::VulkanSurface*
-OffscreenBrowserCompositorOutputSurface::GetVulkanSurface() {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-#endif
-
 unsigned OffscreenBrowserCompositorOutputSurface::UpdateGpuFence() {
   return 0;
 }

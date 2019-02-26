@@ -101,13 +101,6 @@ unsigned FakeOutputSurface::GetOverlayTextureId() const {
   return overlay_texture_id_;
 }
 
-#if BUILDFLAG(ENABLE_VULKAN)
-gpu::VulkanSurface* FakeOutputSurface::GetVulkanSurface() {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-#endif
-
 unsigned FakeOutputSurface::UpdateGpuFence() {
   return gpu_fence_id_;
 }

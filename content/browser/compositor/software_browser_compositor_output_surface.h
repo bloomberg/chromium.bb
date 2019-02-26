@@ -10,7 +10,6 @@
 #include "build/build_config.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
 #include "content/common/content_export.h"
-#include "gpu/vulkan/buildflags.h"
 #include "ui/latency/latency_tracker.h"
 
 namespace content {
@@ -40,9 +39,6 @@ class CONTENT_EXPORT SoftwareBrowserCompositorOutputSurface
   unsigned GetOverlayTextureId() const override;
   gfx::BufferFormat GetOverlayBufferFormat() const override;
   uint32_t GetFramebufferCopyTextureFormat() override;
-#if BUILDFLAG(ENABLE_VULKAN)
-  gpu::VulkanSurface* GetVulkanSurface() override;
-#endif
   unsigned UpdateGpuFence() override;
 
  private:

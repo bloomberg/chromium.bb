@@ -46,7 +46,9 @@
 #include "ui/gl/init/gl_factory.h"
 
 #if BUILDFLAG(ENABLE_VULKAN)
+#include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "gpu/vulkan/vulkan_implementation.h"
+#include "gpu/vulkan/vulkan_surface.h"
 #endif
 
 #if defined(USE_OZONE)
