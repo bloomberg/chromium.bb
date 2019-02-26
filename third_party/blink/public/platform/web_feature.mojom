@@ -2077,9 +2077,6 @@ enum WebFeature {
   kFlexboxSingleLineAlignContent = 2642,
   kSignedExchangeInnerResponseInMainFrame = 2643,
   kSignedExchangeInnerResponseInSubFrame = 2644,
-  kCSSSelectorNotWithValidList = 2645,
-  kCSSSelectorNotWithInvalidList = 2646,
-  kCSSSelectorNotWithPartiallyValidList = 2647,
   // The above items are available in M72 branch.
 
   kV8IDBFactory_Databases_Method = 2648,

@@ -21527,9 +21527,9 @@ Called by update_net_error_codes.py.-->
   <int value="2642" label="FlexboxSingleLineAlignContent"/>
   <int value="2643" label="SignedExchangeInnerResponseInMainFrame"/>
   <int value="2644" label="SignedExchangeInnerResponseInSubFrame"/>
-  <int value="2645" label="CSSSelectorNotWithValidList"/>
-  <int value="2646" label="CSSSelectorNotWithInvalidList"/>
-  <int value="2647" label="CSSSelectorNotWithPartiallyValidList"/>
+  <int value="2645" label="OBSOLETE_CSSSelectorNotWithValidList"/>
+  <int value="2646" label="OBSOLETE_CSSSelectorNotWithInvalidList"/>
+  <int value="2647" label="OBSOLETE_CSSSelectorNotWithPartiallyValidList"/>
   <int value="2648" label="V8IDBFactory_Databases_Method"/>
   <int value="2649" label="OpenerNavigationDownloadCrossOrigin"/>
   <int value="2650" label="V8RegExpMatchIsTrueishOnNonJSRegExp"/>
