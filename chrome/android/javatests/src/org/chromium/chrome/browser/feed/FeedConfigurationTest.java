@@ -34,26 +34,36 @@ public class FeedConfigurationTest {
     @Feature({"Feed"})
     @Features.EnableFeatures({ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS})
     public void testDefaultFeedConfigurationValues() {
+        Assert.assertEquals(FeedConfiguration.CARD_MENU_TOOLTIP_ELIGIBLE_DEFAULT,
+                FeedConfiguration.getCardMenuTooltipEligible());
         Assert.assertEquals(FeedConfiguration.FEED_SERVER_ENDPOINT_DEFAULT,
                 FeedConfiguration.getFeedServerEndpoint());
         Assert.assertEquals(FeedConfiguration.FEED_SERVER_METHOD_DEFAULT,
                 FeedConfiguration.getFeedServerMethod());
         Assert.assertEquals(FeedConfiguration.FEED_SERVER_RESPONSE_LENGTH_PREFIXED_DEFAULT,
                 FeedConfiguration.getFeedServerResponseLengthPrefixed());
-        Assert.assertFalse(FeedConfiguration.getFeedUiEnabled());
+        Assert.assertEquals(
+                FeedConfiguration.FEED_UI_ENABLED_DEFAULT, FeedConfiguration.getFeedUiEnabled());
         Assert.assertEquals(FeedConfiguration.INITIAL_NON_CACHED_PAGE_SIZE_DEFAULT,
                 FeedConfiguration.getInitialNonCachedPageSize());
         Assert.assertEquals(FeedConfiguration.LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS_DEFAULT,
                 FeedConfiguration.getLoggingImmediateContentThresholdMs());
+        Assert.assertEquals(FeedConfiguration.MANAGE_INTERESTS_ENABLED_DEFAULT,
+                FeedConfiguration.getManageInterestsEnabled());
         Assert.assertEquals(FeedConfiguration.NON_CACHED_MIN_PAGE_SIZE_DEFAULT,
                 FeedConfiguration.getNonCachedMinPageSize());
         Assert.assertEquals(FeedConfiguration.NON_CACHED_PAGE_SIZE_DEFAULT,
                 FeedConfiguration.getNonCachedPageSize());
         Assert.assertEquals(FeedConfiguration.SESSION_LIFETIME_MS_DEFAULT,
                 FeedConfiguration.getSessionLifetimeMs());
-        Assert.assertFalse(FeedConfiguration.getTriggerImmediatePagination());
-        Assert.assertTrue(FeedConfiguration.getUseTimeoutScheduler());
-        Assert.assertFalse(FeedConfiguration.getUseSecondaryPageRequest());
+        Assert.assertEquals(FeedConfiguration.TRIGGER_IMMEDIATE_PAGINATION_DEFAULT,
+                FeedConfiguration.getTriggerImmediatePagination());
+        Assert.assertEquals(FeedConfiguration.UNDOABLE_ACTIONS_ENABLED_DEFAULT,
+                FeedConfiguration.getUndoableActionsEnabled());
+        Assert.assertEquals(FeedConfiguration.USE_TIMEOUT_SCHEDULER_DEFAULT,
+                FeedConfiguration.getUseTimeoutScheduler());
+        Assert.assertEquals(FeedConfiguration.USE_SECONDARY_PAGE_REQUEST_DEFAULT,
+                FeedConfiguration.getUseSecondaryPageRequest());
         Assert.assertEquals(FeedConfiguration.VIEW_LOG_THRESHOLD_DEFAULT,
                 FeedConfiguration.getViewLogThreshold(), ASSERT_EQUALS_DOUBLE_DELTA);
     }
@@ -62,9 +72,20 @@ public class FeedConfigurationTest {
     @Feature({"Feed"})
     @CommandLineFlags.
     Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
+            "force-fieldtrial-params=Trial.Group:card_menu_tooltip_eligible/true"})
+    public void
+    testCardMenuTooltipEligible() {
+        Assert.assertTrue(FeedConfiguration.getCardMenuTooltipEligible());
+    }
+
+    @Test
+    @Feature({"Feed"})
+    @CommandLineFlags.
+    Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
             "force-fieldtrial-params=Trial.Group:feed_server_endpoint/"
                     + "https%3A%2F%2Ffeed%2Egoogle%2Ecom%2Fpath"})
-    public void testFeedServerEndpointParameter() {
+    public void
+    testFeedServerEndpoint() {
         Assert.assertEquals(
                 "https://feed.google.com/path", FeedConfiguration.getFeedServerEndpoint());
     }
@@ -74,7 +95,8 @@ public class FeedConfigurationTest {
     @CommandLineFlags.
     Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
             "force-fieldtrial-params=Trial.Group:feed_server_method/POST"})
-    public void testFeedServerMethodParameter() {
+    public void
+    testFeedServerMethod() {
         Assert.assertEquals("POST", FeedConfiguration.getFeedServerMethod());
     }
 
@@ -83,7 +105,8 @@ public class FeedConfigurationTest {
     @CommandLineFlags.
     Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
             "force-fieldtrial-params=Trial.Group:feed_server_response_length_prefixed/false"})
-    public void testFeedServerResponseLengthPrefixedParameter() {
+    public void
+    testFeedServerResponseLengthPrefixed() {
         Assert.assertEquals(false, FeedConfiguration.getFeedServerResponseLengthPrefixed());
     }
 
@@ -121,6 +144,16 @@ public class FeedConfigurationTest {
     @Feature({"Feed"})
     @CommandLineFlags.
     Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
+            "force-fieldtrial-params=Trial.Group:manage_interests_enabled/true"})
+    public void
+    testManageInterestsEnabled() {
+        Assert.assertTrue(FeedConfiguration.getManageInterestsEnabled());
+    }
+
+    @Test
+    @Feature({"Feed"})
+    @CommandLineFlags.
+    Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
             "force-fieldtrial-params=Trial.Group:non_cached_min_page_size/100"})
     public void
     testNonCachedMinPageSize() {
@@ -151,8 +184,19 @@ public class FeedConfigurationTest {
     @CommandLineFlags.
     Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
             "force-fieldtrial-params=Trial.Group:trigger_immediate_pagination/true"})
-    public void testTriggerImmedatePagination() {
+    public void
+    testTriggerImmedatePagination() {
         Assert.assertTrue(FeedConfiguration.getTriggerImmediatePagination());
+    }
+
+    @Test
+    @Feature({"Feed"})
+    @CommandLineFlags.
+    Add({"enable-features=InterestFeedContentSuggestions<Trial", "force-fieldtrials=Trial/Group",
+            "force-fieldtrial-params=Trial.Group:undoable_actions_enabled/true"})
+    public void
+    testUndoableActionsEnabled() {
+        Assert.assertTrue(FeedConfiguration.getUndoableActionsEnabled());
     }
 
     @Test
@@ -190,6 +234,8 @@ public class FeedConfigurationTest {
     @Features.EnableFeatures({ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS})
     public void testCreateConfiguration() {
         Configuration configuration = FeedConfiguration.createConfiguration();
+        Assert.assertFalse(
+                configuration.getValueOrDefault(ConfigKey.CARD_MENU_TOOLTIP_ELIGIBLE, true));
         Assert.assertEquals(FeedConfiguration.FEED_SERVER_ENDPOINT_DEFAULT,
                 configuration.getValueOrDefault(ConfigKey.FEED_SERVER_ENDPOINT, ""));
         Assert.assertEquals(FeedConfiguration.FEED_SERVER_METHOD_DEFAULT,
@@ -203,6 +249,8 @@ public class FeedConfigurationTest {
                 Long.valueOf(FeedConfiguration.LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS_DEFAULT),
                 configuration.getValueOrDefault(
                         ConfigKey.LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS, 0l));
+        Assert.assertFalse(
+                configuration.getValueOrDefault(ConfigKey.MANAGE_INTERESTS_ENABLED, true));
         Assert.assertEquals(Integer.valueOf(FeedConfiguration.NON_CACHED_MIN_PAGE_SIZE_DEFAULT),
                 configuration.getValueOrDefault(ConfigKey.NON_CACHED_MIN_PAGE_SIZE, 0));
         Assert.assertEquals(Integer.valueOf(FeedConfiguration.NON_CACHED_PAGE_SIZE_DEFAULT),
@@ -211,6 +259,8 @@ public class FeedConfigurationTest {
                 configuration.getValueOrDefault(ConfigKey.SESSION_LIFETIME_MS, 0l));
         Assert.assertFalse(
                 configuration.getValueOrDefault(ConfigKey.TRIGGER_IMMEDIATE_PAGINATION, true));
+        Assert.assertFalse(
+                configuration.getValueOrDefault(ConfigKey.UNDOABLE_ACTIONS_ENABLED, true));
         Assert.assertTrue(configuration.getValueOrDefault(ConfigKey.USE_TIMEOUT_SCHEDULER, false));
         Assert.assertFalse(
                 configuration.getValueOrDefault(ConfigKey.USE_SECONDARY_PAGE_REQUEST, true));
