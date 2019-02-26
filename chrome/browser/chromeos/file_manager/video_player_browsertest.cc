@@ -75,6 +75,11 @@ IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, OpenVideoWithoutSubtitle) {
   StartTest();
 }
 
+IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, OpenMultipleVideosOnDownloads) {
+  set_test_case_name("openMultipleVideosOnDownloads");
+  StartTest();
+}
+
 IN_PROC_BROWSER_TEST_F(VideoPlayerBrowserTest, CheckInitialElements) {
   set_test_case_name("checkInitialElements");
   StartTest();

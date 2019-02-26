@@ -32,7 +32,7 @@ function waitForFunctionResult(funcName, filename, expectedResult) {
  * @return {Promise} Promise to be fulfilled on success.
  */
 testcase.mediaKeyNative = function() {
-  const openVideo = openSingleVideo('local', 'downloads', ENTRIES.video);
+  const openVideo = openVideos('local', 'downloads', [ENTRIES.video]);
   let appId;
   function ensurePlaying() {
     return waitForFunctionResult('isPlaying', 'video_long.ogv', true);

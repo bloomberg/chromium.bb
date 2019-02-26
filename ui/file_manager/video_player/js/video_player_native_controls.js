@@ -353,6 +353,11 @@ class NativeControlsVideoPlayer {
 
     this.videoElement_.src = videoUrl;
 
+    // Clear all tracks.
+    while (this.videoElement_.firstChild) {
+      this.videoElement_.firstChild.remove();
+    }
+
     const subtitleUrl = await this.searchSubtitle_(videoUrl);
     if (subtitleUrl) {
       const track =
