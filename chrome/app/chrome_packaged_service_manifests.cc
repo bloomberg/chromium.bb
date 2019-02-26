@@ -26,7 +26,7 @@
 #include "ash/components/tap_visualizer/public/cpp/manifest.h"
 #include "ash/public/cpp/manifest.h"
 #include "chrome/browser/chromeos/prefs/ash_pref_connector_manifest.h"
-#include "chrome/services/cups_ipp_parser/public/cpp/manifest.h"
+#include "chrome/services/cups_ipp_parser/public/cpp/manifest.h"  // nogncheck
 #include "chromeos/services/ime/public/cpp/manifest.h"
 #include "chromeos/services/secure_channel/public/cpp/manifest.h"
 #include "services/ws/public/mojom/input_devices/input_device_controller.mojom.h"
