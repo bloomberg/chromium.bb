@@ -21,6 +21,7 @@ AutoclickTrayActionView::AutoclickTrayActionView(
     AutoclickTrayActionListView* list_view,
     mojom::AutoclickEventType event_type,
     const base::string16& label,
+    const gfx::VectorIcon& vector_icon,
     bool selected)
     : ActionableView(TrayPopupInkDropStyle::FILL_BOUNDS),
       list_view_(list_view),
@@ -34,8 +35,7 @@ AutoclickTrayActionView::AutoclickTrayActionView(
 
   views::ImageView* icon = new views::ImageView();
   // TODO(katie): Use autoclick assets when available.
-  icon->SetImage(gfx::CreateVectorIcon(kSystemTraySelectToSpeakNewuiIcon,
-                                       gfx::kGoogleGrey700));
+  icon->SetImage(gfx::CreateVectorIcon(vector_icon, gfx::kGoogleGrey700));
   tri_view->AddView(TriView::Container::START, icon);
 
   auto* label_view = TrayPopupUtils::CreateDefaultLabel();
