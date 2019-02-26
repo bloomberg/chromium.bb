@@ -1034,6 +1034,8 @@ class BranchCommandTest(ManifestTestCase, cros_test_lib.MockTestCase):
     self.PatchObject(CrosCheckout, 'BranchExists', return_value=False)
     self.get_input = self.PatchObject(cros_build_lib, 'GetInput',
                                       return_value='yes')
+    td_context = self.PatchObject(CrosCheckout, 'TempRoot')
+    td_context.return_value.__enter__.return_value = '/td'
 
   def testCreateDiesWhenNonzeroPatchNumber(self):
     """Test create validates zero patch number."""

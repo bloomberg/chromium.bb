@@ -222,6 +222,11 @@ class CrosCheckout(object):
     self.manifest_url = manifest_url
     self.repo_url = repo_url
 
+  @staticmethod
+  def TempRoot():
+    """Returns an osutils.TempDir for a checkout. Not inlined for testing."""
+    return osutils.TempDir(prefix='cros-branch-')
+
   @classmethod
   def Initialize(cls, root, manifest_url, repo_url=None, repo_branch=None):
     """Initialize the checkout if necessary. Otherwise a no-op.
@@ -695,7 +700,7 @@ Delete Examples:
         '--force',
         action='store_true',
         help='Required for any remote operation that would delete an existing '
-             'branch. Also required when trying to branch from a perviously '
+             'branch. Also required when trying to branch from a previously '
              'branched manifest version.')
 
     sync_group = parser.add_argument_group(
@@ -704,11 +709,10 @@ Delete Examples:
                     'These options are primarily used for testing.')
     sync_group.add_argument(
         '--root',
-        default=constants.SOURCE_ROOT,
         help='Repo root of local checkout to branch. If the root does not '
              'exist, this tool will create it. If the root is not initialized, '
              'this tool will initialize it. If --root is not specificed, this '
-             'tool will branch the checkout from which it is run.')
+             'tool will branch a fresh checkout in a temporary directory.')
     sync_group.add_argument(
         '--repo-url',
         help='Repo repository location. Defaults to repo '
@@ -797,77 +801,103 @@ Delete Examples:
     delete_parser = subparser.add_parser('delete', help='Delete a branch.')
     delete_parser.add_argument('branch', help='Name of the branch to delete.')
 
-  def Run(self):
+  def _HandleCreate(self, checkout):
+    """Sync to the version or file and create a branch.
+
+    Args:
+      checkout: The CrosCheckout to run commands in.
+    """
+    # Start with quick, immediate validations.
+    if self.options.name and self.options.descriptor:
+      raise BranchError('--descriptor cannot be used with --custom.')
+
+    if self.options.version and not self.options.version.endswith('0'):
+      raise BranchError('Cannot branch version from nonzero patch number.')
+
+    # Handle sync. Unfortunately, we cannot fully validate the version until
+    # we have a copy of chromeos_version.sh.
+    if self.options.file:
+      checkout.SyncFile(self.options.file)
+    else:
+      checkout.SyncVersion(self.options.version)
+
+    # Now to validate the version. First, double check that the checkout
+    # has a zero patch number in case we synced from file.
+    vinfo = checkout.ReadVersion()
+    if int(vinfo.patch_number):
+      raise BranchError('Cannot branch version with nonzero patch number.')
+
+    # Second, check that we did not already branch from this version.
+    # manifest-internal serves as the sentinel project.
+    manifest_internal = checkout.manifest.GetUniqueProject(
+        'chromeos/manifest-internal')
+    pattern = '.*-%s\\.B$' % '\\.'.join(
+        str(comp) for comp in vinfo.VersionComponents() if comp)
+    if (checkout.BranchExists(manifest_internal, pattern)
+        and not self.options.force):
+      raise BranchError(
+          'Already branched %s. Please rerun with --force if you wish to '
+          'proceed.' % vinfo.VersionString())
+
+    # Determine if we are creating a custom branch or a standard branch.
+    if self.options.cls:
+      branch = self.options.cls(checkout, self.options.descriptor)
+    else:
+      branch = Branch(checkout, self.options.name)
+
+    # Finally, double check the name with the user.
+    proceed = cros_build_lib.BooleanPrompt(
+        prompt='New branch will be named %s. Continue?' % branch.name,
+        default=False)
+    if proceed:
+      branch.Create(push=self.options.push, force=self.options.force)
+      logging.info('Successfully created branch %s.', branch.name)
+    else:
+      logging.info('Aborted branch creation.')
+
+  def _HandleRename(self, checkout):
+    """Sync to the branch and rename it.
+
+    Args:
+      checkout: The CrosCheckout to run commands in.
+    """
+    checkout.SyncBranch(self.options.old)
+    branch = Branch(checkout, self.options.new)
+    branch.Rename(self.options.old, push=self.options.push,
+                  force=self.options.force)
+    logging.info('Successfully renamed branch %s to %s.',
+                 self.options.old, self.options.new)
+
+  def _HandleDelete(self, checkout):
+    """Sync to the branch and delete it.
+
+    Args:
+      checkout: The CrosCheckout to run commands in.
+    """
+    checkout.SyncBranch(self.options.branch)
+    branch = Branch(checkout, self.options.branch)
+    branch.Delete(push=self.options.push, force=self.options.force)
+    logging.info('Successfully deleted branch %s.', self.options.branch)
+
+  def _RunInCheckout(self, root):
+    """Run cros branch in a checkout at the given root.
+
+    Args:
+      root: Path to checkout.
+    """
     checkout = CrosCheckout.Initialize(
-        self.options.root,
+        root,
         self.options.manifest_url,
         repo_url=self.options.repo_url,
         repo_branch=self.options.repo_branch)
-    push = self.options.push
-    force = self.options.force
+    handlers = {'create': self._HandleCreate,
+                'rename': self._HandleRename,
+                'delete': self._HandleDelete}
+    handlers[self.options.subcommand](checkout)
 
-    # TODO(evanhernandez): If branch a operation is interrupted, some artifacts
-    # might be left over. We should check for this.
-    if self.options.subcommand == 'create':
-      # Start with quick, immediate validations.
-      if self.options.name and self.options.descriptor:
-        raise BranchError('--descriptor cannot be used with --custom.')
-
-      if self.options.version and not self.options.version.endswith('0'):
-        raise BranchError('Cannot branch version from nonzero patch number.')
-
-      # Handle sync. Unfortunately, we cannot fully validate the version until
-      # we have a copy of chromeos_version.sh.
-      if self.options.file:
-        checkout.SyncFile(self.options.file)
-      else:
-        checkout.SyncVersion(self.options.version)
-
-      # Now to validate the version. First, double check that the checkout
-      # has a zero patch number in case we synced from file.
-      vinfo = checkout.ReadVersion()
-      if int(vinfo.patch_number):
-        raise BranchError('Cannot branch version with nonzero patch number.')
-
-      # Second, check that we did not already branch from this version.
-      # manifest-internal serves as the sentinel project.
-      manifest_internal = checkout.manifest.GetUniqueProject(
-          'chromeos/manifest-internal')
-      pattern = '.*-%s\\.B$' % '\\.'.join(
-          str(comp) for comp in vinfo.VersionComponents() if comp)
-      if checkout.BranchExists(manifest_internal, pattern) and not force:
-        raise BranchError(
-            'Already branched %s. Please rerun with --force if you wish to '
-            'proceed.' % vinfo.VersionString())
-
-      # Determine if we are creating a custom branch or a standard branch.
-      if self.options.cls:
-        branch = self.options.cls(checkout, self.options.descriptor)
-      else:
-        branch = Branch(checkout, self.options.name)
-
-      # Finally, double check the name with the user.
-      proceed = cros_build_lib.BooleanPrompt(
-          prompt='New branch will be named %s. Continue?' % branch.name,
-          default=False)
-      if proceed:
-        branch.Create(push=push, force=force)
-        logging.info('Successfully created branch %s.', branch.name)
-      else:
-        logging.info('Aborted branch creation.')
-
-    elif self.options.subcommand == 'rename':
-      checkout.SyncBranch(self.options.old)
-      branch = Branch(checkout, self.options.new)
-      branch.Rename(self.options.old, push=push, force=force)
-      logging.info('Successfully renamed branch %s to %s',
-                   self.options.old, self.options.new)
-
-    elif self.options.subcommand == 'delete':
-      checkout.SyncBranch(self.options.branch)
-      branch = Branch(checkout, self.options.branch)
-      branch.Delete(push=push, force=force)
-      logging.info('Successfully deleted branch %s.', self.options.branch)
-
+  def Run(self):
+    if self.options.root:
+      self._RunInCheckout(self.options.root)
     else:
-      raise BranchError('Unrecognized option.')
+      with CrosCheckout.TempRoot() as root:
+        self._RunInCheckout(root)
