@@ -21,11 +21,13 @@
 #include "base/value_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "components/language/core/browser/language_prefs.h"
 #include "components/language/core/common/language_experiments.h"
 #include "components/language/core/common/locale_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/strings/grit/components_locale_settings.h"
 #include "components/translate/core/browser/translate_accept_languages.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_pref_names.h"
@@ -160,6 +162,7 @@ TranslatePrefs::TranslatePrefs(PrefService* user_prefs,
   DCHECK(!preferred_languages_pref);
 #endif
   MigrateSitesBlacklist();
+  ResetEmptyBlockedLanguagesToDefaults();
 }
 
 bool TranslatePrefs::IsOfferTranslateEnabled() const {
@@ -755,19 +758,28 @@ void TranslatePrefs::UpdateLanguageList(
 bool TranslatePrefs::CanTranslateLanguage(
     TranslateAcceptLanguages* accept_languages,
     const std::string& language) {
+  // Don't translate any user black-listed languages.
+  if (!IsBlockedLanguage(language))
+    return true;
+
+  // Checking |is_accept_language| is necessary because if the user eliminates
+  // the language from the preference, it is natural to forget whether or not
+  // the language should be translated. Checking |cannot_be_accept_language| is
+  // also necessary because some minor languages can't be selected in the
+  // language preference even though the language is available in Translate
+  // server.
   bool can_be_accept_language =
       TranslateAcceptLanguages::CanBeAcceptLanguage(language);
   bool is_accept_language = accept_languages->IsAcceptLanguage(language);
+  if (!is_accept_language && can_be_accept_language)
+    return true;
 
-  // Don't translate any user black-listed languages. Checking
-  // |is_accept_language| is necessary because if the user eliminates the
-  // language from the preference, it is natural to forget whether or not
-  // the language should be translated. Checking |cannot_be_accept_language|
-  // is also necessary because some minor languages can't be selected in the
-  // language preference even though the language is available in Translate
-  // server.
-  return !IsBlockedLanguage(language) ||
-         (!is_accept_language && can_be_accept_language);
+  // Under this experiment, translate English page even though English may be
+  // blocked.
+  if (language == "en" && language::ShouldForceTriggerTranslateOnEnglishPages(
+                              GetForceTriggerOnEnglishPagesCount()))
+    return true;
+  return false;
 }
 
 bool TranslatePrefs::ShouldAutoTranslate(const std::string& original_language,
@@ -827,6 +839,7 @@ void TranslatePrefs::RegisterProfilePrefs(
       kPrefTranslateAcceptedCount,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterListPref(kPrefTranslateBlockedLanguages,
+                             GetDefaultBlockedLanguages(),
                              user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterDictionaryPref(kPrefTranslateLastDeniedTimeForLanguage);
   registry->RegisterDictionaryPref(
@@ -874,6 +887,11 @@ void TranslatePrefs::MigrateSitesBlacklist() {
     }
   }
   migrated = true;
+}
+
+void TranslatePrefs::ResetEmptyBlockedLanguagesToDefaults() {
+  if (!HasBlockedLanguages())
+    ClearBlockedLanguages();
 }
 
 bool TranslatePrefs::IsValueInList(const base::ListValue* list,
@@ -951,6 +969,27 @@ void TranslatePrefs::PurgeUnsupportedLanguagesInLanguageFamily(
       return languages_in_same_family.count(lang) > 0;
     });
   }
+}
+
+base::Value TranslatePrefs::GetDefaultBlockedLanguages() {
+#if defined(OS_CHROMEOS)
+  // Preferred languages.
+  std::vector<std::string> languages = {language::kFallbackInputMethodLocale};
+#else
+  // Accept languages.
+  std::vector<std::string> languages =
+      base::SplitString(l10n_util::GetStringUTF8(IDS_ACCEPT_LANGUAGES), ",",
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+#endif
+  base::ListValue language_values;
+  for (std::string& language : languages) {
+    translate::ToTranslateLanguageSynonym(&language);
+    if (std::find(language_values.GetList().begin(),
+                  language_values.GetList().end(),
+                  base::Value(language)) == language_values.GetList().end())
+      language_values.GetList().emplace_back(language);
+  }
+  return std::move(language_values);
 }
 
 }  // namespace translate

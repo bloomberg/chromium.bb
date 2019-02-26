@@ -477,9 +477,13 @@ js_compile_bundle("web_view_bundle") {
 
 repack_locales("repack_locales") {
   visibility = [ ":web_view_resources" ]
-  source_patterns = [ "${root_gen_dir}/components/strings/components_strings_" ]
+  source_patterns = [
+    "${root_gen_dir}/components/strings/components_strings_",
+    "${root_gen_dir}/components/strings/components_locale_settings_",
+  ]
 
   deps = [
+    "//components/strings:components_locale_settings",
     "//components/strings:components_strings",
   ]
   input_locales = ios_packed_locales
