@@ -1290,9 +1290,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDisableIpcFloodingProtectionName,
      flag_descriptions::kDisableIpcFloodingProtectionDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kDisableIpcFloodingProtection)},
-    {"disable-hyperlink-auditing", flag_descriptions::kHyperlinkAuditingName,
-     flag_descriptions::kHyperlinkAuditingDescription, kOsAll,
-     SINGLE_DISABLE_VALUE_TYPE(switches::kNoPings)},
 #if defined(OS_ANDROID)
     {"contextual-search-ml-tap-suppression",
      flag_descriptions::kContextualSearchMlTapSuppressionName,
