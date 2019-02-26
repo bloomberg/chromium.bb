@@ -14,6 +14,7 @@
 #include "ui/gfx/shadow_value.h"
 #include "ui/gfx/skia_paint_util.h"
 #include "ui/views/animation/ink_drop_impl.h"
+#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/border.h"
 #include "ui/views/painter.h"
@@ -97,6 +98,10 @@ class ToggleButton::ThumbView : public InkDropHostView {
     thumb_bounds = gfx::RectF(gfx::ToEnclosingRect(thumb_bounds));
     canvas->DrawCircle(thumb_bounds.CenterPoint(), thumb_bounds.height() / 2.f,
                        thumb_flags);
+  }
+
+  std::unique_ptr<InkDropMask> CreateInkDropMask() const override {
+    return nullptr;
   }
 
   // Color ratio between 0 and 1 that controls the thumb color.
@@ -259,7 +264,13 @@ void ToggleButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
 std::unique_ptr<InkDrop> ToggleButton::CreateInkDrop() {
   std::unique_ptr<InkDropImpl> ink_drop = Button::CreateDefaultInkDropImpl();
   ink_drop->SetShowHighlightOnHover(false);
+  ink_drop->SetAutoHighlightMode(
+      InkDropImpl::AutoHighlightMode::HIDE_ON_RIPPLE);
   return std::move(ink_drop);
+}
+
+std::unique_ptr<InkDropMask> ToggleButton::CreateInkDropMask() const {
+  return nullptr;
 }
 
 std::unique_ptr<InkDropRipple> ToggleButton::CreateInkDropRipple() const {
