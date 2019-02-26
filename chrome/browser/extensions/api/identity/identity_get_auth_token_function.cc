@@ -347,18 +347,23 @@ void IdentityGetAuthTokenFunction::StartSigninFlow() {
     return;
   }
 
+  DCHECK_EQ(AccountListeningMode::kNotListening, account_listening_mode_);
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(GetProfile());
+  account_listening_mode_ = AccountListeningMode::kListeningTokens;
   if (IsPrimaryAccountOnly()) {
-    // Start listening for the primary account being available.
-    GetMojoIdentityManager()->GetPrimaryAccountWhenAvailable(
-        base::BindOnce(&IdentityGetAuthTokenFunction::OnPrimaryAccountAvailable,
-                       base::Unretained(this)));
-  } else {
-    // Start waiting for a refresh token being available.
-    DCHECK_EQ(AccountListeningMode::kNotListening, account_listening_mode_);
-    account_listening_mode_ = AccountListeningMode::kListeningTokens;
-    scoped_identity_manager_observer_.Add(
-        IdentityManagerFactory::GetForProfile(GetProfile()));
+    if (!identity_manager->HasPrimaryAccount()) {
+      account_listening_mode_ = AccountListeningMode::kListeningPrimaryAccount;
+    } else {
+      // Fixing an authentication error. Either there is no token, or it is in
+      // error.
+      DCHECK_EQ(token_key_.account_id, identity_manager->GetPrimaryAccountId());
+      DCHECK(!identity_manager->HasAccountWithRefreshToken(
+                 token_key_.account_id) ||
+             identity_manager->HasAccountWithRefreshTokenInPersistentErrorState(
+                 token_key_.account_id));
+    }
   }
+  scoped_identity_manager_observer_.Add(identity_manager);
 
   ShowExtensionLoginPrompt();
 }
@@ -569,17 +574,22 @@ void IdentityGetAuthTokenFunction::OnRefreshTokenUpdatedForAccount(
   }
 }
 
-void IdentityGetAuthTokenFunction::OnPrimaryAccountAvailable(
-    const AccountInfo& account_info,
-    const ::identity::AccountState& account_state) {
-  TRACE_EVENT_ASYNC_STEP_PAST0("identity", "IdentityGetAuthTokenFunction", this,
-                               "OnPrimaryAccountAvailable");
+void IdentityGetAuthTokenFunction::OnPrimaryAccountSet(
+    const CoreAccountInfo& primary_account_info) {
+  if (account_listening_mode_ != AccountListeningMode::kListeningPrimaryAccount)
+    return;
 
-  // If there was no account associated with this profile before the sign-in,
-  // we may not have an account_id in the token_key yet.
-  if (token_key_.account_id.empty()) {
-    token_key_.account_id = account_info.account_id;
-  }
+  TRACE_EVENT_ASYNC_STEP_PAST0("identity", "IdentityGetAuthTokenFunction", this,
+                               "OnPrimaryAccountSet");
+
+  DCHECK(token_key_.account_id.empty());
+  token_key_.account_id = primary_account_info.account_id;
+
+  // Stop listening primary account.
+  DCHECK(IdentityManagerFactory::GetForProfile(GetProfile())
+             ->HasAccountWithRefreshToken(primary_account_info.account_id));
+  account_listening_mode_ = AccountListeningMode::kNotListening;
+  scoped_identity_manager_observer_.RemoveAll();
 
   StartMintTokenFlow(IdentityMintRequestQueue::MINT_TYPE_NONINTERACTIVE);
 }
