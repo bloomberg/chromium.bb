@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 25
+// Next MinVersion: 26
 
 module arc.mojom;
 
@@ -163,9 +163,14 @@ struct TextSelectionAction {
   [MinVersion=23] ArcBitmap? bitmap_icon;
 };
 
+// Interface to interact with a custom tab.
+// Close the interface pointer to close the custom tab.
+interface CustomTabSession {
+};
+
 // Handles intents from ARC in Chrome.
 // Deprecated method ID: 4
-// Next method ID: 10
+// Next method ID: 11
 interface IntentHelperHost {
   // Called when icons associated with the package are no longer up to date.
   [MinVersion=3] OnIconInvalidated@1(string package_name);
@@ -181,6 +186,17 @@ interface IntentHelperHost {
   // This function is intended to only open URLs that other web content in Chrome would be able to
   // navigate to as well. No special URLs that allow access to privileged functions are allowed.
   OnOpenUrl@0(string url);
+
+  // Opens the url with a custom tab.
+  // |task_id| and |surface_id| specify the Android task and the surface on
+  // which the custom tab should be shown.
+  // |top_margin| is the height of the space at the top of the window which
+  // needs to be vacant to display the top bar rendered by Android code.
+  [MinVersion=25] OnOpenCustomTab@10(string url,
+                                     int32 task_id,
+                                     int32 surface_id,
+                                     int32 top_margin)
+      => (CustomTabSession? session);
 
   // Opens the wallpaper picker dialog.
   [MinVersion=6] OpenWallpaperPicker@3();

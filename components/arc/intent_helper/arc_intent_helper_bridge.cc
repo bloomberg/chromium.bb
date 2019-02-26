@@ -171,6 +171,23 @@ void ArcIntentHelperBridge::OnOpenUrl(const std::string& url) {
     g_open_url_delegate->OpenUrlFromArc(gurl);
 }
 
+void ArcIntentHelperBridge::OnOpenCustomTab(const std::string& url,
+                                            int32_t task_id,
+                                            int32_t surface_id,
+                                            int32_t top_margin,
+                                            OnOpenCustomTabCallback callback) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  // Converts |url| to a fixed-up one and checks validity.
+  const GURL gurl(url_formatter::FixupURL(url, /*desired_tld=*/std::string()));
+  if (!gurl.is_valid() ||
+      allowed_arc_schemes_.find(gurl.scheme()) == allowed_arc_schemes_.end()) {
+    std::move(callback).Run(nullptr);
+    return;
+  }
+  g_open_url_delegate->OpenArcCustomTab(gurl, task_id, surface_id, top_margin,
+                                        std::move(callback));
+}
+
 void ArcIntentHelperBridge::OnOpenChromePage(mojom::ChromePage page) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   auto it = allowed_chrome_pages_map_.find(page);

@@ -25,6 +25,7 @@
 #include "ash/cast_config_controller.h"
 #include "ash/components/tap_visualizer/public/mojom/tap_visualizer.mojom.h"
 #include "ash/contained_shell/contained_shell_controller.h"
+#include "ash/custom_tab/arc_custom_tab_controller.h"
 #include "ash/dbus/ash_dbus_services.h"
 #include "ash/detachable_base/detachable_base_handler.h"
 #include "ash/detachable_base/detachable_base_notification_controller.h"
@@ -632,6 +633,7 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
                           : nullptr),
       aura_env_(owned_aura_env_.get() ? owned_aura_env_.get()
                                       : aura::Env::GetInstance()),
+      arc_custom_tab_controller_(std::make_unique<ArcCustomTabController>()),
       ash_display_controller_(std::make_unique<AshDisplayController>()),
       brightness_control_delegate_(
           std::make_unique<system::BrightnessControllerChromeos>()),
