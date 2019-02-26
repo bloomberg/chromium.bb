@@ -87,16 +87,6 @@ namespace em = enterprise_management;
 
 namespace {
 
-// Strings that map from PolicySource enum to i18n string keys and their IDs.
-// Their order has to follow the order of the policy::PolicySource enum.
-const PolicyStringMap kPolicySources[policy::POLICY_SOURCE_COUNT] = {
-    {"sourceEnterpriseDefault", IDS_POLICY_SOURCE_ENTERPRISE_DEFAULT},
-    {"sourceCloud", IDS_POLICY_SOURCE_CLOUD},
-    {"sourceActiveDirectory", IDS_POLICY_SOURCE_ACTIVE_DIRECTORY},
-    {"sourcePublicSessionOverride", IDS_POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE},
-    {"sourcePlatform", IDS_POLICY_SOURCE_PLATFORM},
-};
-
 // Formats the association state indicated by |data|. If |data| is NULL, the
 // state is considered to be UNMANAGED.
 base::string16 FormatAssociationState(const em::PolicyData* data) {
@@ -623,16 +613,16 @@ PolicyUIHandler::~PolicyUIHandler() {
 }
 
 void PolicyUIHandler::AddLocalizedPolicyStrings(
-      content::WebUIDataSource* source,
-      const PolicyStringMap* strings,
-      size_t count) {
+    content::WebUIDataSource* source,
+    const policy::PolicyStringMap* strings,
+    size_t count) {
   for (size_t i = 0; i < count; ++i)
     source->AddLocalizedString(strings[i].key, strings[i].string_id);
 }
 
 void PolicyUIHandler::AddCommonLocalizedStringsToSource(
       content::WebUIDataSource* source) {
-  AddLocalizedPolicyStrings(source, kPolicySources,
+  AddLocalizedPolicyStrings(source, policy::kPolicySources,
                             static_cast<size_t>(policy::POLICY_SOURCE_COUNT));
   source->AddLocalizedString("title", IDS_POLICY_TITLE);
   source->AddLocalizedString("headerScope", IDS_POLICY_HEADER_SCOPE);

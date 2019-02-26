@@ -43,7 +43,6 @@
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/pepper_flash_settings_manager.h"
 #include "chrome/browser/policy/developer_tools_policy_handler.h"
-#include "chrome/browser/policy/policy_helpers.h"
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/origin_trial_prefs.h"
@@ -476,7 +475,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 
   policy::BrowserPolicyConnector::RegisterPrefs(registry);
   policy::PolicyStatisticsCollector::RegisterPrefs(registry);
-  policy::RegisterPrefs(registry);
 
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)
   BackgroundModeManager::RegisterPrefs(registry);
