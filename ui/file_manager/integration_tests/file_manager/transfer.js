@@ -209,7 +209,8 @@ async function transferBetweenVolumes(transferInfo) {
 
   // If we expected the transfer to succeed, add the pasted file to the list
   // of expected rows.
-  if (!transferInfo.expectFailure) {
+  if (!transferInfo.expectFailure && !transferInfo.isMove &&
+      transferInfo.source !== transferInfo.destination) {
     var pasteFile = transferInfo.fileToTransfer.getExpectedRow();
     // Check if we need to add (1) to the filename, in the case of a
     // duplicate file.
@@ -228,6 +229,8 @@ async function transferBetweenVolumes(transferInfo) {
   await remoteCall.waitForFiles(
       appId, dstContentsAfterPaste,
       {ignoreFileSize: ignoreFileSize, ignoreLastModifiedTime: true});
+
+  return appId;
 }
 
 /**
@@ -461,4 +464,19 @@ testcase.transferBetweenTeamDrives = function() {
         'Members of \'Team Drive A\' will gain access to the copy of these ' +
         'items.CopyCancel',
   }));
+};
+
+/**
+ * Tests that moving a file to its current location is a no-op.
+ */
+testcase.transferFromDownloadsToDownloads = async function() {
+  const appId = await transferBetweenVolumes(new TransferInfo({
+    fileToTransfer: ENTRIES.hello,
+    source: TRANSFER_LOCATIONS.downloads,
+    destination: TRANSFER_LOCATIONS.downloads,
+    isMove: true,
+  }));
+  chrome.test.assertEq(
+      '',
+      (await remoteCall.waitForElement(appId, '.progress-frame label')).text);
 };
