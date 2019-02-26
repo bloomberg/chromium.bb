@@ -788,16 +788,6 @@ FileTransferController.prototype.executePaste = function(pastePlan) {
   var shareEntries;
   var taskId = this.fileOperationManager_.generateTaskId();
 
-  // Creates early progress center item for faster user feedback.
-  var item = new ProgressCenterItem();
-  item.id = taskId;
-  if (toMove) {
-    item.message = strf('MOVE_ITEMS_REMAINING', sourceURLs.length);
-  } else {
-    item.message = strf('COPY_ITEMS_REMAINING', sourceURLs.length);
-  }
-  this.progressCenter_.updateItem(item);
-
   FileTransferController.URLsToEntriesWithAccess(sourceURLs)
       .then((/**
               * @param {Object} result
@@ -818,11 +808,6 @@ FileTransferController.prototype.executePaste = function(pastePlan) {
              function(filteredEntries) {
                entries = filteredEntries;
                if (entries.length === 0) {
-                 // Remove the early progress center item.
-                 var item = new ProgressCenterItem();
-                 item.id = taskId;
-                 item.state = ProgressItemState.CANCELED;
-                 this.progressCenter_.updateItem(item);
                  return Promise.reject('ABORT');
                }
 

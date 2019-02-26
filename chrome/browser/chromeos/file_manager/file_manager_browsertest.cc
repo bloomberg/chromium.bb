@@ -628,7 +628,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("transferFromDownloadsToTeamDrive").DisableDriveFs(),
         TestCase("transferFromDownloadsToTeamDrive").EnableDriveFs(),
         TestCase("transferBetweenTeamDrives").DisableDriveFs(),
-        TestCase("transferBetweenTeamDrives").EnableDriveFs()));
+        TestCase("transferBetweenTeamDrives").EnableDriveFs(),
+        TestCase("transferFromDownloadsToDownloads")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     RestorePrefs, /* restore_prefs.js */
