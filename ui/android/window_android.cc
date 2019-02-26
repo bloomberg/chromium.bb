@@ -17,6 +17,7 @@
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "jni/WindowAndroid_jni.h"
+#include "ui/android/display_android_manager.h"
 #include "ui/android/window_android_compositor.h"
 #include "ui/android/window_android_observer.h"
 
@@ -193,8 +194,10 @@ WindowAndroid* WindowAndroid::FromJavaWindowAndroid(
 WindowAndroid::WindowAndroid(JNIEnv* env,
                              jobject obj,
                              int display_id,
-                             float scroll_factor)
+                             float scroll_factor,
+                             bool window_is_wide_color_gamut)
     : display_id_(display_id),
+      window_is_wide_color_gamut_(window_is_wide_color_gamut),
       compositor_(NULL),
       begin_frame_source_(new WindowBeginFrameSource(this)),
       needs_begin_frames_(false) {
@@ -365,16 +368,27 @@ ScopedJavaLocalRef<jobject> WindowAndroid::GetWindowToken() {
   return Java_WindowAndroid_getWindowToken(env, GetJavaObject());
 }
 
+display::Display WindowAndroid::GetDisplayWithWindowColorSpace() {
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(this);
+  DisplayAndroidManager::DoUpdateDisplay(
+      &display, display.GetSizeInPixel(), display.device_scale_factor(),
+      display.RotationAsDegree(), display.color_depth(),
+      display.depth_per_component(), window_is_wide_color_gamut_);
+  return display;
+}
+
 // ----------------------------------------------------------------------------
 // Native JNI methods
 // ----------------------------------------------------------------------------
 
 jlong JNI_WindowAndroid_Init(JNIEnv* env,
                              const JavaParamRef<jobject>& obj,
-                             int sdk_display_id,
-                             float scroll_factor) {
-  WindowAndroid* window =
-      new WindowAndroid(env, obj, sdk_display_id, scroll_factor);
+                             jint sdk_display_id,
+                             jfloat scroll_factor,
+                             jboolean window_is_wide_color_gamut) {
+  WindowAndroid* window = new WindowAndroid(
+      env, obj, sdk_display_id, scroll_factor, window_is_wide_color_gamut);
   return reinterpret_cast<intptr_t>(window);
 }
 

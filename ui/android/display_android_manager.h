@@ -10,8 +10,11 @@
 #include "base/android/jni_android.h"
 #include "base/macros.h"
 #include "ui/display/screen_base.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace ui {
+
+class WindowAndroid;
 
 class DisplayAndroidManager : public display::ScreenBase {
  public:
@@ -47,8 +50,17 @@ class DisplayAndroidManager : public display::ScreenBase {
                            jint sdkDisplayId);
 
  private:
+  friend class WindowAndroid;
   friend void SetScreenAndroid();
   DisplayAndroidManager();
+
+  static void DoUpdateDisplay(display::Display* display,
+                              gfx::Size size_in_pixels,
+                              float dipScale,
+                              int rotationDegrees,
+                              int bitsPerPixel,
+                              int bitsPerComponent,
+                              bool isWideColorGamut);
 
   int primary_display_id_ = 0;
 

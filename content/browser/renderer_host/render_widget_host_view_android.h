@@ -187,6 +187,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void DidNavigate() override;
   viz::ScopedSurfaceIdAllocator DidUpdateVisualProperties(
       const cc::RenderFrameMetadata& metadata) override;
+  void GetScreenInfo(ScreenInfo* screen_info) const override;
 
   // ui::EventHandlerAndroid implementation.
   bool OnTouchEvent(const ui::MotionEventAndroid& m) override;
