@@ -13,6 +13,7 @@
 #include "base/stl_util.h"
 #include "chrome/browser/chromeos/account_mapper_util.h"
 #include "chromeos/account_manager/account_manager.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "content/public/browser/network_service_instance.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher_immediate_error.h"
 #include "net/base/backoff_entry.h"
@@ -66,6 +67,7 @@ ChromeOSOAuth2TokenServiceDelegate::ChromeOSOAuth2TokenServiceDelegate(
     chromeos::AccountManager* account_manager)
     : account_mapper_util_(
           std::make_unique<AccountMapperUtil>(account_tracker_service)),
+      account_tracker_service_(account_tracker_service),
       account_manager_(account_manager),
       backoff_entry_(&kBackoffPolicy),
       backoff_error_(GoogleServiceAuthError::NONE),
@@ -205,6 +207,31 @@ void ChromeOSOAuth2TokenServiceDelegate::LoadCredentials(
 void ChromeOSOAuth2TokenServiceDelegate::UpdateCredentials(
     const std::string& account_id,
     const std::string& refresh_token) {
+  // This API could have been called for upserting the Device/Primary
+  // |account_id| or a Secondary |account_id|.
+
+  // Account insertion:
+  // Device Account insertion on Chrome OS happens as a 2 step process:
+  // 1. The account is inserted into SigninManager / AccountTrackerService, via
+  // IdentityManager, with a valid Gaia id and email but an invalid refresh
+  // token.
+  // 2. This API is called to update the aforementioned account with a valid
+  // refresh token.
+  // Secondary Account insertion on Chrome OS happens atomically in
+  // |InlineLoginHandlerChromeOS::<anon>::SigninHelper::OnClientOAuthSuccess|.
+  // In both of the aforementioned cases, we can be sure that when this API is
+  // called, |account_id| is guaranteed to be present in
+  // |AccountTrackerService|. This guarantee is important because
+  // |ChromeOSOAuth2TokenServiceDelegate| relies on |AccountTrackerService| to
+  // convert |account_id| to an email id.
+
+  // Account update:
+  // If an account is being updated, it must be present in
+  // |AccountTrackerService|.
+
+  // Hence for all cases (insertion and updates for Device and Secondary
+  // Accounts) we can be sure that |account_id| is present in
+  // |AccountTrackerService|.
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS, load_credentials_state());
   DCHECK(!account_id.empty());
@@ -212,12 +239,19 @@ void ChromeOSOAuth2TokenServiceDelegate::UpdateCredentials(
 
   ValidateAccountId(account_id);
 
-  const AccountManager::AccountKey& account_key =
-      account_mapper_util_->OAuthAccountIdToAccountKey(account_id);
+  const AccountInfo& account_info =
+      account_tracker_service_->GetAccountInfo(account_id);
+  LOG_IF(FATAL, account_info.gaia.empty())
+      << "account_id must be present in AccountTrackerService before "
+         "UpdateCredentials is called";
 
   // Will result in AccountManager calling
   // |ChromeOSOAuth2TokenServiceDelegate::OnTokenUpserted|.
-  account_manager_->UpsertToken(account_key, refresh_token);
+  account_manager_->UpsertAccount(
+      AccountManager::AccountKey{
+          account_info.gaia,
+          account_manager::AccountType::ACCOUNT_TYPE_GAIA} /* account_key */,
+      account_info.email /* email */, refresh_token);
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>

@@ -15,6 +15,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -30,6 +31,7 @@ namespace {
 
 constexpr char kGaiaToken[] = "gaia_token";
 constexpr char kNewGaiaToken[] = "new_gaia_token";
+constexpr char kRawUserEmail[] = "user@example.com";
 
 }  // namespace
 
@@ -73,6 +75,24 @@ class AccountManagerTest : public testing::Test {
     return accounts;
   }
 
+  // Gets the raw email for |account_key|.
+  std::string GetAccountEmailBlocking(
+      const AccountManager::AccountKey& account_key) {
+    std::string raw_email;
+
+    base::RunLoop run_loop;
+    account_manager_->GetAccountEmail(
+        account_key,
+        base::BindLambdaForTesting(
+            [&raw_email, &run_loop](const std::string& stored_raw_email) {
+              raw_email = stored_raw_email;
+              run_loop.Quit();
+            }));
+    run_loop.Run();
+
+    return raw_email;
+  }
+
   // Helper method to reset and initialize |account_manager_| with default
   // parameters.
   void ResetAndInitializeAccountManager() {
@@ -95,6 +115,7 @@ class AccountManagerTest : public testing::Test {
   const AccountManager::AccountKey kActiveDirectoryAccountKey_{
       "object_guid",
       account_manager::AccountType::ACCOUNT_TYPE_ACTIVE_DIRECTORY};
+
   AccountManager::DelayNetworkCallRunner immediate_callback_runner_ =
       base::BindRepeating(
           [](base::OnceClosure closure) -> void { std::move(closure).Run(); });
@@ -155,7 +176,7 @@ TEST_F(AccountManagerTest, TestInitialization) {
 }
 
 TEST_F(AccountManagerTest, TestUpsert) {
-  account_manager_->UpsertToken(kGaiaAccountKey_, kGaiaToken);
+  account_manager_->UpsertAccount(kGaiaAccountKey_, kRawUserEmail, kGaiaToken);
 
   std::vector<AccountManager::AccountKey> accounts = GetAccountsBlocking();
 
@@ -163,8 +184,8 @@ TEST_F(AccountManagerTest, TestUpsert) {
   EXPECT_EQ(kGaiaAccountKey_, accounts[0]);
 }
 
-TEST_F(AccountManagerTest, TestPersistence) {
-  account_manager_->UpsertToken(kGaiaAccountKey_, kGaiaToken);
+TEST_F(AccountManagerTest, TestTokenPersistence) {
+  account_manager_->UpsertAccount(kGaiaAccountKey_, kRawUserEmail, kGaiaToken);
   scoped_task_environment_.RunUntilIdle();
 
   ResetAndInitializeAccountManager();
@@ -172,6 +193,39 @@ TEST_F(AccountManagerTest, TestPersistence) {
 
   EXPECT_EQ(1UL, accounts.size());
   EXPECT_EQ(kGaiaAccountKey_, accounts[0]);
+  EXPECT_EQ(kGaiaToken, account_manager_->accounts_[kGaiaAccountKey_].token);
+}
+
+TEST_F(AccountManagerTest, TestAccountEmailPersistence) {
+  account_manager_->UpsertAccount(kGaiaAccountKey_, kRawUserEmail, kGaiaToken);
+  scoped_task_environment_.RunUntilIdle();
+
+  ResetAndInitializeAccountManager();
+  const std::string raw_email = GetAccountEmailBlocking(kGaiaAccountKey_);
+  EXPECT_EQ(kRawUserEmail, raw_email);
+}
+
+TEST_F(AccountManagerTest, UpdatingAccountEmailShouldNotOverwriteTokens) {
+  const std::string new_email = "new-email@example.org";
+  account_manager_->UpsertAccount(kGaiaAccountKey_, kRawUserEmail, kGaiaToken);
+  account_manager_->UpsertAccount(kGaiaAccountKey_, new_email, kGaiaToken);
+  scoped_task_environment_.RunUntilIdle();
+
+  ResetAndInitializeAccountManager();
+  const std::string raw_email = GetAccountEmailBlocking(kGaiaAccountKey_);
+  EXPECT_EQ(new_email, raw_email);
+  EXPECT_EQ(kGaiaToken, account_manager_->accounts_[kGaiaAccountKey_].token);
+}
+
+TEST_F(AccountManagerTest, UpdatingTokensShouldNotOverwriteAccountEmail) {
+  account_manager_->UpsertAccount(kGaiaAccountKey_, kRawUserEmail, kGaiaToken);
+  account_manager_->UpdateToken(kGaiaAccountKey_, kNewGaiaToken);
+  scoped_task_environment_.RunUntilIdle();
+
+  ResetAndInitializeAccountManager();
+  const std::string raw_email = GetAccountEmailBlocking(kGaiaAccountKey_);
+  EXPECT_EQ(kRawUserEmail, raw_email);
+  EXPECT_EQ(kNewGaiaToken, account_manager_->accounts_[kGaiaAccountKey_].token);
 }
 
 TEST_F(AccountManagerTest, ObserversAreNotifiedOnTokenInsertion) {
@@ -180,7 +234,7 @@ TEST_F(AccountManagerTest, ObserversAreNotifiedOnTokenInsertion) {
 
   account_manager_->AddObserver(observer.get());
 
-  account_manager_->UpsertToken(kGaiaAccountKey_, kGaiaToken);
+  account_manager_->UpsertAccount(kGaiaAccountKey_, kRawUserEmail, kGaiaToken);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_TRUE(observer->is_token_upserted_callback_called_);
   EXPECT_EQ(1UL, observer->accounts_.size());
@@ -194,12 +248,12 @@ TEST_F(AccountManagerTest, ObserversAreNotifiedOnTokenUpdate) {
   EXPECT_FALSE(observer->is_token_upserted_callback_called_);
 
   account_manager_->AddObserver(observer.get());
-  account_manager_->UpsertToken(kGaiaAccountKey_, kGaiaToken);
+  account_manager_->UpsertAccount(kGaiaAccountKey_, kRawUserEmail, kGaiaToken);
   scoped_task_environment_.RunUntilIdle();
 
   // Observers should be called when token is updated.
   observer->is_token_upserted_callback_called_ = false;
-  account_manager_->UpsertToken(kGaiaAccountKey_, kNewGaiaToken);
+  account_manager_->UpdateToken(kGaiaAccountKey_, kNewGaiaToken);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_TRUE(observer->is_token_upserted_callback_called_);
   EXPECT_EQ(1UL, observer->accounts_.size());
@@ -213,12 +267,12 @@ TEST_F(AccountManagerTest, ObserversAreNotNotifiedIfTokenIsNotUpdated) {
   EXPECT_FALSE(observer->is_token_upserted_callback_called_);
 
   account_manager_->AddObserver(observer.get());
-  account_manager_->UpsertToken(kGaiaAccountKey_, kGaiaToken);
+  account_manager_->UpsertAccount(kGaiaAccountKey_, kRawUserEmail, kGaiaToken);
   scoped_task_environment_.RunUntilIdle();
 
   // Observers should not be called when token is not updated.
   observer->is_token_upserted_callback_called_ = false;
-  account_manager_->UpsertToken(kGaiaAccountKey_, kGaiaToken);
+  account_manager_->UpdateToken(kGaiaAccountKey_, kGaiaToken);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_FALSE(observer->is_token_upserted_callback_called_);
 
@@ -226,7 +280,7 @@ TEST_F(AccountManagerTest, ObserversAreNotNotifiedIfTokenIsNotUpdated) {
 }
 
 TEST_F(AccountManagerTest, RemovedAccountsAreImmediatelyUnavailable) {
-  account_manager_->UpsertToken(kGaiaAccountKey_, kGaiaToken);
+  account_manager_->UpsertAccount(kGaiaAccountKey_, kRawUserEmail, kGaiaToken);
 
   account_manager_->RemoveAccount(kGaiaAccountKey_);
   std::vector<AccountManager::AccountKey> accounts = GetAccountsBlocking();
@@ -235,7 +289,7 @@ TEST_F(AccountManagerTest, RemovedAccountsAreImmediatelyUnavailable) {
 }
 
 TEST_F(AccountManagerTest, AccountRemovalIsPersistedToDisk) {
-  account_manager_->UpsertToken(kGaiaAccountKey_, kGaiaToken);
+  account_manager_->UpsertAccount(kGaiaAccountKey_, kRawUserEmail, kGaiaToken);
   account_manager_->RemoveAccount(kGaiaAccountKey_);
   scoped_task_environment_.RunUntilIdle();
 
@@ -249,7 +303,7 @@ TEST_F(AccountManagerTest, AccountRemovalIsPersistedToDisk) {
 TEST_F(AccountManagerTest, ObserversAreNotifiedOnAccountRemoval) {
   auto observer = std::make_unique<AccountManagerObserver>();
   account_manager_->AddObserver(observer.get());
-  account_manager_->UpsertToken(kGaiaAccountKey_, kGaiaToken);
+  account_manager_->UpsertAccount(kGaiaAccountKey_, kRawUserEmail, kGaiaToken);
   scoped_task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(observer->is_account_removed_callback_called_);
@@ -264,7 +318,7 @@ TEST_F(AccountManagerTest, TokenRevocationIsAttemptedForGaiaAccountRemovals) {
   ResetAndInitializeAccountManager();
   EXPECT_CALL(*account_manager_.get(), RevokeGaiaTokenOnServer(kGaiaToken));
 
-  account_manager_->UpsertToken(kGaiaAccountKey_, kGaiaToken);
+  account_manager_->UpsertAccount(kGaiaAccountKey_, kRawUserEmail, kGaiaToken);
   scoped_task_environment_.RunUntilIdle();
 
   account_manager_->RemoveAccount(kGaiaAccountKey_);
@@ -275,8 +329,8 @@ TEST_F(AccountManagerTest,
   ResetAndInitializeAccountManager();
   EXPECT_CALL(*account_manager_.get(), RevokeGaiaTokenOnServer(_)).Times(0);
 
-  account_manager_->UpsertToken(kActiveDirectoryAccountKey_,
-                                AccountManager::kActiveDirectoryDummyToken);
+  account_manager_->UpsertAccount(kActiveDirectoryAccountKey_, kRawUserEmail,
+                                  AccountManager::kActiveDirectoryDummyToken);
   scoped_task_environment_.RunUntilIdle();
 
   account_manager_->RemoveAccount(kActiveDirectoryAccountKey_);
@@ -287,8 +341,8 @@ TEST_F(AccountManagerTest,
   ResetAndInitializeAccountManager();
   EXPECT_CALL(*account_manager_.get(), RevokeGaiaTokenOnServer(_)).Times(0);
 
-  account_manager_->UpsertToken(kGaiaAccountKey_,
-                                AccountManager::kInvalidToken);
+  account_manager_->UpsertAccount(kGaiaAccountKey_, kRawUserEmail,
+                                  AccountManager::kInvalidToken);
   scoped_task_environment_.RunUntilIdle();
 
   account_manager_->RemoveAccount(kGaiaAccountKey_);
@@ -299,16 +353,16 @@ TEST_F(AccountManagerTest, OldTokenIsRevokedOnTokenUpdate) {
   // Only 1 token should be revoked.
   EXPECT_CALL(*account_manager_.get(), RevokeGaiaTokenOnServer(kGaiaToken))
       .Times(1);
-  account_manager_->UpsertToken(kGaiaAccountKey_, kGaiaToken);
+  account_manager_->UpsertAccount(kGaiaAccountKey_, kRawUserEmail, kGaiaToken);
 
   // Update the token.
-  account_manager_->UpsertToken(kGaiaAccountKey_, kNewGaiaToken);
+  account_manager_->UpdateToken(kGaiaAccountKey_, kNewGaiaToken);
   scoped_task_environment_.RunUntilIdle();
 }
 
 TEST_F(AccountManagerTest, IsTokenAvailableReturnsTrueForValidGaiaAccounts) {
   EXPECT_FALSE(account_manager_->IsTokenAvailable(kGaiaAccountKey_));
-  account_manager_->UpsertToken(kGaiaAccountKey_, kGaiaToken);
+  account_manager_->UpsertAccount(kGaiaAccountKey_, kRawUserEmail, kGaiaToken);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_TRUE(account_manager_->IsTokenAvailable(kGaiaAccountKey_));
 }
@@ -316,8 +370,8 @@ TEST_F(AccountManagerTest, IsTokenAvailableReturnsTrueForValidGaiaAccounts) {
 TEST_F(AccountManagerTest,
        IsTokenAvailableReturnsFalseForActiveDirectoryAccounts) {
   EXPECT_FALSE(account_manager_->IsTokenAvailable(kActiveDirectoryAccountKey_));
-  account_manager_->UpsertToken(kActiveDirectoryAccountKey_,
-                                AccountManager::kActiveDirectoryDummyToken);
+  account_manager_->UpsertAccount(kActiveDirectoryAccountKey_, kRawUserEmail,
+                                  AccountManager::kActiveDirectoryDummyToken);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_FALSE(account_manager_->IsTokenAvailable(kActiveDirectoryAccountKey_));
   std::vector<AccountManager::AccountKey> accounts = GetAccountsBlocking();
@@ -326,8 +380,8 @@ TEST_F(AccountManagerTest,
 
 TEST_F(AccountManagerTest, IsTokenAvailableReturnsTrueForInvalidTokens) {
   EXPECT_FALSE(account_manager_->IsTokenAvailable(kGaiaAccountKey_));
-  account_manager_->UpsertToken(kGaiaAccountKey_,
-                                AccountManager::kInvalidToken);
+  account_manager_->UpsertAccount(kGaiaAccountKey_, kRawUserEmail,
+                                  AccountManager::kInvalidToken);
   scoped_task_environment_.RunUntilIdle();
   EXPECT_TRUE(account_manager_->IsTokenAvailable(kGaiaAccountKey_));
   std::vector<AccountManager::AccountKey> accounts = GetAccountsBlocking();

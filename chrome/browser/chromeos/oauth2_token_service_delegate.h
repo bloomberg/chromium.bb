@@ -81,11 +81,16 @@ class ChromeOSOAuth2TokenServiceDelegate
   void GetAccountsCallback(
       std::vector<AccountManager::AccountKey> account_keys);
 
+  // TODO(sinhak): Either remove |AccountMapperUtil| or move it to an anonymous
+  // namespace.
   std::unique_ptr<AccountMapperUtil> account_mapper_util_;
 
-  // A non-owning pointer to |AccountManager|. |AccountManager| is available
+  // A non-owning pointer.
+  AccountTrackerService* const account_tracker_service_;
+
+  // A non-owning pointer. |AccountManager| is available
   // throughout the lifetime of a user session.
-  AccountManager* account_manager_;
+  AccountManager* const account_manager_;
 
   // A cache of AccountKeys.
   std::set<AccountManager::AccountKey> account_keys_;
