@@ -6,6 +6,7 @@ import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//gpu/vulkan/features.gni")
 import("//third_party/protobuf/proto_library.gni")
+import("//ui/gl/features.gni")
 
 group("service") {
   if (is_component_build) {
@@ -322,6 +323,10 @@ target(link_target_type, "gles2_sources") {
         "external_vk_image_skia_representation.h",
       ]
     }
+  }
+
+  if (use_dawn) {
+    deps += [ "//third_party/dawn:libdawn_native" ]
   }
 
   if (is_mac) {

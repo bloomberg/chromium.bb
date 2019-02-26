@@ -35,6 +35,7 @@ buildflag_header("buildflags") {
   use_egl_on_mac = use_egl && is_mac
   flags = [
     "ENABLE_SWIFTSHADER=$enable_swiftshader",
+    "USE_DAWN=$use_dawn",
     "USE_EGL_ON_MAC=$use_egl_on_mac",
     "USE_STATIC_ANGLE=$use_static_angle",
   ]
