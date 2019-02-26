@@ -55,4 +55,11 @@ void AwCookieManagerWrapper::GetAllCookies(GetCookieListCallback callback) {
   cookie_manager_->GetAllCookies(std::move(callback));
 }
 
+void AwCookieManagerWrapper::FlushCookieStore(
+    FlushCookieStoreCallback callback) {
+  // TODO(ntfschr): handle the case where content layer isn't initialized yet
+  // (http://crbug.com/933461).
+  cookie_manager_->FlushCookieStore(std::move(callback));
+}
+
 }  // namespace android_webview
