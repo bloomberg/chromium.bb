@@ -236,15 +236,22 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
 
   // Offscreen surfaces for render passes. It can only be accessed on GPU
   // thread.
-  struct OffscreenSurface {
+  class OffscreenSurface {
+   public:
     OffscreenSurface();
-    OffscreenSurface(const OffscreenSurface& offscreen_surface);
+    OffscreenSurface(const OffscreenSurface& offscreen_surface) = delete;
     OffscreenSurface(OffscreenSurface&& offscreen_surface);
-    OffscreenSurface& operator=(const OffscreenSurface& offscreen_surface);
+    OffscreenSurface& operator=(const OffscreenSurface& offscreen_surface) =
+        delete;
     OffscreenSurface& operator=(OffscreenSurface&& offscreen_surface);
     ~OffscreenSurface();
-    sk_sp<SkSurface> surface;
-    sk_sp<SkPromiseImageTexture> promise_texture;
+    SkSurface* surface() const;
+    sk_sp<SkPromiseImageTexture> fulfill();
+    void set_surface(sk_sp<SkSurface> surface);
+
+   private:
+    sk_sp<SkSurface> surface_;
+    sk_sp<SkPromiseImageTexture> promise_texture_;
   };
   base::flat_map<RenderPassId, OffscreenSurface> offscreen_surfaces_;
 
