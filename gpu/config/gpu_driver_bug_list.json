@@ -3167,6 +3167,22 @@
       "features": [
         "gl_clear_broken"
       ]
+    },
+    {
+      "id": 294,
+      "cr_bugs": [931399],
+      "description": "Hardware overlays result in black videos on non-Intel GPUs",
+      "os": {
+        "type": "win"
+      },
+      "exceptions": [
+        {
+          "vendor_id": "0x8086"
+        }
+      ],
+      "features": [
+        "disable_direct_composition_layers"
+      ]
     }
   ]
 }
