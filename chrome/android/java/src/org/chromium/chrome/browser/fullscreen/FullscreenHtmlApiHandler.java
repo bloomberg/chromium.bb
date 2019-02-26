@@ -163,6 +163,8 @@ public class FullscreenHtmlApiHandler {
                     }
                     systemUiVisibility &= ~SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
                     contentView.setSystemUiVisibility(systemUiVisibility);
+                    fullscreenHtmlApiHandler.mWindow.clearFlags(
+                            WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
                     break;
                 }
                 default:
@@ -238,6 +240,7 @@ public class FullscreenHtmlApiHandler {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
             systemUiVisibility &= ~SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
             systemUiVisibility = applyExitFullscreenUIFlags(systemUiVisibility);
+            mWindow.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
         } else {
             systemUiVisibility &= ~SYSTEM_UI_FLAG_LOW_PROFILE;
             mWindow.addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
@@ -282,6 +285,12 @@ public class FullscreenHtmlApiHandler {
                     == SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN) {
                 systemUiVisibility = applyEnterFullscreenUIFlags(systemUiVisibility);
             } else {
+                // To avoid a double layout that is caused by the system when just hiding
+                // the status bar set the status bar as translucent immediately. This cause
+                // it not to take up space so the layout is stable. (See crbug.com/935015)
+                if (mFullscreenOptions != null && mFullscreenOptions.showNavigationBar()) {
+                    mWindow.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+                }
                 systemUiVisibility |= SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
             }
         } else {
