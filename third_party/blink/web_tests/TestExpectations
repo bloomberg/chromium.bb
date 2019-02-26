@@ -5891,6 +5891,7 @@ crbug.com/935690 [ Mac ] virtual/video-surface-layer/media/video-played-ranges-1
 # Sheriff 2019-02-26
 crbug.com/935689 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-alphabetic-invalid.html [ Failure ]
 crbug.com/935689 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-cyclic-invalid.html [ Failure ]
+crbug.com/936083 external/wpt/import-maps/builtin-import-scheme.tentative.html [ Failure Pass ]
 
 # Device Sensor Events are being restricted to secure browsing contexts, but the change is still gated on a runtime flag.
 crbug.com/932078 http/tests/security/powerfulFeatureRestrictions/device-orientation-future-behavior-on-insecure-origin.html [ Skip ]
