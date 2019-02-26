@@ -197,9 +197,16 @@ void ThroughputAnalyzer::NotifyRequestCompleted(const URLRequest& request) {
   // Try to remove the request from either |accuracy_degrading_requests_| or
   // |requests_|, since it is no longer active.
   if (accuracy_degrading_requests_.erase(&request) == 1u) {
-    // |request| cannot be in both |accuracy_degrading_requests_| and
-    // |requests_| at the same time.
-    DCHECK(requests_.end() == requests_.find(&request));
+    // Generally, |request| cannot be in both |accuracy_degrading_requests_|
+    // and |requests_| at the same time. However, in some cases, the same
+    // request may appear in both vectors. See https://crbug.com/849604 for
+    // more details.
+    // It's safe to delete |request| from |requests_| since (i)
+    // The observation window is currently not recording throughput, and (ii)
+    // |requests_| is a best effort guess of requests that are currently
+    // in-flight.
+    DCHECK(!IsCurrentlyTrackingThroughput());
+    requests_.erase(&request);
 
     // If a request that degraded the accuracy of throughput computation has
     // completed, then it may be possible to start the tracking window.
