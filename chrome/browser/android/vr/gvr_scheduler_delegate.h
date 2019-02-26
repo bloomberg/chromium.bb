@@ -177,11 +177,8 @@ class GvrSchedulerDelegate : public BaseSchedulerDelegate,
   bool showing_vr_dialog_ = false;
   bool cardboard_gamepad_ = false;
 
-  // WebXR currently supports multiple render path choices, with runtime
-  // selection based on underlying support being available and feature flags.
-  // The webxr_use_* booleans choose among the implementations. Please don't
-  // check WebXrRenderPath or other feature flags in individual code paths
-  // directly to avoid inconsistent logic.
+  // WebXR supports multiple render paths, the choice is selected at runtime
+  // depending on what is supported by the hardware and OS version.
   bool webxr_use_gpu_fence_ = false;
   bool webxr_use_shared_buffer_draw_ = false;
 

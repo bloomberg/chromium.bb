@@ -678,17 +678,6 @@ const base::Feature kBackgroundMediaRendererHasModerateBinding{
 // Controls whether the WebNFC API is enabled:
 // https://w3c.github.io/web-nfc/
 const base::Feature kWebNfc{"WebNFC", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls whether an override for the WebXR presentation render path is
-// enabled. The param value specifies the requested specific render path. This
-// is combined with a runtime capability check, the option is ignored if the
-// requested render path is unsupported.
-const base::Feature kWebXrRenderPath{"WebXrRenderPath",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
-const char kWebXrRenderPathParamName[] = "RenderPath";
-const char kWebXrRenderPathParamValueClientWait[] = "ClientWait";
-const char kWebXrRenderPathParamValueGpuFence[] = "GpuFence";
-const char kWebXrRenderPathParamValueSharedBuffer[] = "SharedBuffer";
 #endif  // defined(OS_ANDROID)
 
 #if !defined(OS_ANDROID)

@@ -2706,16 +2706,6 @@ const char kThirdPartyDoodlesDescription[] =
     "Enables fetching and displaying Doodles on the NTP for third-party search "
     "engines.";
 
-const char kWebXrRenderPathName[] = "WebXR presentation render path";
-const char kWebXrRenderPathDescription[] =
-    "Render path to use for WebXR presentation (including WebVR)";
-const char kWebXrRenderPathChoiceClientWaitDescription[] =
-    "ClientWait (Baseline)";
-const char kWebXrRenderPathChoiceGpuFenceDescription[] =
-    "GpuFence (Android N+)";
-const char kWebXrRenderPathChoiceSharedBufferDescription[] =
-    "SharedBuffer (Android O+)";
-
 #if BUILDFLAG(ENABLE_ANDROID_NIGHT_MODE)
 
 const char kAndroidNightModeName[] = "Enable night mode based on user settings";

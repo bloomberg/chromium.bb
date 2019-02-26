@@ -1589,12 +1589,6 @@ extern const char kInlineUpdateFlowDescription[];
 extern const char kThirdPartyDoodlesName[];
 extern const char kThirdPartyDoodlesDescription[];
 
-extern const char kWebXrRenderPathName[];
-extern const char kWebXrRenderPathDescription[];
-extern const char kWebXrRenderPathChoiceClientWaitDescription[];
-extern const char kWebXrRenderPathChoiceGpuFenceDescription[];
-extern const char kWebXrRenderPathChoiceSharedBufferDescription[];
-
 #if BUILDFLAG(ENABLE_ANDROID_NIGHT_MODE)
 
 extern const char kAndroidNightModeName[];
