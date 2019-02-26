@@ -25,7 +25,7 @@ namespace chromeos {
 // diagnostics_processor daemon and extensions.
 const char kDiagnosticsdUiMessageHost[] = "com.google.wilco_dtc";
 
-// Error nessages sent to the extension:
+// Error messages sent to the extension:
 const char kDiagnosticsdUiMessageTooBigExtensionsError[] =
     "Message is too big.";
 const char kDiagnosticsdUiExtraMessagesExtensionsError[] =
@@ -150,6 +150,12 @@ class DiagnosticsdExtensionOwnedMessageHost final
     if (response_json_string.size() > kDiagnosticsdUiMessageMaxSize) {
       LOG(ERROR) << "The message received from the daemon is too big";
       DisposeSelf(kDiagnosticsdUiMessageTooBigExtensionsError);
+      return;
+    }
+
+    if (response_json_string.size() > kDiagnosticsdUiMessageMaxSize) {
+      LOG(ERROR) << "The message received from the daemon is too big";
+      client_->CloseChannel(kHostInputOutputError);
       return;
     }
 
