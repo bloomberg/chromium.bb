@@ -51,11 +51,14 @@ bool ShelfWindowTargeter::GetHitTestRects(
     gfx::Rect* hit_test_rect_mouse,
     gfx::Rect* hit_test_rect_touch) const {
   // We only want to special case a very specific situation where we are not
-  // currently in an active session and change only the behavior of the login
-  // shelf. On secondary displays, the login shelf will not be visible.
+  // currently in an active session (or unknown session state) and change only
+  // the behavior of the login shelf. On secondary displays, the login shelf
+  // will not be visible.
   if (target->id() == kShellWindowId_ShelfContainer && shelf_->IsVisible() &&
       Shell::Get()->session_controller()->GetSessionState() !=
-          session_manager::SessionState::ACTIVE) {
+          session_manager::SessionState::ACTIVE &&
+      Shell::Get()->session_controller()->GetSessionState() !=
+          session_manager::SessionState::UNKNOWN) {
     // When this is the case, let events pass through the "empty" part of
     // the shelf.
     return shelf_->shelf_widget()->GetHitTestRects(target, hit_test_rect_mouse,
