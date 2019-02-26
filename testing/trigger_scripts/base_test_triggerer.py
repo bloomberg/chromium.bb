@@ -79,10 +79,11 @@ class BaseTestTriggerer(object):
       bot_args.append('--env')
       bot_args.append('GTEST_TOTAL_SHARDS')
       bot_args.append(str(total_shards))
-    for key, val in sorted(self._bot_configs[bot_index].iteritems()):
-      bot_args.append('--dimension')
-      bot_args.append(key)
-      bot_args.append(val)
+    if self._bot_configs:
+      for key, val in sorted(self._bot_configs[bot_index].iteritems()):
+        bot_args.append('--dimension')
+        bot_args.append(key)
+        bot_args.append(val)
     if '--' in all_args:
       dash_ind = all_args.index('--')
       additional_args = all_args[:dash_ind] + bot_args + all_args[dash_ind:]
