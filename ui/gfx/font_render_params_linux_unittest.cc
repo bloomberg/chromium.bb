@@ -108,22 +108,13 @@ class FontRenderParamsTest : public testing::Test {
     original_font_delegate_ = SkiaFontDelegate::instance();
     SkiaFontDelegate::SetInstance(&test_font_delegate_);
     ClearFontRenderParamsCacheForTest();
+    FcInit();
   }
 
   ~FontRenderParamsTest() override {
+    FcFini();
     SkiaFontDelegate::SetInstance(
         const_cast<SkiaFontDelegate*>(original_font_delegate_));
-  }
-
-  void SetUp() override {
-    // Fontconfig should already be set up by the test runner.
-    DCHECK(FcConfigGetCurrent());
-  }
-
-  void TearDown() override {
-    // We might have made a mess introducing new fontconfig settings.  Reset the
-    // state of fontconfig for the next test.
-    base::SetUpFontconfig();
   }
 
  protected:
