@@ -136,7 +136,7 @@ class EquivToProtoLiteImpl<google::protobuf::RepeatedPtrField<T>> {
     bool operator()(const Proto& t1, const Proto& t2) {        \
       return t1.SerializeAsString() == t2.SerializeAsString(); \
     }                                                          \
-  };
+  }
 
 #define DEFINE_EQUIVTO_PROTO_LITE_1(Proto, f1)          \
   template <>                                           \
@@ -145,7 +145,7 @@ class EquivToProtoLiteImpl<google::protobuf::RepeatedPtrField<T>> {
     bool operator()(const Proto& t1, const Proto& t2) { \
       return EquivToProtoLite(t1.f1(), t2.f1());        \
     }                                                   \
-  };
+  }
 
 #define DEFINE_EQUIVTO_PROTO_LITE_2(Proto, f1, f2)      \
   template <>                                           \
@@ -155,7 +155,7 @@ class EquivToProtoLiteImpl<google::protobuf::RepeatedPtrField<T>> {
       return EquivToProtoLite(t1.f1(), t2.f1()) &&      \
              EquivToProtoLite(t1.f2(), t2.f2());        \
     }                                                   \
-  };
+  }
 
 #define DEFINE_EQUIVTO_PROTO_LITE_3(Proto, f1, f2, f3)  \
   template <>                                           \
@@ -166,7 +166,7 @@ class EquivToProtoLiteImpl<google::protobuf::RepeatedPtrField<T>> {
              EquivToProtoLite(t1.f2(), t2.f2()) &&      \
              EquivToProtoLite(t1.f3(), t2.f3());        \
     }                                                   \
-  };
+  }
 
 #define DEFINE_EQUIVTO_PROTO_LITE_4(Proto, f1, f2, f3, f4) \
   template <>                                              \
@@ -178,7 +178,7 @@ class EquivToProtoLiteImpl<google::protobuf::RepeatedPtrField<T>> {
              EquivToProtoLite(t1.f3(), t2.f3()) &&         \
              EquivToProtoLite(t1.f4(), t2.f4());           \
     }                                                      \
-  };
+  }
 
 #define DEFINE_EQUIVTO_PROTO_LITE_5(Proto, f1, f2, f3, f4, f5) \
   template <>                                                  \
@@ -191,7 +191,7 @@ class EquivToProtoLiteImpl<google::protobuf::RepeatedPtrField<T>> {
              EquivToProtoLite(t1.f4(), t2.f4()) &&             \
              EquivToProtoLite(t1.f5(), t2.f5());               \
     }                                                          \
-  };
+  }
 
 // Macro that generates a specialization for |Proto| with four fields.
 #define DEFINE_EQUIVTO_PROTO_LITE_6(Proto, f1, f2, f3, f4, f5, f6) \
@@ -206,7 +206,7 @@ class EquivToProtoLiteImpl<google::protobuf::RepeatedPtrField<T>> {
              EquivToProtoLite(t1.f5(), t2.f5()) &&                 \
              EquivToProtoLite(t1.f6(), t2.f6());                   \
     }                                                              \
-  };
+  }
 
 DEFINE_EQUIVTO_PROTO_LITE_3(AppLaunchPredictorProto,
                             fake_app_launch_predictor,
