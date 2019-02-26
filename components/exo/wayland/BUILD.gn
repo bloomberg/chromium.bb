@@ -65,6 +65,8 @@ source_set("wayland") {
     "zcr_alpha_compositing.h",
     "zcr_secure_output.cc",
     "zcr_secure_output.h",
+    "zcr_stylus.cc",
+    "zcr_stylus.h",
     "zcr_vsync_feedback.cc",
     "zcr_vsync_feedback.h",
   ]
