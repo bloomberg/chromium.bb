@@ -622,12 +622,6 @@ inline EventHandler& LocalFrame::GetEventHandler() const {
   return *event_handler_;
 }
 
-DEFINE_TYPE_CASTS(LocalFrame,
-                  Frame,
-                  localFrame,
-                  localFrame->IsLocalFrame(),
-                  localFrame.IsLocalFrame());
-
 template <>
 struct DowncastTraits<LocalFrame> {
   static bool AllowFrom(const Frame& frame) { return frame.IsLocalFrame(); }

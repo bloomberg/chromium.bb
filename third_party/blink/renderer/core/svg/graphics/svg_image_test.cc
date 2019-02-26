@@ -164,7 +164,7 @@ TEST_F(SVGImageTest, SupportsSubsequenceCaching) {
   Load(kAnimatedDocument, kShouldPause);
   PumpFrame();
   LocalFrame* local_frame =
-      ToLocalFrame(GetImage().GetPageForTesting()->MainFrame());
+      To<LocalFrame>(GetImage().GetPageForTesting()->MainFrame());
   EXPECT_TRUE(local_frame->GetDocument()->IsSVGDocument());
   LayoutObject* svg_root = local_frame->View()->GetLayoutView()->FirstChild();
   EXPECT_TRUE(svg_root->IsSVGRoot());
@@ -176,7 +176,7 @@ TEST_F(SVGImageTest, JankTrackerDisabled) {
   const bool kDontPause = false;
   Load("<svg xmlns='http://www.w3.org/2000/svg'></svg>", kDontPause);
   LocalFrame* local_frame =
-      ToLocalFrame(GetImage().GetPageForTesting()->MainFrame());
+      To<LocalFrame>(GetImage().GetPageForTesting()->MainFrame());
   EXPECT_TRUE(local_frame->GetDocument()->IsSVGDocument());
   auto& jank_tracker = local_frame->View()->GetJankTracker();
   EXPECT_FALSE(jank_tracker.IsActive());
@@ -191,7 +191,7 @@ TEST_F(SVGImageTest, SetSizeOnVisualViewport) {
       kDontPause);
   PumpFrame();
   LocalFrame* local_frame =
-      ToLocalFrame(GetImage().GetPageForTesting()->MainFrame());
+      To<LocalFrame>(GetImage().GetPageForTesting()->MainFrame());
   ASSERT_FALSE(local_frame->View()->Size().IsEmpty());
   EXPECT_EQ(local_frame->View()->Size(),
             GetImage().GetPageForTesting()->GetVisualViewport().Size());

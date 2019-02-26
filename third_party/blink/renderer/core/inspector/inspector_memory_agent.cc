@@ -69,9 +69,9 @@ Response InspectorMemoryAgent::forciblyPurgeJavaScriptMemory() {
   for (const auto& page : Page::OrdinaryPages()) {
     for (Frame* frame = page->MainFrame(); frame;
          frame = frame->Tree().TraverseNext()) {
-      if (!frame->IsLocalFrame())
+      LocalFrame* local_frame = DynamicTo<LocalFrame>(frame);
+      if (!local_frame)
         continue;
-      LocalFrame* local_frame = ToLocalFrame(frame);
       local_frame->ForciblyPurgeV8Memory();
     }
   }

@@ -473,7 +473,7 @@ WebInputEventResult WebPagePopupImpl::HandleMouseWheel(
 LocalFrame& WebPagePopupImpl::MainFrame() const {
   DCHECK(page_);
   // The main frame for a popup will never be out-of-process.
-  return *ToLocalFrame(page_->MainFrame());
+  return *To<LocalFrame>(page_->MainFrame());
 }
 
 bool WebPagePopupImpl::IsViewportPointInWindow(int x, int y) {

@@ -1126,8 +1126,7 @@ TEST_F(EventHandlerSimTest, MouseLeaveIFrameResets) {
   child_frame->contentDocument()
       ->UpdateStyleAndLayoutIgnorePendingStylesheets();
   EXPECT_TRUE(GetDocument().GetFrame()->Tree().FirstChild());
-  EXPECT_TRUE(GetDocument().GetFrame()->Tree().FirstChild()->IsLocalFrame());
-  EXPECT_FALSE(ToLocalFrame(GetDocument().GetFrame()->Tree().FirstChild())
+  EXPECT_FALSE(To<LocalFrame>(GetDocument().GetFrame()->Tree().FirstChild())
                    ->GetEventHandler()
                    .IsMousePositionUnknown());
 
@@ -1143,8 +1142,7 @@ TEST_F(EventHandlerSimTest, MouseLeaveIFrameResets) {
   EXPECT_FALSE(
       GetDocument().GetFrame()->GetEventHandler().IsMousePositionUnknown());
   EXPECT_TRUE(GetDocument().GetFrame()->Tree().FirstChild());
-  EXPECT_TRUE(GetDocument().GetFrame()->Tree().FirstChild()->IsLocalFrame());
-  EXPECT_TRUE(ToLocalFrame(GetDocument().GetFrame()->Tree().FirstChild())
+  EXPECT_TRUE(To<LocalFrame>(GetDocument().GetFrame()->Tree().FirstChild())
                   ->GetEventHandler()
                   .IsMousePositionUnknown());
 }

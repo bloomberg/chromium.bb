@@ -332,8 +332,8 @@ LocalFrame* NextLocalAncestor(Frame& frame) {
   Frame* parent = frame.Tree().Parent();
   if (!parent)
     return nullptr;
-  if (parent->IsLocalFrame())
-    return ToLocalFrame(parent);
+  if (auto* parent_local_frame = DynamicTo<LocalFrame>(parent))
+    return parent_local_frame;
   return NextLocalAncestor(*parent);
 }
 
@@ -907,11 +907,12 @@ void Fullscreen::ContinueExitFullscreen(Document* doc,
   HeapVector<Member<Document>> descendant_docs;
   for (Frame* descendant = doc->GetFrame()->Tree().FirstChild(); descendant;
        descendant = descendant->Tree().TraverseNext(doc->GetFrame())) {
-    if (!descendant->IsLocalFrame())
+    auto* descendant_local_frame = DynamicTo<LocalFrame>(descendant);
+    if (!descendant_local_frame)
       continue;
-    DCHECK(ToLocalFrame(descendant)->GetDocument());
-    if (FullscreenElementFrom(*ToLocalFrame(descendant)->GetDocument()))
-      descendant_docs.push_back(ToLocalFrame(descendant)->GetDocument());
+    DCHECK(descendant_local_frame->GetDocument());
+    if (FullscreenElementFrom(*descendant_local_frame->GetDocument()))
+      descendant_docs.push_back(descendant_local_frame->GetDocument());
   }
 
   // 12. For each |exitDoc| in |exitDocs|:

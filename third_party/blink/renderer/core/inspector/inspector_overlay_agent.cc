@@ -1016,7 +1016,7 @@ Page* InspectorOverlayAgent::OverlayPage() {
 }
 
 LocalFrame* InspectorOverlayAgent::OverlayMainFrame() {
-  return ToLocalFrame(OverlayPage()->MainFrame());
+  return To<LocalFrame>(OverlayPage()->MainFrame());
 }
 
 void InspectorOverlayAgent::Reset(const IntSize& viewport_size) {
@@ -1056,7 +1056,7 @@ void InspectorOverlayAgent::EvaluateInOverlay(const String& method,
   std::unique_ptr<protocol::ListValue> command = protocol::ListValue::create();
   command->pushValue(protocol::StringValue::create(method));
   command->pushValue(protocol::StringValue::create(argument));
-  ToLocalFrame(OverlayPage()->MainFrame())
+  To<LocalFrame>(OverlayPage()->MainFrame())
       ->GetScriptController()
       .ExecuteScriptInMainWorld(
           "dispatch(" + command->toJSONString() + ")",
@@ -1071,7 +1071,7 @@ void InspectorOverlayAgent::EvaluateInOverlay(
   std::unique_ptr<protocol::ListValue> command = protocol::ListValue::create();
   command->pushValue(protocol::StringValue::create(method));
   command->pushValue(std::move(argument));
-  ToLocalFrame(OverlayPage()->MainFrame())
+  To<LocalFrame>(OverlayPage()->MainFrame())
       ->GetScriptController()
       .ExecuteScriptInMainWorld(
           "dispatch(" + command->toJSONString() + ")",
@@ -1083,7 +1083,7 @@ String InspectorOverlayAgent::EvaluateInOverlayForTest(const String& script) {
   ScriptForbiddenScope::AllowUserAgentScript allow_script;
   v8::HandleScope handle_scope(ToIsolate(OverlayMainFrame()));
   v8::Local<v8::Value> string =
-      ToLocalFrame(OverlayPage()->MainFrame())
+      To<LocalFrame>(OverlayPage()->MainFrame())
           ->GetScriptController()
           .ExecuteScriptInMainWorldAndReturnValue(
               ScriptSourceCode(script, ScriptSourceLocationType::kInspector),
@@ -1165,8 +1165,7 @@ bool InspectorOverlayAgent::HandleMouseMove(const WebMouseEvent& event) {
     return true;
 
   if (auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(node)) {
-    if (frame_owner->ContentFrame() &&
-        !frame_owner->ContentFrame()->IsLocalFrame()) {
+    if (!IsA<LocalFrame>(frame_owner->ContentFrame())) {
       // Do not consume event so that remote frame can handle it.
       InnerHideHighlight();
       hovered_node_for_inspect_mode_.Clear();

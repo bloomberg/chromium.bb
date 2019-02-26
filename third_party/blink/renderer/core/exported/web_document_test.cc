@@ -67,7 +67,7 @@ void WebDocumentTest::LoadURL(const std::string& url) {
 }
 
 Document* WebDocumentTest::TopDocument() const {
-  return ToLocalFrame(web_view_helper_.GetWebView()->GetPage()->MainFrame())
+  return To<LocalFrame>(web_view_helper_.GetWebView()->GetPage()->MainFrame())
       ->GetDocument();
 }
 
@@ -319,22 +319,22 @@ void WebDocumentFirstPartyTest::Load(const char* file) {
 }
 
 Document* WebDocumentFirstPartyTest::NestedDocument() const {
-  return ToLocalFrame(web_view_helper_.GetWebView()
-                          ->GetPage()
-                          ->MainFrame()
-                          ->Tree()
-                          .FirstChild())
+  return To<LocalFrame>(web_view_helper_.GetWebView()
+                            ->GetPage()
+                            ->MainFrame()
+                            ->Tree()
+                            .FirstChild())
       ->GetDocument();
 }
 
 Document* WebDocumentFirstPartyTest::NestedNestedDocument() const {
-  return ToLocalFrame(web_view_helper_.GetWebView()
-                          ->GetPage()
-                          ->MainFrame()
-                          ->Tree()
-                          .FirstChild()
-                          ->Tree()
-                          .FirstChild())
+  return To<LocalFrame>(web_view_helper_.GetWebView()
+                            ->GetPage()
+                            ->MainFrame()
+                            ->Tree()
+                            .FirstChild()
+                            ->Tree()
+                            .FirstChild())
       ->GetDocument();
 }
 

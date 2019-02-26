@@ -42,9 +42,10 @@ class FrameViewPropertyTreePrinter
       CollectNodes(*layout_view);
     for (Frame* child = frame_view.GetFrame().Tree().FirstChild(); child;
          child = child->Tree().NextSibling()) {
-      if (!child->IsLocalFrame())
+      auto* child_local_frame = DynamicTo<LocalFrame>(child);
+      if (!child_local_frame)
         continue;
-      if (LocalFrameView* child_view = ToLocalFrame(child)->View())
+      if (LocalFrameView* child_view = child_local_frame->View())
         CollectNodes(*child_view);
     }
   }

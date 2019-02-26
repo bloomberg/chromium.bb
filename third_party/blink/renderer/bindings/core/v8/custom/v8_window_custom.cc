@@ -176,7 +176,7 @@ void V8Window::OpenerAttributeSetterCustom(
     // impl->frame() has to be a non-null LocalFrame.  Otherwise, the
     // same-origin check would have failed.
     DCHECK(impl->GetFrame());
-    ToLocalFrame(impl->GetFrame())->Loader().SetOpener(nullptr);
+    To<LocalFrame>(impl->GetFrame())->Loader().SetOpener(nullptr);
   }
 
   // Delete the accessor from the inner object.
@@ -269,7 +269,7 @@ void V8Window::NamedPropertyGetterCustom(
   }
 
   // Search named items in the document.
-  Document* doc = ToLocalFrame(frame)->GetDocument();
+  Document* doc = To<LocalFrame>(frame)->GetDocument();
   if (!doc || !doc->IsHTMLDocument())
     return;
 

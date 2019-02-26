@@ -102,12 +102,12 @@ void ApplicationCacheHost::WillStartLoadingMainResource(const KURL& url,
 
   const WebApplicationCacheHost* spawning_host = nullptr;
   Frame* spawning_frame = frame.Tree().Parent();
-  if (!spawning_frame || !spawning_frame->IsLocalFrame())
+  if (!spawning_frame || !IsA<LocalFrame>(spawning_frame))
     spawning_frame = frame.Loader().Opener();
-  if (!spawning_frame || !spawning_frame->IsLocalFrame())
+  if (!spawning_frame || !IsA<LocalFrame>(spawning_frame))
     spawning_frame = &frame;
   if (DocumentLoader* spawning_doc_loader =
-          ToLocalFrame(spawning_frame)->Loader().GetDocumentLoader()) {
+          To<LocalFrame>(spawning_frame)->Loader().GetDocumentLoader()) {
     spawning_host =
         spawning_doc_loader->GetApplicationCacheHost()
             ? spawning_doc_loader->GetApplicationCacheHost()->host_.get()

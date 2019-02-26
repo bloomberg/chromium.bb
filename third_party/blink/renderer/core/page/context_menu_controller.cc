@@ -204,7 +204,7 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
 
   data.edit_flags = ComputeEditFlags(
       *selected_frame->GetDocument(),
-      ToLocalFrame(page_->GetFocusController().FocusedOrMainFrame())
+      To<LocalFrame>(page_->GetFocusController().FocusedOrMainFrame())
           ->GetEditor());
 
   // Links, Images, Media tags, and Image/Media-Links take preference over
@@ -351,7 +351,8 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
     data.frame_encoding = selected_frame->GetDocument()->EncodingName();
 
   // Send the frame and page URLs in any case.
-  if (!page_->MainFrame()->IsLocalFrame()) {
+  auto* main_local_frame = DynamicTo<LocalFrame>(page_->MainFrame());
+  if (!main_local_frame) {
     // TODO(kenrb): This works around the problem of URLs not being
     // available for top-level frames that are in a different process.
     // It mostly works to convert the security origin to a URL, but
@@ -362,7 +363,7 @@ bool ContextMenuController::ShowContextMenu(LocalFrame* frame,
     if (origin)
       data.page_url = KURL(origin->ToString());
   } else {
-    data.page_url = WebURL(UrlFromFrame(ToLocalFrame(page_->MainFrame())));
+    data.page_url = WebURL(UrlFromFrame(main_local_frame));
   }
 
   if (selected_frame != page_->MainFrame())

@@ -1053,11 +1053,12 @@ InspectorPageAgent::BuildObjectForFrameTree(LocalFrame* frame) {
   std::unique_ptr<protocol::Array<protocol::Page::FrameTree>> children_array;
   for (Frame* child = frame->Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {
-    if (!child->IsLocalFrame())
+    auto* child_local_frame = DynamicTo<LocalFrame>(child);
+    if (!child_local_frame)
       continue;
     if (!children_array)
       children_array = protocol::Array<protocol::Page::FrameTree>::create();
-    children_array->addItem(BuildObjectForFrameTree(ToLocalFrame(child)));
+    children_array->addItem(BuildObjectForFrameTree(child_local_frame));
   }
   result->setChildFrames(std::move(children_array));
   return result;
@@ -1112,12 +1113,13 @@ InspectorPageAgent::BuildObjectForResourceTree(LocalFrame* frame) {
       children_array;
   for (Frame* child = frame->Tree().FirstChild(); child;
        child = child->Tree().NextSibling()) {
-    if (!child->IsLocalFrame())
+    auto* child_local_frame = DynamicTo<LocalFrame>(child);
+    if (!child_local_frame)
       continue;
     if (!children_array)
       children_array =
           protocol::Array<protocol::Page::FrameResourceTree>::create();
-    children_array->addItem(BuildObjectForResourceTree(ToLocalFrame(child)));
+    children_array->addItem(BuildObjectForResourceTree(child_local_frame));
   }
   result->setChildFrames(std::move(children_array));
   return result;

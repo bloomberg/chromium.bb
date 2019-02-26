@@ -974,8 +974,8 @@ TEST_F(RootScrollerTest, UseVisualViewportScrollbarsIframe) {
   Initialize("root-scroller-iframe.html");
 
   Element* iframe = MainFrame()->GetDocument()->getElementById("iframe");
-  LocalFrame* child_frame =
-      ToLocalFrame(To<HTMLFrameOwnerElement>(iframe)->ContentFrame());
+  auto* child_frame =
+      To<LocalFrame>(To<HTMLFrameOwnerElement>(iframe)->ContentFrame());
 
   SetAndSelectRootScroller(*MainFrame()->GetDocument(), iframe);
 
@@ -1138,7 +1138,7 @@ TEST_F(RootScrollerTest, IFrameRootScrollerGetsNonFixedLayoutSize) {
   Document* document = MainFrame()->GetDocument();
   auto* iframe = To<HTMLFrameOwnerElement>(
       MainFrame()->GetDocument()->getElementById("iframe"));
-  LocalFrameView* iframe_view = ToLocalFrame(iframe->ContentFrame())->View();
+  auto* iframe_view = To<LocalFrame>(iframe->ContentFrame())->View();
 
   ASSERT_EQ(IntSize(400, 400), iframe_view->GetLayoutSize());
   ASSERT_EQ(IntSize(400, 400), iframe_view->Size());
@@ -1211,7 +1211,7 @@ TEST_F(RootScrollerTest, ImmediateUpdateOfLayoutViewport) {
   RootScrollerController& main_controller =
       MainFrame()->GetDocument()->GetRootScrollerController();
 
-  LocalFrame* iframe_local_frame = ToLocalFrame(iframe->ContentFrame());
+  auto* iframe_local_frame = To<LocalFrame>(iframe->ContentFrame());
   EXPECT_EQ(iframe, &main_controller.EffectiveRootScroller());
   EXPECT_EQ(iframe_local_frame->View()->LayoutViewport(),
             &MainFrameView()->GetRootFrameViewport()->LayoutViewport());
@@ -1486,7 +1486,7 @@ TEST_F(RootScrollerSimTest, RootScrollerDoesntAffectVisualViewport) {
   GetDocument().GetPage()->GetVisualViewport().SetLocation(
       FloatPoint(100, 120));
 
-  LocalFrame* frame = ToLocalFrame(GetDocument().GetPage()->MainFrame());
+  auto* frame = To<LocalFrame>(GetDocument().GetPage()->MainFrame());
   EXPECT_EQ(100, frame->DomWindow()->visualViewport()->pageLeft());
   EXPECT_EQ(120, frame->DomWindow()->visualViewport()->pageTop());
 

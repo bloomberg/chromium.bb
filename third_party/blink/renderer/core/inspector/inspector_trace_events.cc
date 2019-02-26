@@ -1079,7 +1079,7 @@ void FillCommonFrameData(TracedValue* frame_data, LocalFrame* frame) {
         "nodeId", IdentifiersFactory::IntIdForNode(frame_owner_element));
   }
   Frame* parent = frame->Tree().Parent();
-  if (parent && parent->IsLocalFrame())
+  if (IsA<LocalFrame>(parent))
     frame_data->SetString("parent", IdentifiersFactory::FrameId(parent));
 }
 
@@ -1365,10 +1365,11 @@ std::unique_ptr<TracedValue> inspector_tracing_started_in_frame::Data(
   value->SetBoolean("persistentIds", true);
   value->BeginArray("frames");
   for (Frame* f = frame; f; f = f->Tree().TraverseNext(frame)) {
-    if (!f->IsLocalFrame())
+    auto* local_frame = DynamicTo<LocalFrame>(f);
+    if (!local_frame)
       continue;
     value->BeginDictionary();
-    FillCommonFrameData(value.get(), ToLocalFrame(f));
+    FillCommonFrameData(value.get(), local_frame);
     value->EndDictionary();
   }
   value->EndArray();

@@ -128,7 +128,7 @@ bool SVGImage::IsInSVGImage(const Node* node) {
 void SVGImage::CheckLoaded() const {
   CHECK(page_);
 
-  LocalFrame* frame = ToLocalFrame(page_->MainFrame());
+  auto* frame = To<LocalFrame>(page_->MainFrame());
 
   // Failures of this assertion might result in wrong origin tainting checks,
   // because CurrentFrameHasSingleSecurityOrigin() assumes all subresources of
@@ -140,7 +140,7 @@ bool SVGImage::CurrentFrameHasSingleSecurityOrigin() const {
   if (!page_)
     return true;
 
-  LocalFrame* frame = ToLocalFrame(page_->MainFrame());
+  auto* frame = To<LocalFrame>(page_->MainFrame());
 
   CheckLoaded();
 
@@ -171,7 +171,7 @@ bool SVGImage::CurrentFrameHasSingleSecurityOrigin() const {
 static SVGSVGElement* SvgRootElement(Page* page) {
   if (!page)
     return nullptr;
-  LocalFrame* frame = ToLocalFrame(page->MainFrame());
+  auto* frame = To<LocalFrame>(page->MainFrame());
   return frame->GetDocument()->AccessSVGExtensions().rootElement();
 }
 
@@ -491,7 +491,7 @@ void SVGImage::Draw(
 
 sk_sp<PaintRecord> SVGImage::PaintRecordForCurrentFrame(const KURL& url) {
   DCHECK(page_);
-  LocalFrameView* view = ToLocalFrame(page_->MainFrame())->View();
+  LocalFrameView* view = To<LocalFrame>(page_->MainFrame())->View();
   view->Resize(ContainerSize());
   page_->GetVisualViewport().SetSize(ContainerSize());
 
@@ -610,7 +610,7 @@ bool SVGImage::MaybeAnimated() {
   if (!root_element)
     return false;
   return root_element->TimeContainer()->HasAnimations() ||
-         ToLocalFrame(page_->MainFrame())
+         To<LocalFrame>(page_->MainFrame())
              ->GetDocument()
              ->Timeline()
              .HasPendingUpdates();
@@ -644,7 +644,7 @@ void SVGImage::ServiceAnimations(
   // actually generating painted output, not only for performance reasons,
   // but to preserve correct coherence of the cache of the output with
   // the needsRepaint bits of the PaintLayers in the image.
-  LocalFrameView* frame_view = ToLocalFrame(page_->MainFrame())->View();
+  LocalFrameView* frame_view = To<LocalFrame>(page_->MainFrame())->View();
   frame_view->UpdateAllLifecyclePhasesExceptPaint();
 
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
@@ -703,7 +703,7 @@ void SVGImage::LoadCompleted() {
       // Document::ImplicitClose(), we defer AsyncLoadCompleted() to avoid
       // potential bugs and timing dependencies around ImplicitClose() and
       // to make LoadEventFinished() true when AsyncLoadCompleted() is called.
-      ToLocalFrame(page_->MainFrame())
+      To<LocalFrame>(page_->MainFrame())
           ->GetTaskRunner(TaskType::kInternalLoading)
           ->PostTask(FROM_HERE, WTF::Bind(&SVGImage::NotifyAsyncLoadCompleted,
                                           scoped_refptr<SVGImage>(this)));

@@ -2278,8 +2278,8 @@ TEST_F(WebViewTest, HistoryResetScrollAndScaleState) {
   EXPECT_EQ(2.0f, web_view_impl->PageScaleFactor());
   EXPECT_EQ(94, web_view_impl->MainFrameImpl()->GetScrollOffset().width);
   EXPECT_EQ(111, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
-  LocalFrame* main_frame_local =
-      ToLocalFrame(web_view_impl->GetPage()->MainFrame());
+  auto* main_frame_local =
+      To<LocalFrame>(web_view_impl->GetPage()->MainFrame());
   main_frame_local->Loader().SaveScrollState();
   EXPECT_EQ(2.0f, main_frame_local->Loader()
                       .GetDocumentLoader()
@@ -2319,8 +2319,8 @@ TEST_F(WebViewTest, BackForwardRestoreScroll) {
 
   // Emulate a user scroll
   web_view_impl->MainFrameImpl()->SetScrollOffset(WebSize(0, 900));
-  LocalFrame* main_frame_local =
-      ToLocalFrame(web_view_impl->GetPage()->MainFrame());
+  auto* main_frame_local =
+      To<LocalFrame>(web_view_impl->GetPage()->MainFrame());
   Persistent<HistoryItem> item1 =
       main_frame_local->Loader().GetDocumentLoader()->GetHistoryItem();
 
@@ -2435,7 +2435,7 @@ TEST_F(WebViewTest, PrintWithXHRInFlight) {
   WebViewImpl* web_view_impl = web_view_helper_.InitializeAndLoad(
       base_url_ + "print_with_xhr_inflight.html", nullptr, &client);
 
-  ASSERT_TRUE(ToLocalFrame(web_view_impl->GetPage()->MainFrame())
+  ASSERT_TRUE(To<LocalFrame>(web_view_impl->GetPage()->MainFrame())
                   ->GetDocument()
                   ->LoadEventFinished());
   EXPECT_TRUE(client.PrintCalled());
@@ -3512,7 +3512,7 @@ TEST_F(WebViewTest, FocusExistingFrameOnNavigate) {
   WebURLRequest web_url_request(KURL("about:blank"));
   FrameLoadRequest request(nullptr, web_url_request.ToResourceRequest(),
                            "_blank");
-  ToLocalFrame(web_view_impl->GetPage()->MainFrame())
+  To<LocalFrame>(web_view_impl->GetPage()->MainFrame())
       ->Loader()
       .StartNavigation(request);
   ASSERT_TRUE(client.CreatedWebView());
@@ -3523,9 +3523,9 @@ TEST_F(WebViewTest, FocusExistingFrameOnNavigate) {
   WebURLRequest web_url_request_with_target_start(KURL("about:blank"));
   FrameLoadRequest request_with_target_start(
       nullptr, web_url_request_with_target_start.ToResourceRequest(), "_start");
-  ToLocalFrame(static_cast<WebViewImpl*>(client.CreatedWebView())
-                   ->GetPage()
-                   ->MainFrame())
+  To<LocalFrame>(static_cast<WebViewImpl*>(client.CreatedWebView())
+                     ->GetPage()
+                     ->MainFrame())
       ->Loader()
       .StartNavigation(request_with_target_start);
   EXPECT_TRUE(client.DidFocusCalled());
@@ -4532,7 +4532,7 @@ TEST_F(WebViewTest, WebSubstringUtilIframe) {
   web_view->MainFrameWidget()->Resize(WebSize(400, 400));
   WebLocalFrameImpl* main_frame = web_view->MainFrameImpl();
   WebLocalFrameImpl* child_frame = WebLocalFrameImpl::FromFrame(
-      ToLocalFrame(main_frame->GetFrame()->Tree().FirstChild()));
+      To<LocalFrame>(main_frame->GetFrame()->Tree().FirstChild()));
 
   WebPoint baseline_point;
   NSAttributedString* result = WebSubstringUtil::AttributedSubstringInRange(
@@ -4605,7 +4605,7 @@ TEST_F(WebViewTest, SubframeBeforeUnloadUseCounter) {
 
   WebLocalFrame* frame = web_view_helper_.LocalMainFrame();
   Document* document =
-      ToLocalFrame(web_view_helper_.GetWebView()->GetPage()->MainFrame())
+      To<LocalFrame>(web_view_helper_.GetWebView()->GetPage()->MainFrame())
           ->GetDocument();
 
   // Add a beforeunload handler in the main frame. Make sure firing
@@ -4627,11 +4627,11 @@ TEST_F(WebViewTest, SubframeBeforeUnloadUseCounter) {
     ToWebLocalFrameImpl(web_view->MainFrame()->FirstChild()->ToWebLocalFrame())
         ->DispatchBeforeUnloadEvent(false);
 
-    Document* child_document = ToLocalFrame(web_view_helper_.GetWebView()
-                                                ->GetPage()
-                                                ->MainFrame()
-                                                ->Tree()
-                                                .FirstChild())
+    Document* child_document = To<LocalFrame>(web_view_helper_.GetWebView()
+                                                  ->GetPage()
+                                                  ->MainFrame()
+                                                  ->Tree()
+                                                  .FirstChild())
                                    ->GetDocument();
     EXPECT_TRUE(UseCounter::IsCounted(*child_document,
                                       WebFeature::kSubFrameBeforeUnloadFired));
@@ -4666,7 +4666,7 @@ TEST_F(WebViewTest, ClosingPageIsPaused) {
 
   web_view->SetOpenedByDOM();
 
-  LocalFrame* main_frame = ToLocalFrame(page->MainFrame());
+  auto* main_frame = To<LocalFrame>(page->MainFrame());
   EXPECT_FALSE(main_frame->DomWindow()->closed());
 
   ScriptState* script_state = ToScriptStateForMainWorld(main_frame);
