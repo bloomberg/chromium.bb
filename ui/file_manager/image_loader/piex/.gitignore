@@ -1,0 +1,7 @@
+images
+node_modules
+package-lock.json
+tests.hash
+tests.log
+a.out.*
+*.bc
