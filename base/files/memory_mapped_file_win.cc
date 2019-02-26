@@ -23,7 +23,7 @@ MemoryMappedFile::MemoryMappedFile() : data_(NULL), length_(0) {
 bool MemoryMappedFile::MapFileRegionToMemory(
     const MemoryMappedFile::Region& region,
     Access access) {
-  ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
 
   if (!file_.IsValid())
     return false;

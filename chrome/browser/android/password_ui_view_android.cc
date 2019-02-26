@@ -213,7 +213,8 @@ PasswordUIViewAndroid::ObtainAndSerializePasswords(
   DCHECK(!passwords.empty());
 
   // Creating a file will block the execution on I/O.
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::WILL_BLOCK);
 
   // Ensure that the target directory exists.
   base::File::Error error = base::File::FILE_OK;

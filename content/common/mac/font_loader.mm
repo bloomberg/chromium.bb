@@ -27,7 +27,8 @@ namespace {
 std::unique_ptr<FontLoader::ResultInternal> LoadFontOnFileThread(
     const base::string16& font_name,
     const float font_point_size) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   NSString* font_name_ns = base::SysUTF16ToNSString(font_name);
   NSFont* font_to_encode =

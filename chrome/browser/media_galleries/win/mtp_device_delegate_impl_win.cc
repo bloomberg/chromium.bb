@@ -182,7 +182,8 @@ base::File::Error ReadDirectoryOnBlockingPoolThread(
     const MTPDeviceDelegateImplWin::StorageDeviceInfo& device_info,
     const base::FilePath& root,
     storage::AsyncFileUtil::EntryList* entries) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   DCHECK(!root.empty());
   DCHECK(entries);
   base::File::Info file_info;

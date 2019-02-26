@@ -110,7 +110,8 @@ base::TimeDelta GetCheckForUpgradeDelay() {
 // Gets the currently installed version. On Windows, if |critical_update| is not
 // NULL, also retrieves the critical update version info if available.
 base::Version GetCurrentlyInstalledVersionImpl(base::Version* critical_update) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   base::Version installed_version;
 #if defined(OS_WIN)

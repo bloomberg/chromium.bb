@@ -47,26 +47,27 @@ class ScopedBlockingCallTest : public testing::Test {
 
 TEST_F(ScopedBlockingCallTest, MayBlock) {
   EXPECT_CALL(observer_, BlockingStarted(BlockingType::MAY_BLOCK));
-  ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
   testing::Mock::VerifyAndClear(&observer_);
   EXPECT_CALL(observer_, BlockingEnded());
 }
 
 TEST_F(ScopedBlockingCallTest, WillBlock) {
   EXPECT_CALL(observer_, BlockingStarted(BlockingType::WILL_BLOCK));
-  ScopedBlockingCall scoped_blocking_call(BlockingType::WILL_BLOCK);
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::WILL_BLOCK);
   testing::Mock::VerifyAndClear(&observer_);
   EXPECT_CALL(observer_, BlockingEnded());
 }
 
 TEST_F(ScopedBlockingCallTest, MayBlockWillBlock) {
   EXPECT_CALL(observer_, BlockingStarted(BlockingType::MAY_BLOCK));
-  ScopedBlockingCall scoped_blocking_call_a(BlockingType::MAY_BLOCK);
+  ScopedBlockingCall scoped_blocking_call_a(FROM_HERE, BlockingType::MAY_BLOCK);
   testing::Mock::VerifyAndClear(&observer_);
 
   {
     EXPECT_CALL(observer_, BlockingTypeUpgraded());
-    ScopedBlockingCall scoped_blocking_call_b(BlockingType::WILL_BLOCK);
+    ScopedBlockingCall scoped_blocking_call_b(FROM_HERE,
+                                              BlockingType::WILL_BLOCK);
     testing::Mock::VerifyAndClear(&observer_);
   }
 
@@ -75,7 +76,8 @@ TEST_F(ScopedBlockingCallTest, MayBlockWillBlock) {
 
 TEST_F(ScopedBlockingCallTest, WillBlockMayBlock) {
   EXPECT_CALL(observer_, BlockingStarted(BlockingType::WILL_BLOCK));
-  ScopedBlockingCall scoped_blocking_call_a(BlockingType::WILL_BLOCK);
+  ScopedBlockingCall scoped_blocking_call_a(FROM_HERE,
+                                            BlockingType::WILL_BLOCK);
   testing::Mock::VerifyAndClear(&observer_);
 
   { ScopedBlockingCall scoped_blocking_call_b(BlockingType::MAY_BLOCK); }
@@ -85,7 +87,7 @@ TEST_F(ScopedBlockingCallTest, WillBlockMayBlock) {
 
 TEST_F(ScopedBlockingCallTest, MayBlockMayBlock) {
   EXPECT_CALL(observer_, BlockingStarted(BlockingType::MAY_BLOCK));
-  ScopedBlockingCall scoped_blocking_call_a(BlockingType::MAY_BLOCK);
+  ScopedBlockingCall scoped_blocking_call_a(FROM_HERE, BlockingType::MAY_BLOCK);
   testing::Mock::VerifyAndClear(&observer_);
 
   { ScopedBlockingCall scoped_blocking_call_b(BlockingType::MAY_BLOCK); }
@@ -95,7 +97,8 @@ TEST_F(ScopedBlockingCallTest, MayBlockMayBlock) {
 
 TEST_F(ScopedBlockingCallTest, WillBlockWillBlock) {
   EXPECT_CALL(observer_, BlockingStarted(BlockingType::WILL_BLOCK));
-  ScopedBlockingCall scoped_blocking_call_a(BlockingType::WILL_BLOCK);
+  ScopedBlockingCall scoped_blocking_call_a(FROM_HERE,
+                                            BlockingType::WILL_BLOCK);
   testing::Mock::VerifyAndClear(&observer_);
 
   { ScopedBlockingCall scoped_blocking_call_b(BlockingType::WILL_BLOCK); }
@@ -105,17 +108,20 @@ TEST_F(ScopedBlockingCallTest, WillBlockWillBlock) {
 
 TEST_F(ScopedBlockingCallTest, MayBlockWillBlockTwice) {
   EXPECT_CALL(observer_, BlockingStarted(BlockingType::MAY_BLOCK));
-  ScopedBlockingCall scoped_blocking_call_a(BlockingType::MAY_BLOCK);
+  ScopedBlockingCall scoped_blocking_call_a(FROM_HERE, BlockingType::MAY_BLOCK);
   testing::Mock::VerifyAndClear(&observer_);
 
   {
     EXPECT_CALL(observer_, BlockingTypeUpgraded());
-    ScopedBlockingCall scoped_blocking_call_b(BlockingType::WILL_BLOCK);
+    ScopedBlockingCall scoped_blocking_call_b(FROM_HERE,
+                                              BlockingType::WILL_BLOCK);
     testing::Mock::VerifyAndClear(&observer_);
 
     {
-      ScopedBlockingCall scoped_blocking_call_c(BlockingType::MAY_BLOCK);
-      ScopedBlockingCall scoped_blocking_call_d(BlockingType::WILL_BLOCK);
+      ScopedBlockingCall scoped_blocking_call_c(FROM_HERE,
+                                                BlockingType::MAY_BLOCK);
+      ScopedBlockingCall scoped_blocking_call_d(FROM_HERE,
+                                                BlockingType::WILL_BLOCK);
     }
   }
 

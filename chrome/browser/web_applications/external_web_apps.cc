@@ -89,7 +89,8 @@ bool IsFeatureEnabled(const std::string& feature_name) {
 std::vector<web_app::PendingAppManager::AppInfo> ScanDir(
     const base::FilePath& dir,
     const std::string& user_type) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   base::FilePath::StringType extension(FILE_PATH_LITERAL(".json"));
   base::FileEnumerator json_files(dir,
                                   false,  // Recursive.

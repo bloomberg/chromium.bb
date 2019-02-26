@@ -1121,7 +1121,8 @@ void Database::Poison() {
 //
 // static
 bool Database::Delete(const base::FilePath& path) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   base::FilePath journal_path = Database::JournalPath(path);
   base::FilePath wal_path = Database::WriteAheadLogPath(path);

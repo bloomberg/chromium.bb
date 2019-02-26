@@ -1318,9 +1318,9 @@ TEST_F(TaskSchedulerWorkerPoolBlockingTest,
           [](WaitableEvent* can_instantiate_will_block,
              WaitableEvent* did_instantiate_will_block,
              WaitableEvent* can_return) {
-            ScopedBlockingCall may_block(BlockingType::MAY_BLOCK);
+            ScopedBlockingCall may_block(FROM_HERE, BlockingType::MAY_BLOCK);
             test::WaitWithoutBlockingObserver(can_instantiate_will_block);
-            ScopedBlockingCall will_block(BlockingType::WILL_BLOCK);
+            ScopedBlockingCall will_block(FROM_HERE, BlockingType::WILL_BLOCK);
             did_instantiate_will_block->Signal();
             test::WaitWithoutBlockingObserver(can_return);
           },
@@ -1392,7 +1392,8 @@ TEST_F(TaskSchedulerWorkerPoolOverCapacityTest, VerifyCleanup) {
          WaitableEvent* blocked_call_continue) {
         threads_running_barrier->Run();
         {
-          ScopedBlockingCall scoped_blocking_call(BlockingType::WILL_BLOCK);
+          ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                  BlockingType::WILL_BLOCK);
           test::WaitWithoutBlockingObserver(blocked_call_continue);
         }
         test::WaitWithoutBlockingObserver(threads_continue);
@@ -1510,7 +1511,8 @@ TEST_F(TaskSchedulerWorkerPoolBlockingTest, MaximumWorkersTest) {
         BindOnce(
             [](Closure* late_threads_barrier_closure,
                WaitableEvent* late_release_thread_contine) {
-              ScopedBlockingCall scoped_blocking_call(BlockingType::WILL_BLOCK);
+              ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                      BlockingType::WILL_BLOCK);
               late_threads_barrier_closure->Run();
               test::WaitWithoutBlockingObserver(late_release_thread_contine);
             },
@@ -1692,7 +1694,8 @@ TEST_F(TaskSchedulerWorkerPoolImplStartInBodyTest,
         for (size_t i = 0; i < kLargeNumber; ++i) {
           // Number of workers should not increase when there is enough capacity
           // to accommodate queued and running sequences.
-          ScopedBlockingCall scoped_blocking_call(BlockingType::WILL_BLOCK);
+          ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                  BlockingType::WILL_BLOCK);
           EXPECT_EQ(kNumWorkers, worker_pool_->NumberOfWorkersForTesting());
         }
 

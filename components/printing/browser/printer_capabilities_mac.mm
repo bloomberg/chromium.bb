@@ -42,7 +42,8 @@ PrinterSemanticCapsAndDefaults::Papers GetMacCustomPaperSizesFromFile(
 
   base::scoped_nsobject<NSDictionary> custom_papers_dict;
   {
-    base::ScopedBlockingCall scoped_block(base::BlockingType::MAY_BLOCK);
+    base::ScopedBlockingCall scoped_block(FROM_HERE,
+                                          base::BlockingType::MAY_BLOCK);
     custom_papers_dict.reset([[NSDictionary alloc]
         initWithContentsOfFile:base::mac::FilePathToNSString(path)]);
   }

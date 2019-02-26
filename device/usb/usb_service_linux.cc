@@ -102,7 +102,8 @@ UsbServiceLinux::BlockingTaskHelper::~BlockingTaskHelper() {
 // static
 void UsbServiceLinux::BlockingTaskHelper::Start() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   // Initializing udev for device enumeration and monitoring may fail. In that
   // case this service will continue to exist but no devices will be found.
@@ -118,7 +119,8 @@ void UsbServiceLinux::BlockingTaskHelper::OnDeviceAdded(
     ScopedUdevDevicePtr device) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   const char* subsystem = udev_device_get_subsystem(device.get());
   if (!subsystem || strcmp(subsystem, "usb") != 0)
     return;
@@ -189,7 +191,8 @@ void UsbServiceLinux::BlockingTaskHelper::OnDeviceAdded(
 void UsbServiceLinux::BlockingTaskHelper::OnDeviceRemoved(
     ScopedUdevDevicePtr device) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   const char* device_path = udev_device_get_devnode(device.get());
   if (device_path) {

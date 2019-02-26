@@ -121,7 +121,8 @@ class RegistryReader {
 // Wrapper for GetAdaptersAddresses. Returns NULL if failed.
 std::unique_ptr<IP_ADAPTER_ADDRESSES, base::FreeDeleter> ReadIpHelper(
     ULONG flags) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   std::unique_ptr<IP_ADAPTER_ADDRESSES, base::FreeDeleter> out;
   ULONG len = 15000;  // As recommended by MSDN for GetAdaptersAddresses.
@@ -148,7 +149,8 @@ bool ReadDevolutionSetting(const RegistryReader& reader,
 
 // Reads DnsSystemSettings from IpHelper and registry.
 ConfigParseWinResult ReadSystemSettings(DnsSystemSettings* settings) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   settings->addresses = ReadIpHelper(GAA_FLAG_SKIP_ANYCAST |
                                      GAA_FLAG_SKIP_UNICAST |
                                      GAA_FLAG_SKIP_MULTICAST |

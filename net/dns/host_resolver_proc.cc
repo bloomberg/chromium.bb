@@ -193,7 +193,8 @@ int SystemHostResolverCall(const std::string& host,
   // This function can block for a long time. Use ScopedBlockingCall to increase
   // the current thread pool's capacity and thus avoid reducing CPU usage by the
   // current process during that time.
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::WILL_BLOCK);
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_OPENBSD) && \
     !defined(OS_ANDROID) && !defined(OS_FUCHSIA)

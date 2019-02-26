@@ -57,7 +57,8 @@ MtabWatcherLinux::~MtabWatcherLinux() {
 
 void MtabWatcherLinux::ReadMtab() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   FILE* fp = setmntent(mtab_path_.value().c_str(), "r");
   if (!fp)

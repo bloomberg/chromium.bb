@@ -99,7 +99,8 @@ scoped_refptr<UsbContext> InitializeUsbContextBlocking() {
 base::Optional<std::vector<ScopedLibusbDeviceRef>> GetDeviceListBlocking(
     const std::string& new_device_path,
     scoped_refptr<UsbContext> usb_context) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
 #if defined(OS_WIN)
   if (!new_device_path.empty()) {

@@ -59,7 +59,8 @@ base::LazyInstance<SupportedAudioVideoExtensions>::DestructorAtExit
     g_audio_video_extensions = LAZY_INSTANCE_INITIALIZER;
 
 base::File OpenBlocking(const base::FilePath& path) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   return base::File(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
 }
 

@@ -235,7 +235,8 @@ IndexedRulesetVersion RulesetService::GetMostRecentlyIndexedVersion() const {
 IndexedRulesetVersion RulesetService::IndexAndWriteRuleset(
     const base::FilePath& indexed_ruleset_base_dir,
     const UnindexedRulesetInfo& unindexed_ruleset_info) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   base::File unindexed_ruleset_file(
       unindexed_ruleset_info.ruleset_path,

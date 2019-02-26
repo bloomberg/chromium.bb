@@ -58,7 +58,8 @@ const int kDefaultNames[] = {
 // from disk the then |out_image| will contain the bitmap image, otherwise it
 // will be NULL.
 void ReadBitmap(const base::FilePath& image_path, gfx::Image** out_image) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   *out_image = nullptr;
 
   // If the path doesn't exist, don't even try reading it.
@@ -86,7 +87,8 @@ void ReadBitmap(const base::FilePath& image_path, gfx::Image** out_image) {
 void SaveBitmap(std::unique_ptr<ImageData> data,
                 const base::FilePath& image_path,
                 const base::Closure& callback) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   // Make sure the destination directory exists.
   base::FilePath dir = image_path.DirName();
@@ -106,7 +108,8 @@ void SaveBitmap(std::unique_ptr<ImageData> data,
 
 void RunCallbackIfFileMissing(const base::FilePath& file_path,
                               const base::Closure& callback) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   if (!base::PathExists(file_path))
     base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI}, callback);
 }

@@ -38,7 +38,8 @@ std::unique_ptr<PrinterCache> ParsePrinters(std::unique_ptr<std::string> data) {
   int error_line = 0;
 
   // This could be really slow.
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   std::unique_ptr<base::Value> json_blob =
       base::JSONReader::ReadAndReturnErrorDeprecated(
           *data, base::JSONParserOptions::JSON_PARSE_RFC, &error_code,

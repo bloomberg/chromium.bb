@@ -1092,7 +1092,8 @@ bool FilePersistentMemoryAllocator::IsFileAcceptable(
 void FilePersistentMemoryAllocator::Cache() {
   // Since this method is expected to load data from permanent storage
   // into memory, blocking I/O may occur.
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   // Calculate begin/end addresses so that the first byte of every page
   // in that range can be read. Keep within the used space. The |volatile|

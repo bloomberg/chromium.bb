@@ -77,7 +77,8 @@ std::unique_ptr<FileVersionInfo> FileVersionInfo::CreateFileVersionInfo(
 // static
 std::unique_ptr<FileVersionInfoWin>
 FileVersionInfoWin::CreateFileVersionInfoWin(const FilePath& file_path) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   DWORD dummy;
   const wchar_t* path = base::as_wcstr(file_path.value());

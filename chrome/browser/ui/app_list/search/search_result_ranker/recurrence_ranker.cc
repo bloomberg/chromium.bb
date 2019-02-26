@@ -56,7 +56,8 @@ void SaveProtoToDisk(const base::FilePath& filepath,
 // to be non-null.
 std::unique_ptr<RecurrenceRankerProto> LoadProtoFromDisk(
     const base::FilePath& filepath) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   std::string proto_str;
   if (!base::ReadFileToString(filepath, &proto_str)) {

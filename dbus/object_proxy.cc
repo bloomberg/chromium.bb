@@ -317,7 +317,8 @@ void ObjectProxy::StartAsyncMethodCall(int timeout_ms,
                                        ReplyCallbackHolder callback_holder,
                                        base::TimeTicks start_time) {
   bus_->AssertOnDBusThread();
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   if (!bus_->Connect() || !bus_->SetUpAsyncOperations()) {
     // In case of a failure, run the error callback with nullptr.
@@ -358,7 +359,8 @@ void ObjectProxy::OnPendingCallIsComplete(ReplyCallbackHolder callback_holder,
                                           base::TimeTicks start_time,
                                           DBusPendingCall* pending_call) {
   bus_->AssertOnDBusThread();
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   DBusMessage* response_message = dbus_pending_call_steal_reply(pending_call);
 

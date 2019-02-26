@@ -31,7 +31,8 @@ base::Optional<storage::QuotaSettings> CalculateNominalDynamicSettings(
     const base::FilePath& partition_path,
     bool is_incognito,
     QuotaDiskInfoHelper* disk_info_helper) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   const int64_t kMBytes = 1024 * 1024;
   const int kRandomizedPercentage = 10;
 

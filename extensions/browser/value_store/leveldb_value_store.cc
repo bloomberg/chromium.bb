@@ -45,7 +45,8 @@ LeveldbValueStore::LeveldbValueStore(const std::string& uma_client_name,
 }
 
 LeveldbValueStore::~LeveldbValueStore() {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
 }

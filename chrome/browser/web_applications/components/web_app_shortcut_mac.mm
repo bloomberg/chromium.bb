@@ -246,7 +246,8 @@ void LaunchShimOnFileThread(web_app::LaunchShimUpdateBehavior update_behavior,
                             web_app::ShimLaunchedCallback launched_callback,
                             web_app::ShimTerminatedCallback terminated_callback,
                             const web_app::ShortcutInfo& shortcut_info) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   web_app::WebAppShortcutCreator shortcut_creator(
       web_app::internals::GetShortcutDataDir(shortcut_info), &shortcut_info);
@@ -415,7 +416,8 @@ void GetImageResourcesOnUIThread(
 
 void SetWorkspaceIconOnWorkerThread(const base::FilePath& apps_directory,
                                     std::unique_ptr<ResourceIDToImage> images) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   base::scoped_nsobject<NSImage> folder_icon_image([[NSImage alloc] init]);
   // Use complete assets for the small icon sizes. -[NSWorkspace setIcon:] has a
@@ -1026,7 +1028,8 @@ bool CreatePlatformShortcuts(const base::FilePath& app_data_path,
                              const ShortcutLocations& creation_locations,
                              ShortcutCreationReason creation_reason,
                              const ShortcutInfo& shortcut_info) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   if (AppShimsDisabledForTest())
     return true;
 
@@ -1036,7 +1039,8 @@ bool CreatePlatformShortcuts(const base::FilePath& app_data_path,
 
 void DeletePlatformShortcuts(const base::FilePath& app_data_path,
                              const ShortcutInfo& shortcut_info) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   WebAppShortcutCreator shortcut_creator(app_data_path, &shortcut_info);
   shortcut_creator.DeleteShortcuts();
 }
@@ -1044,7 +1048,8 @@ void DeletePlatformShortcuts(const base::FilePath& app_data_path,
 void UpdatePlatformShortcuts(const base::FilePath& app_data_path,
                              const base::string16& old_app_title,
                              const ShortcutInfo& shortcut_info) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   if (web_app::AppShimLaunchDisabled())
     return;
 
@@ -1056,7 +1061,8 @@ void UpdatePlatformShortcuts(const base::FilePath& app_data_path,
 }
 
 void DeleteAllShortcutsForProfile(const base::FilePath& profile_path) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   const std::string profile_base_name = profile_path.BaseName().value();
   std::vector<base::FilePath> bundles = GetAllAppBundlesInPath(
       profile_path.Append(chrome::kWebAppDirname), profile_base_name);

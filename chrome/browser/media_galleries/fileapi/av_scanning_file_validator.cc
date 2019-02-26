@@ -41,7 +41,8 @@ constexpr base::Feature kMediaGalleriesQuarantineFile{
     "MediaGalleriesQuarantineFile", base::FEATURE_DISABLED_BY_DEFAULT};
 
 base::File::Error ScanFile(const base::FilePath& dest_platform_path) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   if (base::FeatureList::IsEnabled(kMediaGalleriesQuarantineFile)) {
     download::QuarantineFileResult quarantine_result = download::QuarantineFile(

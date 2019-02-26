@@ -51,7 +51,8 @@ bool DrmDeviceHandle::Initialize(const base::FilePath& dev_path,
   // expected path, so use a CHECK instead of a DCHECK. The sys_path is only
   // used a label and is otherwise unvalidated.
   CHECK(dev_path.DirName() == base::FilePath("/dev/dri"));
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   int num_auth_attempts = 0;
   bool logged_warning = false;

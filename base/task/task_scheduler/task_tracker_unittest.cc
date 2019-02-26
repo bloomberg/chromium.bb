@@ -498,13 +498,13 @@ TEST_P(TaskSchedulerTaskTrackerTest, IOAllowed) {
   // Set the IO allowed bit. Expect TaskTracker to unset it before running a
   // task without the MayBlock() trait.
   ThreadRestrictions::SetIOAllowed(true);
-  Task task_without_may_block(
-      FROM_HERE, Bind([]() {
-        EXPECT_DCHECK_DEATH({
-          ScopedBlockingCall scope_blocking_call(BlockingType::WILL_BLOCK);
-        });
-      }),
-      TimeDelta());
+  Task task_without_may_block(FROM_HERE, Bind([]() {
+                                EXPECT_DCHECK_DEATH({
+                                  ScopedBlockingCall scope_blocking_call(
+                                      FROM_HERE, BlockingType::WILL_BLOCK);
+                                });
+                              }),
+                              TimeDelta());
   TaskTraits traits_without_may_block = TaskTraits(GetParam());
   EXPECT_TRUE(tracker_.WillPostTask(
       &task_without_may_block, traits_without_may_block.shutdown_behavior()));

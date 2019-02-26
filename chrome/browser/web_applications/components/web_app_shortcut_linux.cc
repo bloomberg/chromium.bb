@@ -228,7 +228,8 @@ void DeleteShortcutInApplicationsMenu(
 bool CreateDesktopShortcut(
     const web_app::ShortcutInfo& shortcut_info,
     const web_app::ShortcutLocations& creation_locations) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   base::FilePath shortcut_filename;
   if (!shortcut_info.extension_id.empty()) {
@@ -323,7 +324,8 @@ web_app::ShortcutLocations GetExistingShortcutLocations(
     const base::FilePath& profile_path,
     const std::string& extension_id,
     const base::FilePath& desktop_path) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   base::FilePath shortcut_filename =
       GetAppShortcutFilename(profile_path, extension_id);
@@ -355,7 +357,8 @@ web_app::ShortcutLocations GetExistingShortcutLocations(
 
 void DeleteDesktopShortcuts(const base::FilePath& profile_path,
                             const std::string& extension_id) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   base::FilePath shortcut_filename =
       GetAppShortcutFilename(profile_path, extension_id);
@@ -371,7 +374,8 @@ void DeleteDesktopShortcuts(const base::FilePath& profile_path,
 }
 
 void DeleteAllDesktopShortcuts(const base::FilePath& profile_path) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   std::unique_ptr<base::Environment> env(base::Environment::Create());
 
@@ -405,7 +409,8 @@ bool CreatePlatformShortcuts(const base::FilePath& web_app_path,
                              ShortcutCreationReason /*creation_reason*/,
                              const ShortcutInfo& shortcut_info) {
 #if !defined(OS_CHROMEOS)
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   return CreateDesktopShortcut(shortcut_info, creation_locations);
 #else
   return false;
@@ -423,7 +428,8 @@ void DeletePlatformShortcuts(const base::FilePath& web_app_path,
 void UpdatePlatformShortcuts(const base::FilePath& web_app_path,
                              const base::string16& /*old_app_title*/,
                              const ShortcutInfo& shortcut_info) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   std::unique_ptr<base::Environment> env(base::Environment::Create());
 

@@ -16,7 +16,8 @@ DummyMinidumpGenerator::DummyMinidumpGenerator(
 }
 
 bool DummyMinidumpGenerator::Generate(const std::string& minidump_path) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   // Return false if the file does not exist.
   if (!base::PathExists(base::FilePath(existing_minidump_path_))) {

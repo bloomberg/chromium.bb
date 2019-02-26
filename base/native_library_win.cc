@@ -82,7 +82,7 @@ LoadLibraryResult GetLoadLibraryResult(bool are_search_flags_available,
 NativeLibrary LoadNativeLibraryHelper(const FilePath& library_path,
                                       NativeLibraryLoadError* error) {
   // LoadLibrary() opens the file off disk.
-  ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
 
   HMODULE module = nullptr;
 

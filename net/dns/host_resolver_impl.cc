@@ -221,7 +221,8 @@ bool IsAllIPv4Loopback(const AddressList& addresses) {
 // i.e. if only 127.0.0.1 and ::1 are routable.
 // Also returns false if it cannot determine this.
 bool HaveOnlyLoopbackAddresses() {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::WILL_BLOCK);
 #if defined(OS_WIN)
   // TODO(wtc): implement with the GetAdaptersAddresses function.
   NOTIMPLEMENTED();

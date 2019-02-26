@@ -19,7 +19,8 @@ namespace {
 // Unprovision MediaDrm in IO thread.
 void ClearMediaDrmLicensesBlocking(
     std::vector<base::UnguessableToken> origin_ids) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::WILL_BLOCK);
 
   for (const auto& origin_id : origin_ids) {
     // MediaDrm will unprovision |origin_id| for all security level. Passing

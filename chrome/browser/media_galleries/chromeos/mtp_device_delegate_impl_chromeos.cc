@@ -356,7 +356,8 @@ void CloseStorageAndDestroyTaskHelperOnUIThread(
 std::pair<int, base::File::Error> OpenFileDescriptor(
     const base::FilePath& file_path,
     const int flags) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   if (base::DirectoryExists(file_path))
     return std::make_pair(-1, base::File::FILE_ERROR_NOT_A_FILE);
@@ -370,7 +371,8 @@ std::pair<int, base::File::Error> OpenFileDescriptor(
 
 // Closes |file_descriptor| on a background task runner.
 void CloseFileDescriptor(const int file_descriptor) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   IGNORE_EINTR(close(file_descriptor));
 }

@@ -29,7 +29,8 @@ namespace printing {
 namespace {
 
 PrinterList EnumeratePrintersAsync() {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   scoped_refptr<PrintBackend> print_backend(
       PrintBackend::CreateInstance(nullptr));
 
@@ -45,7 +46,8 @@ base::Value FetchCapabilitiesAsync(const std::string& device_name) {
     additional_papers = GetMacCustomPaperSizes();
 #endif
 
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   scoped_refptr<PrintBackend> print_backend(
       PrintBackend::CreateInstance(nullptr));
 
@@ -65,7 +67,8 @@ base::Value FetchCapabilitiesAsync(const std::string& device_name) {
 }
 
 std::string GetDefaultPrinterAsync() {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   scoped_refptr<PrintBackend> print_backend(
       PrintBackend::CreateInstance(nullptr));
 
