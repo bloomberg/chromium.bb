@@ -368,14 +368,30 @@ void WorkerScriptFetchInitiator::DidCreateScriptLoaderOnIO(
         std::move(subresource_loader_params->appcache_loader_factory_info);
   }
 
+  // NetworkService (PlzWorker):
+  // Prepare the controller service worker info to pass to the renderer. This is
+  // only provided if NetworkService is enabled. In the non-NetworkService case,
+  // the controller is sent in SetController IPCs during the request for the
+  // shared worker script.
+  blink::mojom::ControllerServiceWorkerInfoPtr controller;
+  base::WeakPtr<ServiceWorkerObjectHost> controller_service_worker_object_host;
+  if (subresource_loader_params &&
+      subresource_loader_params->controller_service_worker_info) {
+    DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
+    controller =
+        std::move(subresource_loader_params->controller_service_worker_info);
+    controller_service_worker_object_host =
+        subresource_loader_params->controller_service_worker_object_host;
+  }
+
   base::PostTaskWithTraits(
       FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(std::move(callback),
-                     std::move(service_worker_provider_info),
-                     std::move(main_script_loader_factory),
-                     std::move(subresource_loader_factories),
-                     std::move(main_script_load_params),
-                     std::move(subresource_loader_params), success));
+      base::BindOnce(
+          std::move(callback), std::move(service_worker_provider_info),
+          std::move(main_script_loader_factory),
+          std::move(subresource_loader_factories),
+          std::move(main_script_load_params), std::move(controller),
+          std::move(controller_service_worker_object_host), success));
 }
 
 }  // namespace content

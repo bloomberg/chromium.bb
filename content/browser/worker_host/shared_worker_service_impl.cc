@@ -26,7 +26,6 @@
 #include "content/browser/worker_host/shared_worker_instance.h"
 #include "content/browser/worker_host/worker_script_fetch_initiator.h"
 #include "content/common/content_constants_internal.h"
-#include "content/common/navigation_subresource_loader_params.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -227,8 +226,8 @@ void SharedWorkerServiceImpl::CreateWorker(
               nullptr /* service_worker_provider_info */,
               {} /* main_script_loader_factory */,
               nullptr /* subresource_loader_factories */,
-              nullptr /* main_script_load_params */,
-              base::nullopt /* subresource_loader_params */);
+              nullptr /* main_script_load_params */, nullptr /* controller */,
+              nullptr /* controller_service_worker_object_host */);
 }
 
 void SharedWorkerServiceImpl::DidCreateScriptLoader(
@@ -245,7 +244,9 @@ void SharedWorkerServiceImpl::DidCreateScriptLoader(
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factories,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
-    base::Optional<SubresourceLoaderParams> subresource_loader_params,
+    blink::mojom::ControllerServiceWorkerInfoPtr controller,
+    base::WeakPtr<ServiceWorkerObjectHost>
+        controller_service_worker_object_host,
     bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
@@ -259,12 +260,13 @@ void SharedWorkerServiceImpl::DidCreateScriptLoader(
     return;
   }
 
-  StartWorker(
-      std::move(instance), std::move(host), std::move(client), process_id,
-      frame_id, message_port, std::move(service_worker_provider_info),
-      std::move(main_script_loader_factory),
-      std::move(subresource_loader_factories),
-      std::move(main_script_load_params), std::move(subresource_loader_params));
+  StartWorker(std::move(instance), std::move(host), std::move(client),
+              process_id, frame_id, message_port,
+              std::move(service_worker_provider_info),
+              std::move(main_script_loader_factory),
+              std::move(subresource_loader_factories),
+              std::move(main_script_load_params), std::move(controller),
+              std::move(controller_service_worker_object_host));
 }
 
 void SharedWorkerServiceImpl::StartWorker(
@@ -281,7 +283,9 @@ void SharedWorkerServiceImpl::StartWorker(
     std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
         subresource_loader_factories,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
-    base::Optional<SubresourceLoaderParams> subresource_loader_params) {
+    blink::mojom::ControllerServiceWorkerInfoPtr controller,
+    base::WeakPtr<ServiceWorkerObjectHost>
+        controller_service_worker_object_host) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // The host may already be gone if something forcibly terminated the worker
@@ -306,8 +310,8 @@ void SharedWorkerServiceImpl::StartWorker(
   host->Start(std::move(factory), std::move(service_worker_provider_info),
               std::move(main_script_loader_factory),
               std::move(main_script_load_params),
-              std::move(subresource_loader_factories),
-              std::move(subresource_loader_params));
+              std::move(subresource_loader_factories), std::move(controller),
+              std::move(controller_service_worker_object_host));
   host->AddClient(std::move(client), process_id, frame_id, message_port);
 }
 

@@ -32,7 +32,6 @@ class ChromeAppCacheService;
 class SharedWorkerInstance;
 class SharedWorkerHost;
 class StoragePartitionImpl;
-struct SubresourceLoaderParams;
 
 // Shared helper function
 bool IsShuttingDown(RenderProcessHost* host);
@@ -94,7 +93,9 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
           subresource_loader_factories,
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
-      base::Optional<SubresourceLoaderParams> subresource_loader_params,
+      blink::mojom::ControllerServiceWorkerInfoPtr controller,
+      base::WeakPtr<ServiceWorkerObjectHost>
+          controller_service_worker_object_host,
       bool success);
   void StartWorker(
       std::unique_ptr<SharedWorkerInstance> instance,
@@ -110,7 +111,9 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
           subresource_loader_factories,
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
-      base::Optional<SubresourceLoaderParams> subresource_loader_params);
+      blink::mojom::ControllerServiceWorkerInfoPtr controller,
+      base::WeakPtr<ServiceWorkerObjectHost>
+          controller_service_worker_object_host);
 
   // Returns nullptr if there is no such host.
   SharedWorkerHost* FindSharedWorkerHost(int process_id, int route_id);
