@@ -100,10 +100,6 @@ android_resources("chrome_app_java_resources") {
     "//chrome/android/java/res_chromium",
   ]
 
-  if (enable_vr) {
-    resource_dirs += [ "//chrome/android/java/res_vr" ]
-  }
-
   if (enable_android_night_mode) {
     resource_dirs += [ "//chrome/android/java/res_night" ]
   }
@@ -126,6 +122,16 @@ android_resources("chrome_app_java_resources") {
     "//third_party/android_media:android_media_resources",
   ]
   custom_package = "org.chromium.chrome"
+}
+
+if (enable_vr) {
+  android_resources("chrome_vr_java_resources") {
+    resource_dirs = [ "//chrome/android/java/res_vr" ]
+    deps = [
+      ":chrome_app_java_resources",
+    ]
+    custom_package = "org.chromium.chrome.vr.pub"
+  }
 }
 
 android_resources("chrome_download_java_resources") {
@@ -409,9 +415,9 @@ android_library("chrome_java") {
 
   if (enable_vr) {
     deps += [
+      ":chrome_vr_java_resources",
       "//device/vr:java",
       "//third_party/gvr-android-keyboard:kb_java",
-      "//third_party/gvr-android-sdk:gvr_common_java",
     ]
   }
   srcjar_deps += [ ":chrome_vr_android_java_enums_srcjar" ]

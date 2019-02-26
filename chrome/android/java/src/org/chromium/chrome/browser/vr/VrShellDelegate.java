@@ -827,7 +827,8 @@ public class VrShellDelegate
         };
 
         SimpleConfirmInfoBarBuilder.create(tab, listener,
-                InfoBarIdentifier.VR_FEEDBACK_INFOBAR_ANDROID, R.drawable.vr_services,
+                InfoBarIdentifier.VR_FEEDBACK_INFOBAR_ANDROID,
+                org.chromium.chrome.vr.pub.R.drawable.vr_services,
                 ContextUtils.getApplicationContext().getString(
                         org.chromium.chrome.vr.R.string.vr_shell_feedback_infobar_description),
                 ContextUtils.getApplicationContext().getString(
@@ -1020,8 +1021,9 @@ public class VrShellDelegate
             }
         };
         SimpleConfirmInfoBarBuilder.create(tab, listener,
-                InfoBarIdentifier.VR_SERVICES_UPGRADE_ANDROID, R.drawable.vr_services, infobarText,
-                buttonText, null, null, true);
+                InfoBarIdentifier.VR_SERVICES_UPGRADE_ANDROID,
+                org.chromium.chrome.vr.pub.R.drawable.vr_services, infobarText, buttonText, null,
+                null, true);
     }
 
     @VisibleForTesting

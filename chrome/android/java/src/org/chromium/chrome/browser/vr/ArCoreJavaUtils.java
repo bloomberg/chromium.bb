@@ -236,7 +236,8 @@ public class ArCoreJavaUtils implements ModuleInstallUi.FailureUiListener {
         };
         // TODO(ijamardo, https://crbug.com/838833): Add icon for AR info bar.
         SimpleConfirmInfoBarBuilder.create(tab, listener, InfoBarIdentifier.AR_CORE_UPGRADE_ANDROID,
-                R.drawable.vr_services, infobarText, buttonText, null, null, true);
+                org.chromium.chrome.vr.pub.R.drawable.vr_services, infobarText, buttonText, null,
+                null, true);
     }
 
     @CalledByNative
