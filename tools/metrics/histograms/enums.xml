@@ -5541,6 +5541,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Too many"/>
 </enum>
 
+<enum name="BooleanTopFrameOriginPresent">
+  <int value="0" label="Top Frame Origin Not Present"/>
+  <int value="1" label="Top Frame Origin Present"/>
+</enum>
+
 <enum name="BooleanTranslate">
   <int value="0" label="Not Translated"/>
   <int value="1" label="Translated"/>

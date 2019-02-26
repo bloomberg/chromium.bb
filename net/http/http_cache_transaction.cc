@@ -1056,6 +1056,10 @@ int HttpCache::Transaction::DoGetBackendComplete(int result) {
   // function can be invoked multiple times for a transaction.
   mode_ = NONE;
 
+  // Keep track of the fraction of requests that we can double-key.
+  UMA_HISTOGRAM_BOOLEAN("HttpCache.TopFrameOriginPresent",
+                        request_->top_frame_origin.has_value());
+
   if (!ShouldPassThrough()) {
     cache_key_ = cache_->GenerateCacheKey(request_);
 
