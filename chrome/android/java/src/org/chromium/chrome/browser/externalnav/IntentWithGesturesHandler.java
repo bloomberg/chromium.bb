@@ -10,6 +10,7 @@ import android.content.Intent;
 import org.chromium.base.Log;
 import org.chromium.base.SecureRandomInitializer;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.BackgroundOnlyAsyncTask;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.util.IntentUtils;
 
@@ -55,7 +56,7 @@ public class IntentWithGesturesHandler {
     }
 
     private IntentWithGesturesHandler() {
-        mSecureRandomInitializer = new AsyncTask<SecureRandom>() {
+        mSecureRandomInitializer = new BackgroundOnlyAsyncTask<SecureRandom>() {
             // SecureRandomInitializer addresses the bug in SecureRandom that "TrulyRandom"
             // warns about, so this lint warning can safely be suppressed.
             @SuppressLint("TrulyRandom")

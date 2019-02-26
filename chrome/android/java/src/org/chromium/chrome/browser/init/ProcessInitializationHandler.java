@@ -27,6 +27,9 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.BackgroundOnlyAsyncTask;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.build.BuildHooksAndroid;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AfterStartupTaskUtils;
@@ -430,14 +433,13 @@ public class ProcessInitializationHandler {
     }
 
     private void initChannelsAsync() {
-        new AsyncTask<Void>() {
+        new BackgroundOnlyAsyncTask<Void>() {
             @Override
             protected Void doInBackground() {
                 ChannelsUpdater.getInstance().updateChannels();
                 return null;
             }
-        }
-                .executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
     private void initAsyncDiskTask(final Context context) {
@@ -683,40 +685,35 @@ public class ProcessInitializationHandler {
                 ContextUtils.getApplicationContext().createDeviceProtectedStorageContext();
 
         // Must log async, as we're doing a file access.
-        new AsyncTask<Void>() {
+        PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
             // Record file sizes between 1-2560KB. Expected range is 1-2048KB, so this gives
             // us a bit of buffer. These values cannot be changed, as doing so will alter
             // histogram bucketing and confuse the dashboard.
-            private static final int MIN_CACHE_FILE_SIZE_KB = 1;
-            private static final int MAX_CACHE_FILE_SIZE_KB = 2560;
+            final int minCacheFileSizeKb = 1;
+            final int maxCacheFileSizeKb = 2560;
 
-            @Override
-            protected Void doInBackground() {
-                File codeCacheDir = cacheContext.getCodeCacheDir();
-                if (codeCacheDir == null) {
-                    return null;
-                }
-                // This filename is defined in core/java/android/view/HardwareRenderer.java,
-                // and has been located in the codeCacheDir since Android M.
-                File cacheFile = new File(codeCacheDir, "com.android.opengl.shaders_cache");
-                if (!cacheFile.exists()) {
-                    return null;
-                }
-                long cacheFileSizeKb = ConversionUtils.bytesToKilobytes(cacheFile.length());
-                // Clamp size to [minFileSizeKb, maxFileSizeKb). This also guarantees that the
-                // int-cast below is safe.
-                if (cacheFileSizeKb < MIN_CACHE_FILE_SIZE_KB) {
-                    cacheFileSizeKb = MIN_CACHE_FILE_SIZE_KB;
-                }
-                if (cacheFileSizeKb >= MAX_CACHE_FILE_SIZE_KB) {
-                    cacheFileSizeKb = MAX_CACHE_FILE_SIZE_KB - 1;
-                }
-                String histogramName = "Memory.Experimental.Browser.EGLShaderCacheSize.Android";
-                RecordHistogram.recordCustomCountHistogram(histogramName, (int) cacheFileSizeKb,
-                        MIN_CACHE_FILE_SIZE_KB, MAX_CACHE_FILE_SIZE_KB, 50);
-                return null;
+            File codeCacheDir = cacheContext.getCodeCacheDir();
+            if (codeCacheDir == null) {
+                return;
             }
-        }
-                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            // This filename is defined in core/java/android/view/HardwareRenderer.java,
+            // and has been located in the codeCacheDir since Android M.
+            File cacheFile = new File(codeCacheDir, "com.android.opengl.shaders_cache");
+            if (!cacheFile.exists()) {
+                return;
+            }
+            long cacheFileSizeKb = ConversionUtils.bytesToKilobytes(cacheFile.length());
+            // Clamp size to [minFileSizeKb, maxFileSizeKb). This also guarantees that the
+            // int-cast below is safe.
+            if (cacheFileSizeKb < minCacheFileSizeKb) {
+                cacheFileSizeKb = minCacheFileSizeKb;
+            }
+            if (cacheFileSizeKb >= maxCacheFileSizeKb) {
+                cacheFileSizeKb = maxCacheFileSizeKb - 1;
+            }
+            String histogramName = "Memory.Experimental.Browser.EGLShaderCacheSize.Android";
+            RecordHistogram.recordCustomCountHistogram(histogramName, (int) cacheFileSizeKb,
+                    minCacheFileSizeKb, maxCacheFileSizeKb, 50);
+        });
     }
 }

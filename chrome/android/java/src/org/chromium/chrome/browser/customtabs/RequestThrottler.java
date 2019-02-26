@@ -13,7 +13,8 @@ import android.text.format.DateUtils;
 import android.util.SparseArray;
 
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -202,14 +203,8 @@ class RequestThrottler {
     static void loadInBackground(final Context context) {
         boolean alreadyDone = !sAccessedSharedPreferences.compareAndSet(false, true);
         if (alreadyDone) return;
-        new AsyncTask<Void>() {
-            @Override
-            protected Void doInBackground() {
-                context.getSharedPreferences(PREFERENCES_NAME, 0).edit();
-                return null;
-            }
-        }
-                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK,
+                () -> { context.getSharedPreferences(PREFERENCES_NAME, 0).edit(); });
     }
 
     /** Removes all the UIDs that haven't been seen since at least {@link FORGET_AFTER_MS}. */

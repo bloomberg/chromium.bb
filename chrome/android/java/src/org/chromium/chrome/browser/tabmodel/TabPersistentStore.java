@@ -26,7 +26,9 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.BackgroundOnlyAsyncTask;
 import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
@@ -461,16 +463,11 @@ public class TabPersistentStore extends TabPersister {
         }
 
         // Restore the tabs from the second activity asynchronously.
-        new AsyncTask<Void>() {
-            @Override
-            protected Void doInBackground() {
-                mMergeTabCount = mTabsToRestore.size();
-                mRestoreMergedTabsStartTime = SystemClock.uptimeMillis();
-                restoreTabs(false);
-                return null;
-            }
-        }
-                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
+            mMergeTabCount = mTabsToRestore.size();
+            mRestoreMergedTabsStartTime = SystemClock.uptimeMillis();
+            restoreTabs(false);
+        });
     }
 
     /**
@@ -1292,7 +1289,7 @@ public class TabPersistentStore extends TabPersister {
      * @param file Name of file under the state directory to be deleted.
      */
     private void deleteFileAsync(final String file) {
-        new AsyncTask<Void>() {
+        new BackgroundOnlyAsyncTask<Void>() {
             @Override
             protected Void doInBackground() {
                 File stateFile = new File(getStateDirectory(), file);
@@ -1308,8 +1305,7 @@ public class TabPersistentStore extends TabPersister {
                 }
                 return null;
             }
-        }
-                .executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
         // TODO(twellington): delete tab files using the thread pool rather than the serial
         // executor.
     }
@@ -1394,7 +1390,7 @@ public class TabPersistentStore extends TabPersister {
 
     private AsyncTask<DataInputStream> startFetchTabListTask(
             Executor executor, final String stateFileName) {
-        return new AsyncTask<DataInputStream>() {
+        return new BackgroundOnlyAsyncTask<DataInputStream>() {
             @Override
             protected DataInputStream doInBackground() {
                 Log.i(TAG, "Starting to fetch tab list for " + stateFileName);
@@ -1423,14 +1419,13 @@ public class TabPersistentStore extends TabPersister {
                 Log.i(TAG, "Finished fetching tab list.");
                 return new DataInputStream(new ByteArrayInputStream(data));
             }
-        }
-                .executeOnExecutor(executor);
+        }.executeOnExecutor(executor);
     }
 
     private void startPrefetchActiveTabTask(Executor executor) {
         final int activeTabId = mPreferences.getInt(PREF_ACTIVE_TAB_ID, Tab.INVALID_TAB_ID);
         if (activeTabId == Tab.INVALID_TAB_ID) return;
-        mPrefetchActiveTabTask = new AsyncTask<TabState>() {
+        mPrefetchActiveTabTask = new BackgroundOnlyAsyncTask<TabState>() {
             @Override
             protected TabState doInBackground() {
                 return TabState.restoreTabState(getStateDirectory(), activeTabId);

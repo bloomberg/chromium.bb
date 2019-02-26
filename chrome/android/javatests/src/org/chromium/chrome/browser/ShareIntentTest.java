@@ -18,7 +18,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.share.ShareHelper;
@@ -66,25 +67,20 @@ public class ShareIntentTest {
         @Override
         public void startActivity(Intent intent) {
             final Uri uri = intent.getClipData().getItemAt(0).getUri();
-            new AsyncTask<Void>() {
-                @Override
-                protected Void doInBackground() {
-                    ChromeFileProvider provider = new ChromeFileProvider();
-                    ParcelFileDescriptor file = null;
-                    try {
-                        file = provider.openFile(uri, "r");
-                        if (file != null) file.close();
-                    } catch (IOException e) {
-                        assert false : "Error while opening the file";
-                    }
-                    synchronized (mLock) {
-                        mCheckCompleted = true;
-                        mLock.notify();
-                    }
-                    return null;
+            PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
+                ChromeFileProvider provider = new ChromeFileProvider();
+                ParcelFileDescriptor file = null;
+                try {
+                    file = provider.openFile(uri, "r");
+                    if (file != null) file.close();
+                } catch (IOException e) {
+                    assert false : "Error while opening the file";
                 }
-            }
-                    .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                synchronized (mLock) {
+                    mCheckCompleted = true;
+                    mLock.notify();
+                }
+            });
         }
 
         /**

@@ -8,7 +8,8 @@ import android.graphics.Bitmap;
 import android.util.Log;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,7 +40,7 @@ public class DefaultVideoPosterRequestHandler {
                 closeOutputStream(outputStream);
                 return;
             }
-            AsyncTask.THREAD_POOL_EXECUTOR.execute(() -> {
+            PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
                 try {
                     defaultVideoPoster.compress(Bitmap.CompressFormat.PNG, 100,
                             outputStream);

@@ -18,6 +18,7 @@ import org.chromium.base.StreamUtil;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.BackgroundOnlyAsyncTask;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
@@ -141,7 +142,7 @@ public class CustomTabTabPersistencePolicy implements TabPersistencePolicy {
 
     @Override
     public boolean performInitialization(Executor executor) {
-        mInitializationTask = new AsyncTask<Void>() {
+        mInitializationTask = new BackgroundOnlyAsyncTask<Void>() {
             @Override
             protected Void doInBackground() {
                 File stateDir = getOrCreateStateDirectory();

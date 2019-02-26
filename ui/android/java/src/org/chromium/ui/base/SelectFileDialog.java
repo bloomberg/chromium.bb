@@ -29,6 +29,8 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.ui.ContactsPickerListener;
 import org.chromium.ui.PhotoPickerListener;
 import org.chromium.ui.R;
@@ -765,24 +767,21 @@ public class SelectFileDialog
      * Clears all captured camera files.
      */
     public static void clearCapturedCameraFiles() {
-        AsyncTask.THREAD_POOL_EXECUTOR.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    File path = UiUtils.getDirectoryForImageCapture(
-                            ContextUtils.getApplicationContext());
-                    if (!path.isDirectory()) return;
-                    File[] files = path.listFiles();
-                    if (files == null) return;
-                    long now = System.currentTimeMillis();
-                    for (File file : files) {
-                        if (now - file.lastModified() > DURATION_BEFORE_FILE_CLEAN_UP_IN_MILLIS) {
-                            if (!file.delete()) Log.e(TAG, "Failed to delete: " + file);
-                        }
+        PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
+            try {
+                File path =
+                        UiUtils.getDirectoryForImageCapture(ContextUtils.getApplicationContext());
+                if (!path.isDirectory()) return;
+                File[] files = path.listFiles();
+                if (files == null) return;
+                long now = System.currentTimeMillis();
+                for (File file : files) {
+                    if (now - file.lastModified() > DURATION_BEFORE_FILE_CLEAN_UP_IN_MILLIS) {
+                        if (!file.delete()) Log.e(TAG, "Failed to delete: " + file);
                     }
-                } catch (IOException e) {
-                    Log.w(TAG, "Failed to delete captured camera files.", e);
                 }
+            } catch (IOException e) {
+                Log.w(TAG, "Failed to delete captured camera files.", e);
             }
         });
     }

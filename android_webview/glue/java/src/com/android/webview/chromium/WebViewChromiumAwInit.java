@@ -47,8 +47,8 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.net.NetworkChangeNotifier;
 
@@ -449,7 +449,7 @@ public class WebViewChromiumAwInit {
     // If a certain app is installed, log field trials as they become active, for debugging
     // purposes. Check for the app asyncronously because PackageManager is slow.
     private static void maybeLogActiveTrials(final Context ctx) {
-        AsyncTask.THREAD_POOL_EXECUTOR.execute(() -> {
+        PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
             try {
                 // This must match the package name in:
                 // android_webview/tools/webview_log_verbosifier/AndroidManifest.xml

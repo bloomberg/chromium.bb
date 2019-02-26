@@ -21,6 +21,7 @@ import org.chromium.base.StreamUtil;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.BackgroundOnlyAsyncTask;
 import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.browser.widget.ThumbnailCacheEntry.ContentId;
 import org.chromium.chrome.browser.widget.ThumbnailCacheEntry.ThumbnailEntry;
@@ -86,7 +87,7 @@ public class ThumbnailDiskStorage implements ThumbnailGeneratorCallback {
     // Whether or not this class has been destroyed and should not be used.
     private boolean mDestroyed;
 
-    private class InitTask extends AsyncTask<Void> {
+    private class InitTask extends BackgroundOnlyAsyncTask<Void> {
         @Override
         protected Void doInBackground() {
             initDiskCache();
@@ -94,7 +95,7 @@ public class ThumbnailDiskStorage implements ThumbnailGeneratorCallback {
         }
     }
 
-    private class ClearTask extends AsyncTask<Void> {
+    private class ClearTask extends BackgroundOnlyAsyncTask<Void> {
         @Override
         protected Void doInBackground() {
             clearDiskCache();
@@ -106,7 +107,7 @@ public class ThumbnailDiskStorage implements ThumbnailGeneratorCallback {
      * Writes to disk cache.
      */
     @VisibleForTesting
-    class CacheThumbnailTask extends AsyncTask<Void> {
+    class CacheThumbnailTask extends BackgroundOnlyAsyncTask<Void> {
         private final String mContentId;
         private final Bitmap mBitmap;
         private final int mIconSizePx;
@@ -157,7 +158,7 @@ public class ThumbnailDiskStorage implements ThumbnailGeneratorCallback {
     /**
      * Removes thumbnails with the given contentId from disk cache.
      */
-    private class RemoveThumbnailTask extends AsyncTask<Void> {
+    private class RemoveThumbnailTask extends BackgroundOnlyAsyncTask<Void> {
         private final String mContentId;
 
         public RemoveThumbnailTask(String contentId) {

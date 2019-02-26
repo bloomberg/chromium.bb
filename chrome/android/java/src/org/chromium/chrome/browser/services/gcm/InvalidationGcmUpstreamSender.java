@@ -18,8 +18,8 @@ import com.google.ipc.invalidation.ticl.android2.channel.GcmUpstreamSenderServic
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.init.ProcessInitializationHandler;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.OAuth2TokenService;
@@ -50,9 +50,6 @@ public class InvalidationGcmUpstreamSender extends GcmUpstreamSenderService {
         });
     }
 
-    // Incorrectly infers that this is called on a worker thread because of AsyncTask doInBackground
-    // overriding.
-    @SuppressWarnings("WrongThread")
     @MainThread
     private void doDeliverMessage(
             final Context applicationContext, final String to, final Bundle data) {
@@ -73,14 +70,9 @@ public class InvalidationGcmUpstreamSender extends GcmUpstreamSenderService {
                 new OAuth2TokenService.GetAccessTokenCallback() {
                     @Override
                     public void onGetTokenSuccess(final String token) {
-                        new AsyncTask<Void>() {
-                            @Override
-                            protected Void doInBackground() {
-                                sendUpstreamMessage(to, data, token, applicationContext);
-                                return null;
-                            }
-                        }
-                                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                        PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
+                            sendUpstreamMessage(to, data, token, applicationContext);
+                        });
                     }
 
                     @Override
@@ -92,7 +84,7 @@ public class InvalidationGcmUpstreamSender extends GcmUpstreamSenderService {
     }
 
     /*
-     * This function runs on a thread from the AsyncTask.THREAD_POOL_EXECUTOR.
+     * This function runs on a thread pool executor thread.
      */
     private void sendUpstreamMessage(String to, Bundle data, String token, Context context) {
         // Add the OAuth2 token to the bundle. The token should have the prefix Bearer added to it.

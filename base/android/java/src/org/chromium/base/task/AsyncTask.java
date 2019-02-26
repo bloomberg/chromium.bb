@@ -9,6 +9,7 @@ import android.support.annotation.IntDef;
 import android.support.annotation.MainThread;
 import android.support.annotation.WorkerThread;
 
+import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.DoNotInline;
@@ -33,14 +34,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public abstract class AsyncTask<Result> {
     private static final String TAG = "AsyncTask";
 
-    private static TaskTraits sLowPriorityTraits =
-            new TaskTraits().taskPriority(TaskPriority.LOWEST).mayBlock(true);
     /**
      * An {@link Executor} that can be used to execute tasks in parallel.
      * We use the lowest task priority, and mayBlock = true since any user of this could block.
      */
     public static final Executor THREAD_POOL_EXECUTOR =
-            (Runnable r) -> PostTask.postTask(sLowPriorityTraits, r);
+            (Runnable r) -> PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, r);
 
     /**
      * An {@link Executor} that executes tasks one at a time in serial
@@ -126,7 +125,12 @@ public abstract class AsyncTask<Result> {
     }
 
     private void postResult(Result result) {
-        ThreadUtils.postOnUiThread(() -> { finish(result); });
+        // We check if this task is of a type which does not require post-execution.
+        if (this instanceof BackgroundOnlyAsyncTask) {
+            mStatus = Status.FINISHED;
+        } else {
+            ThreadUtils.postOnUiThread(() -> { finish(result); });
+        }
     }
 
     /**
@@ -164,6 +168,9 @@ public abstract class AsyncTask<Result> {
      *
      * <p>This method won't be invoked if the task was cancelled.</p>
      *
+     * <p> Must be overridden by subclasses. If a subclass doesn't need
+     * post-execution, is should extend BackgroundOnlyAsyncTask instead.
+     *
      * @param result The result of the operation computed by {@link #doInBackground}.
      *
      * @see #onPreExecute
@@ -172,7 +179,7 @@ public abstract class AsyncTask<Result> {
      */
     @SuppressWarnings({"UnusedDeclaration"})
     @MainThread
-    protected void onPostExecute(Result result) {}
+    protected abstract void onPostExecute(Result result);
 
     /**
      * <p>Runs on the UI thread after {@link #cancel(boolean)} is invoked and
@@ -392,7 +399,7 @@ public abstract class AsyncTask<Result> {
             try {
                 postResultIfNotInvoked(get());
             } catch (InterruptedException e) {
-                android.util.Log.w(TAG, e);
+                Log.w(TAG, e.toString());
             } catch (ExecutionException e) {
                 throw new RuntimeException(
                         "An error occurred while executing doInBackground()", e.getCause());

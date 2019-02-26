@@ -24,7 +24,8 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.download.DownloadManagerService;
@@ -137,22 +138,15 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
             }
 
             // Delete the files associated with the download items (if necessary) using a single
-            // AsyncTask that batch deletes all of the files. The thread pool has a finite
+            // task that batch deletes all of the files. The thread pool has a finite
             // number of tasks that can be queued at once. If too many tasks are queued an
             // exception is thrown. See crbug.com/643811.
             // On Android M, Android DownloadManager may not delete the actual file, so we need to
             // delete the files here.
             if (filesToDelete.size() != 0) {
-                new AsyncTask<Void>() {
-                    @Override
-                    public Void doInBackground() {
-                        FileUtils.batchDeleteFiles(filesToDelete);
-                        return null;
-                    }
-                }
-                        .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK,
+                        () -> { FileUtils.batchDeleteFiles(filesToDelete); });
             }
-
             RecordUserAction.record("Android.DownloadManager.Delete");
         }
     }

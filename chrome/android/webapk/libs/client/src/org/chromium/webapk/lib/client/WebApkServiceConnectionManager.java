@@ -13,6 +13,8 @@ import android.os.IBinder;
 import android.util.Log;
 
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -155,18 +157,13 @@ public class WebApkServiceConnectionManager {
                 mConnections.values().toArray(new Connection[mConnections.size()]);
         mConnections.clear();
 
-        new AsyncTask<Void>() {
-            @Override
-            protected final Void doInBackground() {
-                for (Connection connection : values) {
-                    if (connection.getService() != null) {
-                        appContext.unbindService(connection);
-                    }
+        PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
+            for (Connection connection : values) {
+                if (connection.getService() != null) {
+                    appContext.unbindService(connection);
                 }
-                return null;
             }
-        }
-                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        });
     }
 
     public WebApkServiceConnectionManager(String category, String action) {

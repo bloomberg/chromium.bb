@@ -29,6 +29,7 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.BackgroundOnlyAsyncTask;
 import org.chromium.components.minidump_uploader.CrashFileManager;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.ChildProcessCreationParams;
@@ -228,7 +229,7 @@ public final class AwBrowserProcess {
      * minidumps, if we don't, delete them.
      */
     public static void handleMinidumps(final boolean userApproved) {
-        new AsyncTask<Void>() {
+        new BackgroundOnlyAsyncTask<Void>() {
             @Override
             protected Void doInBackground() {
                 final Context appContext = ContextUtils.getApplicationContext();
@@ -309,8 +310,7 @@ public final class AwBrowserProcess {
             }
             // To avoid any potential synchronization issues we post all minidump-copying actions to
             // the same thread to be run serially.
-        }
-                .executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+        }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
     // Do not instantiate this class.

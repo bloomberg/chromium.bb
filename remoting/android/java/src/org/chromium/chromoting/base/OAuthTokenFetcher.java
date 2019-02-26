@@ -14,7 +14,6 @@ import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.auth.UserRecoverableAuthException;
 
-import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskPriority;
 import org.chromium.base.task.TaskRunner;
@@ -102,27 +101,23 @@ public class OAuthTokenFetcher {
     }
 
     private void fetchImpl(final String expiredToken) {
-        new AsyncTask<Void>() {
-            @Override
-            protected Void doInBackground() {
-                try {
-                    if (expiredToken != null) {
-                        GoogleAuthUtil.clearToken(mContext, expiredToken);
-                    }
-
-                    Account account = new Account(mAccountName, GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE);
-                    String token = GoogleAuthUtil.getToken(mContext, account, mTokenScope);
-                    handleTokenReceived(token);
-                } catch (IOException ioException) {
-                    handleError(Error.NETWORK);
-                } catch (UserRecoverableAuthException recoverableException) {
-                    handleRecoverableException(recoverableException);
-                } catch (GoogleAuthException fatalException) {
-                    handleError(Error.UNEXPECTED);
+        TASK_RUNNER.postTask(() -> {
+            try {
+                if (expiredToken != null) {
+                    GoogleAuthUtil.clearToken(mContext, expiredToken);
                 }
-                return null;
+
+                Account account = new Account(mAccountName, GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE);
+                String token = GoogleAuthUtil.getToken(mContext, account, mTokenScope);
+                handleTokenReceived(token);
+            } catch (IOException ioException) {
+                handleError(Error.NETWORK);
+            } catch (UserRecoverableAuthException recoverableException) {
+                handleRecoverableException(recoverableException);
+            } catch (GoogleAuthException fatalException) {
+                handleError(Error.UNEXPECTED);
             }
-        }.executeOnTaskRunner(TASK_RUNNER);
+        });
     }
 
     private void handleTokenReceived(final String token) {
