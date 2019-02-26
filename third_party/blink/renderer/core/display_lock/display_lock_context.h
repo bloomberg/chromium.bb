@@ -151,6 +151,8 @@ class CORE_EXPORT DisplayLockContext final
   // right document's view.
   void DidMoveToNewDocument(Document& old_document);
 
+  void AddToWhitespaceReattachSet(Element& element);
+
   // LifecycleNotificationObserver overrides.
   void WillStartLifecycleUpdate() override;
   void DidFinishLifecycleUpdate() override;
@@ -189,6 +191,10 @@ class CORE_EXPORT DisplayLockContext final
   void StartCommit();
   // Initiate an update.
   void StartUpdateIfNeeded();
+
+  // Marks ancestors of elements in |whitespace_reattach_set_| with
+  // ChildNeedsReattachLayoutTree and clears the set.
+  void MarkElementsForWhitespaceReattachment();
 
   // The following functions propagate dirty bits from the locked element up to
   // the ancestors in order to be reached. They return true if the element or
@@ -251,6 +257,15 @@ class CORE_EXPORT DisplayLockContext final
   Member<ScriptPromiseResolver> acquire_resolver_;
   WeakMember<Element> element_;
   WeakMember<Document> document_;
+
+  // See StyleEngine's |whitespace_reattach_set_|.
+  // Set of elements that had at least one rendered children removed
+  // since its last lifecycle update. For such elements that are located
+  // in a locked subtree, we save it here instead of the global set in
+  // StyleEngine because we don't want to accidentally mark elements
+  // in a locked subtree for layout tree reattachment before we did
+  // style recalc on them.
+  HeapHashSet<Member<Element>> whitespace_reattach_set_;
 
   StateChangeHelper state_;
   LayoutRect pending_frame_rect_;

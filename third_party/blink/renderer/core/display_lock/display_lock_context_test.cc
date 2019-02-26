@@ -279,6 +279,89 @@ TEST_F(DisplayLockContextTest, LockedElementIsNotSearchableViaFindInPage) {
   client.Reset();
 }
 
+TEST_F(DisplayLockContextTest, CallUpdateStyleAndLayoutAfterChange) {
+  ResizeAndFocus();
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+    #container {
+      width: 100px;
+      height: 100px;
+      contain: content;
+    }
+    </style>
+    <body><div id="container"><b>t</b>esting</div></body>
+  )HTML");
+  auto* element = GetDocument().getElementById("container");
+  auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
+  {
+    ScriptState::Scope scope(script_state);
+    element->getDisplayLockForBindings()->acquire(script_state, nullptr);
+  }
+  UpdateAllLifecyclePhasesForTest();
+
+  // Sanity checks to ensure the element is locked.
+  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldStyle());
+  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout());
+  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint());
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
+
+  EXPECT_FALSE(element->NeedsStyleRecalc());
+  EXPECT_FALSE(element->ChildNeedsStyleRecalc());
+  EXPECT_FALSE(element->NeedsReattachLayoutTree());
+  EXPECT_FALSE(element->ChildNeedsReattachLayoutTree());
+
+  // Testing whitespace reattachment, shouldn't mark for reattachment.
+  element->firstChild()->remove();
+
+  EXPECT_FALSE(element->NeedsStyleRecalc());
+  EXPECT_FALSE(element->ChildNeedsStyleRecalc());
+  EXPECT_FALSE(element->NeedsReattachLayoutTree());
+  EXPECT_FALSE(element->ChildNeedsReattachLayoutTree());
+
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+
+  EXPECT_FALSE(element->NeedsStyleRecalc());
+  EXPECT_FALSE(element->ChildNeedsStyleRecalc());
+  EXPECT_FALSE(element->NeedsReattachLayoutTree());
+  EXPECT_FALSE(element->ChildNeedsReattachLayoutTree());
+
+  // Testing whitespace reattachment + dirty style.
+  element->SetInnerHTMLFromString("<div>something</div>");
+
+  EXPECT_FALSE(element->NeedsStyleRecalc());
+  EXPECT_TRUE(element->ChildNeedsStyleRecalc());
+  EXPECT_FALSE(element->NeedsReattachLayoutTree());
+  EXPECT_FALSE(element->ChildNeedsReattachLayoutTree());
+
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+
+  EXPECT_FALSE(element->NeedsStyleRecalc());
+  EXPECT_TRUE(element->ChildNeedsStyleRecalc());
+  EXPECT_FALSE(element->NeedsReattachLayoutTree());
+  EXPECT_FALSE(element->ChildNeedsReattachLayoutTree());
+
+  {
+    ScriptState::Scope scope(script_state);
+    element->getDisplayLockForBindings()->commit(script_state);
+  }
+
+  EXPECT_FALSE(element->NeedsStyleRecalc());
+  EXPECT_TRUE(element->ChildNeedsStyleRecalc());
+  EXPECT_FALSE(element->NeedsReattachLayoutTree());
+  EXPECT_FALSE(element->ChildNeedsReattachLayoutTree());
+
+  // Simulating style recalc happening, will mark for reattachment.
+  element->ClearChildNeedsStyleRecalc();
+  element->firstChild()->ClearNeedsStyleRecalc();
+  element->GetDisplayLockContext()->DidStyle();
+
+  EXPECT_FALSE(element->NeedsStyleRecalc());
+  EXPECT_FALSE(element->ChildNeedsStyleRecalc());
+  EXPECT_FALSE(element->NeedsReattachLayoutTree());
+  EXPECT_TRUE(element->ChildNeedsReattachLayoutTree());
+}
+
 TEST_F(DisplayLockContextTest, LockedElementAndDescendantsAreNotFocusable) {
   ResizeAndFocus();
   SetHtmlInnerHTML(R"HTML(

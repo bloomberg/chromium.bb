@@ -2442,6 +2442,7 @@ StyleRecalcChange Element::RecalcOwnStyle(const StyleRecalcChange change) {
 void Element::RebuildLayoutTree(WhitespaceAttacher& whitespace_attacher) {
   DCHECK(InActiveDocument());
   DCHECK(parentNode());
+  DCHECK(!StyleRecalcBlockedByDisplayLock());
 
   if (NeedsReattachLayoutTree()) {
     AttachContext reattach_context;

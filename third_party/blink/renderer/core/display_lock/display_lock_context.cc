@@ -78,6 +78,7 @@ void DisplayLockContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(acquire_resolver_);
   visitor->Trace(element_);
   visitor->Trace(document_);
+  visitor->Trace(whitespace_reattach_set_);
   ScriptWrappable::Trace(visitor);
   ActiveScriptWrappable::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
@@ -294,6 +295,7 @@ void DisplayLockContext::DidStyle() {
     return;
   }
 
+  MarkElementsForWhitespaceReattachment();
   // We must have "contain: style layout" for display locking.
   // Note that we should also have this containment even if we're forcing
   // this update to happen. Otherwise, proceeding with layout may cause
@@ -512,6 +514,22 @@ std::unique_ptr<DisplayLockBudget> DisplayLockContext::CreateNewBudget() {
   }
   NOTREACHED();
   return nullptr;
+}
+
+void DisplayLockContext::AddToWhitespaceReattachSet(Element& element) {
+  whitespace_reattach_set_.insert(&element);
+}
+
+void DisplayLockContext::MarkElementsForWhitespaceReattachment() {
+  for (auto element : whitespace_reattach_set_) {
+    if (!element || element->NeedsReattachLayoutTree() ||
+        !element->GetLayoutObject())
+      continue;
+
+    if (Node* first_child = LayoutTreeBuilderTraversal::FirstChild(*element))
+      first_child->MarkAncestorsWithChildNeedsReattachLayoutTree();
+  }
+  whitespace_reattach_set_.clear();
 }
 
 bool DisplayLockContext::MarkAncestorsForStyleRecalcIfNeeded() {
