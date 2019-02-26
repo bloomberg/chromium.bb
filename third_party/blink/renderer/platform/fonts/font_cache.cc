@@ -372,7 +372,7 @@ void FontCache::AddClient(FontCacheClient* client) {
   font_cache_clients_->insert(client);
 }
 
-unsigned short FontCache::Generation() {
+uint16_t FontCache::Generation() {
   return generation_;
 }
 

@@ -149,7 +149,7 @@ class PLATFORM_EXPORT FontCache {
 
   void AddClient(FontCacheClient*);
 
-  unsigned short Generation();
+  uint16_t Generation();
   void Invalidate();
 
   sk_sp<SkFontMgr> FontManager() { return font_manager_; }
@@ -332,7 +332,7 @@ class PLATFORM_EXPORT FontCache {
   static float device_scale_factor_;
 #endif
 
-  unsigned short generation_ = 0;
+  uint16_t generation_ = 0;
   bool platform_init_ = false;
   Persistent<HeapHashSet<WeakMember<FontCacheClient>>> font_cache_clients_;
   FontPlatformDataCache font_platform_data_cache_;
