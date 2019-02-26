@@ -267,7 +267,8 @@ void HidServiceLinux::OnPathOpenError(const std::string& device_path,
 // static
 void HidServiceLinux::OpenOnBlockingThread(
     std::unique_ptr<ConnectParams> params) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   scoped_refptr<base::SequencedTaskRunner> task_runner = params->task_runner;
 
   base::FilePath device_path(params->device_info->device_node());

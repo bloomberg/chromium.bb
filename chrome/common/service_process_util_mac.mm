@@ -62,7 +62,8 @@ NSString* GetServiceProcessLaunchDSocketKey() {
 
 bool RemoveFromLaunchd() {
   // We're killing a file.
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   base::ScopedCFTypeRef<CFStringRef> name(CopyServiceProcessLaunchDName());
   return Launchd::GetInstance()->DeletePlist(Launchd::User,
                                              Launchd::Agent,
@@ -273,7 +274,8 @@ CFDictionaryRef CreateServiceProcessLaunchdPlist(base::CommandLine* cmd_line,
 // auto launched on the next user login.
 bool ServiceProcessState::AddToAutoRun() {
   // We're creating directories and writing a file.
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   DCHECK(autorun_command_line_.get());
   base::ScopedCFTypeRef<CFStringRef> name(CopyServiceProcessLaunchDName());
   base::ScopedCFTypeRef<CFDictionaryRef> plist(

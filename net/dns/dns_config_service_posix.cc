@@ -144,7 +144,8 @@ bool IsVpnPresent() {
 #endif  // defined(OS_ANDROID)
 
 ConfigParsePosixResult ReadDnsConfig(DnsConfig* dns_config) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   dns_config->unhandled_options = false;
 #if !defined(OS_ANDROID)
   ConfigParsePosixResult result;

@@ -90,7 +90,8 @@ base::Optional<int64_t> GetHardFaultCountForChromeProcesses() {
   //       ~100s of processes and ~1000s of threads.
   std::vector<uint8_t> buffer(32 * 1024);
 
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   {
     for (size_t tries = 0; tries < 3; ++tries) {
       ULONG return_length = 0;

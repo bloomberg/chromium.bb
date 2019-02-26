@@ -174,7 +174,8 @@ void BluetoothSocketWin::DoConnect(
     const base::Closure& success_callback,
     const ErrorCompletionCallback& error_callback) {
   DCHECK(socket_thread()->task_runner()->RunsTasksInCurrentSequence());
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   if (tcp_socket()) {
     error_callback.Run(kSocketAlreadyConnected);

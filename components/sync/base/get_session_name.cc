@@ -32,7 +32,8 @@
 namespace syncer {
 
 std::string GetSessionNameBlocking() {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   std::string session_name;
 #if defined(OS_CHROMEOS)
   switch (chromeos::GetDeviceType()) {

@@ -502,7 +502,8 @@ int CertVerifyProc::Verify(X509Certificate* cert,
   // threads are not starved or deadlocked, the base::ScopedBlockingCall below
   // increments the thread pool capacity when this method takes too much time to
   // run.
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   verify_result->Reset();
   verify_result->verified_cert = cert;

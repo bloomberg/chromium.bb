@@ -32,7 +32,8 @@ void SetCreatedLoginItemPrefOnUIThread() {
 }
 
 void DisableLaunchOnStartupOnWorkerThread() {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   // If the LoginItem is not hidden, it means it's user created, so don't
   // delete it.
   bool is_hidden = false;
@@ -41,7 +42,8 @@ void DisableLaunchOnStartupOnWorkerThread() {
 }
 
 void CheckForUserRemovedLoginItemOnWorkerThread() {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   if (!base::mac::CheckLoginItemStatus(NULL)) {
     // There's no LoginItem, so set the kUserRemovedLoginItem pref.
     base::PostTaskWithTraits(
@@ -51,7 +53,8 @@ void CheckForUserRemovedLoginItemOnWorkerThread() {
 }
 
 void EnableLaunchOnStartupOnWorkerThread(bool need_migration) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   if (need_migration) {
     // This is the first time running Chrome since the kChromeCreatedLoginItem
     // pref was added. Initialize the status of this pref based on whether

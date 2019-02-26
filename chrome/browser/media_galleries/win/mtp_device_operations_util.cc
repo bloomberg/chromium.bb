@@ -32,7 +32,8 @@ namespace {
 // application that communicates with the device.
 bool GetClientInformation(
     Microsoft::WRL::ComPtr<IPortableDeviceValues>* client_info) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   DCHECK(client_info);
   HRESULT hr = ::CoCreateInstance(__uuidof(PortableDeviceValues), NULL,
                                   CLSCTX_INPROC_SERVER,
@@ -58,7 +59,8 @@ bool GetClientInformation(
 // the IPortableDeviceContent interface. On failure, returns NULL.
 Microsoft::WRL::ComPtr<IPortableDeviceContent> GetDeviceContent(
     IPortableDevice* device) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   DCHECK(device);
   Microsoft::WRL::ComPtr<IPortableDeviceContent> content;
   if (SUCCEEDED(device->Content(content.GetAddressOf())))
@@ -72,7 +74,8 @@ Microsoft::WRL::ComPtr<IPortableDeviceContent> GetDeviceContent(
 Microsoft::WRL::ComPtr<IEnumPortableDeviceObjectIDs> GetDeviceObjectEnumerator(
     IPortableDevice* device,
     const base::string16& parent_id) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   DCHECK(device);
   DCHECK(!parent_id.empty());
   Microsoft::WRL::ComPtr<IPortableDeviceContent> content =
@@ -175,7 +178,8 @@ bool GetObjectDetails(IPortableDevice* device,
                       bool* is_directory,
                       int64_t* size,
                       base::Time* last_modified_time) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   DCHECK(device);
   DCHECK(!object_id.empty());
   DCHECK(name);
@@ -241,7 +245,8 @@ bool GetObjectDetails(IPortableDevice* device,
 // On success, returns true and fills in |entry|.
 MTPDeviceObjectEntry GetMTPDeviceObjectEntry(IPortableDevice* device,
                                              const base::string16& object_id) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   DCHECK(device);
   DCHECK(!object_id.empty());
   base::string16 name;
@@ -265,7 +270,8 @@ bool GetMTPDeviceObjectEntries(IPortableDevice* device,
                                const base::string16& directory_object_id,
                                const base::string16& object_name,
                                MTPDeviceObjectEntries* object_entries) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   DCHECK(device);
   DCHECK(!directory_object_id.empty());
   DCHECK(object_entries);
@@ -306,7 +312,8 @@ bool GetMTPDeviceObjectEntries(IPortableDevice* device,
 
 Microsoft::WRL::ComPtr<IPortableDevice> OpenDevice(
     const base::string16& pnp_device_id) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   DCHECK(!pnp_device_id.empty());
   Microsoft::WRL::ComPtr<IPortableDeviceValues> client_info;
   if (!GetClientInformation(&client_info))
@@ -356,7 +363,8 @@ HRESULT GetFileStreamForObject(IPortableDevice* device,
                                const base::string16& file_object_id,
                                IStream** file_stream,
                                DWORD* optimal_transfer_size) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   DCHECK(device);
   DCHECK(!file_object_id.empty());
   Microsoft::WRL::ComPtr<IPortableDeviceContent> content =
@@ -376,7 +384,8 @@ HRESULT GetFileStreamForObject(IPortableDevice* device,
 DWORD CopyDataChunkToLocalFile(IStream* stream,
                                const base::FilePath& local_path,
                                size_t optimal_transfer_size) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   DCHECK(stream);
   DCHECK(!local_path.empty());
   if (optimal_transfer_size == 0U)

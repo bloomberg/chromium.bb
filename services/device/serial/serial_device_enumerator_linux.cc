@@ -41,7 +41,8 @@ SerialDeviceEnumeratorLinux::~SerialDeviceEnumeratorLinux() = default;
 
 std::vector<mojom::SerialPortInfoPtr>
 SerialDeviceEnumeratorLinux::GetDevices() {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   std::vector<mojom::SerialPortInfoPtr> devices;
   ScopedUdevEnumeratePtr enumerate(udev_enumerate_new(udev_.get()));

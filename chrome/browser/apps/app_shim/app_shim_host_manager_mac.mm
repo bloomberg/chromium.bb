@@ -36,7 +36,8 @@ base::FilePath GetDirectoryInTmpTemplate(const base::FilePath& user_data_dir) {
 void DeleteSocketFiles(const base::FilePath& directory_in_tmp,
                        const base::FilePath& symlink_path,
                        const base::FilePath& version_path) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   // Delete in reverse order of creation.
   if (!version_path.empty())
@@ -92,7 +93,8 @@ AppShimHostManager::~AppShimHostManager() {
 }
 
 void AppShimHostManager::InitOnBackgroundThread() {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   base::FilePath user_data_dir;
   if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
     return;

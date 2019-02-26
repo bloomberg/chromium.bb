@@ -58,7 +58,8 @@ base::Value GetPrinterCapabilitiesOnBlockingPoolThread(
     const std::string& device_name,
     const PrinterSemanticCapsAndDefaults::Papers& additional_papers,
     scoped_refptr<PrintBackend> print_backend) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   DCHECK(!device_name.empty());
   scoped_refptr<PrintBackend> backend =
       print_backend ? print_backend
@@ -135,7 +136,8 @@ base::Value GetSettingsOnBlockingPool(
     const PrinterBasicInfo& basic_info,
     const PrinterSemanticCapsAndDefaults::Papers& additional_papers,
     scoped_refptr<PrintBackend> print_backend) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   const auto printer_name_description =
       GetPrinterNameAndDescription(basic_info);

@@ -90,7 +90,8 @@ class MacAddressProcessor {
 
 std::string GetMacAddressFromGetAdaptersAddresses(
     const IsValidMacAddressCallback& is_valid_mac_address) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   // MS recommends a default size of 15k.
   ULONG bufferSize = 15 * 1024;
@@ -125,7 +126,8 @@ std::string GetMacAddressFromGetAdaptersAddresses(
 
 std::string GetMacAddressFromGetIfTable2(
     const IsValidMacAddressCallback& is_valid_mac_address) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   // This is available on Vista+ only.
   base::ScopedNativeLibrary library(base::FilePath(L"Iphlpapi.dll"));

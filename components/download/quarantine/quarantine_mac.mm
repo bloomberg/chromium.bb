@@ -75,7 +75,8 @@ namespace {
 bool AddOriginMetadataToFile(const base::FilePath& file,
                              const GURL& source,
                              const GURL& referrer) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   // There's no declaration for MDItemSetAttribute in any known public SDK.
   // It exists in the 10.4 and 10.5 runtimes.  To play it safe, do the lookup
@@ -146,7 +147,8 @@ bool AddOriginMetadataToFile(const base::FilePath& file,
 bool AddQuarantineMetadataToFile(const base::FilePath& file,
                                  const GURL& source,
                                  const GURL& referrer) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   base::scoped_nsobject<NSMutableDictionary> properties;
   bool success = GetQuarantineProperties(file, &properties);
 

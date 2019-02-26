@@ -164,7 +164,8 @@ UIImage* ReadImageForSessionFromDisk(NSString* session_id,
   base::FilePath file_path =
       ImagePath(session_id, image_type, image_scale, cache_directory);
   NSString* path = base::SysUTF8ToNSString(file_path.AsUTF8Unsafe());
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::WILL_BLOCK);
   return [UIImage imageWithData:[NSData dataWithContentsOfFile:path]
                           scale:(image_type == IMAGE_TYPE_GREYSCALE
                                      ? 1.0
@@ -186,7 +187,8 @@ void WriteImageToDisk(UIImage* image, const base::FilePath& file_path) {
   }
 
   NSString* path = base::SysUTF8ToNSString(file_path.AsUTF8Unsafe());
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::WILL_BLOCK);
   [UIImageJPEGRepresentation(image, kJPEGImageQuality) writeToFile:path
                                                         atomically:YES];
 
@@ -209,7 +211,8 @@ void ConvertAndSaveGreyImage(NSString* session_id,
                              ImageScale image_scale,
                              UIImage* color_image,
                              const base::FilePath& cache_directory) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::WILL_BLOCK);
   if (!color_image) {
     color_image = ReadImageForSessionFromDisk(session_id, IMAGE_TYPE_COLOR,
                                               image_scale, cache_directory);

@@ -138,7 +138,8 @@ base::FilePath GetDriveFSPathFromURL(Profile* const profile, const GURL& url) {
 // TODO(risan): Write test.
 // Open DriveFS file from the fuse filesystem.
 mojo::ScopedHandle OpenDriveFSFileToRead(const base::FilePath& fs_path) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::WILL_BLOCK);
   // Open the file and wrap the fd to be returned through mojo.
   base::ScopedFD fd(HANDLE_EINTR(
       open(fs_path.value().c_str(), O_RDONLY | O_CLOEXEC | O_NOFOLLOW)));

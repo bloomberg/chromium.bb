@@ -231,7 +231,8 @@ void UsbDeviceHandleUsbfs::BlockingTaskHelper::SetConfiguration(
     ResultCallback callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   int rc = HANDLE_EINTR(
       ioctl(fd_.get(), USBDEVFS_SETCONFIGURATION, &configuration_value));
   if (rc)
@@ -247,7 +248,8 @@ void UsbDeviceHandleUsbfs::BlockingTaskHelper::ReleaseInterface(
     ResultCallback callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   int rc = HANDLE_EINTR(
       ioctl(fd_.get(), USBDEVFS_RELEASEINTERFACE, &interface_number));
   if (rc) {
@@ -272,7 +274,8 @@ void UsbDeviceHandleUsbfs::BlockingTaskHelper::SetInterface(
   cmd.interface = interface_number;
   cmd.altsetting = alternate_setting;
 
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   int rc = HANDLE_EINTR(ioctl(fd_.get(), USBDEVFS_SETINTERFACE, &cmd));
   if (rc) {
     USB_PLOG(DEBUG) << "Failed to set interface " << interface_number
@@ -286,7 +289,8 @@ void UsbDeviceHandleUsbfs::BlockingTaskHelper::ResetDevice(
     ResultCallback callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   // TODO(reillyg): libusb releases interfaces before and then reclaims
   // interfaces after a reset. We should probably do this too or document that
   // callers have to call ClaimInterface as well.
@@ -303,7 +307,8 @@ void UsbDeviceHandleUsbfs::BlockingTaskHelper::ClearHalt(
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
   int tmp_endpoint = endpoint_address;
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   int rc = HANDLE_EINTR(ioctl(fd_.get(), USBDEVFS_CLEAR_HALT, &tmp_endpoint));
   if (rc) {
     USB_PLOG(DEBUG) << "Failed to clear the stall condition on endpoint "
@@ -316,7 +321,8 @@ void UsbDeviceHandleUsbfs::BlockingTaskHelper::ClearHalt(
 void UsbDeviceHandleUsbfs::BlockingTaskHelper::DiscardUrb(Transfer* transfer) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   HANDLE_EINTR(ioctl(fd_.get(), USBDEVFS_DISCARDURB, &transfer->urb));
 
   task_runner_->PostTask(FROM_HERE,

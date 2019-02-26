@@ -228,7 +228,8 @@ void InotifyReaderThreadDelegate::ThreadMain() {
     FD_ZERO(&rfds);
     FD_SET(inotify_fd_, &rfds);
 
-    ScopedBlockingCall scoped_blocking_call(BlockingType::WILL_BLOCK);
+    ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                            BlockingType::WILL_BLOCK);
 
     // Wait until some inotify events are available.
     int select_result =
@@ -294,7 +295,7 @@ InotifyReader::Watch InotifyReader::AddWatch(
 
   AutoLock auto_lock(lock_);
 
-  ScopedBlockingCall scoped_blocking_call(BlockingType::WILL_BLOCK);
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::WILL_BLOCK);
   Watch watch = inotify_add_watch(inotify_fd_, path.value().c_str(),
                                   IN_ATTRIB | IN_CREATE | IN_DELETE |
                                   IN_CLOSE_WRITE | IN_MOVE |
@@ -319,7 +320,8 @@ void InotifyReader::RemoveWatch(Watch watch, FilePathWatcherImpl* watcher) {
   if (watchers_[watch].empty()) {
     watchers_.erase(watch);
 
-    ScopedBlockingCall scoped_blocking_call(BlockingType::WILL_BLOCK);
+    ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                            BlockingType::WILL_BLOCK);
     inotify_rm_watch(inotify_fd_, watch);
   }
 }

@@ -536,7 +536,8 @@ class OpenInControllerBridge
 - (void)removeDocumentAtPath:(nullable NSString*)path {
   if (!path)
     return;
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::WILL_BLOCK);
   NSFileManager* fileManager = [NSFileManager defaultManager];
   NSError* error = nil;
   if (![fileManager removeItemAtPath:path error:&error]) {
@@ -546,7 +547,8 @@ class OpenInControllerBridge
 }
 
 + (void)removeAllStoredDocumentsAtPath:(NSString*)tempDirPath {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::WILL_BLOCK);
   NSFileManager* fileManager = [NSFileManager defaultManager];
   NSError* error = nil;
   NSArray* documentFiles =
@@ -567,7 +569,8 @@ class OpenInControllerBridge
 }
 
 + (BOOL)createDestinationDirectoryAndRemoveObsoleteFiles {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::WILL_BLOCK);
   NSString* tempDirPath = [NSTemporaryDirectory()
       stringByAppendingPathComponent:kDocumentsTempPath];
   NSFileManager* fileManager = [NSFileManager defaultManager];

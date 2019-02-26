@@ -123,7 +123,8 @@ bool GetProductVersion(std::wstring* path, std::string* product_version) {
 internal::ResultCode FillAntiVirusProductsFromWSC(
     bool report_full_names,
     std::vector<AvProduct>* products) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   std::vector<AvProduct> result_list;
 
@@ -222,7 +223,8 @@ internal::ResultCode FillAntiVirusProductsFromWSC(
 internal::ResultCode FillAntiVirusProductsFromWMI(
     bool report_full_names,
     std::vector<AvProduct>* products) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   std::vector<AvProduct> result_list;
 
@@ -357,7 +359,8 @@ internal::ResultCode FillAntiVirusProductsFromWMI(
 
 void MaybeAddUnregisteredAntiVirusProducts(bool report_full_names,
                                            std::vector<AvProduct>* products) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   // Trusteer Rapport does not register with WMI or Security Center so do some
   // "best efforts" detection here.

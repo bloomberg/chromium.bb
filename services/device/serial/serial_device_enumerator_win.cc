@@ -146,7 +146,8 @@ std::vector<mojom::SerialPortInfoPtr>
 SerialDeviceEnumeratorWin::GetDevicesNew() {
   std::vector<mojom::SerialPortInfoPtr> devices;
 
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   // Make a device interface query to find all serial devices.
   HDEVINFO dev_info =
       SetupDiGetClassDevs(&GUID_DEVCLASS_PORTS, 0, 0, DIGCF_PRESENT);
@@ -203,7 +204,8 @@ SerialDeviceEnumeratorWin::GetDevicesNew() {
 // less information about the devices than the new method.
 std::vector<mojom::SerialPortInfoPtr>
 SerialDeviceEnumeratorWin::GetDevicesOld() {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   base::win::RegistryValueIterator iter_key(
       HKEY_LOCAL_MACHINE, L"HARDWARE\\DEVICEMAP\\SERIALCOMM\\");
   std::vector<mojom::SerialPortInfoPtr> devices;

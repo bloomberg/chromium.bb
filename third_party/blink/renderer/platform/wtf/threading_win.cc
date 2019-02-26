@@ -181,7 +181,8 @@ ThreadCondition::ThreadCondition(Mutex& mutex)
 ThreadCondition::~ThreadCondition() {}
 
 void ThreadCondition::Wait() {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   --mutex_.recursion_count_;
   BOOL result =
       SleepConditionVariableCS(&condition_, &mutex_.internal_mutex_, INFINITE);

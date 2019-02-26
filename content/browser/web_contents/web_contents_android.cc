@@ -143,7 +143,8 @@ void AXTreeSnapshotCallback(const ScopedJavaGlobalRef<jobject>& callback,
 
 std::string CompressAndSaveBitmap(const std::string& dir,
                                   const SkBitmap& bitmap) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::WILL_BLOCK);
 
   std::vector<unsigned char> data;
   if (!gfx::JPEGCodec::Encode(bitmap, 85, &data)) {

@@ -101,7 +101,7 @@ bool FilePathWatcherImpl::Watch(const FilePath& path,
   recursive_watch_ = recursive;
 
   File::Info file_info;
-  ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
   if (GetFileInfo(target_, &file_info)) {
     last_modified_ = file_info.last_modified;
     first_notification_ = Time::Now();
@@ -148,7 +148,7 @@ void FilePathWatcherImpl::OnObjectSignaled(HANDLE object) {
   File::Info file_info;
   bool file_exists = false;
   {
-    ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
+    ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
     file_exists = GetFileInfo(target_, &file_info);
   }
   if (recursive_watch_) {
@@ -201,7 +201,7 @@ void FilePathWatcherImpl::OnObjectSignaled(HANDLE object) {
 bool FilePathWatcherImpl::SetupWatchHandle(const FilePath& dir,
                                            bool recursive,
                                            HANDLE* handle) {
-  ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
   *handle = FindFirstChangeNotification(
       as_wcstr(dir.value()), recursive,
       FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_SIZE |
@@ -240,7 +240,7 @@ bool FilePathWatcherImpl::UpdateWatch() {
   if (handle_ != INVALID_HANDLE_VALUE)
     DestroyWatch();
 
-  ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
 
   // Start at the target and walk up the directory chain until we succesfully
   // create a watch handle in |handle_|. |child_dirs| keeps a stack of child
@@ -286,7 +286,7 @@ bool FilePathWatcherImpl::UpdateWatch() {
 void FilePathWatcherImpl::DestroyWatch() {
   watcher_.StopWatching();
 
-  ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
   FindCloseChangeNotification(handle_);
   handle_ = INVALID_HANDLE_VALUE;
 }

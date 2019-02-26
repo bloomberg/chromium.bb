@@ -79,7 +79,8 @@ using ProcCpuUsageAndPpid = std::pair<int64_t, pid_t>;
 base::Optional<pid_t> GetAndroidInitPid(
     const base::FilePath& android_pid_file) {
   // This function does I/O and must be done on a blocking thread.
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   std::string android_pid_contents;
   if (!base::ReadFileToString(android_pid_file, &android_pid_contents))
@@ -101,7 +102,8 @@ base::Optional<pid_t> GetAndroidInitPid(
 base::Optional<ProcCpuUsageAndPpid> ComputeProcCpuTimeJiffiesAndPpid(
     const base::FilePath& proc_stat_file) {
   // This function does I/O and must be done on a blocking thread.
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   base::Optional<system::SingleProcStat> stat =
       system::GetSingleProcStat(proc_stat_file);
@@ -115,7 +117,8 @@ base::Optional<ProcCpuUsageAndPpid> ComputeProcCpuTimeJiffiesAndPpid(
 // Reads a process' name from |comm_file|, a file like "/proc/%u/comm".
 base::Optional<std::string> GetProcName(const base::FilePath& comm_file) {
   // This function does I/O and must be done on a blocking thread.
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   std::string comm_contents;
   if (!base::ReadFileToString(comm_file, &comm_contents))
@@ -131,7 +134,8 @@ base::Optional<std::string> GetProcName(const base::FilePath& comm_file) {
 // "/proc/%u/cmdline".
 base::Optional<std::string> GetProcCmdline(const base::FilePath& cmdline) {
   // This function does I/O and must be done on a blocking thread.
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   std::string cmdline_contents;
   if (!base::ReadFileToString(cmdline, &cmdline_contents))
@@ -361,7 +365,8 @@ void ProcessDataCollector::SampleCpuUsage() {
 ProcessDataCollector::ProcessSampleMap ProcessDataCollector::GetValidProcesses(
     const Config& config) {
   // This function does I/O and must be done on a blocking thread.
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   base::FileEnumerator proc_files(config.proc_dir, false,
                                   base::FileEnumerator::DIRECTORIES);

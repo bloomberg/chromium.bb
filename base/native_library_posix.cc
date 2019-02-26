@@ -22,7 +22,7 @@ NativeLibrary LoadNativeLibraryWithOptions(const FilePath& library_path,
                                            const NativeLibraryOptions& options,
                                            NativeLibraryLoadError* error) {
   // dlopen() opens the file off disk.
-  ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
+  ScopedBlockingCall scoped_blocking_call(FROM_HERE, BlockingType::MAY_BLOCK);
 
   // We deliberately do not use RTLD_DEEPBIND by default.  For the history why,
   // please refer to the bug tracker.  Some useful bug reports to read include:

@@ -50,7 +50,8 @@ void DeleteOldWebRtcLogFiles(const base::FilePath& log_dir) {
 
 void DeleteOldAndRecentWebRtcLogFiles(const base::FilePath& log_dir,
                                       const base::Time& delete_begin_time) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   if (!base::PathExists(log_dir)) {
     // This will happen if no logs have been stored or uploaded.

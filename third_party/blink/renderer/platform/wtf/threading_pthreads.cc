@@ -151,7 +151,8 @@ ThreadCondition::~ThreadCondition() {
 }
 
 void ThreadCondition::Wait() {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 #if DCHECK_IS_ON()
   --mutex_.recursion_count_;
 #endif

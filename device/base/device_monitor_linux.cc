@@ -28,7 +28,8 @@ base::LazyInstance<DeviceMonitorLinux>::Leaky g_device_monitor_linux =
 }  // namespace
 
 DeviceMonitorLinux::DeviceMonitorLinux() : monitor_fd_(-1) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   udev_.reset(udev_new());
   if (!udev_) {
@@ -84,7 +85,8 @@ void DeviceMonitorLinux::RemoveObserver(Observer* observer) {
 
 void DeviceMonitorLinux::Enumerate(const EnumerateCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   ScopedUdevEnumeratePtr enumerate(udev_enumerate_new(udev_.get()));
 
   if (!enumerate) {
@@ -115,7 +117,8 @@ DeviceMonitorLinux::~DeviceMonitorLinux() {
 
 void DeviceMonitorLinux::OnMonitorCanReadWithoutBlocking() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   ScopedUdevDevicePtr device(udev_monitor_receive_device(monitor_.get()));
   if (!device)
     return;

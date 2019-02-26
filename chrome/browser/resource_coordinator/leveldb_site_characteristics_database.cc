@@ -276,7 +276,8 @@ void LevelDBSiteCharacteristicsDatabase::AsyncHelper::
   if (!db_)
     return;
 
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   leveldb::WriteBatch batch;
   for (const auto& iter : site_origins)
     batch.Delete(SerializeOriginIntoDatabaseKey(iter));
@@ -292,7 +293,8 @@ void LevelDBSiteCharacteristicsDatabase::AsyncHelper::ClearDatabase() {
   if (!db_)
     return;
 
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   db_.reset();
   leveldb_env::Options options;
   leveldb::Status status = leveldb::DestroyDB(db_path_.AsUTF8Unsafe(), options);
@@ -310,7 +312,8 @@ LevelDBSiteCharacteristicsDatabase::AsyncHelper::GetDatabaseSize() {
   if (!db_)
     return DatabaseSizeResult();
 
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   DatabaseSizeResult ret;
 #if defined(OS_WIN)
   // Windows has an annoying mis-feature that the size of an open file is not
@@ -342,7 +345,8 @@ LevelDBSiteCharacteristicsDatabase::AsyncHelper::OpeningType
 LevelDBSiteCharacteristicsDatabase::AsyncHelper::OpenOrCreateDatabaseImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!db_) << "Database already open";
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   OpeningType opening_type = OpeningType::kNewDb;
 

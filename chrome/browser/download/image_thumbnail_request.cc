@@ -26,7 +26,8 @@ namespace {
 const int64_t kMaxImageSize = 10 * 1024 * 1024;  // 10 MB
 
 std::string LoadImageData(const base::FilePath& path) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::WILL_BLOCK);
 
   // Confirm that the file's size is within our threshold.
   base::File file;

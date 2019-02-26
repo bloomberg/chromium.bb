@@ -24,7 +24,8 @@ LazyInstance<Lock>::Leaky g_mime_util_xdg_lock = LAZY_INSTANCE_INITIALIZER;
 std::string GetFileMimeType(const FilePath& filepath) {
   if (filepath.empty())
     return std::string();
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   AutoLock scoped_lock(g_mime_util_xdg_lock.Get());
   return xdg_mime_get_mime_type_from_file_name(filepath.value().c_str());
 }

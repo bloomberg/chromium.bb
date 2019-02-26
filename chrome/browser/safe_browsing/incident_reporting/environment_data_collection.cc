@@ -64,7 +64,8 @@ void CollectProcessData(ClientIncidentReport_EnvironmentData_Process* process) {
 }  // namespace
 
 void CollectEnvironmentData(ClientIncidentReport_EnvironmentData* data) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::WILL_BLOCK);
 
   // OS
   {

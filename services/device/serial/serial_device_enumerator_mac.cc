@@ -144,7 +144,8 @@ std::vector<mojom::SerialPortInfoPtr>
 SerialDeviceEnumeratorMac::GetDevicesNew() {
   std::vector<mojom::SerialPortInfoPtr> devices;
 
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   // Make a service query to find all serial devices.
   CFMutableDictionaryRef matchingDict =
       IOServiceMatching(kIOSerialBSDServiceValue);
@@ -225,7 +226,8 @@ SerialDeviceEnumeratorMac::GetDevicesOld() {
   valid_patterns.insert("/dev/tty.*");
   valid_patterns.insert("/dev/cu.*");
 
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   std::vector<mojom::SerialPortInfoPtr> devices;
   base::FileEnumerator enumerator(kDevRoot, false, kFilesAndSymLinks);
   do {

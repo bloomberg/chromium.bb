@@ -121,7 +121,8 @@ HRESULT EtwTraceConsumerBase<ImplClass>::OpenFileSession(
 
 template <class ImplClass> inline
 HRESULT EtwTraceConsumerBase<ImplClass>::Consume() {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   ULONG err = ::ProcessTrace(&trace_handles_[0],
                              static_cast<ULONG>(trace_handles_.size()),
                              NULL,

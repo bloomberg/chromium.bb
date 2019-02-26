@@ -54,7 +54,8 @@ void ExecuteCodeFunction::GetFileURLAndMaybeLocalizeInBackground(
     bool might_require_localization,
     std::string* data) {
   // TODO(karandeepb): Limit scope of ScopedBlockingCall.
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   // TODO(devlin): FilePathToFileURL() doesn't need to be done on a blocking
   // task runner, so we could do that on the UI thread and then avoid the hop

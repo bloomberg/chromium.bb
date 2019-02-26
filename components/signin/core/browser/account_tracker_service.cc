@@ -71,7 +71,8 @@ void RemoveDeprecatedServiceFlags(PrefService* pref_service) {
 // Reads a PNG image from disk and decodes it. If the reading/decoding attempt
 // was unsuccessful, an empty image is returned.
 gfx::Image ReadImage(const base::FilePath& image_path) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   if (!base::PathExists(image_path))
     return gfx::Image();
@@ -87,7 +88,8 @@ gfx::Image ReadImage(const base::FilePath& image_path) {
 // Saves |png_data| to disk at |image_path|.
 void SaveImage(scoped_refptr<base::RefCountedMemory> png_data,
                const base::FilePath& image_path) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   // Make sure the destination directory exists.
   base::FilePath dir = image_path.DirName();
   if (!base::DirectoryExists(dir) && !base::CreateDirectory(dir)) {

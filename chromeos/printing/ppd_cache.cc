@@ -47,7 +47,8 @@ void MaybeCreateCache(const base::FilePath& base_dir) {
 // allows I/O.
 PpdCache::FindResult FindImpl(const base::FilePath& cache_dir,
                               const std::string& key) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   PpdCache::FindResult result;
   result.success = false;
@@ -93,7 +94,8 @@ void StoreImpl(const base::FilePath& cache_dir,
                const std::string& key,
                const std::string& contents,
                base::TimeDelta age) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   MaybeCreateCache(cache_dir);
   if (contents.size() > kMaxPpdSizeBytes) {
     LOG(ERROR) << "Ignoring attempt to cache large object";

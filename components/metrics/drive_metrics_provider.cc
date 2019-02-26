@@ -50,7 +50,8 @@ DriveMetricsProvider::SeekPenaltyResponse::SeekPenaltyResponse()
 DriveMetricsProvider::DriveMetrics
 DriveMetricsProvider::GetDriveMetricsOnBackgroundThread(
     int local_state_path_key) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::WILL_BLOCK);
 
   DriveMetricsProvider::DriveMetrics metrics;
   QuerySeekPenalty(base::FILE_EXE, &metrics.app_drive);

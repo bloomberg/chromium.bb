@@ -117,7 +117,8 @@ bool InstalledApplications::GetInstalledApplications(
 
 InstalledApplications::InstalledApplications(
     std::unique_ptr<MsiUtil> msi_util) {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   SCOPED_UMA_HISTOGRAM_TIMER(
       "ThirdPartyModules.InstalledApplications.GetDataTime");

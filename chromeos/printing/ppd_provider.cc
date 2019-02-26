@@ -296,7 +296,8 @@ bool PpdReferenceIsWellFormed(const Printer::PpdReference& reference) {
 bool FetchFile(const GURL& url, std::string* file_contents) {
   CHECK(url.is_valid());
   CHECK(url.SchemeIs("file"));
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   // Here we are un-escaping the file path represented by the url. If we don't
   // transform the url into a valid file path then the file may fail to be

@@ -36,7 +36,7 @@ void ChildProcessCrashObserver::OnChildExitImpl(
     return;
   }
 
-  base::ScopedBlockingCall sbc(base::BlockingType::WILL_BLOCK);
+  base::ScopedBlockingCall sbc(FROM_HERE, base::BlockingType::WILL_BLOCK);
 
   // Hop over to Java to attempt to attach the logcat to the crash. This may
   // fail, which is ok -- if it does, the crash will still be uploaded on the

@@ -24,7 +24,8 @@ namespace extensions {
 // static
 scoped_refptr<StorageDeviceList>
 RemovableStorageProvider::PopulateDeviceList() {
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
   // Match only writable whole-disks.
   CFMutableDictionaryRef matching = IOServiceMatching(kIOMediaClass);
   CFDictionaryAddValue(matching, CFSTR(kIOMediaWholeKey), kCFBooleanTrue);
