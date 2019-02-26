@@ -101,7 +101,8 @@ public class IncognitoToggleTabLayout extends TabLayout implements TabCountObser
         mTabModelSelector.addObserver(mTabModelSelectorObserver);
         setStateBasedOnModel();
 
-        mTabSwitcherDrawable.updateForTabCount(mTabModelSelector.getModel(false).getCount(), false);
+        assert mTabCountProvider != null;
+        mTabSwitcherDrawable.updateForTabCount(mTabCountProvider.getTabCount(false), false);
     }
 
     public void setTabCountProvider(TabCountProvider tabCountProvider) {

@@ -164,4 +164,10 @@ public class TabCountProvider {
             observer.onTabCountChanged(tabCount, isIncognito);
         }
     }
+
+    protected int getTabCount(boolean isIncognito) {
+        return mTabModelSelector.getTabModelFilterProvider()
+                .getTabModelFilter(isIncognito)
+                .getCount();
+    }
 }
