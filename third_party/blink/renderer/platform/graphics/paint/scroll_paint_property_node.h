@@ -7,6 +7,7 @@
 
 #include "base/optional.h"
 #include "cc/input/main_thread_scrolling_reason.h"
+#include "cc/input/overscroll_behavior.h"
 #include "cc/input/scroll_snap_data.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
@@ -14,7 +15,6 @@
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_property_node.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/scroll/overscroll_behavior.h"
 
 namespace blink {
 
@@ -50,8 +50,8 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
     // The scrolling element id is stored directly on the scroll node and not
     // on the associated TransformPaintPropertyNode used for scroll offset.
     CompositorElementId compositor_element_id;
-    OverscrollBehavior overscroll_behavior = blink::OverscrollBehavior(
-        blink::OverscrollBehavior::kOverscrollBehaviorTypeAuto);
+    cc::OverscrollBehavior overscroll_behavior = cc::OverscrollBehavior(
+        cc::OverscrollBehavior::kOverscrollBehaviorTypeAuto);
     base::Optional<cc::SnapContainerData> snap_container_data;
 
     bool operator==(const State& o) const {
@@ -97,11 +97,11 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
     return true;
   }
 
-  OverscrollBehavior::OverscrollBehaviorType OverscrollBehaviorX() const {
+  cc::OverscrollBehavior::OverscrollBehaviorType OverscrollBehaviorX() const {
     return state_.overscroll_behavior.x;
   }
 
-  OverscrollBehavior::OverscrollBehaviorType OverscrollBehaviorY() const {
+  cc::OverscrollBehavior::OverscrollBehaviorType OverscrollBehaviorY() const {
     return state_.overscroll_behavior.y;
   }
 

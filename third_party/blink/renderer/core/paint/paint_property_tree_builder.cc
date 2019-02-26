@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "cc/input/main_thread_scrolling_reason.h"
+#include "cc/input/overscroll_behavior.h"
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/frame/link_highlights.h"
@@ -40,7 +41,6 @@
 #include "third_party/blink/renderer/core/paint/paint_property_tree_printer.h"
 #include "third_party/blink/renderer/core/paint/svg_root_painter.h"
 #include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
-#include "third_party/blink/renderer/platform/scroll/overscroll_behavior.h"
 #include "third_party/blink/renderer/platform/transforms/transform_state.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 
@@ -1701,10 +1701,10 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
           RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
         state.compositor_element_id = scrollable_area->GetCompositorElementId();
 
-      state.overscroll_behavior = OverscrollBehavior(
-          static_cast<OverscrollBehavior::OverscrollBehaviorType>(
+      state.overscroll_behavior = cc::OverscrollBehavior(
+          static_cast<cc::OverscrollBehavior::OverscrollBehaviorType>(
               box.StyleRef().OverscrollBehaviorX()),
-          static_cast<OverscrollBehavior::OverscrollBehaviorType>(
+          static_cast<cc::OverscrollBehavior::OverscrollBehaviorType>(
               box.StyleRef().OverscrollBehaviorY()));
 
       auto* snap_coordinator = box.GetDocument().GetSnapCoordinator();

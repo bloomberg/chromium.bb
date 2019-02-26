@@ -34,6 +34,7 @@
 #include "base/auto_reset.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "cc/input/overscroll_behavior.h"
 #include "cc/input/scroll_snap_data.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
