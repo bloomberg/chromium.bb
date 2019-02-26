@@ -13,6 +13,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
+import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarouselCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetailsCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderCoordinator;
@@ -25,12 +27,6 @@ import org.chromium.chrome.browser.autofill_assistant.payment.AssistantPaymentRe
  * views (details, payment request and carousel).
  */
 class AssistantBottomBarCoordinator {
-    // Spacings between child views.
-    private static final int CHILDREN_HORIZONTAL_MARGIN_DP = 24;
-    private static final int CHILDREN_VERTICAL_MARGIN_DP = 20;
-    private static final int DETAILS_ONLY_VERTICAL_MARGIN_DP = 48;
-    private static final int PAYMENT_REQUEST_MARGIN_BOTTOM_DP = 16;
-
     // The top padding that should be applied to the bottom bar when the swiping indicator is
     // hidden.
     private static final int BOTTOM_BAR_WITHOUT_INDICATOR_PADDING_TOP_DP = 16;
@@ -40,37 +36,24 @@ class AssistantBottomBarCoordinator {
     private final BottomSheetBehavior mBottomBarBehavior;
 
     // Dimensions in device pixels.
-    private final int mChildrenHorizontalMargin;
-    private final int mDetailsOnlyVerticalMargin;
-    private final int mChildrenVerticalSpacing;
     private final int mBottomBarWithoutIndicatorPaddingTop;
-    private final int mPaymentRequestMarginBottom;
 
     // Child coordinators.
     private final AssistantHeaderCoordinator mHeaderCoordinator;
     private final AssistantDetailsCoordinator mDetailsCoordinator;
     private final AssistantPaymentRequestCoordinator mPaymentRequestCoordinator;
-    private final AssistantCarouselCoordinator mCarouselCoordinator;
+    private final AssistantCarouselCoordinator mSuggestionsCoordinator;
+    private final AssistantCarouselCoordinator mActionsCoordinator;
 
     AssistantBottomBarCoordinator(Context context, View assistantView, AssistantModel model) {
-        mBottomBarView = assistantView.findViewById(
-                org.chromium.chrome.autofill_assistant.R.id.autofill_assistant_bottombar);
-        mSwipeIndicatorView = mBottomBarView.findViewById(
-                org.chromium.chrome.autofill_assistant.R.id.swipe_indicator);
+        mBottomBarView = assistantView.findViewById(R.id.autofill_assistant_bottombar);
+        mSwipeIndicatorView = mBottomBarView.findViewById(R.id.swipe_indicator);
         mBottomBarBehavior = BottomSheetBehavior.from(mBottomBarView);
 
         DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
-        mChildrenHorizontalMargin = (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, CHILDREN_HORIZONTAL_MARGIN_DP, displayMetrics);
-        mDetailsOnlyVerticalMargin = (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, DETAILS_ONLY_VERTICAL_MARGIN_DP, displayMetrics);
-        mChildrenVerticalSpacing = (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, CHILDREN_VERTICAL_MARGIN_DP, displayMetrics);
         mBottomBarWithoutIndicatorPaddingTop =
                 (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
                         BOTTOM_BAR_WITHOUT_INDICATOR_PADDING_TOP_DP, displayMetrics);
-        mPaymentRequestMarginBottom = (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, PAYMENT_REQUEST_MARGIN_BOTTOM_DP, displayMetrics);
 
         // Instantiate child components.
         mHeaderCoordinator =
@@ -78,20 +61,23 @@ class AssistantBottomBarCoordinator {
         mDetailsCoordinator = new AssistantDetailsCoordinator(context, model.getDetailsModel());
         mPaymentRequestCoordinator =
                 new AssistantPaymentRequestCoordinator(context, model.getPaymentRequestModel());
-        mCarouselCoordinator = new AssistantCarouselCoordinator(context, model.getCarouselModel());
+        mSuggestionsCoordinator =
+                new AssistantCarouselCoordinator(context, model.getSuggestionsModel());
+        mActionsCoordinator = new AssistantCarouselCoordinator(context, model.getActionsModel());
 
-        // Add child views to bottom bar.
-        mBottomBarView.addView(mDetailsCoordinator.getView());
-        mBottomBarView.addView(mPaymentRequestCoordinator.getView());
-        mBottomBarView.addView(mCarouselCoordinator.getView());
+        // Add child views to bottom bar container.
+        ViewGroup bottomBarContainer =
+                mBottomBarView.findViewById(R.id.autofill_assistant_bottombar_container);
+        bottomBarContainer.addView(mDetailsCoordinator.getView());
+        bottomBarContainer.addView(mPaymentRequestCoordinator.getView());
+        bottomBarContainer.addView(mSuggestionsCoordinator.getView());
+        bottomBarContainer.addView(mActionsCoordinator.getView());
 
-        // Ensure the margin are computed correctly from the beginning.
-        onChildViewVisibilityChanged();
-
-        // Add child views visibility listener.
-        mDetailsCoordinator.setVisibilityChangedListener(this::onChildViewVisibilityChanged);
-        mPaymentRequestCoordinator.setVisibilityChangedListener(this::onChildViewVisibilityChanged);
-        mCarouselCoordinator.setVisibilityChangedListener(this::onChildViewVisibilityChanged);
+        // We set the horizontal margins of the details and payment request. We don't set a padding
+        // to the container as we want the carousels children to be scrolled at the limit of the
+        // screen.
+        setHorizontalMargins(mDetailsCoordinator.getView());
+        setHorizontalMargins(mPaymentRequestCoordinator.getView());
     }
 
     /**
@@ -126,62 +112,26 @@ class AssistantBottomBarCoordinator {
         }
     }
 
-    public AssistantCarouselCoordinator getCarouselCoordinator() {
-        return mCarouselCoordinator;
+    @VisibleForTesting
+    public AssistantCarouselCoordinator getSuggestionsCoordinator() {
+        return mSuggestionsCoordinator;
+    }
+
+    @VisibleForTesting
+    public AssistantCarouselCoordinator getActionsCoordinator() {
+        return mActionsCoordinator;
     }
 
     private void setBottomBarPaddingTop(int paddingPx) {
         mBottomBarView.setPadding(0, paddingPx, 0, 0);
     }
 
-    /**
-     * Called when one of its child views visibility has changed. This method set the margin of
-     * those views such that the height of the bottom bar is constant most of the time.
-     */
-    private void onChildViewVisibilityChanged() {
-        View detailsView = mDetailsCoordinator.getView();
-        View carouselView = mCarouselCoordinator.getView();
-        View paymentRequestView = mPaymentRequestCoordinator.getView();
-
-        boolean detailsVisible = detailsView != null && detailsView.getVisibility() == View.VISIBLE;
-        boolean carouselVisible =
-                carouselView != null && carouselView.getVisibility() == View.VISIBLE;
-        boolean paymentRequestVisible =
-                paymentRequestView != null && paymentRequestView.getVisibility() == View.VISIBLE;
-
-        int topMargin = mChildrenVerticalSpacing;
-        if (detailsVisible) {
-            // Set details margins.
-            LinearLayout.LayoutParams detailsLayoutParams =
-                    (LinearLayout.LayoutParams) detailsView.getLayoutParams();
-            int detailsVerticalMargin = carouselVisible || paymentRequestVisible
-                    ? topMargin
-                    : mDetailsOnlyVerticalMargin;
-            detailsLayoutParams.setMargins(mChildrenHorizontalMargin, detailsVerticalMargin,
-                    mChildrenHorizontalMargin, detailsVerticalMargin);
-            detailsView.setLayoutParams(detailsLayoutParams);
-
-            topMargin = 0;
-        }
-
-        if (paymentRequestVisible) {
-            // Set payment request margins.
-            LinearLayout.LayoutParams paymentRequestLayoutParams =
-                    (LinearLayout.LayoutParams) paymentRequestView.getLayoutParams();
-            paymentRequestLayoutParams.setMargins(mChildrenHorizontalMargin, topMargin,
-                    mChildrenHorizontalMargin, mPaymentRequestMarginBottom);
-            paymentRequestView.setLayoutParams(paymentRequestLayoutParams);
-
-            topMargin = 0;
-        }
-
-        if (carouselVisible) {
-            // Set carousel margins.
-            LinearLayout.LayoutParams carouselLayoutParams =
-                    (LinearLayout.LayoutParams) carouselView.getLayoutParams();
-            carouselLayoutParams.setMargins(
-                    /* left= */ 0, topMargin, /* right= */ 0, mChildrenVerticalSpacing);
-            carouselView.setLayoutParams(carouselLayoutParams);
-        }
+    private void setHorizontalMargins(View view) {
+        LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) view.getLayoutParams();
+        int horizontalMargin = view.getContext().getResources().getDimensionPixelSize(
+                R.dimen.autofill_assistant_bottombar_horizontal_spacing);
+        layoutParams.setMarginStart(horizontalMargin);
+        layoutParams.setMarginEnd(horizontalMargin);
+        view.setLayoutParams(layoutParams);
     }
 }

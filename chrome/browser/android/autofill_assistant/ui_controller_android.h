@@ -11,7 +11,6 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "chrome/browser/android/autofill_assistant/assistant_carousel_delegate.h"
 #include "chrome/browser/android/autofill_assistant/assistant_header_delegate.h"
 #include "chrome/browser/android/autofill_assistant/assistant_overlay_delegate.h"
 #include "chrome/browser/android/autofill_assistant/assistant_payment_request_delegate.h"
@@ -60,7 +59,8 @@ class UiControllerAndroid : public UiController {
   void OnStateChanged(AutofillAssistantState new_state) override;
   void OnStatusMessageChanged(const std::string& message) override;
   void WillShutdown(Metrics::DropOutReason reason) override;
-  void OnChipsChanged(const std::vector<Chip>& chips) override;
+  void OnSuggestionsChanged(const std::vector<Chip>& suggestions) override;
+  void OnActionsChanged(const std::vector<Chip>& actions) override;
   void OnPaymentRequestChanged(const PaymentRequestOptions* options) override;
   void OnDetailsChanged(const Details* details) override;
   void OnProgressChanged(int progress) override;
@@ -73,14 +73,11 @@ class UiControllerAndroid : public UiController {
 
   // Called by AssistantHeaderDelegate:
   void OnFeedbackButtonClicked();
-  void OnCloseButtonClicked();
 
   // Called by AssistantPaymentRequestDelegate:
   void OnGetPaymentInformation(
       std::unique_ptr<PaymentInformation> payment_info);
-
-  // Called by AssistantCarouselDelegate:
-  void OnChipSelected(int index);
+  void OnCancelButtonClicked();
 
   // Called by Java.
   void SnackbarResult(JNIEnv* env,
@@ -96,6 +93,18 @@ class UiControllerAndroid : public UiController {
   base::android::ScopedJavaLocalRef<jstring> GetPrimaryAccountName(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller);
+  void OnSuggestionSelected(JNIEnv* env,
+                            const base::android::JavaParamRef<jobject>& jcaller,
+                            jint index);
+  void OnActionSelected(JNIEnv* env,
+                        const base::android::JavaParamRef<jobject>& jcaller,
+                        jint index);
+  void OnCancelButtonClicked(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller);
+  void OnCloseButtonClicked(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller);
 
  private:
   // A pointer to the client. nullptr until Attach() is called.
@@ -106,7 +115,6 @@ class UiControllerAndroid : public UiController {
   AssistantOverlayDelegate overlay_delegate_;
   AssistantHeaderDelegate header_delegate_;
   AssistantPaymentRequestDelegate payment_request_delegate_;
-  AssistantCarouselDelegate carousel_delegate_;
 
   // What to do if undo is not pressed on the current snackbar.
   base::OnceCallback<void()> snackbar_action_;
@@ -116,7 +124,6 @@ class UiControllerAndroid : public UiController {
   base::android::ScopedJavaLocalRef<jobject> GetHeaderModel();
   base::android::ScopedJavaLocalRef<jobject> GetDetailsModel();
   base::android::ScopedJavaLocalRef<jobject> GetPaymentRequestModel();
-  base::android::ScopedJavaLocalRef<jobject> GetCarouselModel();
 
   void SetOverlayState(OverlayState state);
   void AllowShowingSoftKeyboard(bool enabled);
@@ -125,12 +132,13 @@ class UiControllerAndroid : public UiController {
   void SetAllowSwipingSheet(bool allow);
   std::string GetDebugContext();
   void DestroySelf();
+  void Shutdown(Metrics::DropOutReason reason);
+  void UpdateActions();
 
   // Hide the UI, show a snackbar with an undo button, and execute the given
   // action after a short delay unless the user taps the undo button.
   void ShowSnackbar(const std::string& message,
                     base::OnceCallback<void()> action);
-  void Shutdown(Metrics::DropOutReason reason);
 
   // Debug context captured previously. If non-empty, GetDebugContext() returns
   // this context.

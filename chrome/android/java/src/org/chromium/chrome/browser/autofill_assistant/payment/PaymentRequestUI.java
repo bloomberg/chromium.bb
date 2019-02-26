@@ -305,6 +305,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         mBottomBar = (ViewGroup) mRequestView.findViewById(R.id.bottom_bar);
         mPayButton = (Button) mBottomBar.findViewById(R.id.button_primary);
         mPayButton.setOnClickListener(this);
+        mBottomBar.findViewById(R.id.button_secondary)
+                .setOnClickListener((unusedView) -> mClient.onCancelButtonClicked());
 
         // Set terms & conditions text.
         mAcceptThirdPartyConditions = mRequestView.findViewById(R.id.terms_checkbox_agree);

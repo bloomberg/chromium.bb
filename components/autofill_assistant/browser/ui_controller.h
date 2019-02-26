@@ -42,8 +42,11 @@ class UiController {
   // returned.
   virtual void WillShutdown(Metrics::DropOutReason reason);
 
-  // Report that the set of chips has changed.
-  virtual void OnChipsChanged(const std::vector<Chip>& chips);
+  // Report that the set of suggestions has changed.
+  virtual void OnSuggestionsChanged(const std::vector<Chip>& suggestions);
+
+  // Report that the set of actions has changed.
+  virtual void OnActionsChanged(const std::vector<Chip>& actions);
 
   // Gets or clears request for payment information.
   virtual void OnPaymentRequestChanged(const PaymentRequestOptions* options);

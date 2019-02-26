@@ -19,9 +19,6 @@
     <message name="IDS_AUTOFILL_ASSISTANT_DETAILS_DIFFER" desc="Shown as Status Message when details differ.">
       The screening is different from what you selected. Continue?
     </message>
-    <message name="IDS_AUTOFILL_ASSISTANT_DETAILS_DIFFER_GO_BACK" desc="Shown on a button allowing going back when details differ.">
-      Go back
-    </message>
     <message name="IDS_AUTOFILL_ASSISTANT_FIRST_RUN_ACCESSIBILITY" desc="Accessibility description of Autofill Assistant first run screen is shown." formatter_data="android_java">
       Google Assistant in Chrome first run screen is shown
     </message>
@@ -32,7 +29,7 @@
       Continue
     </message>
     <message name="IDS_AUTOFILL_ASSISTANT_STOPPED" desc="Text label that is shown when stopping the Autofill Assistant.">
-        Google Assistant in Chrome stopping
-      </message>
+      Google Assistant in Chrome stopping
+    </message>
   </if>
 </grit-part>

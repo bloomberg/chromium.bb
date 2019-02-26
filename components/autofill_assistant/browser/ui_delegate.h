@@ -47,11 +47,18 @@ class UiDelegate {
   // Returns the current progress; a percentage.
   virtual int GetProgress() const = 0;
 
-  // Returns the current set of chips.
-  virtual const std::vector<Chip>& GetChips() const = 0;
+  // Returns the current set of suggestions.
+  virtual const std::vector<Chip>& GetSuggestions() const = 0;
 
-  // Selects a chip, from the set of chips returned by GetChips().
-  virtual void SelectChip(int chip) = 0;
+  // Selects a suggestion, from the set of suggestions returned by
+  // GetSuggestions().
+  virtual void SelectSuggestion(int suggestion) = 0;
+
+  // Returns the current set of actions.
+  virtual const std::vector<Chip>& GetActions() const = 0;
+
+  // Selects an action, from the set of actions returned by GetActions().
+  virtual void SelectAction(int action) = 0;
 
   // If the controller is waiting for payment request information, this
   // field contains a non-null options describing the request.

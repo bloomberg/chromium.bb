@@ -55,39 +55,22 @@ void ShowDetailsAction::InternalProcessAction(ActionDelegate* delegate,
       l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_CONTINUE_BUTTON);
   chips->back().type = Chip::Type::BUTTON_FILLED_BLUE;
   chips->back().callback = base::BindOnce(
-      &ShowDetailsAction::OnUserResponse, weak_ptr_factory_.GetWeakPtr(),
-      base::Unretained(delegate), previous_status_message,
-      /* success= */ true);
-
-  // Go back button.
-  chips->emplace_back();
-  chips->back().text =
-      l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_DETAILS_DIFFER_GO_BACK);
-  chips->back().type = Chip::Type::BUTTON_TEXT;
-  chips->back().callback = base::BindOnce(
-      &ShowDetailsAction::OnUserResponse, weak_ptr_factory_.GetWeakPtr(),
-      base::Unretained(delegate), previous_status_message,
-      /* success= */ false);
+      &ShowDetailsAction::OnUserConfirmation, weak_ptr_factory_.GetWeakPtr(),
+      base::Unretained(delegate), previous_status_message);
 
   delegate->Prompt(std::move(chips));
 }
 
-void ShowDetailsAction::OnUserResponse(
+void ShowDetailsAction::OnUserConfirmation(
     ActionDelegate* delegate,
-    const std::string& previous_status_message,
-    bool can_continue) {
-  if (!can_continue) {
-    delegate->Close();
-    OnActionProcessed(MANUAL_FALLBACK);
-  } else {
-    // Same details, without highlights.
-    Details details(proto_.show_details());
-    details.ClearChanges();
-    delegate->SetDetails(details);
-    // Restore status message
-    delegate->SetStatusMessage(previous_status_message);
-    OnActionProcessed(ACTION_APPLIED);
-  }
+    const std::string& previous_status_message) {
+  // Same details, without highlights.
+  Details details(proto_.show_details());
+  details.ClearChanges();
+  delegate->SetDetails(details);
+  // Restore status message
+  delegate->SetStatusMessage(previous_status_message);
+  OnActionProcessed(ACTION_APPLIED);
 }
 
 void ShowDetailsAction::OnActionProcessed(ProcessedActionStatusProto status) {

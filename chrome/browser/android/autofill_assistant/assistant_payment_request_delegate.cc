@@ -86,6 +86,12 @@ void AssistantPaymentRequestDelegate::OnGetPaymentInformation(
   ui_controller_->OnGetPaymentInformation(std::move(payment_info));
 }
 
+void AssistantPaymentRequestDelegate::OnCancelButtonClicked(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller) {
+  ui_controller_->OnCancelButtonClicked();
+}
+
 base::android::ScopedJavaGlobalRef<jobject>
 AssistantPaymentRequestDelegate::GetJavaObject() {
   return java_assistant_payment_request_delegate_;

@@ -216,22 +216,22 @@ TEST_F(ControllerTest, FetchAndRunScripts) {
   // Offering the choices: script1 and script2
   EXPECT_EQ(AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT,
             controller_->GetState());
-  EXPECT_THAT(controller_->GetChips(),
+  EXPECT_THAT(controller_->GetSuggestions(),
               UnorderedElementsAre(Field(&Chip::text, StrEq("script1")),
                                    Field(&Chip::text, StrEq("script2"))));
 
   // Choose script2 and run it successfully.
   EXPECT_CALL(*mock_service_, OnGetActions(StrEq("script2"), _, _, _, _, _))
       .WillOnce(RunOnceCallback<5>(true, ""));
-  controller_->SelectChip(1);
+  controller_->SelectSuggestion(1);
 
   // Offering the remaining choice: script1 as script2 can only run once.
   EXPECT_EQ(AutofillAssistantState::PROMPT, controller_->GetState());
-  EXPECT_THAT(controller_->GetChips(),
+  EXPECT_THAT(controller_->GetSuggestions(),
               ElementsAre(Field(&Chip::text, StrEq("script1"))));
 }
 
-TEST_F(ControllerTest, ReportPromptAndChipsChanged) {
+TEST_F(ControllerTest, ReportPromptAndSuggestionsChanged) {
   Start();
 
   SupportsScriptResponseProto script_response;
@@ -239,7 +239,7 @@ TEST_F(ControllerTest, ReportPromptAndChipsChanged) {
   AddRunnableScript(&script_response, "script2");
   SetNextScriptResponse(script_response);
 
-  EXPECT_CALL(mock_ui_controller_, OnChipsChanged(SizeIs(2)));
+  EXPECT_CALL(mock_ui_controller_, OnSuggestionsChanged(SizeIs(2)));
   EXPECT_CALL(
       mock_ui_controller_,
       OnStateChanged(AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT));
@@ -259,14 +259,15 @@ TEST_F(ControllerTest, ClearChipsWhenRunning) {
   {
     testing::InSequence seq;
     // Discover 2 scripts, script1 and script2.
-    EXPECT_CALL(mock_ui_controller_, OnChipsChanged(SizeIs(2)));
+    EXPECT_CALL(mock_ui_controller_, OnSuggestionsChanged(SizeIs(2)));
     // Set of chips is cleared while running script1.
-    EXPECT_CALL(mock_ui_controller_, OnChipsChanged(SizeIs(0)));
+    EXPECT_CALL(mock_ui_controller_, OnSuggestionsChanged(SizeIs(0)));
     // This test doesn't specify what happens after that.
-    EXPECT_CALL(mock_ui_controller_, OnChipsChanged(_)).Times(AnyNumber());
+    EXPECT_CALL(mock_ui_controller_, OnSuggestionsChanged(_))
+        .Times(AnyNumber());
   }
   SimulateNavigateToUrl(GURL("http://a.example.com/path"));
-  controller_->SelectChip(0);
+  controller_->SelectSuggestion(0);
 }
 
 TEST_F(ControllerTest, ShowFirstInitialStatusMessage) {
@@ -297,7 +298,7 @@ TEST_F(ControllerTest, ShowFirstInitialStatusMessage) {
 
   // Script3, with higher priority (lower number), wins.
   EXPECT_EQ("script3 prompt", controller_->GetStatusMessage());
-  EXPECT_THAT(controller_->GetChips(), SizeIs(4));
+  EXPECT_THAT(controller_->GetSuggestions(), SizeIs(4));
 }
 
 TEST_F(ControllerTest, Stop) {
@@ -333,7 +334,7 @@ TEST_F(ControllerTest, Reset) {
         .WillRepeatedly(RunOnceCallback<2>(true, script_response_str));
 
     SimulateNavigateToUrl(GURL("http://a.example.com/path"));
-    EXPECT_THAT(controller_->GetChips(),
+    EXPECT_THAT(controller_->GetSuggestions(),
                 ElementsAre(Field(&Chip::text, StrEq("reset"))));
 
     // 2. Execute the "reset" script, which contains a reset action.
@@ -348,14 +349,14 @@ TEST_F(ControllerTest, Reset) {
         std::make_unique<autofill::CreditCard>());
     EXPECT_TRUE(controller_->GetClientMemory()->has_selected_card());
 
-    controller_->SelectChip(0);
+    controller_->SelectSuggestion(0);
 
     // Resetting should have cleared the client memory
     EXPECT_FALSE(controller_->GetClientMemory()->has_selected_card());
 
     // The reset script should be available again, even though it's marked
     // RunOnce, as the script state should have been cleared as well.
-    EXPECT_THAT(controller_->GetChips(),
+    EXPECT_THAT(controller_->GetSuggestions(),
                 ElementsAre(Field(&Chip::text, StrEq("reset"))));
 }
 
@@ -469,12 +470,13 @@ TEST_F(ControllerTest, AutostartIsNotPassedToTheUi) {
   RunOnce(autostart);
   SetRepeatedScriptResponse(script_response);
 
-  EXPECT_CALL(mock_ui_controller_, OnChipsChanged(SizeIs(0u)))
+  EXPECT_CALL(mock_ui_controller_, OnSuggestionsChanged(SizeIs(0u)))
       .Times(AnyNumber());
-  EXPECT_CALL(mock_ui_controller_, OnChipsChanged(SizeIs(Gt(0u)))).Times(0);
+  EXPECT_CALL(mock_ui_controller_, OnSuggestionsChanged(SizeIs(Gt(0u))))
+      .Times(0);
 
   SimulateNavigateToUrl(GURL("http://a.example.com/path"));
-  EXPECT_THAT(controller_->GetChips(), SizeIs(0));
+  EXPECT_THAT(controller_->GetSuggestions(), SizeIs(0));
 }
 
 TEST_F(ControllerTest, InitialUrlLoads) {
@@ -562,6 +564,9 @@ TEST_F(ControllerTest, StateChanges) {
   EXPECT_THAT(states_, ElementsAre(AutofillAssistantState::RUNNING,
                                    AutofillAssistantState::PROMPT,
                                    AutofillAssistantState::STOPPED));
+
+  // The cancel button is removed.
+  EXPECT_TRUE(controller_->GetActions().empty());
 }
 
 TEST_F(ControllerTest, ShowUIWhenStarting) {

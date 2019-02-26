@@ -4,14 +4,20 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
+import static org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarouselModel.ALIGNMENT;
+
 import android.support.annotation.Nullable;
 
+import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarouselModel;
+import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
+import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChipType;
 import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
@@ -20,6 +26,10 @@ import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Bridge to native side autofill_assistant::UiControllerAndroid. It allows native side to control
@@ -197,6 +207,68 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
         }
     }
 
+    @CalledByNative
+    private void setSuggestions(int[] types, String[] texts) {
+        assert types.length == texts.length;
+        setChips(getModel().getSuggestionsModel(),
+                buildChips(types, texts, this::safeNativeOnSuggestionSelected));
+    }
+
+    private List<AssistantChip> buildChips(
+            int[] types, String[] texts, Callback<Integer> callback) {
+        List<AssistantChip> chips = new ArrayList<>();
+        for (int i = 0; i < types.length; i++) {
+            int index = i;
+            int type = types[i];
+            chips.add(new AssistantChip(type, texts[i], () -> callback.onResult(index)));
+        }
+        return chips;
+    }
+
+    @AssistantCarouselModel.Alignment
+    private int computeAlignment(List<AssistantChip> chips) {
+        int alignment = AssistantCarouselModel.Alignment.START;
+        for (AssistantChip chip : chips) {
+            if (chip.getType() != AssistantChipType.CHIP_ASSISTIVE) {
+                alignment = chips.size() == 1 ? AssistantCarouselModel.Alignment.CENTER
+                                              : AssistantCarouselModel.Alignment.END;
+            }
+        }
+        return alignment;
+    }
+
+    private void setChips(AssistantCarouselModel model, List<AssistantChip> chips) {
+        model.getChipsModel().set(chips);
+        model.set(ALIGNMENT, computeAlignment(chips));
+    }
+
+    @CalledByNative
+    private void setActions(
+            int[] types, String[] texts, boolean isStopping, boolean isShowingPaymentRequest) {
+        AssistantCarouselModel actionsModel = getModel().getActionsModel();
+        if (isShowingPaymentRequest) {
+            actionsModel.getChipsModel().set(Collections.emptyList());
+            return;
+        }
+
+        assert types.length == texts.length;
+        List<AssistantChip> chips = buildChips(types, texts, this::safeNativeOnActionSelected);
+        addCancelOrCloseButton(chips, isStopping);
+        setChips(actionsModel, chips);
+    }
+
+    private void addCancelOrCloseButton(List<AssistantChip> chips, boolean isStopping) {
+        int textResId = isStopping ? R.string.close : R.string.cancel;
+        chips.add(new AssistantChip(AssistantChipType.BUTTON_HAIRLINE,
+                mActivity.getResources().getString(textResId), () -> {
+                    if (isStopping) {
+                        safeNativeOnCloseButtonClicked();
+                    } else {
+                        safeNativeOnCancelButtonClicked();
+                    }
+                }));
+    }
+
     // Native methods.
     private void safeSnackbarResult(boolean undo) {
         if (mNativeUiController != 0) nativeSnackbarResult(mNativeUiController, undo);
@@ -213,4 +285,24 @@ class AutofillAssistantUiController implements AssistantCoordinator.Delegate {
     }
     private native void nativeOnFatalError(
             long nativeUiControllerAndroid, String message, @DropOutReason int reason);
+
+    private void safeNativeOnSuggestionSelected(int index) {
+        if (mNativeUiController != 0) nativeOnSuggestionSelected(mNativeUiController, index);
+    }
+    private native void nativeOnSuggestionSelected(long nativeUiControllerAndroid, int index);
+
+    private void safeNativeOnActionSelected(int index) {
+        if (mNativeUiController != 0) nativeOnActionSelected(mNativeUiController, index);
+    }
+    private native void nativeOnActionSelected(long nativeUiControllerAndroid, int index);
+
+    private void safeNativeOnCancelButtonClicked() {
+        if (mNativeUiController != 0) nativeOnCancelButtonClicked(mNativeUiController);
+    }
+    private native void nativeOnCancelButtonClicked(long nativeUiControllerAndroid);
+
+    private void safeNativeOnCloseButtonClicked() {
+        if (mNativeUiController != 0) nativeOnCloseButtonClicked(mNativeUiController);
+    }
+    private native void nativeOnCloseButtonClicked(long nativeUiControllerAndroid);
 }

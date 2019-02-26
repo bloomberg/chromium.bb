@@ -27,7 +27,8 @@ class AssistantModel extends PropertyModel {
     private final AssistantDetailsModel mDetailsModel = new AssistantDetailsModel();
     private final AssistantPaymentRequestModel mPaymentRequestModel =
             new AssistantPaymentRequestModel();
-    private final AssistantCarouselModel mCarouselModel = new AssistantCarouselModel();
+    private final AssistantCarouselModel mSuggestionsModel = new AssistantCarouselModel();
+    private final AssistantCarouselModel mActionsModel = new AssistantCarouselModel();
 
     AssistantModel() {
         super(ALLOW_SOFT_KEYBOARD, ALLOW_SWIPING_SHEET, VISIBLE);
@@ -53,9 +54,12 @@ class AssistantModel extends PropertyModel {
         return mPaymentRequestModel;
     }
 
-    @CalledByNative
-    public AssistantCarouselModel getCarouselModel() {
-        return mCarouselModel;
+    public AssistantCarouselModel getSuggestionsModel() {
+        return mSuggestionsModel;
+    }
+
+    public AssistantCarouselModel getActionsModel() {
+        return mActionsModel;
     }
 
     @CalledByNative

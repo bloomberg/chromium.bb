@@ -35,7 +35,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/google_api_keys.h"
-#include "jni/AssistantCarouselModel_jni.h"
 #include "jni/AssistantDetailsModel_jni.h"
 #include "jni/AssistantDetails_jni.h"
 #include "jni/AssistantHeaderModel_jni.h"
@@ -78,7 +77,6 @@ UiControllerAndroid::UiControllerAndroid(
     : overlay_delegate_(this),
       header_delegate_(this),
       payment_request_delegate_(this),
-      carousel_delegate_(this),
       weak_ptr_factory_(this) {
   java_autofill_assistant_ui_controller_ =
       Java_AutofillAssistantUiController_create(
@@ -121,7 +119,8 @@ void UiControllerAndroid::Attach(content::WebContents* web_contents,
     OnStatusMessageChanged(ui_delegate->GetStatusMessage());
     OnProgressChanged(ui_delegate->GetProgress());
     OnDetailsChanged(ui_delegate->GetDetails());
-    OnChipsChanged(ui_delegate->GetChips());
+    OnSuggestionsChanged(ui_delegate->GetSuggestions());
+    UpdateActions();
     OnPaymentRequestChanged(ui_delegate->GetPaymentRequestOptions());
 
     std::vector<RectF> area;
@@ -151,6 +150,8 @@ UiControllerAndroid::GetHeaderModel() {
 }
 
 void UiControllerAndroid::OnStateChanged(AutofillAssistantState new_state) {
+  UpdateActions();
+
   switch (new_state) {
     case AutofillAssistantState::STARTING:
       SetOverlayState(OverlayState::FULL);
@@ -253,13 +254,6 @@ void UiControllerAndroid::OnFeedbackButtonClicked() {
       base::android::ConvertUTF8ToJavaString(env, GetDebugContext()));
 }
 
-void UiControllerAndroid::OnCloseButtonClicked() {
-  ShowSnackbar(
-      l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_STOPPED),
-      base::BindOnce(&UiControllerAndroid::Shutdown,
-                     weak_ptr_factory_.GetWeakPtr(), Metrics::SHEET_CLOSED));
-}
-
 void UiControllerAndroid::Shutdown(Metrics::DropOutReason reason) {
   client_->Shutdown(reason);
 }
@@ -307,41 +301,85 @@ void UiControllerAndroid::DestroySelf() {
   client_->DestroyUI();
 }
 
-// Carousel related methods.
+// Suggestions and actions carousels related methods.
 
-base::android::ScopedJavaLocalRef<jobject>
-UiControllerAndroid::GetCarouselModel() {
-  return Java_AssistantModel_getCarouselModel(AttachCurrentThread(),
-                                              GetModel());
-}
-
-void UiControllerAndroid::OnChipsChanged(const std::vector<Chip>& chips) {
+void UiControllerAndroid::OnSuggestionsChanged(
+    const std::vector<Chip>& suggestions) {
   JNIEnv* env = AttachCurrentThread();
-  auto jmodel = GetCarouselModel();
-  if (chips.empty()) {
-    Java_AssistantCarouselModel_clearChips(env, jmodel);
-    return;
-  }
-
   std::vector<int> types;
   std::vector<std::string> texts;
-  for (const auto& chip : chips) {
-    types.emplace_back(chip.type);
-    texts.emplace_back(chip.text);
+  for (const auto& suggestion : suggestions) {
+    types.emplace_back(suggestion.type);
+    texts.emplace_back(suggestion.text);
   }
-  Java_AssistantCarouselModel_setChips(
-      env, jmodel, base::android::ToJavaIntArray(env, types),
-      base::android::ToJavaArrayOfStrings(env, texts),
-      carousel_delegate_.GetJavaObject());
+  Java_AutofillAssistantUiController_setSuggestions(
+      env, java_autofill_assistant_ui_controller_,
+      base::android::ToJavaIntArray(env, types),
+      base::android::ToJavaArrayOfStrings(env, texts));
 }
 
-void UiControllerAndroid::OnChipSelected(int index) {
+void UiControllerAndroid::UpdateActions() {
+  JNIEnv* env = AttachCurrentThread();
+  std::vector<int> types;
+  std::vector<std::string> texts;
+  for (const auto& action : ui_delegate_->GetActions()) {
+    types.emplace_back(action.type);
+    texts.emplace_back(action.text);
+  }
+
+  DCHECK(ui_delegate_);
+  bool is_stopped = ui_delegate_->GetState() == AutofillAssistantState::STOPPED;
+
+  // TODO(crbug.com/806868): Remove this boolean once payment request reuses the
+  // carousel.
+  bool is_showing_payment_request = ui_delegate_->GetPaymentRequestOptions();
+  Java_AutofillAssistantUiController_setActions(
+      env, java_autofill_assistant_ui_controller_,
+      base::android::ToJavaIntArray(env, types),
+      base::android::ToJavaArrayOfStrings(env, texts), is_stopped,
+      is_showing_payment_request);
+}
+
+void UiControllerAndroid::OnActionsChanged(const std::vector<Chip>& actions) {
+  UpdateActions();
+}
+
+void UiControllerAndroid::OnSuggestionSelected(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    jint index) {
   if (ui_delegate_)
-    ui_delegate_->SelectChip(index);
+    ui_delegate_->SelectSuggestion(index);
+}
+
+void UiControllerAndroid::OnActionSelected(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    jint index) {
+  if (ui_delegate_)
+    ui_delegate_->SelectAction(index);
+}
+
+void UiControllerAndroid::OnCancelButtonClicked(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller) {
+  OnCancelButtonClicked();
+}
+
+void UiControllerAndroid::OnCancelButtonClicked() {
+  ShowSnackbar(
+      l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_STOPPED),
+      base::BindOnce(&UiControllerAndroid::Shutdown,
+                     weak_ptr_factory_.GetWeakPtr(), Metrics::SHEET_CLOSED));
+}
+
+void UiControllerAndroid::OnCloseButtonClicked(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller) {
+  DestroySelf();
 }
 
 // Overlay related methods.
-
 base::android::ScopedJavaLocalRef<jobject>
 UiControllerAndroid::GetOverlayModel() {
   return Java_AssistantModel_getOverlayModel(AttachCurrentThread(), GetModel());
@@ -435,6 +473,7 @@ void UiControllerAndroid::OnPaymentRequestChanged(
     const PaymentRequestOptions* payment_options) {
   JNIEnv* env = AttachCurrentThread();
   auto jmodel = GetPaymentRequestModel();
+  UpdateActions();
   if (!payment_options) {
     Java_AssistantPaymentRequestModel_clearOptions(env, jmodel);
     return;

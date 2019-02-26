@@ -14,15 +14,13 @@ import org.chromium.content_public.browser.WebContents;
 
 // TODO(crbug.com/806868): Refactor AutofillAssistantPaymentRequest and merge with this file.
 // TODO(crbug.com/806868): Use mCarouselCoordinator to show chips.
+
 /**
  * Coordinator for the Payment Request.
  */
 public class AssistantPaymentRequestCoordinator {
-    @Nullable
-    private Runnable mOnVisibilityChanged;
     private final ViewGroup mView;
 
-    private AssistantPaymentRequestDelegate mDelegate;
     private AutofillAssistantPaymentRequest mPaymentRequest;
 
     public AssistantPaymentRequestCoordinator(Context context, AssistantPaymentRequestModel model) {
@@ -34,15 +32,10 @@ public class AssistantPaymentRequestCoordinator {
         setVisible(false);
 
         // Listen for model changes.
-        model.addObserver((source, propertyKey) -> {
-            if (AssistantPaymentRequestModel.DELEGATE == propertyKey) {
-                mDelegate = model.get(AssistantPaymentRequestModel.DELEGATE);
-            } else if (AssistantPaymentRequestModel.WEB_CONTENTS == propertyKey
-                    || AssistantPaymentRequestModel.OPTIONS == propertyKey) {
-                resetView(model.get(AssistantPaymentRequestModel.WEB_CONTENTS),
-                        model.get(AssistantPaymentRequestModel.OPTIONS));
-            }
-        });
+        model.addObserver((source, propertyKey)
+                                  -> resetView(model.get(AssistantPaymentRequestModel.WEB_CONTENTS),
+                                          model.get(AssistantPaymentRequestModel.OPTIONS),
+                                          model.get(AssistantPaymentRequestModel.DELEGATE)));
     }
 
     public View getView() {
@@ -51,39 +44,24 @@ public class AssistantPaymentRequestCoordinator {
 
     private void setVisible(boolean visible) {
         int visibility = visible ? View.VISIBLE : View.GONE;
-        boolean changed = mView.getVisibility() != visibility;
-        if (changed) {
+        if (mView.getVisibility() != visibility) {
             mView.setVisibility(visibility);
-            if (mOnVisibilityChanged != null) {
-                mOnVisibilityChanged.run();
-            }
         }
     }
 
-    /**
-     * Set the listener that should be triggered when changing the listener of this coordinator
-     * view.
-     */
-    public void setVisibilityChangedListener(Runnable listener) {
-        mOnVisibilityChanged = listener;
-    }
-
-    private void resetView(
-            @Nullable WebContents webContents, @Nullable AssistantPaymentRequestOptions options) {
+    private void resetView(@Nullable WebContents webContents,
+            @Nullable AssistantPaymentRequestOptions options,
+            @Nullable AssistantPaymentRequestDelegate delegate) {
         if (mPaymentRequest != null) {
             mPaymentRequest.close();
             mPaymentRequest = null;
         }
-        if (options == null || webContents == null) {
+        if (options == null || webContents == null || delegate == null) {
             setVisible(false);
             return;
         }
-        mPaymentRequest = new AutofillAssistantPaymentRequest(webContents, options);
-        mPaymentRequest.show(mView.getChildAt(0), selectedPaymentInformation -> {
-            if (mDelegate != null) {
-                mDelegate.onPaymentInformationSelected(selectedPaymentInformation);
-            }
-        });
+        mPaymentRequest = new AutofillAssistantPaymentRequest(webContents, options, delegate);
+        mPaymentRequest.show(mView.getChildAt(0));
         setVisible(true);
     }
 }

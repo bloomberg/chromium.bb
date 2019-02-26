@@ -36,6 +36,12 @@ class AssistantPaymentRequestDelegate {
         }
     }
 
+    public void onCancelButtonClicked() {
+        if (mNativeAssistantOverlayDelegate != 0) {
+            nativeOnCancelButtonClicked(mNativeAssistantOverlayDelegate);
+        }
+    }
+
     @CalledByNative
     private void clearNativePtr() {
         mNativeAssistantOverlayDelegate = 0;
@@ -46,4 +52,6 @@ class AssistantPaymentRequestDelegate {
             @Nullable PersonalDataManager.AutofillProfile address, @Nullable String payerName,
             @Nullable String payerPhone, @Nullable String payerEmail,
             boolean isTermsAndConditionsAccepted);
+
+    private native void nativeOnCancelButtonClicked(long nativeAssistantPaymentRequestDelegate);
 }
