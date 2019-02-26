@@ -33,7 +33,7 @@ void WritableStreamDefaultController::error(ScriptState* script_state,
                                             ScriptValue e) {
   // https://streams.spec.whatwg.org/#ws-default-controller-error
   //  2. Let state be this.[[controlledWritableStream]].[[state]].
-  const auto state = controlled_writable_stream_->state_;
+  const auto state = controlled_writable_stream_->GetState();
 
   //  3. If state is not "writable", return.
   if (state != WritableStreamNative::kWritable) {
@@ -92,13 +92,13 @@ void WritableStreamDefaultController::SetUp(
     ExceptionState& exception_state) {
   // https://streams.spec.whatwg.org/#set-up-writable-stream-default-controller
   //  2. Assert: stream.[[writableStreamController]] is undefined.
-  DCHECK(!stream->writable_stream_controller_);
+  DCHECK(!stream->Controller());
 
   //  3. Set controller.[[controlledWritableStream]] to stream.
   controller->controlled_writable_stream_ = stream;
 
   //  4. Set stream.[[writableStreamController]] to controller.
-  stream->writable_stream_controller_ = controller;
+  stream->SetController(controller);
 
   // Step not needed because queue is initialised during construction.
   //  5. Perform ! ResetQueue(controller).
@@ -160,8 +160,7 @@ void WritableStreamDefaultController::SetUp(
              state == WritableStreamNative::kErroring);
 
       //      b. Set controller.[[started]] to true.
-      WritableStreamDefaultController* controller =
-          stream_->writable_stream_controller_;
+      WritableStreamDefaultController* controller = stream_->Controller();
       controller->started_ = true;
 
       //      c. Perform ! WritableStreamDefaultControllerAdvanceQueueIfNeeded(
@@ -193,8 +192,7 @@ void WritableStreamDefaultController::SetUp(
              state == WritableStreamNative::kErroring);
 
       //      b. Set controller.[[started]] to true.
-      WritableStreamDefaultController* controller =
-          stream_->writable_stream_controller_;
+      WritableStreamDefaultController* controller = stream_->Controller();
       controller->started_ = true;
 
       //      c. Perform ! WritableStreamDealWithRejection(stream, r).
@@ -315,7 +313,7 @@ double WritableStreamDefaultController::GetChunkSize(
     WritableStreamDefaultController* controller,
     v8::Local<v8::Value> chunk) {
   if (!controller->strategy_size_algorithm_) {
-    DCHECK_NE(controller->controlled_writable_stream_->state_,
+    DCHECK_NE(controller->controlled_writable_stream_->GetState(),
               WritableStreamNative::kWritable);
     // No need to error since the stream is already stopped or stopping.
     return 1;
@@ -387,7 +385,7 @@ void WritableStreamDefaultController::Write(
   //  5. If ! WritableStreamCloseQueuedOrInFlight(stream) is false and
   //     stream.[[state]] is "writable",
   if (!WritableStreamNative::CloseQueuedOrInFlight(stream) &&
-      stream->state_ == WritableStreamNative::kWritable) {
+      stream->GetState() == WritableStreamNative::kWritable) {
     //      a. Let backpressure be !
     //         WritableStreamDefaultControllerGetBackpressure(controller).
     const bool backpressure = GetBackpressure(controller);
@@ -415,12 +413,12 @@ void WritableStreamDefaultController::AdvanceQueueIfNeeded(
   }
 
   //  3. If stream.[[inFlightWriteRequest]] is not undefined, return.
-  if (stream->in_flight_write_request_) {
+  if (stream->InFlightWriteRequest()) {
     return;
   }
 
   //  4. Let state be stream.[[state]].
-  const auto state = stream->state_;
+  const auto state = stream->GetState();
 
   //  5. If state is "closed" or "errored", return.
   if (state == WritableStreamNative::kClosed ||
@@ -466,7 +464,7 @@ void WritableStreamDefaultController::ErrorIfNeeded(
   // https://streams.spec.whatwg.org/#writable-stream-default-controller-error-if-needed
   //  1. If controller.[[controlledWritableStream]].[[state]] is "writable",
   //     perform ! WritableStreamDefaultControllerError(controller, error).
-  const auto state = controller->controlled_writable_stream_->state_;
+  const auto state = controller->controlled_writable_stream_->GetState();
   if (state == WritableStreamNative::kWritable) {
     Error(script_state, controller, error);
   }
@@ -577,7 +575,7 @@ void WritableStreamDefaultController::ProcessWrite(
       WritableStreamNative::FinishInFlightWrite(script_state, stream_);
 
       //      b. Let state be stream.[[state]].
-      const auto state = stream_->state_;
+      const auto state = stream_->GetState();
 
       //      c. Assert: state is "writable" or "erroring".
       DCHECK(state == WritableStreamNative::kWritable ||
@@ -628,7 +626,7 @@ void WritableStreamDefaultController::ProcessWrite(
           controller_(controller) {}
 
     void CallWithLocal(v8::Local<v8::Value> reason) override {
-      const auto state = stream_->state_;
+      const auto state = stream_->GetState();
       //  5. Upon rejection of sinkWritePromise with reason,
       //      a. If stream.[[state]] is "writable", perform !
       //         WritableStreamDefaultControllerClearAlgorithms(controller).
@@ -679,7 +677,7 @@ void WritableStreamDefaultController::Error(
   WritableStreamNative* stream = controller->controlled_writable_stream_;
 
   //  2. Assert: stream.[[state]] is "writable".
-  DCHECK_EQ(stream->state_, WritableStreamNative::kWritable);
+  DCHECK_EQ(stream->GetState(), WritableStreamNative::kWritable);
 
   //  3. Perform ! WritableStreamDefaultControllerClearAlgorithms(controller).
   ClearAlgorithms(controller);

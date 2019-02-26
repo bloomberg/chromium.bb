@@ -164,7 +164,7 @@ bool WritableStreamNative::locked(ScriptState* script_state,
                                   ExceptionState& exception_state) const {
   // https://streams.spec.whatwg.org/#ws-locked
   // 2. Return ! IsWritableStreamLocked(this).
-  return IsLockedInternal(this);
+  return IsLocked(this);
 }
 
 ScriptPromise WritableStreamNative::abort(ScriptState* script_state,
@@ -181,7 +181,7 @@ ScriptPromise WritableStreamNative::abort(ScriptState* script_state,
   // https://streams.spec.whatwg.org/#ws-abort
   //  2. If ! IsWritableStreamLocked(this) is true, return a promise rejected
   //     with a TypeError exception.
-  if (IsLockedInternal(this)) {
+  if (IsLocked(this)) {
     exception_state.ThrowTypeError("Cannot abort a locked stream");
     return ScriptPromise();
   }
@@ -260,6 +260,25 @@ WritableStreamNative* WritableStreamNative::Create(
   return stream;
 }
 
+v8::Local<v8::Value> WritableStreamNative::GetStoredError(
+    v8::Isolate* isolate) const {
+  return stored_error_.NewLocal(isolate);
+}
+
+void WritableStreamNative::SetCloseRequest(
+    StreamPromiseResolver* close_request) {
+  close_request_ = close_request;
+}
+
+void WritableStreamNative::SetController(
+    WritableStreamDefaultController* controller) {
+  writable_stream_controller_ = controller;
+}
+
+void WritableStreamNative::SetWriter(WritableStreamDefaultWriter* writer) {
+  writer_ = writer;
+}
+
 void WritableStreamNative::Trace(Visitor* visitor) {
   visitor->Trace(close_request_);
   visitor->Trace(in_flight_write_request_);
@@ -330,7 +349,7 @@ v8::Local<v8::Promise> WritableStreamNative::AddWriteRequest(
     WritableStreamNative* stream) {
   // https://streams.spec.whatwg.org/#writable-stream-add-write-request
   //  1. Assert: ! IsWritableStreamLocked(stream) is true.
-  DCHECK(IsLockedInternal(stream));
+  DCHECK(IsLocked(stream));
 
   //  2. Assert: stream.[[state]] is "writable".
   DCHECK_EQ(stream->state_, kWritable);
@@ -404,7 +423,7 @@ void WritableStreamNative::StartErroring(ScriptState* script_state,
   //  9. If ! WritableStreamHasOperationMarkedInFlight(stream) is false and
   //     controller.[[started]] is true, perform !
   //     WritableStreamFinishErroring(stream).
-  if (!HasOperationMarkedInFlight(stream) && controller->started_) {
+  if (!HasOperationMarkedInFlight(stream) && controller->Started()) {
     FinishErroring(script_state, stream);
   }
 }
@@ -616,7 +635,7 @@ void WritableStreamNative::FinishInFlightClose(ScriptState* script_state,
   //  9. If writer is not undefined, resolve writer.[[closedPromise]] with
   //     undefined.
   if (writer) {
-    writer->closed_promise_->ResolveWithUndefined(script_state);
+    writer->ClosedPromise()->ResolveWithUndefined(script_state);
   }
 
   // 10. Assert: stream.[[pendingAbortRequest]] is undefined.
@@ -739,11 +758,11 @@ void WritableStreamNative::RejectCloseAndClosedPromiseIfNeeded(
   //  4. If writer is not undefined,
   if (writer) {
     //      a. Reject writer.[[closedPromise]] with stream.[[storedError]].
-    writer->closed_promise_->Reject(script_state,
+    writer->ClosedPromise()->Reject(script_state,
                                     stream->stored_error_.NewLocal(isolate));
 
     //      b. Set writer.[[closedPromise]].[[PromiseIsHandled]] to true.
-    writer->closed_promise_->MarkAsHandled(isolate);
+    writer->ClosedPromise()->MarkAsHandled(isolate);
   }
 }
 
@@ -766,15 +785,15 @@ void WritableStreamNative::UpdateBackpressure(ScriptState* script_state,
     //      a. If backpressure is true, set writer.[[readyPromise]] to a new
     //         promise.
     if (backpressure) {
-      writer->ready_promise_ =
-          MakeGarbageCollected<StreamPromiseResolver>(script_state);
+      writer->SetReadyPromise(
+          MakeGarbageCollected<StreamPromiseResolver>(script_state));
     } else {
       //      b. Otherwise,
       //          i. Assert: backpressure is false.
       DCHECK(!backpressure);
 
       //         ii. Resolve writer.[[readyPromise]] with undefined.
-      writer->ready_promise_->ResolveWithUndefined(script_state);
+      writer->ReadyPromise()->ResolveWithUndefined(script_state);
     }
   }
 

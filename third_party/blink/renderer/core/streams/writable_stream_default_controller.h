@@ -35,9 +35,10 @@ class WritableStreamDefaultController final : public ScriptWrappable {
   void error(ScriptState*);
   void error(ScriptState*, ScriptValue e);
 
-  void Trace(Visitor*) override;
+  //
+  // Methods used by WritableStreamNative
+  //
 
- private:
   // https://streams.spec.whatwg.org/#ws-default-controller-private-abort
   v8::Local<v8::Promise> AbortSteps(ScriptState*, v8::Local<v8::Value> reason);
 
@@ -64,8 +65,9 @@ class WritableStreamDefaultController final : public ScriptWrappable {
                                       StrategySizeAlgorithm* size_algorithm,
                                       ExceptionState&);
 
-  // https://streams.spec.whatwg.org/#writable-stream-default-controller-clear-algorithms
-  static void ClearAlgorithms(WritableStreamDefaultController*);
+  //
+  // Methods used by WritableStreamDefaultWriter
+  //
 
   // https://streams.spec.whatwg.org/#writable-stream-default-controller-close
   static void Close(ScriptState*, WritableStreamDefaultController*);
@@ -83,6 +85,15 @@ class WritableStreamDefaultController final : public ScriptWrappable {
                     WritableStreamDefaultController*,
                     v8::Local<v8::Value> chunk,
                     double chunk_size);
+
+  // Exposed to WritableStreamNative. Not part of the standard.
+  bool Started() const { return started_; }
+
+  void Trace(Visitor*) override;
+
+ private:
+  // https://streams.spec.whatwg.org/#writable-stream-default-controller-clear-algorithms
+  static void ClearAlgorithms(WritableStreamDefaultController*);
 
   // https://streams.spec.whatwg.org/#writable-stream-default-controller-advance-queue-if-needed
   static void AdvanceQueueIfNeeded(ScriptState*,
@@ -108,9 +119,6 @@ class WritableStreamDefaultController final : public ScriptWrappable {
   static void Error(ScriptState*,
                     WritableStreamDefaultController*,
                     v8::Local<v8::Value> error);
-
-  friend class WritableStreamDefaultWriter;
-  friend class WritableStreamNative;
 
   // Most member variables correspond 1:1 with the internal slots in the
   // standard. See
