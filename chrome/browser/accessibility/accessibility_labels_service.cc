@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram_functions.h"
 #include "build/build_config.h"
+#include "chrome/browser/accessibility/accessibility_state_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -58,7 +59,8 @@ ui::AXMode AccessibilityLabelsService::GetAXMode() {
 
   // Hidden behind a feature flag.
   base::CommandLine& cmd = *base::CommandLine::ForCurrentProcess();
-  if (cmd.HasSwitch(::switches::kEnableExperimentalAccessibilityLabels)) {
+  if (cmd.HasSwitch(::switches::kEnableExperimentalAccessibilityLabels) &&
+      accessibility_state_utils::IsScreenReaderEnabled()) {
     bool enabled = profile_->GetPrefs()->GetBoolean(
         prefs::kAccessibilityImageLabelsEnabled);
     ax_mode.set_mode(ui::AXMode::kLabelImages, enabled);
@@ -68,6 +70,10 @@ ui::AXMode AccessibilityLabelsService::GetAXMode() {
 }
 
 void AccessibilityLabelsService::EnableLabelsServiceOnce() {
+  if (!accessibility_state_utils::IsScreenReaderEnabled()) {
+    return;
+  }
+
   // TODO(crbug.com/905419): Implement for Android, which does not support
   // BrowserList::GetInstance.
 #if !defined(OS_ANDROID)
@@ -90,8 +96,9 @@ void AccessibilityLabelsService::OnImageLabelsEnabledChanged() {
   // TODO(dmazzoni) Implement for Android, which doesn't support
   // AllTabContentses(). crbug.com/905419
 #if !defined(OS_ANDROID)
-  bool enabled =
-      profile_->GetPrefs()->GetBoolean(prefs::kAccessibilityImageLabelsEnabled);
+  bool enabled = profile_->GetPrefs()->GetBoolean(
+                     prefs::kAccessibilityImageLabelsEnabled) &&
+                 accessibility_state_utils::IsScreenReaderEnabled();
 
   for (auto* web_contents : AllTabContentses()) {
     if (web_contents->GetBrowserContext() != profile_)
