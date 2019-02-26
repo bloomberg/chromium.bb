@@ -7,9 +7,6 @@
 
 #include <type_traits>
 
-#include "base/callback.h"
-#include "base/time/time.h"
-
 namespace web {
 
 class BrowserState;
@@ -29,15 +26,9 @@ enum class ClearBrowsingDataMask {
 
 };
 
-// Clears the browsing data store in the Web layer. |modified_since| is the data
-// since which all data is removed. |closure| is called when the browsing data
-// have been cleared.
-// TODO(crbug.com/906199): Remove closure once WebStateObserver callback is
-// implemented.
+// Clears the browsing data store in the Web layer.
 void ClearBrowsingData(BrowserState* browser_state,
-                       ClearBrowsingDataMask types,
-                       base::Time modified_since,
-                       base::OnceClosure closure);
+                       ClearBrowsingDataMask types);
 
 // Implementation of bitwise "or", "and" operators and the corresponding
 // assignment operators too (as those are not automatically defined for
