@@ -222,11 +222,6 @@ void AssistantMainStage::OnCommittedQueryChanged(
 void AssistantMainStage::OnPendingQueryChanged(
     const ash::AssistantQuery& query) {
   query_view_->SetQuery(query);
-  UpdateFooter();
-}
-
-void AssistantMainStage::OnPendingQueryCleared() {
-  UpdateFooter();
 }
 
 void AssistantMainStage::OnResponseChanged(
