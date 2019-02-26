@@ -27,9 +27,9 @@ public class ThreadUtils {
 
     private static boolean sThreadAssertsDisabled;
 
-    public static void setWillOverrideUiThread() {
+    public static void setWillOverrideUiThread(boolean willOverrideUiThread) {
         synchronized (sLock) {
-            sWillOverride = true;
+            sWillOverride = willOverrideUiThread;
         }
     }
 
