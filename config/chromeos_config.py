@@ -3160,13 +3160,6 @@ def FactoryBuilders(site_config, boards_dict, ge_build_config):
               workspace_branch=branch,
           ))
 
-  site_config.Add(
-      'prototype-factorybranch',
-      site_config.templates.factorybranch,
-      boards=['nami'],
-      workspace_branch='factory-nami-10715.B',
-  )
-
 
 def ReleaseBuilders(site_config, boards_dict, ge_build_config):
   """Create all release builders.

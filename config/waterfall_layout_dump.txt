@@ -3341,7 +3341,6 @@
   poppy-tot-chromium-pfq-informational-tryjob
   poppy-unittest-stress
   pre-cq-launcher-tryjob
-  prototype-factorybranch-tryjob
   pyro-chrome-pfq-tryjob
   pyro-chromium-pfq-tryjob
   pyro-compile-only-pre-cq
