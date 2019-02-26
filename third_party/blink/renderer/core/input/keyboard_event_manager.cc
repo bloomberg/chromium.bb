@@ -42,7 +42,7 @@ namespace blink {
 namespace {
 
 #if defined(OS_WIN)
-static const unsigned short kHIGHBITMASKSHORT = 0x8000;
+static const uint16_t kHIGHBITMASKSHORT = 0x8000;
 #endif
 
 const int kVKeyProcessKey = 229;
