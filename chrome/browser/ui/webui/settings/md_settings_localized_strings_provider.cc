@@ -323,15 +323,15 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
   AddLocalizedStringsBulk(html_source, kLocalizedStrings,
                           base::size(kLocalizedStrings));
 
-  base::CommandLine& cmd = *base::CommandLine::ForCurrentProcess();
   html_source->AddBoolean(
       "showExperimentalA11yLabels",
-      cmd.HasSwitch(::switches::kEnableExperimentalAccessibilityLabels));
+      base::FeatureList::IsEnabled(features::kExperimentalAccessibilityLabels));
 
 #if defined(OS_CHROMEOS)
   html_source->AddString("a11yLearnMoreUrl",
                          chrome::kChromeAccessibilityHelpURL);
 
+  base::CommandLine& cmd = *base::CommandLine::ForCurrentProcess();
   html_source->AddBoolean(
       "showExperimentalA11yFeatures",
       cmd.HasSwitch(::switches::kEnableExperimentalAccessibilityFeatures));

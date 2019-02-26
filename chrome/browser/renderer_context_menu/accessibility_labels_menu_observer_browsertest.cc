@@ -12,9 +12,9 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/context_menu_params.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/accessibility/accessibility_switches.h"
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #else
@@ -30,17 +30,15 @@ class AccessibilityLabelsMenuObserverTest : public InProcessBrowserTest {
   AccessibilityLabelsMenuObserverTest();
 
   // InProcessBrowserTest overrides:
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kExperimentalAccessibilityLabels);
+    InProcessBrowserTest::SetUp();
+  }
   void SetUpOnMainThread() override { Reset(false); }
-
   void TearDownOnMainThread() override {
     observer_.reset();
     menu_.reset();
-  }
-
-  void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpDefaultCommandLine(command_line);
-    command_line->AppendSwitch(
-        switches::kEnableExperimentalAccessibilityLabels);
   }
 
   void Reset(bool incognito) {
@@ -60,6 +58,7 @@ class AccessibilityLabelsMenuObserverTest : public InProcessBrowserTest {
   AccessibilityLabelsMenuObserver* observer() { return observer_.get(); }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<AccessibilityLabelsMenuObserver> observer_;
   std::unique_ptr<MockRenderViewContextMenu> menu_;
   DISALLOW_COPY_AND_ASSIGN(AccessibilityLabelsMenuObserverTest);
