@@ -16,7 +16,11 @@ bool DevToolsAgentHostClient::MayAttachToBrowser() {
   return true;
 }
 
-bool DevToolsAgentHostClient::MayAffectLocalFiles() {
+bool DevToolsAgentHostClient::MayReadLocalFiles() {
+  return true;
+}
+
+bool DevToolsAgentHostClient::MayWriteLocalFiles() {
   return true;
 }
 
