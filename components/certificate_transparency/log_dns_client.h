@@ -17,6 +17,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/network_change_notifier.h"
 #include "net/log/net_log_with_source.h"
+#include "net/url_request/url_request_context.h"
 
 namespace net {
 class DnsClient;
@@ -49,6 +50,7 @@ class LogDnsClient : public net::NetworkChangeNotifier::DNSObserver {
   // limit will fail with net::TEMPORARILY_THROTTLED. Setting this to 0 will
   // disable this limit.
   LogDnsClient(std::unique_ptr<net::DnsClient> dns_client,
+               net::URLRequestContext* url_request_context,
                const net::NetLogWithSource& net_log,
                size_t max_concurrent_queries);
   // Must be deleted on the same thread that it was created on.
@@ -118,6 +120,8 @@ class LogDnsClient : public net::NetworkChangeNotifier::DNSObserver {
 
   // Used to perform DNS queries.
   std::unique_ptr<net::DnsClient> dns_client_;
+  // Used to perform DoH queries.
+  net::URLRequestContext* url_request_context_;
   // Passed to the DNS client for logging.
   net::NetLogWithSource net_log_;
   // The number of queries that are currently in-flight.

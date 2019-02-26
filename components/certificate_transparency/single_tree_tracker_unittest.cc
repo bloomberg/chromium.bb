@@ -32,6 +32,8 @@
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_util.h"
 #include "net/test/ct_test_util.h"
+#include "net/url_request/url_request_filter.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using net::ct::SignedCertificateTimestamp;
@@ -201,12 +203,23 @@ class SingleTreeTrackerTest : public ::testing::Test {
     net_change_notifier_ =
         base::WrapUnique(net::NetworkChangeNotifier::CreateMock());
     mock_dns_.InitializeDnsConfig();
+
+    net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
+    filter->AddHostnameInterceptor(
+        "https", "mock.http",
+        std::make_unique<MockLogDnsTraffic::DohJobInterceptor>());
+  }
+
+  void TearDown() override {
+    net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
+    filter->ClearHandlers();
   }
 
  protected:
   void CreateTreeTracker() {
     log_dns_client_ = std::make_unique<LogDnsClient>(
-        mock_dns_.CreateDnsClient(), net_log_with_source_, 1);
+        mock_dns_.CreateDnsClient(), new net::TestURLRequestContext(),
+        net_log_with_source_, 1);
 
     tree_tracker_ = std::make_unique<SingleTreeTracker>(
         log_, log_dns_client_.get(), &host_resolver_, &net_log_);

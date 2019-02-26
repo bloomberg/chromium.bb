@@ -357,6 +357,7 @@ class DnsHTTPAttempt : public DnsAttempt, public URLRequest::Delegate {
     HttpRequestHeaders extra_request_headers;
     extra_request_headers.SetHeader("Accept", kDnsOverHttpResponseContentType);
 
+    DCHECK(url_request_context);
     request_ = url_request_context->CreateRequest(
         url, request_priority_, this,
         net::DefineNetworkTrafficAnnotation("dns_over_https", R"(

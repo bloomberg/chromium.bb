@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "components/certificate_transparency/sth_observer.h"
 #include "net/cert/ct_verifier.h"
+#include "net/url_request/url_request_context.h"
 
 namespace net {
 class NetLog;
@@ -46,6 +47,7 @@ class TreeStateTracker : public net::CTVerifier::Observer, public STHObserver {
   // Observed STHs from logs not in this list will be simply ignored.
   TreeStateTracker(std::vector<scoped_refptr<const net::CTLogVerifier>> ct_logs,
                    net::HostResolver* host_resolver,
+                   net::URLRequestContext* url_request_context,
                    net::NetLog* net_log);
   ~TreeStateTracker() override;
 

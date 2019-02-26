@@ -161,6 +161,7 @@ class AuditProofQueryImpl : public LogDnsClient::AuditProofQuery {
   // AuditProofQuery does not outlive LogDnsClient, so it's safe to leave
   // ownership of |dns_client| with LogDnsClient.
   AuditProofQueryImpl(net::DnsClient* dns_client,
+                      net::URLRequestContext* url_request_context,
                       const std::string& domain_for_log,
                       const net::NetLogWithSource& net_log);
 
@@ -249,6 +250,8 @@ class AuditProofQueryImpl : public LogDnsClient::AuditProofQuery {
   base::OnceClosure cancellation_callback_;
   // The DnsClient to use for sending DNS requests to the CT log.
   net::DnsClient* dns_client_;
+  // The URLRequestContext to use for sending DoH requests to the CT log.
+  net::URLRequestContext* url_request_context_;
   // The most recent DNS request. Null if no DNS requests have been made.
   std::unique_ptr<net::DnsTransaction> current_dns_transaction_;
   // The most recent DNS response. Only valid so long as the corresponding DNS
@@ -262,12 +265,15 @@ class AuditProofQueryImpl : public LogDnsClient::AuditProofQuery {
   base::WeakPtrFactory<AuditProofQueryImpl> weak_ptr_factory_;
 };
 
-AuditProofQueryImpl::AuditProofQueryImpl(net::DnsClient* dns_client,
-                                         const std::string& domain_for_log,
-                                         const net::NetLogWithSource& net_log)
+AuditProofQueryImpl::AuditProofQueryImpl(
+    net::DnsClient* dns_client,
+    net::URLRequestContext* url_request_context,
+    const std::string& domain_for_log,
+    const net::NetLogWithSource& net_log)
     : next_state_(State::NONE),
       domain_for_log_(domain_for_log),
       dns_client_(dns_client),
+      url_request_context_(url_request_context),
       last_dns_response_(nullptr),
       net_log_(net_log),
       weak_ptr_factory_(this) {
@@ -475,15 +481,19 @@ bool AuditProofQueryImpl::StartDnsTransaction(const std::string& qname) {
       base::BindOnce(&AuditProofQueryImpl::OnDnsTransactionComplete,
                      weak_ptr_factory_.GetWeakPtr()),
       net_log_, net::SecureDnsMode::AUTOMATIC);
+  DCHECK(url_request_context_);
+  current_dns_transaction_->SetRequestContext(url_request_context_);
 
   current_dns_transaction_->Start();
   return true;
 }
 
 LogDnsClient::LogDnsClient(std::unique_ptr<net::DnsClient> dns_client,
+                           net::URLRequestContext* url_request_context,
                            const net::NetLogWithSource& net_log,
                            size_t max_in_flight_queries)
     : dns_client_(std::move(dns_client)),
+      url_request_context_(url_request_context),
       net_log_(net_log),
       in_flight_queries_(0),
       max_in_flight_queries_(max_in_flight_queries) {
@@ -527,7 +537,7 @@ net::Error LogDnsClient::QueryAuditProof(
     return net::ERR_TEMPORARILY_THROTTLED;
   }
 
-  auto* query = new AuditProofQueryImpl(dns_client_.get(),
+  auto* query = new AuditProofQueryImpl(dns_client_.get(), url_request_context_,
                                         domain_for_log.as_string(), net_log_);
   out_query->reset(query);
 
