@@ -105,7 +105,6 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest,
     web_ui_.reset();
     identity_test_env_adaptor_.reset();
     BrowserWithTestWindowTest::TearDown();
-    profile_.reset();
 
     EXPECT_EQ(did_user_explicitly_interact ? 0 : 1,
               user_action_tester()->GetActionCount("Signin_Abort_Signin"));
@@ -130,21 +129,17 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest,
     return identity_test_env_adaptor_->identity_test_env();
   }
 
-  // BrowserWithTestWindowTest:
-  TestingProfile* CreateProfile() override {
-    profile_ = IdentityTestEnvironmentProfileAdaptor::
-        CreateProfileForIdentityTestEnvironment(GetTestingFactories());
-    return profile_.get();
-  }
-
   BrowserWindow* CreateBrowserWindow() override {
     return new DialogTestBrowserWindow;
   }
 
   TestingProfile::TestingFactories GetTestingFactories() override {
-    return {
+    TestingProfile::TestingFactories factories = {
         {ConsentAuditorFactory::GetInstance(),
          base::BindRepeating(&BuildFakeConsentAuditor)}};
+    IdentityTestEnvironmentProfileAdaptor::
+        AppendIdentityTestEnvironmentFactories(&factories);
+    return factories;
   }
 
   const std::unordered_map<std::string, int>& GetStringToGrdIdMap() {
@@ -205,7 +200,6 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest,
   ScopedObserver<LoginUIService, LoginUIService::Observer>
       login_ui_service_observer_;
   base::HistogramTester histogram_tester_;
-  std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
       identity_test_env_adaptor_;
 
