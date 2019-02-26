@@ -18,32 +18,6 @@ const int kSlowOperationThresholdMs = 500;  // In ms.
 
 }  // namespace
 
-LoggedAsyncExtensionFunction::LoggedAsyncExtensionFunction()
-    : log_on_completion_(false) {
-  start_time_  = base::Time::Now();
-}
-
-LoggedAsyncExtensionFunction::~LoggedAsyncExtensionFunction() = default;
-
-void LoggedAsyncExtensionFunction::OnResponded() {
-  drive::EventLogger* logger = file_manager::util::GetLogger(GetProfile());
-  if (logger) {
-    int64_t elapsed = (base::Time::Now() - start_time_).InMilliseconds();
-    DCHECK(response_type());
-    bool success = *response_type() == SUCCEEDED;
-    if (log_on_completion_) {
-      logger->Log(logging::LOG_INFO, "%s[%d] %s. (elapsed time: %sms)", name(),
-                  request_id(), success ? "succeeded" : "failed",
-                  base::NumberToString(elapsed).c_str());
-    } else if (elapsed >= kSlowOperationThresholdMs) {
-      logger->Log(logging::LOG_WARNING,
-                  "PEFORMANCE WARNING: %s[%d] was slow. (elapsed time: %sms)",
-                  name(), request_id(), base::NumberToString(elapsed).c_str());
-    }
-  }
-  ChromeAsyncExtensionFunction::OnResponded();
-}
-
 LoggedUIThreadExtensionFunction::LoggedUIThreadExtensionFunction()
     : log_on_completion_(false) {
   start_time_ = base::Time::Now();

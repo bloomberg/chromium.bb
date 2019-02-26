@@ -14,6 +14,7 @@
 
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks.h"
+#include "chrome/browser/extensions/chrome_extension_function_details.h"
 
 namespace base {
 class FilePath;
