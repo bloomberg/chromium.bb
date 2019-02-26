@@ -328,11 +328,6 @@ void NGBoxFragmentPainter::PaintBlockFlowContents(
     return;
 
   if (paint_info.phase == PaintPhase::kMask) {
-    if (DrawingRecorder::UseCachedDrawingIfPossible(
-            paint_info.context, box_fragment_, paint_info.phase))
-      return;
-    DrawingRecorder recorder(paint_info.context, box_fragment_,
-                             paint_info.phase);
     PaintMask(paint_info, paint_offset);
     return;
   }
