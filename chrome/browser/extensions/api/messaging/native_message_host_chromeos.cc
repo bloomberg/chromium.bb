@@ -20,6 +20,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/extensions/arc_support_message_host.h"
+#include "chrome/browser/chromeos/diagnosticsd/diagnosticsd_messaging.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/constants.h"
@@ -128,6 +129,8 @@ static const BuiltInHost kBuiltInHost[] = {
     {arc::ArcSupportMessageHost::kHostName,
      arc::ArcSupportMessageHost::kHostOrigin, 1,
      &arc::ArcSupportMessageHost::Create},
+    {chromeos::kDiagnosticsdUiMessageHost, nullptr, 0,
+     &chromeos::CreateExtensionOwnedDiagnosticsdMessageHost},
 };
 
 bool MatchesSecurityOrigin(const BuiltInHost& host,
