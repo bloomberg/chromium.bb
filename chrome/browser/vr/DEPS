@@ -2,7 +2,8 @@ include_rules = [
   "+cc/animation",
   "+cc/base",
   "+cc/test",
-  "+cc/trees"
+  "+cc/trees",
+  "+device/vr/util",
 ]
 
 specific_include_rules = {

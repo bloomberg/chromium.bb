@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VR_SAMPLE_QUEUE_H_
-#define CHROME_BROWSER_VR_SAMPLE_QUEUE_H_
+#ifndef DEVICE_VR_UTIL_SAMPLE_QUEUE_H_
+#define DEVICE_VR_UTIL_SAMPLE_QUEUE_H_
 
 #include <vector>
 
 #include "base/macros.h"
+#include "device/vr/vr_export.h"
 
-namespace vr {
+namespace device {
 
 // Manages a fixed-size queue of samples including their current sum. Old
 // samples are automatically dropped when an added sample would exceed the
 // requested size.
-class SampleQueue {
+class DEVICE_VR_EXPORT SampleQueue {
  public:
   explicit SampleQueue(size_t window_size);
   ~SampleQueue();
@@ -36,6 +37,6 @@ class SampleQueue {
   DISALLOW_COPY_AND_ASSIGN(SampleQueue);
 };
 
-}  // namespace vr
+}  // namespace device
 
-#endif  // CHROME_BROWSER_VR_SAMPLE_QUEUE_H_
+#endif  // DEVICE_VR_UTIL_SAMPLE_QUEUE_H_

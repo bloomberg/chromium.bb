@@ -2,17 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/vr/fps_meter.h"
+#include "device/vr/util/fps_meter.h"
 
 #include "base/macros.h"
-#include "chrome/browser/vr/test/animation_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace vr {
+namespace device {
 
 namespace {
 
 static constexpr double kTolerance = 0.01;
+
+base::TimeTicks MicrosecondsToTicks(uint64_t us) {
+  return base::TimeDelta::FromMicroseconds(us) + base::TimeTicks();
+}
 
 }  // namespace
 
@@ -36,7 +39,7 @@ TEST(FPSMeter, AccurateFPSWithManyFrames) {
   EXPECT_FLOAT_EQ(0.0, meter.GetFPS());
 
   base::TimeTicks now = MicrosecondsToTicks(1);
-  base::TimeDelta frame_time = MicrosecondsToDelta(16666);
+  base::TimeDelta frame_time = base::TimeDelta::FromMicroseconds(16666);
 
   meter.AddFrame(now);
   EXPECT_FALSE(meter.CanComputeFPS());
@@ -70,4 +73,4 @@ TEST(FPSMeter, AccurateFPSWithHigherFramerate) {
   }
 }
 
-}  // namespace vr
+}  // namespace device

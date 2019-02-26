@@ -12,10 +12,10 @@
 #include "chrome/browser/vr/gl_texture_location.h"
 #include "chrome/browser/vr/graphics_delegate.h"
 #include "chrome/browser/vr/scheduler_browser_renderer_interface.h"
-#include "chrome/browser/vr/sliding_average.h"
 #include "chrome/browser/vr/vr_export.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
+#include "device/vr/util/sliding_average.h"
 
 namespace base {
 class TimeDelta;
@@ -127,8 +127,8 @@ class VR_EXPORT BrowserRenderer : public SchedulerBrowserRendererInterface {
 
   std::unique_ptr<UiTestState> ui_test_state_;
   std::unique_ptr<UiVisibilityState> ui_visibility_state_;
-  SlidingTimeDeltaAverage ui_processing_time_;
-  SlidingTimeDeltaAverage ui_controller_update_time_;
+  device::SlidingTimeDeltaAverage ui_processing_time_;
+  device::SlidingTimeDeltaAverage ui_controller_update_time_;
 
   // ui_ is using gl contexts during destruction (skia context specifically), so
   // it must be destroyed before graphics_delegate_.

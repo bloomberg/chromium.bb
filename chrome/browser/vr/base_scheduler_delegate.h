@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_VR_BASE_SCHEDULER_DELEGATE_H_
 
 #include "base/cancelable_callback.h"
-#include "chrome/browser/vr/fps_meter.h"
 #include "chrome/browser/vr/scheduler_delegate.h"
 #include "chrome/browser/vr/vr_export.h"
+#include "device/vr/util/fps_meter.h"
 
 namespace base {
 class TaskRunner;
@@ -51,7 +51,7 @@ class VR_EXPORT BaseSchedulerDelegate : public SchedulerDelegate {
   int webxr_spinner_timeout_seconds_;
   int webxr_initial_frame_timeout_seconds_;
 
-  FPSMeter webxr_fps_meter_;
+  device::FPSMeter webxr_fps_meter_;
 
   base::CancelableOnceClosure webxr_frame_timeout_closure_;
   base::CancelableOnceClosure webxr_spinner_timeout_closure_;

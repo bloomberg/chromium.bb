@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VR_FPS_METER_H_
-#define CHROME_BROWSER_VR_FPS_METER_H_
+#ifndef DEVICE_VR_UTIL_FPS_METER_H_
+#define DEVICE_VR_UTIL_FPS_METER_H_
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "chrome/browser/vr/sample_queue.h"
-#include "chrome/browser/vr/vr_export.h"
+#include "device/vr/util/sample_queue.h"
+#include "device/vr/vr_export.h"
 
-namespace vr {
+namespace device {
 
 // Computes fps based on submitted frame times.
-class VR_EXPORT FPSMeter {
+class DEVICE_VR_EXPORT FPSMeter {
  public:
   FPSMeter();
   explicit FPSMeter(size_t window_size);
@@ -34,6 +34,6 @@ class VR_EXPORT FPSMeter {
   DISALLOW_COPY_AND_ASSIGN(FPSMeter);
 };
 
-}  // namespace vr
+}  // namespace device
 
-#endif  // CHROME_BROWSER_VR_FPS_METER_H_
+#endif  // DEVICE_VR_UTIL_FPS_METER_H_
