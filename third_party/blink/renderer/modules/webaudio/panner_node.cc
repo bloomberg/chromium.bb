@@ -277,7 +277,11 @@ void PannerHandler::Uninitialize() {
     return;
 
   panner_.reset();
-  Listener()->RemovePanner(*this);
+  if (Listener()) {
+    // Listener may have gone in the same garbage collection cycle, which means
+    // that the panner does not need to be removed.
+    Listener()->RemovePanner(*this);
+  }
 
   AudioHandler::Uninitialize();
 }
