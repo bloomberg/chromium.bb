@@ -326,7 +326,6 @@ SmartDimModelImpl::CreatePredictionFromInactivityScore(float inactivity_score) {
     prediction.set_response(UserActivityEvent::ModelPrediction::NO_DIM);
   }
 
-  LogPowerMLSmartDimModelResult(SmartDimModelResult::kSuccess);
   return prediction;
 }
 
@@ -345,8 +344,7 @@ UserActivityEvent::ModelPrediction SmartDimModelImpl::ShouldDimTfNative(
     return prediction;
   }
 
-  // Logging for the success case will take place in
-  // CreatePredictionFromInactivityScore().
+  LogPowerMLSmartDimModelResult(SmartDimModelResult::kSuccess);
   return CreatePredictionFromInactivityScore(inactivity_score);
 }
 

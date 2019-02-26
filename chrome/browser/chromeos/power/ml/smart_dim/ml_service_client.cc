@@ -118,10 +118,10 @@ void MlServiceClientImpl::ExecuteCallback(
     prediction.set_response(UserActivityEvent::ModelPrediction::MODEL_ERROR);
     LogPowerMLSmartDimModelResult(SmartDimModelResult::kOtherError);
   } else {
-    LogPowerMLSmartDimModelResult(SmartDimModelResult::kSuccess);
     float inactivity_score =
         (outputs.value())[0]->data->get_float_list()->value[0];
     prediction = get_prediction_callback.Run(inactivity_score);
+    LogPowerMLSmartDimModelResult(SmartDimModelResult::kSuccess);
   }
 
   std::move(decision_callback).Run(prediction);

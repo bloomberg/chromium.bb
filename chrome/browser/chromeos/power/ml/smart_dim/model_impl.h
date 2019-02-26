@@ -91,12 +91,6 @@ class SmartDimModelImpl : public SmartDimModel {
 
   // Takes an |inactivity_score| returned from the ML model and, using that,
   // returns a ModelPrediction.
-  //
-  // NOTE: This function is only expected to be called after successful
-  // inference executions, and therefore does not have an error path.
-  // As a corollary, it also performs the logging of a successful inference
-  // call to UMA (doing this here allows the logging to take place in a Mojo
-  // callback in case the ML service was used).
   UserActivityEvent::ModelPrediction CreatePredictionFromInactivityScore(
       float inactivity_score);
 
