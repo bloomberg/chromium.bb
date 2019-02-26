@@ -165,6 +165,7 @@ Polymer({
     }.bind(this);
 
     const videoConstraints = {
+      facingMode: 'user',
       width: {ideal: CAPTURE_SIZE.width},
       height: {ideal: CAPTURE_SIZE.height},
     };
