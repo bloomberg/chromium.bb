@@ -701,7 +701,7 @@ class DnsConfigServiceWin::HostsReader : public SerialWorker {
   void DoWork() override {
     base::TimeTicks start_time = base::TimeTicks::Now();
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::MAY_BLOCK);
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
     HostsParseWinResult result = HOSTS_PARSE_WIN_UNREADABLE_HOSTS_FILE;
     if (ParseHostsFile(path_, &hosts_))
       result = AddLocalhostEntries(&hosts_);

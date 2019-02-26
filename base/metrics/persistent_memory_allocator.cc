@@ -29,7 +29,7 @@
 namespace {
 
 // Limit of memory segment size. It has to fit in an unsigned 32-bit number
-// and should be a power of 2 in order to accomodate almost any page size.
+// and should be a power of 2 in order to accommodate almost any page size.
 const uint32_t kSegmentMaxSize = 1 << 30;  // 1 GiB
 
 // A constant (random) value placed in the shared metadata to identify
@@ -1122,11 +1122,11 @@ void FilePersistentMemoryAllocator::FlushPartial(size_t length, bool sync) {
 
   base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
   if (sync)
-    scoped_blocking_call.emplace(base::BlockingType::MAY_BLOCK);
+    scoped_blocking_call.emplace(FROM_HERE, base::BlockingType::MAY_BLOCK);
 
 #if defined(OS_WIN)
   // Windows doesn't support asynchronous flush.
-  scoped_blocking_call.emplace(base::BlockingType::MAY_BLOCK);
+  scoped_blocking_call.emplace(FROM_HERE, base::BlockingType::MAY_BLOCK);
   BOOL success = ::FlushViewOfFile(data(), length);
   DPCHECK(success);
 #elif defined(OS_MACOSX)

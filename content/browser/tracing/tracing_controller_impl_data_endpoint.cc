@@ -92,7 +92,7 @@ class FileTraceDataEndpoint : public TracingController::TraceDataEndpoint {
 
   bool OpenFileIfNeededOnBlockingThread() {
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::MAY_BLOCK);
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
     if (file_ != nullptr)
       return true;
     file_ = base::OpenFile(file_path_, "w");

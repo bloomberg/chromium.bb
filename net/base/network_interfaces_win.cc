@@ -217,7 +217,7 @@ bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
   {
     // GetAdaptersAddresses() may require IO operations.
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::MAY_BLOCK);
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
 
     adapters = reinterpret_cast<IP_ADAPTER_ADDRESSES*>(&initial_buf);
     ULONG result =

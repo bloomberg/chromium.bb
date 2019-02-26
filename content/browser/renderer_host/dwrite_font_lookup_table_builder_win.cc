@@ -183,7 +183,7 @@ void DWriteFontLookupTableBuilder::BuildFontUniqueNameTable() {
 
   {
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::MAY_BLOCK);
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
     InitializeDirectWrite();
   }
 
@@ -191,14 +191,14 @@ void DWriteFontLookupTableBuilder::BuildFontUniqueNameTable() {
   font_unique_name_table_ = std::make_unique<blink::FontUniqueNameTable>();
 
   // The |stored_for_platform_version_identifier| proto field is used for
-  // persisting the table to disk and identifiying whether an update to the
+  // persisting the table to disk and identifying whether an update to the
   // table is needed when loading it back. This functionality is not used on
   // Windows, hence setting it to the empty string is sufficient.
   font_unique_name_table_->set_stored_for_platform_version_identifier("");
 
   {
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::MAY_BLOCK);
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
 
     outstanding_family_results_ = collection_->GetFontFamilyCount();
   }
@@ -254,7 +254,7 @@ DWriteFontLookupTableBuilder::ExtractPathAndNamesFromFamily(
     Microsoft::WRL::ComPtr<IDWriteFont> font;
     {
       base::ScopedBlockingCall scoped_blocking_call(
-          base::BlockingType::MAY_BLOCK);
+          FROM_HERE, base::BlockingType::MAY_BLOCK);
       hr = family->GetFont(font_index, &font);
     }
     if (FAILED(hr))
@@ -268,7 +268,7 @@ DWriteFontLookupTableBuilder::ExtractPathAndNamesFromFamily(
     uint32_t ttc_index = 0;
     {
       base::ScopedBlockingCall scoped_blocking_call(
-          base::BlockingType::MAY_BLOCK);
+          FROM_HERE, base::BlockingType::MAY_BLOCK);
       if (!AddFilesForFont(font.Get(), *windows_fonts_path, &path_set,
                            &custom_font_path_set, &ttc_index)) {
         // It's possible to not be able to retrieve a font file for a font that
@@ -307,7 +307,7 @@ DWriteFontLookupTableBuilder::ExtractPathAndNamesFromFamily(
           BOOL has_id_keyed_names;
           {
             base::ScopedBlockingCall scoped_blocking_call(
-                base::BlockingType::MAY_BLOCK);
+                FROM_HERE, base::BlockingType::MAY_BLOCK);
             hr = font->GetInformationalStrings(
                 font_info_string_id, &font_id_keyed_names, &has_id_keyed_names);
             if (FAILED(hr) || !has_id_keyed_names)
