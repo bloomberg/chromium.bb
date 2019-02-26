@@ -9,6 +9,7 @@
 #include "components/google/core/common/google_util.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#include "ios/chrome/browser/signin/identity_manager_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
@@ -18,14 +19,20 @@
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync/sync_encryption_passphrase_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync/sync_encryption_table_view_controller.h"
+#import "services/identity/public/objc/identity_manager_observer_bridge.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 @interface ManageSyncSettingsCoordinator () <
+    IdentityManagerObserverBridgeDelegate,
     ManageSyncSettingsCommandHandler,
-    ManageSyncSettingsTableViewControllerPresentationDelegate>
+    ManageSyncSettingsTableViewControllerPresentationDelegate> {
+  // Identity manager observer.
+  std::unique_ptr<identity::IdentityManagerObserverBridge>
+      _identityManagerObserverBridge;
+}
 
 // View controller.
 @property(nonatomic, strong)
@@ -55,6 +62,10 @@
   DCHECK(self.navigationController);
   [self.navigationController pushViewController:self.viewController
                                        animated:YES];
+  identity::IdentityManager* identityManager =
+      IdentityManagerFactory::GetForBrowserState(self.browserState);
+  _identityManagerObserverBridge.reset(
+      new identity::IdentityManagerObserverBridge(identityManager, self));
 }
 
 #pragma mark - ManageSyncSettingsTableViewControllerPresentationDelegate
@@ -63,6 +74,17 @@
     (ManageSyncSettingsTableViewController*)controller {
   DCHECK_EQ(self.viewController, controller);
   [self.delegate manageSyncSettingsCoordinatorWasPopped:self];
+}
+
+#pragma mark - IdentityManagerObserverBridgeDelegate
+
+- (void)onPrimaryAccountCleared:
+    (const CoreAccountInfo&)previousPrimaryAccountInfo {
+  if (self.viewController.navigationController) {
+    [self.navigationController popToViewController:self.viewController
+                                          animated:NO];
+    [self.navigationController popViewControllerAnimated:YES];
+  }
 }
 
 #pragma mark - ManageSyncSettingsCommandHandler
