@@ -11,12 +11,12 @@
 #+grade:0
 #
 #  Copyright (C) 2005 ViewPlus Technologies, Inc. www.viewplus.com
-#  Copyright (C) 2009 Lars Bjørndal <lars@lamasti.net>
-#  Copyright (C) 2015 NLB Norwegian library of talking books and braille, http://www.nlb.no/
+#  Copyright (C) 2009-2019 Lars Bjørndal <lars@lamasti.net>
+#  Copyright (C) 2015-2018 NLB Norwegian library of talking books and braille, http://www.nlb.no/
 #
 #-copyright: 2005, ViewPlus Technologies, Inc. www.viewplus.com
-#-copyright: 2009, Lars Bjørndal
-#-copyright: 2015, Norwegian library of talking books and braille (NLB), http://www.nlb.no/
+#-copyright: 2009-2019, Lars Bjørndal
+#-copyright: 2015-2018, Norwegian library of talking books and braille (NLB), http://www.nlb.no/
 #-license: LGPLv2.1
 #
 # Created June 9, 2005 by Leon Ungier <Leon.Ungier@ViewPlus.com> with
