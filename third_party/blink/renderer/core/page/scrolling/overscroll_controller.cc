@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/page/scrolling/overscroll_controller.h"
 
-#include "cc/input/overscroll_behavior.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/style/computed_style_base_constants.h"

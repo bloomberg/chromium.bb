@@ -62,6 +62,7 @@
 namespace cc {
 class PictureImageLayer;
 class PictureLayer;
+struct OverscrollBehavior;
 }  // namespace cc
 
 namespace blink {
