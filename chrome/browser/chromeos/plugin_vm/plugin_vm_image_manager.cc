@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/download/public/background_service/download_metadata.h"
 #include "components/download/public/background_service/download_service.h"
 #include "components/prefs/pref_service.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -88,11 +89,18 @@ void PluginVmImageManager::OnProgressUpdated(
     observer_->OnProgressUpdated(fraction_complete);
 }
 
-void PluginVmImageManager::OnDownloadCompleted(base::FilePath file_path) {
-  // TODO(https://crbug.com/928816): Call OnDownloadFailed() in case download
-  // verification using hashes fails.
-  downloaded_plugin_vm_image_archive_ = file_path;
+void PluginVmImageManager::OnDownloadCompleted(
+    const download::CompletionInfo& info) {
+  downloaded_plugin_vm_image_archive_ = info.path;
   current_download_guid_.clear();
+
+  if (!VerifyDownload(info.hash256)) {
+    LOG(ERROR) << "Downloaded PluginVm image archive hash doesn't match "
+               << "hash specified by the PluginVmImage policy";
+    OnDownloadFailed();
+    return;
+  }
+
   if (observer_)
     observer_->OnDownloadCompleted();
 }
@@ -119,7 +127,7 @@ void PluginVmImageManager::SetDownloadServiceForTesting(
 }
 
 void PluginVmImageManager::SetDownloadedPluginVmImageArchiveForTesting(
-    base::FilePath downloaded_plugin_vm_image_archive) {
+    const base::FilePath& downloaded_plugin_vm_image_archive) {
   downloaded_plugin_vm_image_archive_ = downloaded_plugin_vm_image_archive;
 }
 
@@ -188,7 +196,19 @@ bool PluginVmImageManager::IsDownloading() {
   return !current_download_guid_.empty();
 }
 
-bool PluginVmImageManager::VerifyDownload(std::string downloaded_archive_hash) {
+bool PluginVmImageManager::VerifyDownload(
+    const std::string& downloaded_archive_hash) {
+  // Hash should be there in the common case. However, there are situations,
+  // when hash could not be available, for example, when download is parallel
+  // or the completion of download is reported after restart. Therefore, hash
+  // not being specified should not resolve in download being considered
+  // unsuccessful, but should be logged.
+  // TODO(okalitova): Consider download as unsuccessful once hash should always
+  // be in place.
+  if (downloaded_archive_hash.empty()) {
+    LOG(WARNING) << "No hash for downloaded PluginVm image archive";
+    return true;
+  }
   const base::Value* plugin_vm_image_hash_ptr =
       profile_->GetPrefs()
           ->GetDictionary(plugin_vm::prefs::kPluginVmImage)
