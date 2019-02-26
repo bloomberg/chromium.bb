@@ -3170,7 +3170,7 @@
     },
     {
       "id": 294,
-      "cr_bugs": [931399],
+      "cr_bugs": [932879],
       "description": "Hardware overlays result in black videos on non-Intel GPUs",
       "os": {
         "type": "win"
