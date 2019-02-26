@@ -2,20 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.android_webview;
+package org.chromium.android_webview.gfx;
 
 import android.graphics.Canvas;
 import android.graphics.Picture;
 
+import org.chromium.android_webview.CleanupReference;
 import org.chromium.base.annotations.JNINamespace;
 
 import java.io.OutputStream;
 
-// A simple wrapper around a SkPicture, that allows final rendering to be performed using the
-// chromium skia library.
+/**
+ * A simple wrapper around a SkPicture, that allows final rendering to be performed using the
+ * chromium skia library.
+ */
 @JNINamespace("android_webview")
-class AwPicture extends Picture {
-
+public class AwPicture extends Picture {
     private long mNativeAwPicture;
 
     // There is no explicit destroy method on Picture base-class, so cleanup is always
@@ -37,7 +39,7 @@ class AwPicture extends Picture {
      * @param nativeAwPicture is an instance of the AwPicture native class. Ownership is
      *                        taken by this java instance.
      */
-    AwPicture(long nativeAwPicture) {
+    public AwPicture(long nativeAwPicture) {
         mNativeAwPicture = nativeAwPicture;
         mCleanupReference = new CleanupReference(this, new DestroyRunnable(nativeAwPicture));
     }
@@ -82,4 +84,3 @@ class AwPicture extends Picture {
     private native int nativeGetHeight(long nativeAwPicture);
     private native void nativeDraw(long nativeAwPicture, Canvas canvas);
 }
-

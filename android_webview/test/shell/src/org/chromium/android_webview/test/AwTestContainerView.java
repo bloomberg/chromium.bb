@@ -26,7 +26,7 @@ import android.view.inputmethod.InputConnection;
 import android.widget.FrameLayout;
 
 import org.chromium.android_webview.AwContents;
-import org.chromium.android_webview.AwDrawFnImpl;
+import org.chromium.android_webview.gfx.AwDrawFnImpl;
 import org.chromium.android_webview.shell.DrawFn;
 import org.chromium.base.Callback;
 import org.chromium.content_public.browser.WebContents;

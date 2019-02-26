@@ -15,7 +15,7 @@ import android.os.Trace;
 import android.util.SparseArray;
 import android.view.View;
 
-import org.chromium.android_webview.AwDrawFnImpl;
+import org.chromium.android_webview.gfx.AwDrawFnImpl;
 
 import java.lang.reflect.Method;
 
