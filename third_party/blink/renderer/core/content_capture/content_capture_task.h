@@ -15,12 +15,12 @@
 
 namespace blink {
 
-class ContentCaptureClient;
+class WebContentCaptureClient;
 class Document;
 class Node;
 
 // This class is used to capture the on-screen content and send them out
-// through ContentCaptureClient.
+// through WebContentCaptureClient.
 class CORE_EXPORT ContentCaptureTask : public RefCounted<ContentCaptureTask> {
   USING_FAST_MALLOC(ContentCaptureTask);
 
@@ -76,7 +76,7 @@ class CORE_EXPORT ContentCaptureTask : public RefCounted<ContentCaptureTask> {
   // Return true if the task should pause.
   virtual bool ShouldPause();
   virtual bool CaptureContent(std::vector<cc::NodeHolder>& data);
-  virtual ContentCaptureClient* GetContentCaptureClient();
+  virtual WebContentCaptureClient* GetWebContentCaptureClient();
 
  private:
   struct Session {

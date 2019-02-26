@@ -6,7 +6,8 @@
 
 #include "base/auto_reset.h"
 #include "cc/trees/layer_tree_host.h"
-#include "third_party/blink/renderer/core/content_capture/content_capture_client.h"
+#include "third_party/blink/public/web/web_content_capture_client.h"
+#include "third_party/blink/public/web/web_content_holder.h"
 #include "third_party/blink/renderer/core/content_capture/content_holder.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -62,7 +63,7 @@ bool ContentCaptureTask::CaptureContent() {
 
 void ContentCaptureTask::SendContent() {
   DCHECK(session_);
-  std::vector<scoped_refptr<ContentHolder>> content_batch;
+  std::vector<scoped_refptr<WebContentHolder>> content_batch;
   content_batch.reserve(kBatchSize);
   for (; session_->unsent != session_->captured_content.end() &&
          content_batch.size() < kBatchSize;
@@ -73,7 +74,8 @@ void ContentCaptureTask::SendContent() {
       if (node && node->GetLayoutObject() && !delegate_->HasSent(*node)) {
         content_holder = base::MakeRefCounted<ContentHolder>(*node);
         delegate_->OnSent(*node);
-        content_batch.push_back(content_holder);
+        content_batch.push_back(
+            base::MakeRefCounted<WebContentHolder>(content_holder));
       }
     } else if (session_->unsent->type == cc::NodeHolder::Type::kTextHolder &&
                session_->unsent->text_holder) {
@@ -82,20 +84,21 @@ void ContentCaptureTask::SendContent() {
       if (content_holder && content_holder->IsValid() &&
           !content_holder->HasSent()) {
         content_holder->SetHasSent();
-        content_batch.push_back(content_holder);
+        content_batch.push_back(
+            base::MakeRefCounted<WebContentHolder>(content_holder));
       }
     }
   }
   if (!content_batch.empty()) {
-    GetContentCaptureClient()->DidCaptureContent(content_batch,
-                                                 !has_first_data_sent_);
+    GetWebContentCaptureClient()->DidCaptureContent(content_batch,
+                                                    !has_first_data_sent_);
     has_first_data_sent_ = true;
   }
   if (session_->unsent == session_->captured_content.end())
     session_->captured_content.clear();
 }
 
-ContentCaptureClient* ContentCaptureTask::GetContentCaptureClient() {
+WebContentCaptureClient* ContentCaptureTask::GetWebContentCaptureClient() {
   // TODO(michaelbai): Enable this after integrate with document.
   // return document_->GetFrame()->Client()->GetContentCaptureClient();
   return nullptr;
@@ -112,7 +115,7 @@ bool ContentCaptureTask::ProcessSession() {
   }
   // Sent the detached nodes.
   if (!session_->detached_nodes.empty()) {
-    GetContentCaptureClient()->DidRemoveContent(session_->detached_nodes);
+    GetWebContentCaptureClient()->DidRemoveContent(session_->detached_nodes);
     session_->detached_nodes.clear();
   }
   session_.reset();
@@ -122,7 +125,7 @@ bool ContentCaptureTask::ProcessSession() {
 bool ContentCaptureTask::RunInternal() {
   base::AutoReset<TaskState> state(&task_state_, TaskState::kProcessRetryTask);
   // Already shutdown.
-  if (!document_ || !GetContentCaptureClient())
+  if (!document_ || !GetWebContentCaptureClient())
     return true;
 
   do {

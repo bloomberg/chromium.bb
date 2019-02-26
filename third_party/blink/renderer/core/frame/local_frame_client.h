@@ -101,6 +101,7 @@ class ResourceResponse;
 class SecurityOrigin;
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
+class WebContentCaptureClient;
 class WebCookieJar;
 class WebLayerTreeView;
 class WebLocalFrame;
@@ -122,6 +123,10 @@ enum class DownloadCrossOriginRedirects { kFollow, kNavigate };
 class CORE_EXPORT LocalFrameClient : public FrameClient {
  public:
   ~LocalFrameClient() override = default;
+
+  virtual WebContentCaptureClient* GetWebContentCaptureClient() const {
+    return nullptr;
+  }
 
   virtual WebLocalFrame* GetWebFrame() const { return nullptr; }
 

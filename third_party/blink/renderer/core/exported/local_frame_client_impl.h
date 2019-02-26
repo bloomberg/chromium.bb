@@ -63,7 +63,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   WebLocalFrameImpl* GetWebFrame() const override;
 
   // LocalFrameClient ----------------------------------------------
-
+  WebContentCaptureClient* GetWebContentCaptureClient() const override;
   void DidCreateNewDocument() override;
   // Notifies the WebView delegate that the JS window object has been cleared,
   // giving it a chance to bind native objects to the window before script
