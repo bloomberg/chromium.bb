@@ -2,5 +2,5 @@
 
 * [Home][home]
 
-[home]: /README.md
-[logo]: /images/chrome_speed_color.png
+[home]: /docs/speed/README.md
+[logo]: /docs/speed/images/chrome_speed_color_32x32.png
