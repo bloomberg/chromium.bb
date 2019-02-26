@@ -257,6 +257,130 @@ TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacter', function() {
   });
 });
 
+TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacterAllAttributes', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*!
+    <div role="textbox" contenteditable>
+      <p style="font-size:20px; font-family:times">
+        <b style="color:#ff0000">Move</b> <i>through</i>
+        <u style="font-family:georgia">text</u> by
+        <strike style="font-size:12px; color:#0000ff">character</strike> test
+      </p>
+    </div>
+    <button id="go">Go</button>
+
+    <script>
+      document.getElementById('go').addEventListener('click', function() {
+        var sel = getSelection();
+        sel.modify('move', 'forward', 'character');
+      }, true);
+    </script>
+  */}, function(root) {
+    var input = root.find({role: RoleType.TEXT_FIELD});
+    var go = root.find({role: RoleType.BUTTON});
+    var moveByChar = go.doDefault.bind(go);
+    var lineText = 'Move through text by character test mled';
+
+    this.listenOnce(input, chrome.automation.EventType.FOCUS, function() {
+      mockFeedback.call(moveByChar)
+          .expectSpeech('o').expectBraille(lineText, { startIndex: 1, endIndex: 1 })
+          .call(moveByChar)
+          .expectSpeech('v').expectBraille(lineText, { startIndex: 2, endIndex: 2 })
+          .call(moveByChar)
+          .expectSpeech('e')
+          .expectSpeech('Bold end')
+          .expectBraille(lineText, { startIndex: 3, endIndex: 3 })
+          .call(moveByChar)
+          .expectSpeech(' ')
+          .expectSpeech('Black, 100% opacity. start')
+          .expectBraille(lineText, { startIndex: 4, endIndex: 4 })
+          .call(moveByChar)
+          .expectSpeech('t')
+          .expectSpeech('Italic start')
+          .expectBraille(lineText, { startIndex: 5, endIndex: 5 })
+          .call(moveByChar)
+          .expectSpeech('h').expectBraille(lineText, { startIndex: 6, endIndex: 6 })
+          .call(moveByChar)
+          .expectSpeech('r').expectBraille(lineText, { startIndex: 7, endIndex: 7 })
+          .call(moveByChar)
+          .expectSpeech('o').expectBraille(lineText, { startIndex: 8, endIndex: 8 })
+          .call(moveByChar)
+          .expectSpeech('u').expectBraille(lineText, { startIndex: 9, endIndex: 9 })
+          .call(moveByChar)
+          .expectSpeech('g').expectBraille(lineText, { startIndex: 10, endIndex: 10 })
+          .call(moveByChar)
+          .expectSpeech('h')
+          .expectSpeech('Italic end')
+          .expectBraille(lineText, { startIndex: 11, endIndex: 11 })
+          .call(moveByChar)
+          .expectSpeech(' ').expectBraille(lineText, { startIndex: 12, endIndex: 12 })
+          .call(moveByChar)
+          .expectSpeech('t')
+          .expectSpeech('Underline start')
+          .expectSpeech('georgia start')
+          .expectBraille(lineText, { startIndex: 13, endIndex: 13 })
+          .call(moveByChar)
+          .expectSpeech('e').expectBraille(lineText, { startIndex: 14, endIndex: 14 })
+          .call(moveByChar)
+          .expectSpeech('x').expectBraille(lineText, { startIndex: 15, endIndex: 15 })
+          .call(moveByChar)
+          .expectSpeech('t')
+          .expectSpeech('Underline end')
+          .expectBraille(lineText, { startIndex: 16, endIndex: 16 })
+          .call(moveByChar)
+          .expectSpeech(' ')
+          .expectSpeech('times start')
+          .expectBraille(lineText, { startIndex: 17, endIndex: 17 })
+          .call(moveByChar)
+          .expectSpeech('b').expectBraille(lineText, { startIndex: 18, endIndex: 18 })
+          .call(moveByChar)
+          .expectSpeech('y').expectBraille(lineText, { startIndex: 19, endIndex: 19 })
+          .call(moveByChar)
+          .expectSpeech(' ').expectBraille(lineText, { startIndex: 20, endIndex: 20 })
+          .call(moveByChar)
+          .expectSpeech('c')
+          .expectSpeech('Size 12 start')
+          .expectSpeech('Blue, 100% opacity. start')
+          .expectSpeech('Strike through start')
+          .expectBraille(lineText, { startIndex: 21, endIndex: 21 })
+          .call(moveByChar)
+          .expectSpeech('h').expectBraille(lineText, { startIndex: 22, endIndex: 22 })
+          .call(moveByChar)
+          .expectSpeech('a').expectBraille(lineText, { startIndex: 23, endIndex: 23 })
+          .call(moveByChar)
+          .expectSpeech('r').expectBraille(lineText, { startIndex: 24, endIndex: 24 })
+          .call(moveByChar)
+          .expectSpeech('a').expectBraille(lineText, { startIndex: 25, endIndex: 25 })
+          .call(moveByChar)
+          .expectSpeech('c').expectBraille(lineText, { startIndex: 26, endIndex: 26 })
+          .call(moveByChar)
+          .expectSpeech('t').expectBraille(lineText, { startIndex: 27, endIndex: 27 })
+          .call(moveByChar)
+          .expectSpeech('e').expectBraille(lineText, { startIndex: 28, endIndex: 28 })
+          .call(moveByChar)
+          .expectSpeech('r')
+          .expectSpeech('Strike through end')
+          .expectBraille(lineText, { startIndex: 29, endIndex: 29 })
+          .call(moveByChar)
+          .expectSpeech(' ')
+          .expectSpeech('Size 20 start')
+          .expectSpeech('Black, 100% opacity. start')
+          .expectBraille(lineText, { startIndex: 30, endIndex: 30 })
+          .call(moveByChar)
+          .expectSpeech('t').expectBraille(lineText, { startIndex: 31, endIndex: 31 })
+          .call(moveByChar)
+          .expectSpeech('e').expectBraille(lineText, { startIndex: 32, endIndex: 32 })
+          .call(moveByChar)
+          .expectSpeech('s').expectBraille(lineText, { startIndex: 33, endIndex: 33 })
+          .call(moveByChar)
+          .expectSpeech('t').expectBraille(lineText, { startIndex: 34, endIndex: 34 })
+
+          .replay();
+    });
+    input.focus();
+  });
+});
+
 // Tests specifically for cursor workarounds.
 TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacterNodeWorkaround', function() {
   var mockFeedback = this.createMockFeedback();
