@@ -1,0 +1,32 @@
+[
+  {
+    "cmd": [
+      "gsutil",
+      "-m",
+      "cp",
+      "-Z",
+      "/foo/file",
+      "gs://bar-bucket/file"
+    ],
+    "name": "upload test file",
+    "~followup_annotations": [
+      "step returned non-zero exit code: 1",
+      "@@@STEP_FAILURE@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "gsutil",
+      "-m",
+      "cp",
+      "-Z",
+      "/foo/file",
+      "gs://bar-bucket/file"
+    ],
+    "name": "upload test file (attempt 2)"
+  },
+  {
+    "jsonResult": null,
+    "name": "$result"
+  }
+]
