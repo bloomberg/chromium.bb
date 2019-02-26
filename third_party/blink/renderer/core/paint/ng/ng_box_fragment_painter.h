@@ -106,9 +106,6 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                        const LayoutRect&,
                        const Color& background_color,
                        BackgroundBleedAvoidance = kBackgroundBleedNone);
-  void PaintSymbol(const NGPaintFragment&,
-                   const PaintInfo&,
-                   const LayoutPoint& paint_offset);
   void PaintCarets(const PaintInfo&, const LayoutPoint& paint_offset);
 
   void RecordHitTestData(const PaintInfo& paint_info,
