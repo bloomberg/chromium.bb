@@ -163,8 +163,11 @@
 
 #pragma mark - Property accessors
 
-- (void)setLocationBarView:(UIView*)locationBarView {
-  self.view.locationBarView = locationBarView;
+- (void)setLocationBarViewController:
+    (UIViewController*)locationBarViewController {
+  [self addChildViewController:locationBarViewController];
+  [locationBarViewController didMoveToParentViewController:self];
+  self.view.locationBarView = locationBarViewController.view;
 }
 
 - (void)setIsNTP:(BOOL)isNTP {

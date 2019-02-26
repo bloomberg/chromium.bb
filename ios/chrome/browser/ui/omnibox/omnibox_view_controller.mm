@@ -118,6 +118,13 @@ const CGFloat kClearButtonSize = 28.0f;
            object:self.textField];
 }
 
+- (void)viewWillDisappear:(BOOL)animated {
+  [super viewWillDisappear:animated];
+  self.textField.selectedTextRange =
+      [self.textField textRangeFromPosition:self.textField.beginningOfDocument
+                                 toPosition:self.textField.beginningOfDocument];
+}
+
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
   [self updateLeadingImageVisibility];

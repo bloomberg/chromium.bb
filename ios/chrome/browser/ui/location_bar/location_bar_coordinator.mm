@@ -103,8 +103,8 @@ const int kLocationAuthorizationStatusCount = 4;
 
 #pragma mark - public
 
-- (UIView*)view {
-  return self.viewController.view;
+- (UIViewController*)locationBarViewController {
+  return self.viewController;
 }
 
 - (void)start {

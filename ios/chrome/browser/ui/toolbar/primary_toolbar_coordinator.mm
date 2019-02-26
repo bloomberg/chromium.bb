@@ -78,7 +78,8 @@
   self.orchestrator.toolbarAnimatee = self.viewController;
 
   [self setUpLocationBar];
-  self.viewController.locationBarView = self.locationBarCoordinator.view;
+  self.viewController.locationBarViewController =
+      self.locationBarCoordinator.locationBarViewController;
   self.orchestrator.locationBarAnimatee =
       [self.locationBarCoordinator locationBarAnimatee];
 
@@ -203,16 +204,16 @@
 
   // Don't do anything for a live non-ntp tab.
   if (webState == self.webStateList->GetActiveWebState() && !isNTP) {
-    [self.locationBarCoordinator.view setHidden:NO];
+    [self.locationBarCoordinator.locationBarViewController.view setHidden:NO];
   } else {
     self.viewController.view.hidden = NO;
-    [self.locationBarCoordinator.view setHidden:YES];
+    [self.locationBarCoordinator.locationBarViewController.view setHidden:YES];
   }
 }
 
 - (void)resetToolbarAfterSideSwipeSnapshot {
   [super resetToolbarAfterSideSwipeSnapshot];
-  [self.locationBarCoordinator.view setHidden:NO];
+  [self.locationBarCoordinator.locationBarViewController.view setHidden:NO];
 }
 
 #pragma mark - Private
