@@ -24,6 +24,8 @@ void AnalyzeRarFile(base::File rar_file,
                     base::File temp_file,
                     ArchiveAnalyzerResults* results) {
   results->success = false;
+  results->file_count = 0;
+  results->directory_count = 0;
   auto archive = std::make_unique<third_party_unrar::Archive>();
   archive->SetFileHandle(rar_file.GetPlatformFile());
 
@@ -81,6 +83,11 @@ void AnalyzeRarFile(base::File rar_file,
 
         UpdateArchiveAnalyzerResultsWithFile(
             file_path, &temp_file, archive->FileHead.Encrypted, results);
+
+        if (archive->FileHead.Dir)
+          results->directory_count++;
+        else
+          results->file_count++;
       }
     }
   } else {
@@ -96,7 +103,6 @@ void AnalyzeRarFile(base::File rar_file,
       std::string filename(wide_filename.begin(), wide_filename.end());
       base::FilePath file_path(filename);
 #endif  // OS_WIN
-
       bool is_executable =
           FileTypePolicies::GetInstance()->IsCheckedBinaryFile(file_path);
       bool is_archive =
@@ -109,6 +115,11 @@ void AnalyzeRarFile(base::File rar_file,
       std::string basename_utf8(basename.AsUTF8Unsafe());
       bool is_utf8_valid_basename =
           base::StreamingUtf8Validator::Validate(basename_utf8);
+
+      if (archive->FileHead.Dir)
+        results->directory_count++;
+      else
+        results->file_count++;
 
       if (is_archive) {
         results->has_archive = true;
