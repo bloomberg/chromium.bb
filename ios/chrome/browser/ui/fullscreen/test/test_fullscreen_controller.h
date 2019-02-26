@@ -45,6 +45,8 @@ class TestFullscreenController : public FullscreenController {
  private:
   // The model.
   FullscreenModel* model_ = nullptr;
+  // The WebStateList.
+  WebStateList* web_state_list_ = nullptr;
   // The broadcaster.
   ChromeBroadcaster* broadcaster_ = nil;
   // The observers.
