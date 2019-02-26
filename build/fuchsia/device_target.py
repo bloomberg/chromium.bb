@@ -39,7 +39,7 @@ class DeviceTarget(target.Target):
     super(DeviceTarget, self).__init__(output_dir, target_cpu)
 
     self._port = 22
-    self._auto = not host or not ssh_config
+    self._auto = not ssh_config
     self._new_instance = True
     self._system_log_file = system_log_file
     self._loglistener = None
@@ -74,7 +74,8 @@ class DeviceTarget(target.Target):
 
   def __Discover(self, node_name):
     """Returns the IP address and port of a Fuchsia instance discovered on
-    the local area network."""
+    the local area network. If |node_name| is None then the first discovered
+    device is returned. """
 
     # TODO(crbug.com/929874): Use the nodename when it's respected by Zircon.
     dev_finder_path = os.path.join(SDK_ROOT, 'tools', 'dev_finder')
@@ -112,48 +113,60 @@ class DeviceTarget(target.Target):
           self._new_instance = False
           return
 
-      logging.info('Netbooting Fuchsia. ' +
-                   'Please ensure that your device is in bootloader mode.')
-      bootserver_path = os.path.join(SDK_ROOT, 'tools', 'bootserver')
-      bootserver_command = [
-          bootserver_path,
-          '-1',
-          '--fvm',
-          EnsurePathExists(boot_data.GetTargetFile(self._GetTargetSdkArch(),
-                                                   'fvm.sparse.blk')),
-          EnsurePathExists(boot_data.GetBootImage(self._output_dir,
-                                                  self._GetTargetSdkArch()))]
+      self.__ProvisionDevice(node_name)
 
-      if self._GetTargetSdkArch() == 'x64':
-        bootserver_command += [
-            '--efi',
-            EnsurePathExists(boot_data.GetTargetFile(self._GetTargetSdkArch(),
-                                                     'local.esp.blk'))]
-
-      bootserver_command += ['--']
-      bootserver_command += boot_data.GetKernelArgs(self._output_dir)
-
-      logging.debug(' '.join(bootserver_command))
-      subprocess.check_call(bootserver_command)
-
-      # Start loglistener to save system logs.
-      if self._system_log_file:
-        loglistener_path = os.path.join(SDK_ROOT, 'tools', 'loglistener')
-        self._loglistener = subprocess.Popen(
-            [loglistener_path, node_name],
-            stdout=self._system_log_file,
-            stderr=subprocess.STDOUT, stdin=open(os.devnull))
-
-      logging.debug('Waiting for device to join network.')
-      for retry in xrange(CONNECT_RETRY_COUNT):
-        self._host = self.__Discover(node_name)
-        if self._host:
-          break
-        time.sleep(CONNECT_RETRY_WAIT_SECS)
+    else:
       if not self._host:
-        raise Exception('Couldn\'t connect to device.')
+        self._host = self.__Discover(node_name=None)
+        if not self._host:
+          raise Exception('No Fuchsia devices found.')
 
-      logging.debug('host=%s, port=%d' % (self._host, self._port))
+      if not self._WaitUntilReady(retries=0):
+        raise Exception('Could not conenct to %s' % self._host)
+
+  def __ProvisionDevice(self, node_name):
+    logging.info('Netbooting Fuchsia. ' +
+                 'Please ensure that your device is in bootloader mode.')
+    bootserver_path = os.path.join(SDK_ROOT, 'tools', 'bootserver')
+    bootserver_command = [
+        bootserver_path,
+        '-1',
+        '--fvm',
+        EnsurePathExists(boot_data.GetTargetFile(self._GetTargetSdkArch(),
+                                                 'fvm.sparse.blk')),
+        EnsurePathExists(boot_data.GetBootImage(self._output_dir,
+                                                self._GetTargetSdkArch()))]
+
+    if self._GetTargetSdkArch() == 'x64':
+      bootserver_command += [
+          '--efi',
+          EnsurePathExists(boot_data.GetTargetFile(self._GetTargetSdkArch(),
+                                                   'local.esp.blk'))]
+
+    bootserver_command += ['--']
+    bootserver_command += boot_data.GetKernelArgs(self._output_dir)
+
+    logging.debug(' '.join(bootserver_command))
+    subprocess.check_call(bootserver_command)
+
+    # Start loglistener to save system logs.
+    if self._system_log_file:
+      loglistener_path = os.path.join(SDK_ROOT, 'tools', 'loglistener')
+      self._loglistener = subprocess.Popen(
+          [loglistener_path, node_name],
+          stdout=self._system_log_file,
+          stderr=subprocess.STDOUT, stdin=open(os.devnull))
+
+    logging.debug('Waiting for device to join network.')
+    for retry in xrange(CONNECT_RETRY_COUNT):
+      self._host = self.__Discover(node_name)
+      if self._host:
+        break
+      time.sleep(CONNECT_RETRY_WAIT_SECS)
+    if not self._host:
+      raise Exception('Couldn\'t connect to device.')
+
+    logging.debug('host=%s, port=%d' % (self._host, self._port))
 
     self._WaitUntilReady();
 
