@@ -22,7 +22,7 @@ class WebServiceWorkerResponsePrivate
         response_source(network::mojom::FetchResponseSource::kUnspecified),
         error(mojom::ServiceWorkerResponseError::kUnknown) {}
   WebVector<WebURL> url_list;
-  unsigned short status;
+  uint16_t status;
   WebString status_text;
   network::mojom::FetchResponseType response_type;
   network::mojom::FetchResponseSource response_source;
@@ -54,7 +54,7 @@ const WebVector<WebURL>& WebServiceWorkerResponse::UrlList() const {
   return private_->url_list;
 }
 
-void WebServiceWorkerResponse::SetStatus(unsigned short status) {
+void WebServiceWorkerResponse::SetStatus(uint16_t status) {
   private_->status = status;
 }
 

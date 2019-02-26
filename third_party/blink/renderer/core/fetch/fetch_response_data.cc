@@ -293,7 +293,7 @@ FetchResponseData::PopulateFetchAPIResponse() {
 
 FetchResponseData::FetchResponseData(Type type,
                                      network::mojom::FetchResponseSource source,
-                                     unsigned short status,
+                                     uint16_t status,
                                      AtomicString status_message)
     : type_(type),
       response_source_(source),

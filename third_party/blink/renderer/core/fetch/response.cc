@@ -114,7 +114,7 @@ FetchResponseData* CreateFetchResponseDataFromFetchAPIResponse(
 
 // Checks whether |status| is a null body status.
 // Spec: https://fetch.spec.whatwg.org/#null-body-status
-bool IsNullBodyStatus(unsigned short status) {
+bool IsNullBodyStatus(uint16_t status) {
   if (status == 101 || status == 204 || status == 205 || status == 304)
     return true;
 
@@ -226,7 +226,7 @@ Response* Response::Create(ScriptState* script_state,
                            const String& content_type,
                            const ResponseInit* init,
                            ExceptionState& exception_state) {
-  unsigned short status = init->status();
+  uint16_t status = init->status();
 
   // "1. If |init|'s status member is not in the range 200 to 599, inclusive,
   // throw a RangeError."
@@ -344,7 +344,7 @@ Response* Response::error(ScriptState* script_state) {
 
 Response* Response::redirect(ScriptState* script_state,
                              const String& url,
-                             unsigned short status,
+                             uint16_t status,
                              ExceptionState& exception_state) {
   KURL parsed_url = ExecutionContext::From(script_state)->CompleteURL(url);
   if (!parsed_url.IsValid()) {
@@ -404,7 +404,7 @@ bool Response::redirected() const {
   return response_->UrlList().size() > 1;
 }
 
-unsigned short Response::status() const {
+uint16_t Response::status() const {
   // "The status attribute's getter must return response's status."
   return response_->Status();
 }

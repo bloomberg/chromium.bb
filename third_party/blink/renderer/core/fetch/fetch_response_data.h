@@ -46,7 +46,7 @@ class CORE_EXPORT FetchResponseData final
 
   FetchResponseData(network::mojom::FetchResponseType,
                     network::mojom::FetchResponseSource,
-                    unsigned short,
+                    uint16_t,
                     AtomicString);
 
   FetchResponseData* CreateBasicFilteredResponse() const;
@@ -67,7 +67,7 @@ class CORE_EXPORT FetchResponseData final
     return response_source_;
   }
   const KURL* Url() const;
-  unsigned short Status() const { return status_; }
+  uint16_t Status() const { return status_; }
   AtomicString StatusMessage() const { return status_message_; }
   FetchHeaderList* HeaderList() const { return header_list_.Get(); }
   BodyStreamBuffer* Buffer() const { return buffer_; }
@@ -89,7 +89,7 @@ class CORE_EXPORT FetchResponseData final
   const Vector<KURL>& UrlList() const { return url_list_; }
   const Vector<KURL>& InternalURLList() const;
 
-  void SetStatus(unsigned short status) { status_ = status; }
+  void SetStatus(uint16_t status) { status_ = status; }
   void SetStatusMessage(AtomicString status_message) {
     status_message_ = status_message;
   }
@@ -120,7 +120,7 @@ class CORE_EXPORT FetchResponseData final
   network::mojom::FetchResponseSource response_source_;
   std::unique_ptr<TerminationReason> termination_reason_;
   Vector<KURL> url_list_;
-  unsigned short status_;
+  uint16_t status_;
   AtomicString status_message_;
   Member<FetchHeaderList> header_list_;
   TraceWrapperMember<FetchResponseData> internal_response_;
