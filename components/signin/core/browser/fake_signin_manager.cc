@@ -39,14 +39,6 @@ FakeSigninManager::FakeSigninManager(
 
 FakeSigninManager::~FakeSigninManager() {}
 
-void FakeSigninManager::SignIn(const std::string& gaia_id,
-                               const std::string& username) {
-  std::string account_id =
-      account_tracker_service()->SeedAccountInfo(gaia_id, username);
-  token_service()->UpdateCredentials(account_id, "test_refresh_token");
-  OnExternalSigninCompleted(username);
-}
-
 void FakeSigninManager::OnSignoutDecisionReached(
     signin_metrics::ProfileSignout signout_source_metric,
     signin_metrics::SignoutDelete signout_delete_metric,
