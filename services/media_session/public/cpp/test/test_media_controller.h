@@ -22,8 +22,9 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
     TestMediaControllerImageObserver
     : public mojom::MediaControllerImageObserver {
  public:
-  explicit TestMediaControllerImageObserver(
-      mojom::MediaControllerPtr& controller);
+  TestMediaControllerImageObserver(mojom::MediaControllerPtr& controller,
+                                   int minimum_size_px,
+                                   int desired_size_px);
   ~TestMediaControllerImageObserver() override;
 
   // mojom::MediaControllerImageObserver overrides.

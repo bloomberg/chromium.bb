@@ -881,7 +881,7 @@ TEST_F(MediaControllerTest, ClearImageObserverOnError) {
   EXPECT_EQ(0u, GetImageObserverCount(controller));
 
   {
-    test::TestMediaControllerImageObserver observer(controller_ptr);
+    test::TestMediaControllerImageObserver observer(controller_ptr, 0, 0);
     EXPECT_EQ(1u, GetImageObserverCount(controller));
   }
 
@@ -908,7 +908,7 @@ TEST_F(MediaControllerTest, ActiveController_SimulateImagesChanged) {
   images.push_back(image);
 
   {
-    test::TestMediaControllerImageObserver observer(controller());
+    test::TestMediaControllerImageObserver observer(controller(), 0, 0);
 
     // By default, we should receive an empty image.
     observer.WaitForExpectedImageOfType(mojom::MediaSessionImageType::kArtwork,
@@ -952,7 +952,7 @@ TEST_F(MediaControllerTest,
   media_session.SetImagesOfType(mojom::MediaSessionImageType::kArtwork, images);
 
   {
-    test::TestMediaControllerImageObserver observer(controller());
+    test::TestMediaControllerImageObserver observer(controller(), 0, 0);
     observer.WaitForExpectedImageOfType(mojom::MediaSessionImageType::kArtwork,
                                         false);
     EXPECT_EQ(image.src, media_session.last_image_src());
@@ -991,7 +991,7 @@ TEST_F(MediaControllerTest,
   media_session.SetImagesOfType(mojom::MediaSessionImageType::kArtwork, images);
 
   {
-    test::TestMediaControllerImageObserver observer(controller());
+    test::TestMediaControllerImageObserver observer(controller(), 0, 0);
     observer.WaitForExpectedImageOfType(mojom::MediaSessionImageType::kArtwork,
                                         false);
     EXPECT_EQ(image.src, media_session.last_image_src());
@@ -1002,6 +1002,87 @@ TEST_F(MediaControllerTest,
     observer.WaitForExpectedImageOfType(mojom::MediaSessionImageType::kArtwork,
                                         true);
     EXPECT_EQ(image.src, media_session.last_image_src());
+  }
+}
+
+TEST_F(MediaControllerTest,
+       ActiveController_SimulateImagesChanged_MinSizeCutoff) {
+  test::MockMediaSession media_session;
+  media_session.SetIsControllable(true);
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session);
+    RequestAudioFocus(media_session, mojom::AudioFocusType::kGain);
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+  }
+
+  std::vector<MediaImage> images;
+  MediaImage image1;
+  image1.src = GURL("https://www.google.com");
+  image1.sizes.push_back(gfx::Size(1, 1));
+  images.push_back(image1);
+  media_session.SetImagesOfType(mojom::MediaSessionImageType::kArtwork, images);
+
+  {
+    test::TestMediaControllerImageObserver observer(controller(), 5, 10);
+
+    // The observer requires an image that is at least 5px but the only image
+    // we have is 1px so the observer will receive a null image.
+    observer.WaitForExpectedImageOfType(mojom::MediaSessionImageType::kArtwork,
+                                        true);
+    EXPECT_TRUE(media_session.last_image_src().is_empty());
+
+    MediaImage image2;
+    image2.src = GURL("https://www.example.com");
+    image2.sizes.push_back(gfx::Size(10, 10));
+    images.push_back(image2);
+
+    // Update the media session with two images, one that is too small and one
+    // that is the right size. We should receive the second image through the
+    // observer.
+    media_session.SetImagesOfType(mojom::MediaSessionImageType::kArtwork,
+                                  images);
+    observer.WaitForExpectedImageOfType(mojom::MediaSessionImageType::kArtwork,
+                                        false);
+    EXPECT_EQ(image2.src, media_session.last_image_src());
+  }
+}
+
+TEST_F(MediaControllerTest,
+       ActiveController_SimulateImagesChanged_DesiredSize) {
+  test::MockMediaSession media_session;
+  media_session.SetIsControllable(true);
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session);
+    RequestAudioFocus(media_session, mojom::AudioFocusType::kGain);
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+  }
+
+  std::vector<MediaImage> images;
+  MediaImage image1;
+  image1.src = GURL("https://www.google.com");
+  image1.sizes.push_back(gfx::Size(10, 10));
+  images.push_back(image1);
+
+  MediaImage image2;
+  image2.src = GURL("https://www.example.com");
+  image2.sizes.push_back(gfx::Size(9, 9));
+  images.push_back(image2);
+
+  media_session.SetImagesOfType(mojom::MediaSessionImageType::kArtwork, images);
+
+  {
+    test::TestMediaControllerImageObserver observer(controller(), 5, 10);
+
+    // The media session has two images, but the first one is closer to the 10px
+    // desired size that the observer has specified. Therefore, the observer
+    // should receive that image.
+    media_session.SetImagesOfType(mojom::MediaSessionImageType::kArtwork,
+                                  images);
+    observer.WaitForExpectedImageOfType(mojom::MediaSessionImageType::kArtwork,
+                                        false);
+    EXPECT_EQ(image1.src, media_session.last_image_src());
   }
 }
 
