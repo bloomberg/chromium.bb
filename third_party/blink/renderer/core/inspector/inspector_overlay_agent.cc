@@ -1164,8 +1164,7 @@ bool InspectorOverlayAgent::HandleMouseMove(const WebMouseEvent& event) {
   if (!node)
     return true;
 
-  if (node->IsFrameOwnerElement()) {
-    HTMLFrameOwnerElement* frame_owner = ToHTMLFrameOwnerElement(node);
+  if (auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(node)) {
     if (frame_owner->ContentFrame() &&
         !frame_owner->ContentFrame()->IsLocalFrame()) {
       // Do not consume event so that remote frame can handle it.

@@ -1937,10 +1937,10 @@ WebLocalFrameImpl* WebLocalFrameImpl::FromFrame(LocalFrame& frame) {
 }
 
 WebLocalFrameImpl* WebLocalFrameImpl::FromFrameOwnerElement(Element* element) {
-  if (!element->IsFrameOwnerElement())
+  auto* frame_owner_element = DynamicTo<HTMLFrameOwnerElement>(element);
+  if (!frame_owner_element)
     return nullptr;
-  return FromFrame(
-      ToLocalFrame(ToHTMLFrameOwnerElement(element)->ContentFrame()));
+  return FromFrame(ToLocalFrame(frame_owner_element->ContentFrame()));
 }
 
 WebViewImpl* WebLocalFrameImpl::ViewImpl() const {

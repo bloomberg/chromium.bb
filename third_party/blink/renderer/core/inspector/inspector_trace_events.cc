@@ -1073,9 +1073,9 @@ void FillCommonFrameData(TracedValue* frame_data, LocalFrame* frame) {
   frame_data->SetString("name", frame->Tree().GetName());
 
   FrameOwner* owner = frame->Owner();
-  if (owner && owner->IsLocal()) {
-    frame_data->SetInteger("nodeId", IdentifiersFactory::IntIdForNode(
-                                         ToHTMLFrameOwnerElement(owner)));
+  if (auto* frame_owner_element = DynamicTo<HTMLFrameOwnerElement>(owner)) {
+    frame_data->SetInteger(
+        "nodeId", IdentifiersFactory::IntIdForNode(frame_owner_element));
   }
   Frame* parent = frame->Tree().Parent();
   if (parent && parent->IsLocalFrame())

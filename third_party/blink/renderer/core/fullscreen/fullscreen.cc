@@ -706,9 +706,9 @@ void Fullscreen::ContinueRequestFullscreen(Document& document,
   // and processed after the IPC that dispatches fullscreenchange.
   for (Frame* frame = pending.GetDocument().GetFrame(); frame;
        frame = frame->Tree().Parent()) {
-    if (!frame->Owner() || !frame->Owner()->IsLocal())
+    Element* element = DynamicTo<HTMLFrameOwnerElement>(frame->Owner());
+    if (!element)
       continue;
-    Element* element = ToHTMLFrameOwnerElement(frame->Owner());
     fullscreen_elements.push_back(element);
   }
 

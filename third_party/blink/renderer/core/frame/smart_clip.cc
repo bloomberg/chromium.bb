@@ -54,8 +54,8 @@ static IntRect ConvertToContentCoordinatesWithoutCollapsingToZero(
 }
 
 static Node* NodeInsideFrame(Node* node) {
-  if (node->IsFrameOwnerElement())
-    return ToHTMLFrameOwnerElement(node)->contentDocument();
+  if (auto* frame_owner_element = DynamicTo<HTMLFrameOwnerElement>(node))
+    return frame_owner_element->contentDocument();
   return nullptr;
 }
 

@@ -628,7 +628,7 @@ void LocalFrame::PropagateInertToChildFrames() {
     // inert element in an ancestor Frame. Otherwise, decide whether a child
     // Frame element is inert because of an element in this Frame.
     child->SetIsInert(is_inert_ ||
-                      ToHTMLFrameOwnerElement(child->Owner())->IsInert());
+                      To<HTMLFrameOwnerElement>(child->Owner())->IsInert());
   }
 }
 
@@ -649,9 +649,8 @@ bool LocalFrame::BubbleLogicalScrollFromChildFrame(
     ScrollGranularity granularity,
     Frame* child) {
   FrameOwner* owner = child->Owner();
-  DCHECK(owner);
-  DCHECK(owner->IsLocal());
-  HTMLFrameOwnerElement* owner_element = ToHTMLFrameOwnerElement(owner);
+  auto* owner_element = DynamicTo<HTMLFrameOwnerElement>(owner);
+  DCHECK(owner_element);
 
   return GetEventHandler().BubblingScroll(direction, granularity,
                                           owner_element);

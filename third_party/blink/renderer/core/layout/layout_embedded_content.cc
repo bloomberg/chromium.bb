@@ -60,9 +60,8 @@ void LayoutEmbeddedContent::WillBeDestroyed() {
     cache->Remove(this);
   }
 
-  Node* node = GetNode();
-  if (node && node->IsFrameOwnerElement())
-    ToHTMLFrameOwnerElement(node)->SetEmbeddedContentView(nullptr);
+  if (auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(GetNode()))
+    frame_owner->SetEmbeddedContentView(nullptr);
 
   LayoutReplaced::WillBeDestroyed();
 }
@@ -99,9 +98,8 @@ WebPluginContainerImpl* LayoutEmbeddedContent::Plugin() const {
 }
 
 EmbeddedContentView* LayoutEmbeddedContent::GetEmbeddedContentView() const {
-  Node* node = GetNode();
-  if (node && node->IsFrameOwnerElement())
-    return ToHTMLFrameOwnerElement(node)->OwnedEmbeddedContentView();
+  if (auto* frame_owner_element = DynamicTo<HTMLFrameOwnerElement>(GetNode()))
+    return frame_owner_element->OwnedEmbeddedContentView();
   return nullptr;
 }
 
@@ -124,10 +122,10 @@ bool LayoutEmbeddedContent::RequiresAcceleratedCompositing() const {
   if (plugin_view && plugin_view->CcLayer())
     return true;
 
-  if (!GetNode() || !GetNode()->IsFrameOwnerElement())
+  auto* element = DynamicTo<HTMLFrameOwnerElement>(GetNode());
+  if (!element)
     return false;
 
-  HTMLFrameOwnerElement* element = ToHTMLFrameOwnerElement(GetNode());
   if (element->ContentFrame() && element->ContentFrame()->IsRemoteFrame())
     return true;
 
@@ -250,9 +248,8 @@ void LayoutEmbeddedContent::StyleDidChange(StyleDifference diff,
   LayoutReplaced::StyleDidChange(diff, old_style);
 
   if (!old_style || Style()->PointerEvents() != old_style->PointerEvents()) {
-    Node* node = GetNode();
-    if (node->IsFrameOwnerElement())
-      ToHTMLFrameOwnerElement(node)->PointerEventsChanged();
+    if (auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(GetNode()))
+      frame_owner->PointerEventsChanged();
   }
 
   EmbeddedContentView* embedded_content_view = GetEmbeddedContentView();

@@ -402,8 +402,7 @@ int InspectorDOMSnapshotAgent::VisitNode(Node* node,
     Element* element = ToElement(node);
     value->setAttributes(BuildArrayForElementAttributes(element));
 
-    if (node->IsFrameOwnerElement()) {
-      const HTMLFrameOwnerElement* frame_owner = ToHTMLFrameOwnerElement(node);
+    if (auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(node)) {
       if (LocalFrame* frame =
               frame_owner->ContentFrame() &&
                       frame_owner->ContentFrame()->IsLocalFrame()
@@ -631,8 +630,7 @@ int InspectorDOMSnapshotAgent::VisitNode2(Node* node, int parent_index) {
 
   if (node->IsElementNode()) {
     Element* element = ToElement(node);
-    if (node->IsFrameOwnerElement()) {
-      const HTMLFrameOwnerElement* frame_owner = ToHTMLFrameOwnerElement(node);
+    if (auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(node)) {
       if (Document* doc = frame_owner->contentDocument()) {
         SetRare(nodes->getContentDocumentIndex(nullptr), index,
                 document_order_map_.at(doc));

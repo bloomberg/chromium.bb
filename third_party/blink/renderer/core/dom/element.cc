@@ -3183,9 +3183,9 @@ void Element::focus(const FocusParams& params) {
   if (!GetDocument().IsActive())
     return;
 
-  if (IsFrameOwnerElement() &&
-      ToHTMLFrameOwnerElement(this)->contentDocument() &&
-      ToHTMLFrameOwnerElement(this)->contentDocument()->UnloadStarted())
+  auto* frame_owner_element = DynamicTo<HTMLFrameOwnerElement>(this);
+  if (frame_owner_element && frame_owner_element->contentDocument() &&
+      frame_owner_element->contentDocument()->UnloadStarted())
     return;
 
   GetDocument().UpdateStyleAndLayoutTreeIgnorePendingStylesheets();
@@ -4362,8 +4362,9 @@ static Element* NextAncestorElement(Element* element) {
   while (frame->Tree().Parent() && frame->Tree().Parent()->IsRemoteFrame())
     frame = frame->Tree().Parent();
 
-  if (frame->Owner() && frame->Owner()->IsLocal())
-    return ToHTMLFrameOwnerElement(frame->Owner());
+  if (auto* frame_owner_element =
+          DynamicTo<HTMLFrameOwnerElement>(frame->Owner()))
+    return frame_owner_element;
 
   return nullptr;
 }

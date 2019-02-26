@@ -676,8 +676,8 @@ Element* FindFocusableElementDescendingDownIntoFrameDocument(
   // tree until we find either:
   // 1) a focusable element, or
   // 2) the deepest-nested HTMLFrameOwnerElement.
-  while (element && element->IsFrameOwnerElement()) {
-    HTMLFrameOwnerElement& owner = ToHTMLFrameOwnerElement(*element);
+  while (IsA<HTMLFrameOwnerElement>(element)) {
+    HTMLFrameOwnerElement& owner = To<HTMLFrameOwnerElement>(*element);
     if (!owner.ContentFrame() || !owner.ContentFrame()->IsLocalFrame())
       break;
     ToLocalFrame(owner.ContentFrame())
@@ -988,7 +988,7 @@ bool FocusController::AdvanceFocusAcrossFrames(
   Element* start = nullptr;
   if (from->Tree().Parent() == to) {
     DCHECK(from->Owner()->IsLocal());
-    start = ToHTMLFrameOwnerElement(from->Owner());
+    start = To<HTMLFrameOwnerElement>(from->Owner());
   }
 
   // If we're coming from a parent frame, we need to restart from the first or
@@ -1071,12 +1071,12 @@ bool FocusController::AdvanceFocusInDocumentOrder(
     return true;
   }
 
-  if (element->IsFrameOwnerElement() &&
+  auto* owner = DynamicTo<HTMLFrameOwnerElement>(element);
+  if (owner &&
       (!IsHTMLPlugInElement(*element) || !element->IsKeyboardFocusable())) {
     // We focus frames rather than frame owners.
     // FIXME: We should not focus frames that have no scrollbars, as focusing
     // them isn't useful to the user.
-    HTMLFrameOwnerElement* owner = ToHTMLFrameOwnerElement(element);
     if (!owner->ContentFrame())
       return false;
 

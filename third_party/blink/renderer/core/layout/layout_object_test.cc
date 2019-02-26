@@ -878,8 +878,7 @@ TEST_F(LayoutObjectSimTest, TouchActionUpdatesSubframeEventHandler) {
       "</body></html>");
 
   Element* iframe_element = GetDocument().QuerySelector("iframe");
-  HTMLFrameOwnerElement* frame_owner_element =
-      ToHTMLFrameOwnerElement(iframe_element);
+  auto* frame_owner_element = To<HTMLFrameOwnerElement>(iframe_element);
   Document* iframe_doc = frame_owner_element->contentDocument();
   Element* inner = iframe_doc->getElementById("inner");
   Element* iframe_doc_element = iframe_doc->documentElement();
@@ -932,8 +931,7 @@ TEST_F(LayoutObjectSimTest, HitTestForOcclusionInIframe) {
   GetDocument().View()->UpdateAllLifecyclePhases(
       DocumentLifecycle::LifecycleUpdateReason::kTest);
   Element* iframe_element = GetDocument().QuerySelector("iframe");
-  HTMLFrameOwnerElement* frame_owner_element =
-      ToHTMLFrameOwnerElement(iframe_element);
+  auto* frame_owner_element = To<HTMLFrameOwnerElement>(iframe_element);
   Document* iframe_doc = frame_owner_element->contentDocument();
   Element* target = iframe_doc->getElementById("target");
   HitTestResult result = target->GetLayoutObject()->HitTestForOcclusion();

@@ -224,8 +224,8 @@ void WebRemoteFrameImpl::SetReplicatedOrigin(
   // Run SitePerProcessAccessibilityBrowserTest.TwoCrossSiteNavigations to
   // ensure an alternate fix works.  http://crbug.com/566222
   FrameOwner* owner = GetFrame()->Owner();
-  if (owner && owner->IsLocal()) {
-    HTMLElement* owner_element = ToHTMLFrameOwnerElement(owner);
+  HTMLElement* owner_element = DynamicTo<HTMLFrameOwnerElement>(owner);
+  if (owner_element) {
     AXObjectCache* cache = owner_element->GetDocument().ExistingAXObjectCache();
     if (cache)
       cache->ChildrenChanged(owner_element);
@@ -306,7 +306,7 @@ void WebRemoteFrameImpl::ForwardResourceTimingToParent(
   WebLocalFrameImpl* parent_frame =
       ToWebLocalFrameImpl(Parent()->ToWebLocalFrame());
   HTMLFrameOwnerElement* owner_element =
-      ToHTMLFrameOwnerElement(frame_->Owner());
+      To<HTMLFrameOwnerElement>(frame_->Owner());
   DCHECK(owner_element);
   DOMWindowPerformance::performance(*parent_frame->GetFrame()->DomWindow())
       ->AddResourceTiming(info, owner_element->localName());
@@ -332,7 +332,7 @@ bool WebRemoteFrameImpl::IsIgnoredForHitTest() const {
 void WebRemoteFrameImpl::WillEnterFullscreen() {
   // This should only ever be called when the FrameOwner is local.
   HTMLFrameOwnerElement* owner_element =
-      ToHTMLFrameOwnerElement(GetFrame()->Owner());
+      To<HTMLFrameOwnerElement>(GetFrame()->Owner());
 
   // Call |requestFullscreen()| on |ownerElement| to make it the pending
   // fullscreen element in anticipation of the coming |didEnterFullscreen()|

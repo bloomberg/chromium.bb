@@ -153,9 +153,9 @@ static LayoutVideo* FindFullscreenVideoLayoutObject(Document& document) {
   // Recursively find the document that is in fullscreen.
   Element* fullscreen_element = Fullscreen::FullscreenElementFrom(document);
   Document* content_document = &document;
-  while (fullscreen_element && fullscreen_element->IsFrameOwnerElement()) {
-    content_document =
-        ToHTMLFrameOwnerElement(fullscreen_element)->contentDocument();
+  while (auto* frame_owner =
+             DynamicTo<HTMLFrameOwnerElement>(fullscreen_element)) {
+    content_document = frame_owner->contentDocument();
     if (!content_document)
       return nullptr;
     fullscreen_element = Fullscreen::FullscreenElementFrom(*content_document);
@@ -687,11 +687,10 @@ void PaintLayerCompositor::PaintInvalidationOnCompositingChange(
 
 PaintLayerCompositor* PaintLayerCompositor::FrameContentsCompositor(
     LayoutEmbeddedContent& layout_object) {
-  if (!layout_object.GetNode()->IsFrameOwnerElement())
+  auto* element = DynamicTo<HTMLFrameOwnerElement>(layout_object.GetNode());
+  if (!element)
     return nullptr;
 
-  HTMLFrameOwnerElement* element =
-      ToHTMLFrameOwnerElement(layout_object.GetNode());
   if (Document* content_document = element->contentDocument()) {
     if (auto* view = content_document->GetLayoutView())
       return view->Compositor();

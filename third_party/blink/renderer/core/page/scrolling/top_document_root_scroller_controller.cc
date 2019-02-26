@@ -107,10 +107,7 @@ Node* TopDocumentRootScrollerController::FindGlobalRootScroller() {
   Node* root_scroller =
       &TopDocument()->GetRootScrollerController().EffectiveRootScroller();
 
-  while (root_scroller && root_scroller->IsFrameOwnerElement()) {
-    HTMLFrameOwnerElement* frame_owner = ToHTMLFrameOwnerElement(root_scroller);
-    DCHECK(frame_owner);
-
+  while (auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(root_scroller)) {
     Document* iframe_document = frame_owner->contentDocument();
     if (!iframe_document)
       return root_scroller;

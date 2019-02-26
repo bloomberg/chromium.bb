@@ -67,9 +67,7 @@ bool FillsViewport(const Element& element) {
 // If the element is an iframe this grabs the ScrollableArea for the owned
 // LayoutView.
 PaintLayerScrollableArea* GetScrollableArea(const Element& element) {
-  if (element.IsFrameOwnerElement()) {
-    const HTMLFrameOwnerElement* frame_owner =
-        ToHTMLFrameOwnerElement(&element);
+  if (const auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(element)) {
     EmbeddedContentView* content_view = frame_owner->OwnedEmbeddedContentView();
     if (!content_view)
       return nullptr;
@@ -132,9 +130,9 @@ void RootScrollerController::DidResizeFrameView() {
   // If the effective root scroller in this Document is a Frame, it'll match
   // its parent's frame rect. We can't rely on layout to kick it to update its
   // geometry so we do so explicitly here.
-  if (EffectiveRootScroller().IsFrameOwnerElement()) {
-    UpdateIFrameGeometryAndLayoutSize(
-        *ToHTMLFrameOwnerElement(&EffectiveRootScroller()));
+  if (auto* frame_owner =
+          DynamicTo<HTMLFrameOwnerElement>(EffectiveRootScroller())) {
+    UpdateIFrameGeometryAndLayoutSize(*frame_owner);
   }
 }
 
@@ -229,13 +227,7 @@ bool RootScrollerController::IsValidRootScroller(const Element& element) const {
       !element.IsFrameOwnerElement())
     return false;
 
-  if (element.IsFrameOwnerElement()) {
-    const HTMLFrameOwnerElement* frame_owner =
-        ToHTMLFrameOwnerElement(&element);
-
-    if (!frame_owner)
-      return false;
-
+  if (const auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(element)) {
     if (!frame_owner->OwnedEmbeddedContentView())
       return false;
 
@@ -329,10 +321,9 @@ void RootScrollerController::ApplyRootScrollerProperties(Node& node) {
   if (!node.IsInTreeScope())
     return;
 
-  if (!node.IsFrameOwnerElement())
+  auto* frame_owner = DynamicTo<HTMLFrameOwnerElement>(node);
+  if (!frame_owner)
     return;
-
-  HTMLFrameOwnerElement* frame_owner = ToHTMLFrameOwnerElement(&node);
 
   // The current effective root scroller may have lost its ContentFrame. If
   // that's the case, there's nothing to be done. https://crbug.com/805317 for
