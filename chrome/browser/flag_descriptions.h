@@ -686,8 +686,6 @@ extern const char kHideActiveAppsFromShelfDescription[];
 
 extern const char kHistoryRequiresUserGestureName[];
 extern const char kHistoryRequiresUserGestureDescription[];
-extern const char kHyperlinkAuditingName[];
-extern const char kHyperlinkAuditingDescription[];
 
 extern const char kHostedAppQuitNotificationName[];
 extern const char kHostedAppQuitNotificationDescription[];

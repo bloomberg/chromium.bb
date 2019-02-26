@@ -560,11 +560,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "disable-hyperlink-auditing",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
-  },
-  {
     // See https://crbug.com/882238.
     "name": "disable-ipc-flooding-protection",
     "owners": [ "arthursonzogni@chromium.org", "palmer@chromium.org" ],

@@ -1131,8 +1131,6 @@ const char kHistoryRequiresUserGestureName[] =
     "New history entries require a user gesture.";
 const char kHistoryRequiresUserGestureDescription[] =
     "Require a user gesture to add a history entry.";
-const char kHyperlinkAuditingName[] = "Hyperlink auditing";
-const char kHyperlinkAuditingDescription[] = "Sends hyperlink auditing pings.";
 
 const char kHorizontalTabSwitcherAndroidName[] =
     "Enable horizontal tab switcher";
