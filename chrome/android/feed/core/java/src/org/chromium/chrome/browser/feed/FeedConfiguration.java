@@ -20,6 +20,10 @@ public final class FeedConfiguration {
     /** Do not allow construction */
     private FeedConfiguration() {}
 
+    private static final String CARD_MENU_TOOLTIP_ELIGIBLE = "card_menu_tooltip_eligible";
+    /** Default value for if card menus should have tooltips enabled. */
+    public static final boolean CARD_MENU_TOOLTIP_ELIGIBLE_DEFAULT = false;
+
     private static final String FEED_SERVER_ENDPOINT = "feed_server_endpoint";
     /** Default value for server endpoint. */
     public static final String FEED_SERVER_ENDPOINT_DEFAULT =
@@ -47,6 +51,10 @@ public final class FeedConfiguration {
     /** Default value for logging immediate content threshold. */
     public static final int LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS_DEFAULT = 1000;
 
+    private static final String MANAGE_INTERESTS_ENABLED = "manage_interests_enabled";
+    /** Default value for whether to use menu options to launch interest management page. */
+    public static final boolean MANAGE_INTERESTS_ENABLED_DEFAULT = false;
+
     private static final String NON_CACHED_MIN_PAGE_SIZE = "non_cached_min_page_size";
     /** Default value for non cached minimum page size. */
     public static final int NON_CACHED_MIN_PAGE_SIZE_DEFAULT = 5;
@@ -63,6 +71,10 @@ public final class FeedConfiguration {
     /** Default value for triggering immediate pagination. */
     public static final boolean TRIGGER_IMMEDIATE_PAGINATION_DEFAULT = false;
 
+    private static final String UNDOABLE_ACTIONS_ENABLED = "undoable_actions_enabled";
+    /** Default value for if undoable actions should be presented to the user. */
+    public static final boolean UNDOABLE_ACTIONS_ENABLED_DEFAULT = false;
+
     private static final String USE_SECONDARY_PAGE_REQUEST = "use_secondary_page_request";
     /** Default value for pagination behavior. */
     public static final boolean USE_SECONDARY_PAGE_REQUEST_DEFAULT = false;
@@ -74,6 +86,14 @@ public final class FeedConfiguration {
     private static final String VIEW_LOG_THRESHOLD = "view_log_threshold";
     /** Default value for logging view threshold. */
     public static final double VIEW_LOG_THRESHOLD_DEFAULT = 0.66d;
+
+    /** @return Whether to show card tooltips */
+    @VisibleForTesting
+    static boolean getCardMenuTooltipEligible() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, CARD_MENU_TOOLTIP_ELIGIBLE,
+                CARD_MENU_TOOLTIP_ELIGIBLE_DEFAULT);
+    }
 
     /** @return Feed server endpoint to use to fetch content suggestions. */
     @VisibleForTesting
@@ -108,6 +128,7 @@ public final class FeedConfiguration {
     }
 
     /** @return Used to decide where to place the more button initially. */
+    @VisibleForTesting
     static int getInitialNonCachedPageSize() {
         return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
                 ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, INITIAL_NON_CACHED_PAGE_SIZE,
@@ -126,7 +147,16 @@ public final class FeedConfiguration {
                 LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS_DEFAULT);
     }
 
+    /** return Whether to show context menu option to launch to customization page. */
+    @VisibleForTesting
+    static boolean getManageInterestsEnabled() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, MANAGE_INTERESTS_ENABLED,
+                MANAGE_INTERESTS_ENABLED_DEFAULT);
+    }
+
     /** @return Used to decide where to place the more button. */
+    @VisibleForTesting
     static int getNonCachedMinPageSize() {
         return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
                 ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, NON_CACHED_MIN_PAGE_SIZE,
@@ -134,6 +164,7 @@ public final class FeedConfiguration {
     }
 
     /** @return Used to decide where to place the more button. */
+    @VisibleForTesting
     static int getNonCachedPageSize() {
         return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
                 ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, NON_CACHED_PAGE_SIZE,
@@ -157,6 +188,14 @@ public final class FeedConfiguration {
         return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
                 ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, TRIGGER_IMMEDIATE_PAGINATION,
                 TRIGGER_IMMEDIATE_PAGINATION_DEFAULT);
+    }
+
+    /** @return Whether to allow the present the user with the ability to undo actions. */
+    @VisibleForTesting
+    static boolean getUndoableActionsEnabled() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, UNDOABLE_ACTIONS_ENABLED,
+                UNDOABLE_ACTIONS_ENABLED_DEFAULT);
     }
 
     /**
@@ -194,6 +233,8 @@ public final class FeedConfiguration {
      */
     public static Configuration createConfiguration() {
         return new Configuration.Builder()
+                .put(ConfigKey.CARD_MENU_TOOLTIP_ELIGIBLE,
+                        FeedConfiguration.getCardMenuTooltipEligible())
                 .put(ConfigKey.FEED_SERVER_ENDPOINT, FeedConfiguration.getFeedServerEndpoint())
                 .put(ConfigKey.FEED_SERVER_METHOD, FeedConfiguration.getFeedServerMethod())
                 .put(ConfigKey.FEED_SERVER_RESPONSE_LENGTH_PREFIXED,
@@ -203,12 +244,16 @@ public final class FeedConfiguration {
                         FeedConfiguration.getInitialNonCachedPageSize())
                 .put(ConfigKey.LOGGING_IMMEDIATE_CONTENT_THRESHOLD_MS,
                         FeedConfiguration.getLoggingImmediateContentThresholdMs())
+                .put(ConfigKey.MANAGE_INTERESTS_ENABLED,
+                        FeedConfiguration.getManageInterestsEnabled())
                 .put(ConfigKey.NON_CACHED_MIN_PAGE_SIZE,
                         FeedConfiguration.getNonCachedMinPageSize())
                 .put(ConfigKey.NON_CACHED_PAGE_SIZE, FeedConfiguration.getNonCachedPageSize())
                 .put(ConfigKey.SESSION_LIFETIME_MS, FeedConfiguration.getSessionLifetimeMs())
                 .put(ConfigKey.TRIGGER_IMMEDIATE_PAGINATION,
                         FeedConfiguration.getTriggerImmediatePagination())
+                .put(ConfigKey.UNDOABLE_ACTIONS_ENABLED,
+                        FeedConfiguration.getUndoableActionsEnabled())
                 .put(ConfigKey.USE_TIMEOUT_SCHEDULER, FeedConfiguration.getUseTimeoutScheduler())
                 .put(ConfigKey.USE_SECONDARY_PAGE_REQUEST,
                         FeedConfiguration.getUseSecondaryPageRequest())
