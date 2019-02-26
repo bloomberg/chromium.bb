@@ -100,7 +100,19 @@ class ATL_NO_VTABLE CGaiaCredentialProvider
   size_t index_ = std::numeric_limits<size_t>::max();
 };
 
+// OBJECT_ENTRY_AUTO() contains an extra semicolon.
+// TODO(thakis): Make -Wextra-semi not warn on semicolons that are from a
+// macro in a system header, then remove the pragma, https://llvm.org/PR40874
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wextra-semi"
+#endif
+
 OBJECT_ENTRY_AUTO(__uuidof(GaiaCredentialProvider), CGaiaCredentialProvider)
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 }  // namespace credential_provider
 
