@@ -178,31 +178,32 @@ Place platform-specific #includes in their own section below the "normal"
 ## Types
 
   * Use `size_t` for object and allocation sizes, object counts, array and
-    pointer offsets, vector indices, and so on. The signed types are incorrect
-    and unsafe for these purposes (e.g. integer overflow behavior for signed
-    types is undefined in the C and C++ standards, while the behavior is
-    defined for unsigned types.) The C++ STL is a guide here: they use `size_t`
-    and `foo::size_type` for very good reasons.
+    pointer offsets, vector indices, and so on. The signed types are
+    incorrect and unsafe for these purposes (e.g. integer overflow behavior for
+    signed types is undefined in the C and C++ standards, while the behavior is
+    defined for unsigned types). The C++ STL and libc are good guides here: they
+    use `size_t` and `foo::size_type` for very good reasons.
 
   * Use `size_t` directly in preference to `std::string::size_type` and similar.
 
   * Occasionally classes may have a good reason to use a type other than `size_t`
     for one of these concepts, e.g. as a storage space optimization. In these
-    cases, continue to use `size_t` in public-facing function declarations.
+    cases, continue to use `size_t` in public-facing function declarations,
+    and continue to use unsigned types internally (e.g. `uint32_t`).
 
   * Be aware that `size_t` (object sizes and indices), `off_t` (file offsets),
     `ptrdiff_t` (the difference between two pointer values), `intptr_t` (an
     integer type large enough to hold the value of a pointer), `uint32_t`,
     `uint64_t`, and so on are not necessarily the same. Use the right type for
-    your purpose.
+    your purpose. `CheckedNumeric` is an ergonomic way to perform safe
+    arithmetic and casting with and between these different types.
 
   * Follow [Google C++ casting
     conventions](https://google.github.io/styleguide/cppguide.html#Casting)
     to convert arithmetic types when you know the conversion is safe. Use
-    `checked_cast<>()` (from `base/numerics/safe_conversions.h`) when you
-    need to enforce via `CHECK()` that the source value is in-range for the
-    destination type. Use `saturated_cast<>()` (from the same file) if you
-    instead wish to clamp out-of-range values.
+    `checked_cast<T>` (from `base/numerics/safe_conversions.h`) when you need to
+    `CHECK` that the source value is in range for the destination type. Use
+    `saturated_cast<T>` if you instead wish to clamp out-of-range values.
 
   * Do not use unsigned types to mean "this value should never be < 0". For
     that, use assertions or run-time checks (as appropriate).
@@ -213,7 +214,7 @@ Place platform-specific #includes in their own section below the "normal"
 
   * When passing values across network or process boundaries, use
     explicitly-sized types for safety, since the sending and receiving ends may
-    not have been compiled with the same sizes for things like int and
+    not have been compiled with the same sizes for things like `int` and
     `size_t`. However, to the greatest degree possible, avoid letting these
     sized types bleed through the APIs of the layers in question.
 
