@@ -31,6 +31,9 @@ class SystemNodeImpl;
 //   (1) Derive from this class.
 //   (2) Register by calling on |coordination_unit_graph().RegisterObserver|
 //       inside of the ResourceCoordinatorService::Create.
+//
+// TODO: Clean up the observer API, and create a wrapper version that sees
+// const Node* rather then mutable NodeImpl* types for external consumers.
 class GraphObserver {
  public:
   GraphObserver();
@@ -91,6 +94,10 @@ class GraphObserver {
   virtual void OnSystemEventReceived(SystemNodeImpl* system_cu,
                                      resource_coordinator::mojom::Event event) {
   }
+
+  // Called when page almost idle state changes. This is a computed property and
+  // will only be maintained if a PageAlmostIdleDecorator exists on the graph.
+  virtual void OnPageAlmostIdleChanged(PageNodeImpl* page_node) {}
 
   // Called when all the frames in a process become frozen.
   virtual void OnAllFramesInProcessFrozen(ProcessNodeImpl* process_cu) {}
