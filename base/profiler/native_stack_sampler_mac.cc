@@ -442,7 +442,7 @@ bool NativeStackSamplerMac::WalkStackFromContext(
     // address in the wrong place. This check should ensure that we bail before
     // trying to deref a bad IP obtained this way in the previous frame.
     const ModuleCache::Module* module = module_cache_->GetModuleForAddress(rip);
-    if (!module)
+    if (!module->is_valid)
       return false;
 
     callback(static_cast<uintptr_t>(rip), module);

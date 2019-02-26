@@ -22,9 +22,11 @@ namespace base {
 
 class BASE_EXPORT ModuleCache {
  public:
-  // Module represents a binary module (executable or library) and its
-  // associated state.
+  // Module represents the module (DLL or exe) and its validness state.
+  // This struct is used for sampling data transfer from NativeStackSampler
+  // to ProfileBuilder as well as by SamplingHeapProfiler.
   struct BASE_EXPORT Module {
+    Module();
     Module(uintptr_t base_address,
            const std::string& id,
            const FilePath& filename);
@@ -52,6 +54,9 @@ class BASE_EXPORT ModuleCache {
     // The filename of the module.
     FilePath filename;
 
+    // The validness of the module.
+    bool is_valid;
+
     // Size of the module.
     size_t size;
   };
@@ -59,9 +64,9 @@ class BASE_EXPORT ModuleCache {
   ModuleCache();
   ~ModuleCache();
 
-  // Gets the module containing |address| or nullptr if |address| is not within
-  // a module. The returned module remains owned by and has the same lifetime as
-  // the ModuleCache object.
+  // Gets the module containing |address| or an invalid module if |address| is
+  // not within a module. The returned module remains owned by and has the same
+  // lifetime as the ModuleCache object.
   const Module* GetModuleForAddress(uintptr_t address);
   std::vector<const Module*> GetModules() const;
 
@@ -69,8 +74,8 @@ class BASE_EXPORT ModuleCache {
   // TODO(alph): Refactor corresponding functions to use public API instead,
   // and drop friends.
 
-  // Creates a Module object for the specified memory address. Returns null if
-  // the address does not belong to a module.
+  // Creates a Module object for the specified memory address. If the address
+  // does not belong to a module returns an invalid module.
   static std::unique_ptr<Module> CreateModuleForAddress(uintptr_t address);
   friend class NativeStackSamplerMac;
 
