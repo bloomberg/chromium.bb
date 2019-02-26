@@ -148,7 +148,12 @@ TEST_F(ParentAccessViewTest, Backspace) {
     generator->PressKey(ui::KeyboardCode::VKEY_1, ui::EF_NONE);
   EXPECT_TRUE(test_api.submit_button()->enabled());
 
-  // Clear last field - will move focus to before last field.
+  // Active field has content - backspace clears the content, but does not move
+  // focus.
+  generator->PressKey(ui::KeyboardCode::VKEY_BACK, ui::EF_NONE);
+  EXPECT_FALSE(test_api.submit_button()->enabled());
+
+  // Active Field is empty - backspace moves focus to before last field.
   generator->PressKey(ui::KeyboardCode::VKEY_BACK, ui::EF_NONE);
   EXPECT_FALSE(test_api.submit_button()->enabled());
 
@@ -183,6 +188,42 @@ TEST_F(ParentAccessViewTest, PinKeyboard) {
   login_client_->set_validate_parent_access_code_result(true);
   EXPECT_CALL(*login_client_,
               ValidateParentAccessCode_(account_id_, "012345", testing::_))
+      .Times(1);
+
+  SimulateButtonPress(test_api.submit_button());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, successful_validation_);
+}
+
+// Tests that error state is shown and cleared when neccesary.
+TEST_F(ParentAccessViewTest, ErrorState) {
+  ParentAccessView::TestApi test_api(view_);
+  EXPECT_EQ(ParentAccessView::State::kNormal, test_api.state());
+
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  for (int i = 0; i < 6; ++i) {
+    generator->PressKey(ui::KeyboardCode(ui::KeyboardCode::VKEY_0 + i),
+                        ui::EF_NONE);
+  }
+
+  // Error should be shown after unsuccessful validation.
+  login_client_->set_validate_parent_access_code_result(false);
+  EXPECT_CALL(*login_client_,
+              ValidateParentAccessCode_(account_id_, "012345", testing::_))
+      .Times(1);
+
+  SimulateButtonPress(test_api.submit_button());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(ParentAccessView::State::kError, test_api.state());
+  EXPECT_EQ(0, successful_validation_);
+
+  // Updating input code (here last digit) should clear error state.
+  generator->PressKey(ui::KeyboardCode::VKEY_6, ui::EF_NONE);
+  EXPECT_EQ(ParentAccessView::State::kNormal, test_api.state());
+
+  login_client_->set_validate_parent_access_code_result(true);
+  EXPECT_CALL(*login_client_,
+              ValidateParentAccessCode_(account_id_, "012346", testing::_))
       .Times(1);
 
   SimulateButtonPress(test_api.submit_button());

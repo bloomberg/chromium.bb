@@ -31,6 +31,12 @@ class LoginPinView;
 class ASH_EXPORT ParentAccessView : public NonAccessibleView,
                                     public views::ButtonListener {
  public:
+  // ParentAccessView state.
+  enum class State {
+    kNormal,  // View with default texts and colors.
+    kError    // View with texts and color signalizing input error.
+  };
+
   class ASH_EXPORT TestApi {
    public:
     explicit TestApi(ParentAccessView* view);
@@ -39,6 +45,8 @@ class ASH_EXPORT ParentAccessView : public NonAccessibleView,
     LoginButton* back_button() const;
     ArrowButtonView* submit_button() const;
     LoginPinView* pin_keyboard_view() const;
+
+    State state() const;
 
    private:
     ParentAccessView* const view_;
@@ -78,9 +86,12 @@ class ASH_EXPORT ParentAccessView : public NonAccessibleView,
   // Submits access code for validation.
   void SubmitCode();
 
-  // Called when completion state of |access_code_| changes. |complete| brings
-  // information whether current input code is complete.
-  void OnCodeComplete(bool complete);
+  // Updates state of the view.
+  void UpdateState(State state);
+
+  // Called when access code input changes. |complete| brings information
+  // whether current input code is complete.
+  void OnInputChange(bool complete);
 
   // To be called when parent access code validation was completed. Result of
   // the validation is available in |result| if validation was performed.
@@ -91,6 +102,8 @@ class ASH_EXPORT ParentAccessView : public NonAccessibleView,
 
   // Account id of the user that parent access code is processed for.
   const AccountId account_id_;
+
+  State state_ = State::kNormal;
 
   views::Label* title_label_ = nullptr;
   views::Label* description_label_ = nullptr;
