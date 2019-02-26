@@ -13,7 +13,7 @@
 
   var updateListener = null;
 
-  async function writeToIndexdDB() {
+  async function writeArray() {
     var array = [];
     for (var i = 0; i < 20000; i++)
       array.push(i % 10);
@@ -51,23 +51,13 @@
           typeUsage = children[j].textContent + typeUsage;
         if (children[j].classList.contains('usage-breakdown-legend-value')) {
           // Clean usage value because it's platform-dependent.
-          var cleanedValue = children[j].textContent.replace(/\d+(.\d+)?\sKB/, '--.- KB')
-                                                    .replace(/\d+(.\d+)?\sB/, '--.- B');
+          var cleanedValue = children[j].textContent.replace(/\d+.\d\sKB/, '--.- KB');
           typeUsage = typeUsage + cleanedValue;
         }
       }
       TestRunner.addResult(typeUsage);
     }
   }
-
-  function isServiceWorkerStopping(registration) {
-    const version = registration.versionsByMode().get(SDK.ServiceWorkerVersion.Modes.Redundant);
-    if (!version)
-      return null;
-    const status = version ? version.runningStatus : null;
-    return status === 'stopping';
-  }
-
   UI.viewManager.showView('resources');
 
   var parent = UI.panels.resources._sidebar._applicationTreeElement;
@@ -79,33 +69,13 @@
   var clearStorageView = UI.panels.resources.visibleView;
   TestRunner.addResult('Clear storage view is visible: ' + (clearStorageView instanceof Resources.ClearStorageView));
 
-  TestRunner.markStep('Clear all data');
-
   clearStorageView._clearButton.click();
   await dumpWhenMatches(clearStorageView, usage => usage === 0);
 
   TestRunner.markStep('Now with data');
 
-  await writeToIndexdDB();
-
-  var scriptURL = 'http://127.0.0.1:8000/devtools/service-workers/resources/service-worker-empty.js';
-  var scope = 'http://127.0.0.1:8000/devtools/service-workers/resources/scope/';
-  await ApplicationTestRunner.registerServiceWorker(scriptURL, scope);
+  await writeArray();
   await dumpWhenMatches(clearStorageView, usage => usage > 20000);
-
-  TestRunner.markStep('Clear all data, again');
-
-  for (const serviceWorkerManager of SDK.targetManager.models(SDK.ServiceWorkerManager)) {
-    serviceWorkerManager.addEventListener(
-    SDK.ServiceWorkerManager.Events.RegistrationUpdated, (event) => {
-      if (isServiceWorkerStopping(event.data))
-        TestRunner.addResult('service worker is stopping');
-      }, this);
-  }
-
-  clearStorageView._clearButton.click();
-
-  await dumpWhenMatches(clearStorageView, usage => usage === 0);
 
   TestRunner.completeTest();
 })();
