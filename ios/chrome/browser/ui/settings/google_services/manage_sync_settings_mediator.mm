@@ -223,8 +223,9 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   BOOL needsUpdate =
       self.shouldEncryptionItemBeEnabled &&
       (self.encryptionItem.enabled != self.shouldEncryptionItemBeEnabled);
-  if (self.syncSetupService->GetSyncServiceState() ==
-      SyncSetupService::kSyncServiceNeedsPassphrase) {
+  if (self.shouldEncryptionItemBeEnabled &&
+      self.syncSetupService->GetSyncServiceState() ==
+          SyncSetupService::kSyncServiceNeedsPassphrase) {
     needsUpdate = needsUpdate || self.encryptionItem.image == nil;
     self.encryptionItem.image =
         [UIImage imageNamed:kGoogleServicesSyncErrorImage];

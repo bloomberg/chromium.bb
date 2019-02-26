@@ -311,7 +311,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   BOOL hasError = NO;
   ItemType type;
 
-  if (self.isAuthenticated) {
+  if (self.isAuthenticated && self.syncSetupService->IsSyncEnabled()) {
     switch (self.syncSetupService->GetSyncServiceState()) {
       case SyncSetupService::kSyncServiceUnrecoverableError:
         type = RestartAuthenticationFlowErrorItemType;
