@@ -62,11 +62,11 @@ const char kNetworkLoadAfterCacheHitHistogram[] =
 
 }  // namespace
 
-class ComponentizedCachedImageFetcherTest : public testing::Test {
+class CachedImageFetcherTest : public testing::Test {
  public:
-  ComponentizedCachedImageFetcherTest() {}
+  CachedImageFetcherTest() {}
 
-  ~ComponentizedCachedImageFetcherTest() override {
+  ~CachedImageFetcherTest() override {
     cached_image_fetcher_.reset();
     // We need to run until idle after deleting the database, because
     // ProtoDatabase deletes the actual LevelDB asynchronously.
@@ -145,7 +145,7 @@ class ComponentizedCachedImageFetcherTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::HistogramTester histogram_tester_;
 
-  DISALLOW_COPY_AND_ASSIGN(ComponentizedCachedImageFetcherTest);
+  DISALLOW_COPY_AND_ASSIGN(CachedImageFetcherTest);
 };
 
 MATCHER(EmptyImage, "") {
@@ -162,9 +162,7 @@ MATCHER(NonEmptyString, "") {
 
 // TODO(wylieb): Write a test that creates two CachedImageFetcher and tests
 // that they both can use what's inside.
-// TODO(wylieb): Rename these tests CachedImageFetcherTest* when ntp_snippets/-
-//               remote/cached_image_fetcher has been migrated.
-TEST_F(ComponentizedCachedImageFetcherTest, FetchImageFromCache) {
+TEST_F(CachedImageFetcherTest, FetchImageFromCache) {
   // Save the image in the database.
   image_cache()->SaveImage(kImageUrl.spec(), kImageData);
   RunUntilIdle();
@@ -188,7 +186,7 @@ TEST_F(ComponentizedCachedImageFetcherTest, FetchImageFromCache) {
                                        CachedImageFetcherEvent::kCacheHit, 1);
 }
 
-TEST_F(ComponentizedCachedImageFetcherTest, FetchImageFromCacheReadOnly) {
+TEST_F(CachedImageFetcherTest, FetchImageFromCacheReadOnly) {
   CreateCachedImageFetcher(/* read_only */ true);
   // Save the image in the database.
   image_cache()->SaveImage(kImageUrl.spec(), kImageData);
@@ -228,7 +226,7 @@ TEST_F(ComponentizedCachedImageFetcherTest, FetchImageFromCacheReadOnly) {
   }
 }
 
-TEST_F(ComponentizedCachedImageFetcherTest, FetchImagePopulatesCache) {
+TEST_F(CachedImageFetcherTest, FetchImagePopulatesCache) {
   // Expect the image to be fetched by URL.
   {
     test_url_loader_factory()->AddResponse(kImageUrl.spec(), kImageData);
@@ -257,7 +255,7 @@ TEST_F(ComponentizedCachedImageFetcherTest, FetchImagePopulatesCache) {
     EXPECT_CALL(*this, OnImageLoaded(NonEmptyString()));
     image_cache()->LoadImage(
         /* read_only */ false, kImageUrl.spec(),
-        base::BindOnce(&ComponentizedCachedImageFetcherTest::OnImageLoaded,
+        base::BindOnce(&CachedImageFetcherTest::OnImageLoaded,
                        base::Unretained(this)));
     RunUntilIdle();
   }
@@ -278,7 +276,7 @@ TEST_F(ComponentizedCachedImageFetcherTest, FetchImagePopulatesCache) {
   }
 }
 
-TEST_F(ComponentizedCachedImageFetcherTest, FetchImagePopulatesCacheReadOnly) {
+TEST_F(CachedImageFetcherTest, FetchImagePopulatesCacheReadOnly) {
   CreateCachedImageFetcher(/* read_only */ true);
   // Expect the image to be fetched by URL.
   {
@@ -308,13 +306,13 @@ TEST_F(ComponentizedCachedImageFetcherTest, FetchImagePopulatesCacheReadOnly) {
     EXPECT_CALL(*this, OnImageLoaded(std::string()));
     image_cache()->LoadImage(
         /* read_only */ false, kImageUrl.spec(),
-        base::BindOnce(&ComponentizedCachedImageFetcherTest::OnImageLoaded,
+        base::BindOnce(&CachedImageFetcherTest::OnImageLoaded,
                        base::Unretained(this)));
     RunUntilIdle();
   }
 }
 
-TEST_F(ComponentizedCachedImageFetcherTest, FetchDecodingErrorDeletesCache) {
+TEST_F(CachedImageFetcherTest, FetchDecodingErrorDeletesCache) {
   // Save the image in the database.
   image_cache()->SaveImage(kImageUrl.spec(), kImageData);
   RunUntilIdle();
