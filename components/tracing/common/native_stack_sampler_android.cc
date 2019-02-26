@@ -4,6 +4,7 @@
 
 #include "components/tracing/common/native_stack_sampler_android.h"
 
+#include "base/no_destructor.h"
 #include "base/sampling_heap_profiler/module_cache.h"
 #include "base/trace_event/trace_event.h"
 
@@ -21,6 +22,7 @@ std::vector<base::StackSamplingProfiler::Frame>
 NativeStackSamplerAndroid::RecordStackFrames(
     StackBuffer* stack_buffer,
     base::StackSamplingProfiler::ProfileBuilder* profile_builder) {
+  static base::NoDestructor<base::ModuleCache::Module> invalid_module;
   if (!unwinder_.is_initialized()) {
     // May block on disk access. This function is executed on the profiler
     // thread, so this will only block profiling execution.
@@ -34,7 +36,8 @@ NativeStackSamplerAndroid::RecordStackFrames(
   frames.reserve(depth);
   for (size_t i = 0; i < depth; ++i) {
     // TODO(ssid): Add support for obtaining modules here.
-    frames.emplace_back(reinterpret_cast<uintptr_t>(pcs[i]), nullptr);
+    frames.emplace_back(reinterpret_cast<uintptr_t>(pcs[i]),
+                        invalid_module.get());
   }
   return frames;
 }

@@ -251,8 +251,8 @@ TEST(CallStackProfileBuilderTest, Modules) {
       std::make_unique<TestingCallStackProfileBuilder>(kProfileParams);
 
   const uintptr_t module_base_address1 = 0x1000;
-  // A frame with no module.
-  Frame frame1 = {module_base_address1 + 0x10, nullptr};
+  Module module1;  // module1 has no information hence invalid.
+  Frame frame1 = {module_base_address1 + 0x10, &module1};
 
   const uintptr_t module_base_address2 = 0x1100;
 #if defined(OS_WIN)

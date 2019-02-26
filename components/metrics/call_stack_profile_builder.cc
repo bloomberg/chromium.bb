@@ -91,7 +91,7 @@ void CallStackProfileBuilder::OnSampleCompleted(
     // keep the frame information even if its module is invalid so we have
     // visibility into how often this issue is happening on the server.
     CallStackProfile::Location* location = stack.add_frame();
-    if (!frame.module)
+    if (!frame.module->is_valid)
       continue;
 
     // Dedup modules.

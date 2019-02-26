@@ -6,7 +6,11 @@
 
 #include <utility>
 
+#include "base/no_destructor.h"
+
 namespace base {
+
+ModuleCache::Module::Module() : is_valid(false) {}
 
 ModuleCache::Module::Module(uintptr_t base_address,
                             const std::string& id,
@@ -20,6 +24,7 @@ ModuleCache::Module::Module(uintptr_t base_address,
     : base_address(base_address),
       id(id),
       filename(filename),
+      is_valid(true),
       size(size) {}
 
 ModuleCache::Module::~Module() = default;
@@ -28,6 +33,7 @@ ModuleCache::ModuleCache() = default;
 ModuleCache::~ModuleCache() = default;
 
 const ModuleCache::Module* ModuleCache::GetModuleForAddress(uintptr_t address) {
+  static NoDestructor<Module> invalid_module;
   auto it = modules_cache_map_.upper_bound(address);
   if (it != modules_cache_map_.begin()) {
     DCHECK(!modules_cache_map_.empty());
@@ -38,8 +44,8 @@ const ModuleCache::Module* ModuleCache::GetModuleForAddress(uintptr_t address) {
   }
 
   std::unique_ptr<Module> module = CreateModuleForAddress(address);
-  if (!module)
-    return nullptr;
+  if (!module->is_valid)
+    return invalid_module.get();
   return modules_cache_map_.emplace(module->base_address, std::move(module))
       .first->second.get();
 }

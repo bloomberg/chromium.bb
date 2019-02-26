@@ -68,7 +68,7 @@ std::unique_ptr<ModuleCache::Module> ModuleCache::CreateModuleForAddress(
     uintptr_t address) {
   Dl_info inf;
   if (!dladdr(reinterpret_cast<const void*>(address), &inf))
-    return nullptr;
+    return std::make_unique<Module>();
   auto base_module_address = reinterpret_cast<uintptr_t>(inf.dli_fbase);
   return std::make_unique<Module>(
       base_module_address, GetUniqueId(inf.dli_fbase), FilePath(inf.dli_fname),
