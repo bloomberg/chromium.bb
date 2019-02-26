@@ -5,6 +5,8 @@
 #ifndef SERVICES_MEDIA_SESSION_PUBLIC_CPP_TEST_TEST_MEDIA_CONTROLLER_H_
 #define SERVICES_MEDIA_SESSION_PUBLIC_CPP_TEST_TEST_MEDIA_CONTROLLER_H_
 
+#include <utility>
+
 #include "base/component_export.h"
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -14,6 +16,34 @@
 
 namespace media_session {
 namespace test {
+
+// A mock MediaControllerImageObserver than can be used for waiting for images.
+class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
+    TestMediaControllerImageObserver
+    : public mojom::MediaControllerImageObserver {
+ public:
+  explicit TestMediaControllerImageObserver(
+      mojom::MediaControllerPtr& controller);
+  ~TestMediaControllerImageObserver() override;
+
+  // mojom::MediaControllerImageObserver overrides.
+  void MediaControllerImageChanged(mojom::MediaSessionImageType type,
+                                   const SkBitmap& bitmap) override;
+
+  void WaitForExpectedImageOfType(mojom::MediaSessionImageType type,
+                                  bool expect_null_value);
+
+ private:
+  // The bool is whether the image type should be a null value.
+  using ImageTypePair = std::pair<mojom::MediaSessionImageType, bool>;
+
+  std::unique_ptr<base::RunLoop> run_loop_;
+
+  base::Optional<ImageTypePair> expected_;
+  base::Optional<ImageTypePair> current_;
+
+  mojo::Binding<mojom::MediaControllerImageObserver> binding_{this};
+};
 
 // A mock MediaControllerObsever that can be used for waiting for state changes.
 class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP)
@@ -93,6 +123,11 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) TestMediaController
   void PreviousTrack() override;
   void NextTrack() override;
   void Seek(base::TimeDelta seek_time) override;
+  void ObserveImages(mojom::MediaSessionImageType type,
+                     int minimum_size_px,
+                     int desired_size_px,
+                     mojom::MediaControllerImageObserverPtr observer) override {
+  }
 
   int toggle_suspend_resume_count() const {
     return toggle_suspend_resume_count_;

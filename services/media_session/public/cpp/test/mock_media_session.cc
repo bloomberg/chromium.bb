@@ -192,6 +192,7 @@ void MockMediaSession::AddObserver(mojom::MediaSessionObserverPtr observer) {
   std::vector<mojom::MediaSessionAction> actions(actions_.begin(),
                                                  actions_.end());
   observer->MediaSessionActionsChanged(actions);
+  observer->MediaSessionImagesChanged(images_);
 
   observers_.AddPtr(std::move(observer));
 }
@@ -221,6 +222,20 @@ void MockMediaSession::Seek(base::TimeDelta seek_time) {
 
 void MockMediaSession::Stop(SuspendType type) {
   SetState(mojom::MediaSessionInfo::SessionState::kInactive);
+}
+
+void MockMediaSession::GetMediaImageBitmap(
+    const MediaImage& image,
+    int minimum_size_px,
+    int desired_size_px,
+    GetMediaImageBitmapCallback callback) {
+  last_image_src_ = image.src;
+
+  SkBitmap bitmap;
+  bitmap.allocPixels(
+      SkImageInfo::Make(10, 10, kRGBA_8888_SkColorType, kOpaque_SkAlphaType));
+
+  std::move(callback).Run(bitmap);
 }
 
 void MockMediaSession::SetIsControllable(bool value) {
@@ -329,6 +344,23 @@ void MockMediaSession::SimulateMetadataChanged(
     const base::Optional<MediaMetadata>& metadata) {
   observers_.ForAllPtrs([&metadata](mojom::MediaSessionObserver* observer) {
     observer->MediaSessionMetadataChanged(metadata);
+  });
+}
+
+void MockMediaSession::ClearAllImages() {
+  images_.clear();
+
+  observers_.ForAllPtrs([this](mojom::MediaSessionObserver* observer) {
+    observer->MediaSessionImagesChanged(this->images_);
+  });
+}
+
+void MockMediaSession::SetImagesOfType(mojom::MediaSessionImageType type,
+                                       const std::vector<MediaImage>& images) {
+  images_.insert_or_assign(type, images);
+
+  observers_.ForAllPtrs([this](mojom::MediaSessionObserver* observer) {
+    observer->MediaSessionImagesChanged(this->images_);
   });
 }
 
