@@ -463,6 +463,13 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
     return false;
   }
 
+  // When a plugin element is handled externally, this method is used to obtain
+  // a scriptable object which exposes custom API such as postMessage.
+  virtual v8::Local<v8::Object> GetScriptableObject(HTMLPlugInElement&,
+                                                    v8::Isolate*) {
+    return v8::Local<v8::Object>();
+  }
+
   // Returns a new WebWorkerFetchContext for a dedicated worker or worklet.
   virtual scoped_refptr<WebWorkerFetchContext> CreateWorkerFetchContext() {
     return nullptr;

@@ -32,6 +32,12 @@ bool ContentRendererClient::MaybeCreateMimeHandlerView(
   return false;
 }
 
+v8::Local<v8::Object> ContentRendererClient::GetScriptableObject(
+    const blink::WebElement& plugin_element,
+    v8::Isolate* isolate) {
+  return v8::Local<v8::Object>();
+}
+
 bool ContentRendererClient::OverrideCreatePlugin(
     RenderFrame* render_frame,
     const blink::WebPluginParams& params,

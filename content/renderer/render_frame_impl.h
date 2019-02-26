@@ -1334,6 +1334,9 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebElement& plugin_element,
       const blink::WebURL& url,
       const blink::WebString& suggested_mime_type) override;
+  v8::Local<v8::Object> GetScriptableObject(
+      const blink::WebElement& plugin_element,
+      v8::Isolate* isolate) override;
 
   // Updates the state of this frame when asked to commit a navigation.
   void PrepareFrameForCommit(const GURL& url,

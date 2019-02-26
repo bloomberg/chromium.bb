@@ -95,6 +95,9 @@ class ChromeContentRendererClient
                                   const GURL& original_url,
                                   const std::string& mime_type,
                                   int32_t instance_id_to_use) override;
+  v8::Local<v8::Object> GetScriptableObject(
+      const blink::WebElement& plugin_element,
+      v8::Isolate* isolate) override;
   bool OverrideCreatePlugin(content::RenderFrame* render_frame,
                             const blink::WebPluginParams& params,
                             blink::WebPlugin** plugin) override;
