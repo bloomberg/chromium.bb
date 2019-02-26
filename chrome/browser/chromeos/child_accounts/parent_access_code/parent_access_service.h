@@ -13,6 +13,8 @@
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "components/account_id/account_id.h"
 
+class PrefRegistrySimple;
+
 namespace base {
 class Clock;
 }  // namespace base
@@ -39,6 +41,9 @@ class ParentAccessService : public LoginScreenClient::ParentAccessDelegate,
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
+
+  // Registers preferences.
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   explicit ParentAccessService(std::unique_ptr<ConfigSource> config_source);
   ~ParentAccessService() override;

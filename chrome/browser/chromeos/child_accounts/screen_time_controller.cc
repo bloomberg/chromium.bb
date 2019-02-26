@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 
 #include "ash/public/interfaces/login_screen.mojom.h"
 #include "base/bind.h"
@@ -16,6 +17,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/child_accounts/consumer_status_reporting_service.h"
 #include "chrome/browser/chromeos/child_accounts/consumer_status_reporting_service_factory.h"
+#include "chrome/browser/chromeos/child_accounts/parent_access_code/policy_config_source.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -50,8 +52,6 @@ constexpr char kScreenStateNextUnlockTime[] = "next_unlock_time";
 
 // static
 void ScreenTimeController::RegisterProfilePrefs(PrefRegistrySimple* registry) {
-  // TODO(agawronska): Move preference registration when implementing PAC.
-  registry->RegisterDictionaryPref(prefs::kParentAccessCodeConfig);
   registry->RegisterDictionaryPref(prefs::kScreenTimeLastState);
   registry->RegisterDictionaryPref(prefs::kUsageTimeLimit);
 }
@@ -74,9 +74,22 @@ ScreenTimeController::ScreenTimeController(content::BrowserContext* context)
       prefs::kUsageTimeLimit,
       base::BindRepeating(&ScreenTimeController::OnPolicyChanged,
                           base::Unretained(this)));
+
+  if (base::FeatureList::IsEnabled(features::kParentAccessCode)) {
+    auto config_source =
+        std::make_unique<parent_access::PolicyConfigSource>(pref_service_);
+    parent_access_service_ =
+        std::make_unique<parent_access::ParentAccessService>(
+            std::move(config_source));
+    parent_access_service_->SetDelegate(this);
+  }
 }
 
 ScreenTimeController::~ScreenTimeController() {
+  if (base::FeatureList::IsEnabled(features::kParentAccessCode)) {
+    parent_access_service_->SetDelegate(nullptr);
+  }
+
   session_manager::SessionManager::Get()->RemoveObserver(this);
   if (base::FeatureList::IsEnabled(features::kUsageTimeStateNotifier))
     UsageTimeStateNotifier::GetInstance()->RemoveObserver(this);
@@ -99,6 +112,16 @@ void ScreenTimeController::RemoveObserver(Observer* observer) {
 base::TimeDelta ScreenTimeController::GetScreenTimeDuration() {
   return ConsumerStatusReportingServiceFactory::GetForBrowserContext(context_)
       ->GetChildScreenTime();
+}
+
+void ScreenTimeController::OnAccessCodeValidation(bool result) {
+  if (!result)
+    return;
+
+  if (!session_manager::SessionManager::Get()->IsScreenLocked())
+    return;
+
+  UpdateLockScreenState(false /*blocked*/, base::Time());
 }
 
 void ScreenTimeController::SetClocksForTesting(
@@ -139,7 +162,7 @@ void ScreenTimeController::CheckTimeLimit(const std::string& source) {
   SaveCurrentStateToPref(state);
 
   // Show/hide time limits message based on the policy enforcement.
-  UpdateTimeLimitsMessage(
+  UpdateLockScreenState(
       state.is_locked, state.is_locked ? state.next_unlock_time : base::Time());
   VLOG(1) << "Screen should be locked is set to " << state.is_locked;
 
@@ -219,10 +242,9 @@ void ScreenTimeController::ForceScreenLockByPolicy(
   next_unlock_time_ = next_unlock_time;
 }
 
-void ScreenTimeController::UpdateTimeLimitsMessage(
-    bool visible,
-    base::Time next_unlock_time) {
-  DCHECK(visible || next_unlock_time.is_null());
+void ScreenTimeController::UpdateLockScreenState(bool blocked,
+                                                 base::Time next_unlock_time) {
+  DCHECK(blocked || next_unlock_time.is_null());
   if (!session_manager::SessionManager::Get()->IsScreenLocked())
     return;
 
@@ -231,11 +253,11 @@ void ScreenTimeController::UpdateTimeLimitsMessage(
           ->GetUserByProfile(Profile::FromBrowserContext(context_))
           ->GetAccountId();
   ScreenLocker::default_screen_locker()->SetAuthEnabledForUser(
-      account_id, !visible,
-      visible ? next_unlock_time : base::Optional<base::Time>());
+      account_id, !blocked,
+      blocked ? next_unlock_time : base::Optional<base::Time>());
   if (base::FeatureList::IsEnabled(features::kParentAccessCode)) {
     LoginScreenClient::Get()->login_screen()->SetShowParentAccessButton(
-        visible);
+        blocked);
   }
 }
 
@@ -419,7 +441,7 @@ void ScreenTimeController::OnSessionStateChanged() {
   if (base::FeatureList::IsEnabled(features::kUsageTimeStateNotifier)) {
     if (session_state == session_manager::SessionState::LOCKED &&
         next_unlock_time_) {
-      UpdateTimeLimitsMessage(true /*visible*/, next_unlock_time_.value());
+      UpdateLockScreenState(true /*blocked*/, next_unlock_time_.value());
       next_unlock_time_.reset();
     }
     return;
@@ -427,7 +449,7 @@ void ScreenTimeController::OnSessionStateChanged() {
 
   if (session_state == session_manager::SessionState::LOCKED) {
     if (next_unlock_time_) {
-      UpdateTimeLimitsMessage(true /*visible*/, next_unlock_time_.value());
+      UpdateLockScreenState(true /*blocked*/, next_unlock_time_.value());
       next_unlock_time_.reset();
     }
     ResetInSessionTimers();

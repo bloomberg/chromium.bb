@@ -1721,9 +1721,8 @@ void LockContentsView::OnEasyUnlockIconTapped() {
   }
 }
 
-void LockContentsView::OnParentAccessCodeSubmitted(const std::string& code) {
-  // TODO(agawronska): Implement.
-  NOTIMPLEMENTED();
+void LockContentsView::OnParentAccessValidationFinished(bool access_granted) {
+  OnSetShowParentAccessDialog(false);
 }
 
 keyboard::KeyboardController* LockContentsView::GetKeyboardControllerForView()
@@ -1790,11 +1789,9 @@ LoginBigUserView* LockContentsView::AllocateLoginBigUserView(
                           base::Unretained(this), is_primary);
 
   ParentAccessView::Callbacks parent_access_callbacks;
-  parent_access_callbacks.on_back =
-      base::BindRepeating(&LockContentsView::OnSetShowParentAccessDialog,
-                          base::Unretained(this), false);
-  parent_access_callbacks.on_submit = base::BindRepeating(
-      &LockContentsView::OnParentAccessCodeSubmitted, base::Unretained(this));
+  parent_access_callbacks.on_finished =
+      base::BindRepeating(&LockContentsView::OnParentAccessValidationFinished,
+                          base::Unretained(this));
 
   return new LoginBigUserView(user, auth_user_callbacks,
                               public_account_callbacks,
