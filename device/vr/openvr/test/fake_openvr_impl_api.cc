@@ -28,7 +28,7 @@ class TestVRSystem : public IVRSystem {
                                     float far_z) override {
     NOTIMPLEMENTED();
     return {};
-  };
+  }
   void GetProjectionRaw(EVREye eye,
                         float* left,
                         float* right,
@@ -178,7 +178,7 @@ class TestVRSystem : public IVRSystem {
   const char* GetButtonIdNameFromEnum(EVRButtonId button_id) override {
     NOTIMPLEMENTED();
     return nullptr;
-  };
+  }
   const char* GetControllerAxisTypeNameFromEnum(
       EVRControllerAxisType axis_type) override {
     NOTIMPLEMENTED();
