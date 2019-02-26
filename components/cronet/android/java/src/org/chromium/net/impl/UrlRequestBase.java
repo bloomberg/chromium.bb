@@ -3,28 +3,12 @@
 // found in the LICENSE file.
 package org.chromium.net.impl;
 
-import static org.chromium.net.UrlRequest.Status.CONNECTING;
-import static org.chromium.net.UrlRequest.Status.DOWNLOADING_PAC_FILE;
-import static org.chromium.net.UrlRequest.Status.ESTABLISHING_PROXY_TUNNEL;
-import static org.chromium.net.UrlRequest.Status.IDLE;
-import static org.chromium.net.UrlRequest.Status.INVALID;
-import static org.chromium.net.UrlRequest.Status.READING_RESPONSE;
-import static org.chromium.net.UrlRequest.Status.RESOLVING_HOST;
-import static org.chromium.net.UrlRequest.Status.RESOLVING_HOST_IN_PAC_FILE;
-import static org.chromium.net.UrlRequest.Status.RESOLVING_PROXY_FOR_URL;
-import static org.chromium.net.UrlRequest.Status.SENDING_REQUEST;
-import static org.chromium.net.UrlRequest.Status.SSL_HANDSHAKE;
-import static org.chromium.net.UrlRequest.Status.WAITING_FOR_AVAILABLE_SOCKET;
-import static org.chromium.net.UrlRequest.Status.WAITING_FOR_CACHE;
-import static org.chromium.net.UrlRequest.Status.WAITING_FOR_DELEGATE;
-import static org.chromium.net.UrlRequest.Status.WAITING_FOR_RESPONSE;
-import static org.chromium.net.UrlRequest.Status.WAITING_FOR_STALLED_SOCKET_POOL;
-
 import android.support.annotation.IntDef;
 
 import org.chromium.net.ExperimentalUrlRequest;
 import org.chromium.net.UploadDataProvider;
 import org.chromium.net.UrlRequest;
+import org.chromium.net.UrlRequest.Status;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -71,12 +55,12 @@ public abstract class UrlRequestBase extends ExperimentalUrlRequest {
     /**
      * Possible URL Request statuses.
      */
-    @IntDef({
-            INVALID, IDLE, WAITING_FOR_STALLED_SOCKET_POOL, WAITING_FOR_AVAILABLE_SOCKET,
-            WAITING_FOR_DELEGATE, WAITING_FOR_CACHE, DOWNLOADING_PAC_FILE, RESOLVING_PROXY_FOR_URL,
-            RESOLVING_HOST_IN_PAC_FILE, ESTABLISHING_PROXY_TUNNEL, RESOLVING_HOST, CONNECTING,
-            SSL_HANDSHAKE, SENDING_REQUEST, WAITING_FOR_RESPONSE, READING_RESPONSE,
-    })
+    @IntDef({Status.INVALID, Status.IDLE, Status.WAITING_FOR_STALLED_SOCKET_POOL,
+            Status.WAITING_FOR_AVAILABLE_SOCKET, Status.WAITING_FOR_DELEGATE,
+            Status.WAITING_FOR_CACHE, Status.DOWNLOADING_PAC_FILE, Status.RESOLVING_PROXY_FOR_URL,
+            Status.RESOLVING_HOST_IN_PAC_FILE, Status.ESTABLISHING_PROXY_TUNNEL,
+            Status.RESOLVING_HOST, Status.CONNECTING, Status.SSL_HANDSHAKE, Status.SENDING_REQUEST,
+            Status.WAITING_FOR_RESPONSE, Status.READING_RESPONSE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface StatusValues {}
 
@@ -90,49 +74,49 @@ public abstract class UrlRequestBase extends ExperimentalUrlRequest {
         assert loadState >= LoadState.IDLE && loadState <= LoadState.READING_RESPONSE;
         switch (loadState) {
             case (LoadState.IDLE):
-                return IDLE;
+                return Status.IDLE;
 
             case (LoadState.WAITING_FOR_STALLED_SOCKET_POOL):
-                return WAITING_FOR_STALLED_SOCKET_POOL;
+                return Status.WAITING_FOR_STALLED_SOCKET_POOL;
 
             case (LoadState.WAITING_FOR_AVAILABLE_SOCKET):
-                return WAITING_FOR_AVAILABLE_SOCKET;
+                return Status.WAITING_FOR_AVAILABLE_SOCKET;
 
             case (LoadState.WAITING_FOR_DELEGATE):
-                return WAITING_FOR_DELEGATE;
+                return Status.WAITING_FOR_DELEGATE;
 
             case (LoadState.WAITING_FOR_CACHE):
-                return WAITING_FOR_CACHE;
+                return Status.WAITING_FOR_CACHE;
 
             case (LoadState.DOWNLOADING_PAC_FILE):
-                return DOWNLOADING_PAC_FILE;
+                return Status.DOWNLOADING_PAC_FILE;
 
             case (LoadState.RESOLVING_PROXY_FOR_URL):
-                return RESOLVING_PROXY_FOR_URL;
+                return Status.RESOLVING_PROXY_FOR_URL;
 
             case (LoadState.RESOLVING_HOST_IN_PAC_FILE):
-                return RESOLVING_HOST_IN_PAC_FILE;
+                return Status.RESOLVING_HOST_IN_PAC_FILE;
 
             case (LoadState.ESTABLISHING_PROXY_TUNNEL):
-                return ESTABLISHING_PROXY_TUNNEL;
+                return Status.ESTABLISHING_PROXY_TUNNEL;
 
             case (LoadState.RESOLVING_HOST):
-                return RESOLVING_HOST;
+                return Status.RESOLVING_HOST;
 
             case (LoadState.CONNECTING):
-                return CONNECTING;
+                return Status.CONNECTING;
 
             case (LoadState.SSL_HANDSHAKE):
-                return SSL_HANDSHAKE;
+                return Status.SSL_HANDSHAKE;
 
             case (LoadState.SENDING_REQUEST):
-                return SENDING_REQUEST;
+                return Status.SENDING_REQUEST;
 
             case (LoadState.WAITING_FOR_RESPONSE):
-                return WAITING_FOR_RESPONSE;
+                return Status.WAITING_FOR_RESPONSE;
 
             case (LoadState.READING_RESPONSE):
-                return READING_RESPONSE;
+                return Status.READING_RESPONSE;
 
             default:
                 // A load state is retrieved but there is no corresponding
