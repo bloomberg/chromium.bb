@@ -213,9 +213,6 @@ void XRFrameProvider::ScheduleNonImmersiveFrame() {
   TRACE_EVENT0("gpu", __FUNCTION__);
   DCHECK(!immersive_session_)
       << "Scheduling should be done via the exclusive session if present.";
-  DCHECK(xr_->xrMagicWindowProviderPtr())
-      << "If there is no exclusive session, it should be impossible to "
-         "schedule a frame without a MagicWindowProvider.";
 
   if (pending_non_immersive_vsync_)
     return;
@@ -232,8 +229,12 @@ void XRFrameProvider::ScheduleNonImmersiveFrame() {
 
   pending_non_immersive_vsync_ = true;
 
-  xr_->xrMagicWindowProviderPtr()->GetFrameData(WTF::Bind(
-      &XRFrameProvider::OnNonImmersiveFrameData, WrapWeakPersistent(this)));
+  if (xr_->xrMagicWindowProviderPtr()) {
+    xr_->xrMagicWindowProviderPtr()->GetFrameData(WTF::Bind(
+        &XRFrameProvider::OnNonImmersiveFrameData, WrapWeakPersistent(this)));
+  } else {
+    OnNonImmersiveFrameData(nullptr);
+  }
 
   // TODO(https://crbug.com/839253): Generalize the pass-through images
   // code path so that it also works for immersive sessions on an AR device
@@ -332,9 +333,14 @@ void XRFrameProvider::OnNonImmersiveFrameData(
     return;
 
   if (!frame_data) {
-    // Unexpectedly didn't get frame data, and we don't have a timestamp.
-    // Try to request a regular animation frame to avoid getting stuck.
-    DVLOG(1) << __FUNCTION__ << ": NO FRAME DATA!";
+    // Since we don't have any frame data, we will try to request a regular
+    // animation frame to avoid getting stuck.
+    // If we have a MagicWindowProvider this is unexpected, and we should log
+    // for diagnostic purposes.
+    if (xr_->xrMagicWindowProviderPtr()) {
+      DVLOG(1) << __FUNCTION__ << ": NO FRAME DATA!";
+    }
+
     frame_pose_ = nullptr;
     doc->RequestAnimationFrame(
         MakeGarbageCollected<XRFrameProviderRequestCallback>(this));
