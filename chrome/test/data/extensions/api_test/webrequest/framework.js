@@ -10,7 +10,6 @@ var capturedUnexpectedData;
 var expectedEventOrder;
 var networkServiceState = "unknown";
 var tabId;
-var tabIsIncognito;
 var tabIdMap;
 var frameIdMap;
 var testWebSocketPort;
@@ -51,7 +50,6 @@ function runTestsForTab(tests, tab) {
   tabId = tab.id;
   tabIdMap = {"-1": -1};
   tabIdMap[tabId] = 0;
-  tabIsIncognito = tab.incognito;
   chrome.test.getConfig(function(config) {
     testServerPort = config.testServer.port;
     testWebSocketPort = config.testWebSocketPort;

@@ -30,6 +30,7 @@
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/extension_with_management_policy_apitest.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -2522,6 +2523,103 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, ServiceWorkerFallback) {
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
                        ServiceWorkerNoFetchHandler) {
   RunServiceWorkerFetchTest("empty.js");
+}
+
+// Ensure we don't strip off initiator incorrectly in web request events when
+// both the normal and incognito contexts are active. Regression test for
+// crbug.com/934398.
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
+                       Initiator_SpanningIncognito) {
+  embedded_test_server()->ServeFilesFromSourceDirectory("chrome/test/data");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const bool will_reply = false;
+  ExtensionTestMessageListener ready_listener("ready", will_reply);
+  const Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("webrequest")
+                        .AppendASCII("initiator_spanning"));
+  ASSERT_TRUE(extension);
+  const std::string extension_id = extension->id();
+  EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
+
+  Browser* incognito_browser = CreateIncognitoBrowser(profile());
+  ASSERT_TRUE(incognito_browser);
+
+  // iframe.html loads an iframe to title1.html. The extension listens for the
+  // request to title1.html and records the request initiator.
+  GURL url = embedded_test_server()->GetURL("google.com", "/iframe.html");
+  const std::string url_origin = url::Origin::Create(url).Serialize();
+
+  const char* kScript = R"(
+    domAutomationController.send(JSON.stringify(window.initiators));
+    window.initiators = [];
+  )";
+
+  ui_test_utils::NavigateToURL(browser(), url);
+  EXPECT_EQ(base::StringPrintf("[\"%s\"]", url_origin.c_str()),
+            ExecuteScriptInBackgroundPage(extension_id, kScript));
+
+  // The extension isn't enabled in incognito. Se we shouldn't intercept the
+  // request to |url|.
+  ui_test_utils::NavigateToURL(incognito_browser, url);
+  EXPECT_EQ("[]", ExecuteScriptInBackgroundPage(extension_id, kScript));
+
+  // Now enable the extension in incognito.
+  ready_listener.Reset();
+  extensions::util::SetIsIncognitoEnabled(extension_id, profile(),
+                                          true /* enabled */);
+  EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
+
+  // Now we should be able to intercept the incognito request.
+  ui_test_utils::NavigateToURL(incognito_browser, url);
+  EXPECT_EQ(base::StringPrintf("[\"%s\"]", url_origin.c_str()),
+            ExecuteScriptInBackgroundPage(extension_id, kScript));
+}
+
+// Ensure we don't strip off initiator incorrectly in web request events when
+// both the normal and incognito contexts are active. Regression test for
+// crbug.com/934398.
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, Initiator_SplitIncognito) {
+  embedded_test_server()->ServeFilesFromSourceDirectory("chrome/test/data");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const bool will_reply = false;
+  ExtensionTestMessageListener ready_listener("ready", will_reply);
+  ExtensionTestMessageListener incognito_ready_listener("incognito ready",
+                                                        will_reply);
+  const Extension* extension = LoadExtensionWithFlags(
+      test_data_dir_.AppendASCII("webrequest").AppendASCII("initiator_split"),
+      ExtensionBrowserTest::kFlagEnableIncognito);
+  ASSERT_TRUE(extension);
+  EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
+
+  Browser* incognito_browser = CreateIncognitoBrowser(profile());
+  ASSERT_TRUE(incognito_browser);
+  EXPECT_TRUE(incognito_ready_listener.WaitUntilSatisfied());
+
+  // iframe.html loads an iframe to title1.html. The extension listens for the
+  // request to title1.html and records the request initiator.
+  GURL url_normal =
+      embedded_test_server()->GetURL("google.com", "/iframe.html");
+  GURL url_incognito =
+      embedded_test_server()->GetURL("example.com", "/iframe.html");
+  const std::string origin_normal = url::Origin::Create(url_normal).Serialize();
+  const std::string origin_incognito =
+      url::Origin::Create(url_incognito).Serialize();
+
+  const char* kScript = R"(
+    domAutomationController.send(JSON.stringify(window.initiators));
+    window.initiators = [];
+  )";
+
+  ui_test_utils::NavigateToURL(browser(), url_normal);
+  ui_test_utils::NavigateToURL(incognito_browser, url_incognito);
+  EXPECT_EQ(base::StringPrintf("[\"%s\"]", origin_normal.c_str()),
+            browsertest_util::ExecuteScriptInBackgroundPage(
+                profile(), extension->id(), kScript));
+  EXPECT_EQ(base::StringPrintf("[\"%s\"]", origin_incognito.c_str()),
+            browsertest_util::ExecuteScriptInBackgroundPage(
+                profile()->GetOffTheRecordProfile(), extension->id(), kScript));
 }
 
 }  // namespace extensions
