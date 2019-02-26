@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.dependency_injection;
 
 import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsCoordinator;
 import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsModule;
-import org.chromium.chrome.browser.tasks.tab_list_ui.GridTabSwitcherCoordinator;
 
 import dagger.Subcomponent;
 
@@ -20,5 +19,4 @@ public interface ChromeActivityComponent {
 
     // Temporary getters for DI migration process.
     ContextualSuggestionsCoordinator resolveContextualSuggestionsCoordinator();
-    GridTabSwitcherCoordinator resolveGridTabSwitcherCoordinator();
 }

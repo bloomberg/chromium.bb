@@ -41,7 +41,7 @@ import java.util.List;
  * A {@link Layout} controller for the more complicated Chrome browser.  This is currently a
  * superset of {@link LayoutManager}.
  */
-public class LayoutManagerChrome extends LayoutManager implements OverviewModeBehavior {
+public class LayoutManagerChrome extends LayoutManager implements OverviewModeController {
     // Layouts
     /** An {@link Layout} that should be used as the accessibility tab switcher. */
     protected OverviewListLayout mOverviewListLayout;
@@ -318,6 +318,7 @@ public class LayoutManagerChrome extends LayoutManager implements OverviewModeBe
      * all of the {@link Tab}s opened by the user.
      * @param animate Whether or not to animate the transition to overview mode.
      */
+    @Override
     public void showOverview(boolean animate) {
         boolean useAccessibility = DeviceClassManager.enableAccessibilityLayout();
 
@@ -340,6 +341,7 @@ public class LayoutManagerChrome extends LayoutManager implements OverviewModeBe
      * Hides the current {@link Layout}, returning to the default {@link Layout}.
      * @param animate Whether or not to animate the transition to the default {@link Layout}.
      */
+    @Override
     public void hideOverview(boolean animate) {
         Layout activeLayout = getActiveLayout();
         if (activeLayout != null && !activeLayout.isHiding()) {

@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.tasks.tab_list_ui;
 
+import static org.chromium.chrome.browser.tasks.tab_list_ui.TabListContainerProperties.ANIMATE_VISIBILITY_CHANGES;
+import static org.chromium.chrome.browser.tasks.tab_list_ui.TabListContainerProperties.INITIAL_SCROLL_INDEX;
 import static org.chromium.chrome.browser.tasks.tab_list_ui.TabListContainerProperties.IS_INCOGNITO;
 import static org.chromium.chrome.browser.tasks.tab_list_ui.TabListContainerProperties.IS_VISIBLE;
 import static org.chromium.chrome.browser.tasks.tab_list_ui.TabListContainerProperties.VISIBILITY_LISTENER;
@@ -23,15 +25,17 @@ class TabGridContainerViewBinder {
             PropertyModel model, TabListRecyclerView view, PropertyKey propertyKey) {
         if (IS_VISIBLE == propertyKey) {
             if (model.get(IS_VISIBLE)) {
-                view.startShowing();
+                view.startShowing(model.get(ANIMATE_VISIBILITY_CHANGES));
             } else {
-                view.startHiding();
+                view.startHiding(model.get(ANIMATE_VISIBILITY_CHANGES));
             }
         } else if (IS_INCOGNITO == propertyKey) {
             view.setBackgroundColor(
                     ColorUtils.getDefaultThemeColor(view.getResources(), model.get(IS_INCOGNITO)));
         } else if (VISIBILITY_LISTENER == propertyKey) {
             view.setVisibilityListener(model.get(VISIBILITY_LISTENER));
+        } else if (INITIAL_SCROLL_INDEX == propertyKey) {
+            view.scrollToPosition(model.get(INITIAL_SCROLL_INDEX));
         }
     }
 }

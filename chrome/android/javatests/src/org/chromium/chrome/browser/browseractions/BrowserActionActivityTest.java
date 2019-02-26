@@ -395,7 +395,8 @@ public class BrowserActionActivityTest {
 
         // The Intent of the Browser Actions notification should not toggle overview mode and should
         mActivityTestRule.startActivityCompletely(notificationIntent);
-        Assert.assertFalse(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+        Assert.assertFalse(
+                mActivityTestRule.getActivity().getOverviewModeBehavior().overviewVisible());
         Assert.assertNotEquals(prevTabId, mActivityTestRule.getActivity().getActivityTab().getId());
         Assert.assertEquals(newTabId, mActivityTestRule.getActivity().getActivityTab().getId());
     }
@@ -459,9 +460,10 @@ public class BrowserActionActivityTest {
         mActivityTestRule.startActivityCompletely(notificationIntent);
         if (mActivityTestRule.getActivity().isTablet()) {
             Assert.assertFalse(
-                    mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+                    mActivityTestRule.getActivity().getOverviewModeBehavior().overviewVisible());
         } else {
-            Assert.assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+            Assert.assertTrue(
+                    mActivityTestRule.getActivity().getOverviewModeBehavior().overviewVisible());
         }
     }
 
@@ -571,9 +573,10 @@ public class BrowserActionActivityTest {
         // Tab switcher should be shown on phones.
         if (mActivityTestRule.getActivity().isTablet()) {
             Assert.assertFalse(
-                    mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+                    mActivityTestRule.getActivity().getOverviewModeBehavior().overviewVisible());
         } else {
-            Assert.assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+            Assert.assertTrue(
+                    mActivityTestRule.getActivity().getOverviewModeBehavior().overviewVisible());
         }
     }
 

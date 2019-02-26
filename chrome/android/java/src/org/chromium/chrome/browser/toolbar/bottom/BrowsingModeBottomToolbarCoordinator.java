@@ -191,17 +191,6 @@ public class BrowsingModeBottomToolbarCoordinator {
     }
 
     /**
-     * Overrides tab switcher launching behavior.
-     * @param newClickListener The new {@link OnClickListener} for tab switcher button clicks.
-     * @param overviewModeBehavior The OverviewModeBehavior to be used for tab switcher states.
-     */
-    public void overrideTabSwitcherBehavior(
-            OnClickListener newClickListener, OverviewModeBehavior overviewModeBehavior) {
-        mTabSwitcherButtonCoordinator.setTabSwitcherListener(newClickListener);
-        mMediator.setOverviewModeBehavior(overviewModeBehavior);
-    }
-
-    /**
      * @return Whether the browsing mode toolbar is visible.
      */
     public boolean isVisible() {
