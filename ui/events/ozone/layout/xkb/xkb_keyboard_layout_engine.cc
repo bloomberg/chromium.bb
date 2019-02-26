@@ -846,6 +846,8 @@ void XkbKeyboardLayoutEngine::SetKeymap(xkb_keymap* keymap) {
   // Update num lock mask.
   num_lock_mod_mask_ = num_lock_mask;
 #endif
+  shift_mod_mask_ = EventFlagsToXkbFlags(ui::EF_SHIFT_DOWN);
+  altgr_mod_mask_ = EventFlagsToXkbFlags(ui::EF_ALTGR_DOWN);
 }
 
 xkb_mod_mask_t XkbKeyboardLayoutEngine::EventFlagsToXkbFlags(
@@ -940,7 +942,7 @@ KeyboardCode XkbKeyboardLayoutEngine::DifficultKeyboardCode(
       if (multi->subtable[i].test_shift) {
         if (shift_character == kNonCharacter) {
           shift_character = XkbSubCharacter(xkb_keycode, xkb_flags, character,
-                                            ui::EF_SHIFT_DOWN);
+                                            shift_mod_mask_);
         }
         if (shift_character != multi->subtable[i].shift_character)
           continue;
@@ -948,7 +950,7 @@ KeyboardCode XkbKeyboardLayoutEngine::DifficultKeyboardCode(
       if (multi->subtable[i].test_altgr) {
         if (altgr_character == kNonCharacter) {
           altgr_character = XkbSubCharacter(xkb_keycode, xkb_flags, character,
-                                            ui::EF_ALTGR_DOWN);
+                                            altgr_mod_mask_);
         }
         if (altgr_character != multi->subtable[i].altgr_character)
           continue;
@@ -974,8 +976,7 @@ base::char16 XkbKeyboardLayoutEngine::XkbSubCharacter(
     xkb_keycode_t xkb_keycode,
     xkb_mod_mask_t base_flags,
     base::char16 base_character,
-    int ui_flags) const {
-  xkb_mod_mask_t flags = EventFlagsToXkbFlags(ui_flags);
+    xkb_mod_mask_t flags) const {
   if (flags == base_flags)
     return base_character;
   xkb_keysym_t keysym;
