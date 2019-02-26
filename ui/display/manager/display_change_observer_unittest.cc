@@ -69,6 +69,8 @@ TEST_P(DisplayChangeObserverTest, GetExternalManagedDisplayModeList) {
       FakeDisplaySnapshot::Builder()
           .SetId(123)
           .SetNativeMode(MakeDisplayMode(1920, 1200, false, 60))
+          // Same size as native mode but with higher refresh rate.
+          .AddMode(MakeDisplayMode(1920, 1200, false, 75))
           // All non-interlaced (as would be seen with different refresh rates).
           .AddMode(MakeDisplayMode(1920, 1080, false, 80))
           .AddMode(MakeDisplayMode(1920, 1080, false, 70))
@@ -93,7 +95,7 @@ TEST_P(DisplayChangeObserverTest, GetExternalManagedDisplayModeList) {
 
   const bool listing_all_modes = GetParam();
   if (listing_all_modes) {
-    ASSERT_EQ(12u, display_modes.size());
+    ASSERT_EQ(13u, display_modes.size());
     EXPECT_EQ("640x480", display_modes[0].size().ToString());
     EXPECT_TRUE(display_modes[0].is_interlaced());
     EXPECT_EQ(display_modes[0].refresh_rate(), 60);
@@ -135,6 +137,10 @@ TEST_P(DisplayChangeObserverTest, GetExternalManagedDisplayModeList) {
     EXPECT_EQ("1920x1200", display_modes[11].size().ToString());
     EXPECT_FALSE(display_modes[11].is_interlaced());
     EXPECT_EQ(display_modes[11].refresh_rate(), 60);
+
+    EXPECT_EQ("1920x1200", display_modes[12].size().ToString());
+    EXPECT_FALSE(display_modes[12].is_interlaced());
+    EXPECT_EQ(display_modes[12].refresh_rate(), 75);
   } else {
     ASSERT_EQ(6u, display_modes.size());
     EXPECT_EQ("640x480", display_modes[0].size().ToString());
@@ -222,16 +228,28 @@ TEST_P(DisplayChangeObserverTest,
   ManagedDisplayInfo::ManagedDisplayModeList display_modes =
       DisplayChangeObserver::GetExternalManagedDisplayModeList(
           *display_snapshot);
-  ASSERT_EQ(2u, display_modes.size());
-  EXPECT_EQ("1920x1080", display_modes[0].size().ToString());
-  EXPECT_FALSE(display_modes[0].is_interlaced());
-  EXPECT_FALSE(display_modes[0].native());
-  EXPECT_EQ(display_modes[0].refresh_rate(), 60);
 
-  EXPECT_EQ("1920x1080", display_modes[1].size().ToString());
-  EXPECT_TRUE(display_modes[1].is_interlaced());
-  EXPECT_TRUE(display_modes[1].native());
-  EXPECT_EQ(display_modes[1].refresh_rate(), 60);
+  const bool listing_all_modes = GetParam();
+
+  if (listing_all_modes) {
+    ASSERT_EQ(2u, display_modes.size());
+    EXPECT_EQ("1920x1080", display_modes[0].size().ToString());
+    EXPECT_FALSE(display_modes[0].is_interlaced());
+    EXPECT_FALSE(display_modes[0].native());
+    EXPECT_EQ(display_modes[0].refresh_rate(), 60);
+
+    EXPECT_EQ("1920x1080", display_modes[1].size().ToString());
+    EXPECT_TRUE(display_modes[1].is_interlaced());
+    EXPECT_TRUE(display_modes[1].native());
+    EXPECT_EQ(display_modes[1].refresh_rate(), 60);
+  } else {
+    // Only the native mode will be listed.
+    ASSERT_EQ(1u, display_modes.size());
+    EXPECT_EQ("1920x1080", display_modes[0].size().ToString());
+    EXPECT_TRUE(display_modes[0].is_interlaced());
+    EXPECT_TRUE(display_modes[0].native());
+    EXPECT_EQ(display_modes[0].refresh_rate(), 60);
+  }
 }
 
 INSTANTIATE_TEST_CASE_P(,
