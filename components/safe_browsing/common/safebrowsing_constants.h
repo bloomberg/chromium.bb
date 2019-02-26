@@ -35,6 +35,9 @@ extern const char kSbBackupNetworkErrorURLPrefix[];
 // Please see network::mojom::URLLoader::kClientDisconnectReason for more
 // details.
 extern const char kCustomCancelReasonForURLLoader[];
+
+// Returns the error_code to use when safe browsing blocks a request.
+int GetNetErrorCodeForSafeBrowsing();
 }
 
 #endif  // COMPONENTS_SAFE_BROWSING_COMMON_SAFEBROWSING_CONSTANTS_H_
