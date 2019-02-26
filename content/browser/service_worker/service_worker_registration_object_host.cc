@@ -88,9 +88,9 @@ ServiceWorkerRegistrationObjectHost::ServiceWorkerRegistrationObjectHost(
   DCHECK(registration_.get());
   DCHECK(provider_host_);
   registration_->AddListener(this);
-  bindings_.set_connection_error_handler(
-      base::Bind(&ServiceWorkerRegistrationObjectHost::OnConnectionError,
-                 base::Unretained(this)));
+  bindings_.set_connection_error_handler(base::BindRepeating(
+      &ServiceWorkerRegistrationObjectHost::OnConnectionError,
+      base::Unretained(this)));
 }
 
 ServiceWorkerRegistrationObjectHost::~ServiceWorkerRegistrationObjectHost() {

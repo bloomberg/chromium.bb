@@ -44,12 +44,12 @@ class WatcherCallback {
     scoped_refptr<ServiceWorkerContextWatcher> watcher =
         base::MakeRefCounted<ServiceWorkerContextWatcher>(
             context,
-            base::Bind(&WatcherCallback::OnRegistrationUpdated,
-                       weak_factory_.GetWeakPtr()),
-            base::Bind(&WatcherCallback::OnVersionUpdated,
-                       weak_factory_.GetWeakPtr()),
-            base::Bind(&WatcherCallback::OnErrorReported,
-                       weak_factory_.GetWeakPtr()));
+            base::BindRepeating(&WatcherCallback::OnRegistrationUpdated,
+                                weak_factory_.GetWeakPtr()),
+            base::BindRepeating(&WatcherCallback::OnVersionUpdated,
+                                weak_factory_.GetWeakPtr()),
+            base::BindRepeating(&WatcherCallback::OnErrorReported,
+                                weak_factory_.GetWeakPtr()));
     watcher->Start();
     return watcher;
   }

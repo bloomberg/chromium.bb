@@ -442,8 +442,8 @@ void ServiceWorkerNewScriptLoader::MaybeStartNetworkConsumerHandleWatcher() {
   network_watcher_.Watch(
       network_consumer_.get(),
       MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
-      base::Bind(&ServiceWorkerNewScriptLoader::OnNetworkDataAvailable,
-                 weak_factory_.GetWeakPtr()));
+      base::BindRepeating(&ServiceWorkerNewScriptLoader::OnNetworkDataAvailable,
+                          weak_factory_.GetWeakPtr()));
   network_watcher_.ArmOrNotify();
 }
 
