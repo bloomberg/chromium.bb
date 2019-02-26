@@ -319,10 +319,12 @@ void ChromeAutofillClient::ConfirmAccountNameFixFlow(
               GetAccountHolderName(),
               /*upload_save_card_callback=*/std::move(callback));
 
-  card_name_fix_flow_view_android_ =
-      std::make_unique<CardNameFixFlowViewAndroid>(
+  // Destruction is handled by the fix flow dialog by explicitly calling delete
+  // when the prompt is dismissed.
+  CardNameFixFlowViewAndroid* card_name_fix_flow_view_android =
+      new CardNameFixFlowViewAndroid(
           std::move(card_name_fix_flow_view_delegate_mobile), web_contents());
-  card_name_fix_flow_view_android_->Show();
+  card_name_fix_flow_view_android->Show();
 }
 
 void ChromeAutofillClient::ConfirmExpirationDateFixFlow(
@@ -333,11 +335,14 @@ void ChromeAutofillClient::ConfirmExpirationDateFixFlow(
           std::make_unique<CardExpirationDateFixFlowViewDelegateMobile>(
               /*upload_save_card_callback=*/std::move(callback));
 
-  card_expiration_date_fix_flow_view_android_ =
-      std::make_unique<CardExpirationDateFixFlowViewAndroid>(
-          std::move(card_expiration_date_fix_flow_view_delegate_mobile),
-          web_contents());
-  card_expiration_date_fix_flow_view_android_->Show();
+  // Destruction is handled by the fix flow dialog by explicitly calling delete
+  // when the prompt is dismissed.
+  CardExpirationDateFixFlowViewAndroid*
+      card_expiration_date_fix_flow_view_android =
+          new CardExpirationDateFixFlowViewAndroid(
+              std::move(card_expiration_date_fix_flow_view_delegate_mobile),
+              web_contents());
+  card_expiration_date_fix_flow_view_android->Show();
 }
 #endif
 

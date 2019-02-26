@@ -34,8 +34,6 @@ class WebContents;
 namespace autofill {
 
 class AutofillPopupControllerImpl;
-class CardExpirationDateFixFlowViewAndroid;
-class CardNameFixFlowViewAndroid;
 
 // Chrome implementation of AutofillClient.
 class ChromeAutofillClient
@@ -159,12 +157,6 @@ class ChromeAutofillClient
   std::unique_ptr<FormDataImporter> form_data_importer_;
   base::WeakPtr<AutofillPopupControllerImpl> popup_controller_;
   CardUnmaskPromptControllerImpl unmask_controller_;
-
-#if defined(OS_ANDROID)
-  std::unique_ptr<CardNameFixFlowViewAndroid> card_name_fix_flow_view_android_;
-  std::unique_ptr<CardExpirationDateFixFlowViewAndroid>
-      card_expiration_date_fix_flow_view_android_;
-#endif  // defined(OS_ANDROID)
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

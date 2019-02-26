@@ -15,7 +15,9 @@
 namespace autofill {
 
 // Enables the user to accept or deny expiration date fix flow prompt.
-// Only used on mobile.
+// Only used on mobile. This class is responsible for its destruction.
+// Destruction is achieved by calling delete when the prompt is
+// dismissed.
 class CardExpirationDateFixFlowViewDelegateMobile {
  public:
   CardExpirationDateFixFlowViewDelegateMobile(
