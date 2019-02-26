@@ -24,7 +24,6 @@ class MiceAccountReconcilorDelegate : public AccountReconcilorDelegate {
   bool IsReconcileEnabled() const override;
   bool IsAccountConsistencyEnforced() const override;
   gaia::GaiaSource GetGaiaApiSource() const override;
-  bool ShouldAbortReconcileIfPrimaryHasError() const override;
   std::string GetFirstGaiaAccountForReconcile(
       const std::vector<std::string>& chrome_accounts,
       const std::vector<gaia::ListedAccount>& gaia_accounts,
