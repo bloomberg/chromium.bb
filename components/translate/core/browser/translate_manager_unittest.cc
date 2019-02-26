@@ -351,9 +351,9 @@ TEST_F(TranslateManagerTest, OverrideTriggerWithIndiaEnglishExperiment) {
   };
   ON_CALL(mock_translate_client_, IsTranslatableURL(GURL::EmptyGURL()))
       .WillByDefault(Return(true));
-  TranslateAcceptLanguages accept_langugages(&prefs_, accept_languages_prefs);
+  TranslateAcceptLanguages accept_languages(&prefs_, accept_languages_prefs);
   ON_CALL(mock_translate_client_, GetTranslateAcceptLanguages())
-      .WillByDefault(Return(&accept_langugages));
+      .WillByDefault(Return(&accept_languages));
   ON_CALL(mock_translate_client_, ShowTranslateUI(_, _, _, _, _))
       .WillByDefault(Return(true));
 
@@ -546,8 +546,7 @@ TEST_F(TranslateManagerTest,
       {{"override_model", "heuristic"}, {"enforce_ranker", "false"}});
   TranslateManager::SetIgnoreMissingKeyForTesting(true);
   mock_language_model_.details = {
-      MockLanguageModel::LanguageDetails("en", 1.0),
-      MockLanguageModel::LanguageDetails("hi", 0.5),
+      MockLanguageModel::LanguageDetails("hi", 1.),
   };
   ON_CALL(mock_translate_client_, IsTranslatableURL(GURL::EmptyGURL()))
       .WillByDefault(Return(true));
@@ -566,11 +565,11 @@ TEST_F(TranslateManagerTest,
 
   base::HistogramTester histogram_tester;
   prefs_.SetBoolean(prefs::kOfferTranslateEnabled, true);
-  translate_manager_->GetLanguageState().LanguageDetermined("en", true);
+  translate_manager_->GetLanguageState().LanguageDetermined("fr", true);
   network_notifier_.SimulateOnline();
   EXPECT_EQ("hi", TranslateManager::GetTargetLanguage(
-                      &translate_prefs_, &mock_language_model_, {"en"}));
-  translate_manager_->InitiateTranslation("en");
+                      &translate_prefs_, &mock_language_model_, {}));
+  translate_manager_->InitiateTranslation("fr");
   EXPECT_THAT(histogram_tester.GetAllSamples(kInitiationStatusName),
               ElementsAre(Bucket(INITIATION_STATUS_SHOW_INFOBAR, 1),
                           Bucket(INITIATION_STATUS_SHOW_ICON, 1)));

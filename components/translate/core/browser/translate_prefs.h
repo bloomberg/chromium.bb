@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -323,6 +324,10 @@ class TranslatePrefs {
   // to a timestamp of the creation of this entry.
   void MigrateSitesBlacklist();
 
+  // Prevent empty blocked languages by resetting them to the default value.
+  // (crbug.com/902354)
+  void ResetEmptyBlockedLanguagesToDefaults();
+
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
  private:
@@ -386,6 +391,10 @@ class TranslatePrefs {
   // Retrieves the dictionary mapping the number of times translation has been
   // accepted for a language, creating it if necessary.
   base::DictionaryValue* GetTranslationAcceptedCountDictionary() const;
+
+  // Returns the languages that should be blocked by default as a
+  // base::(List)Value.
+  static base::Value GetDefaultBlockedLanguages();
 
   PrefService* prefs_;  // Weak.
 

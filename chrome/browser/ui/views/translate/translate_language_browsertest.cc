@@ -44,6 +44,8 @@ const base::FilePath::CharType kItalianTestPath[] =
     FILE_PATH_LITERAL("italian_page.html");
 const base::FilePath::CharType kFrenchTestPath[] =
     FILE_PATH_LITERAL("french_page.html");
+const base::FilePath::CharType kGermanTestPath[] =
+    FILE_PATH_LITERAL("german_page.html");
 
 static const char kTestValidScript[] =
     "var google = {};"
@@ -310,10 +312,10 @@ IN_PROC_BROWSER_TEST_F(TranslateLanguageBrowserTest, RecentTargetLanguage) {
   EXPECT_EQ("zh-CN", GetLanguageState().current_language());
   EXPECT_EQ("es", GetTranslatePrefs()->GetRecentTargetLanguage());
 
-  // Load an English page. This should offer to translate to Spanish, since that
+  // Load a German page. This should offer to translate to Spanish, since that
   // is our recent target language.
-  ASSERT_NO_FATAL_FAILURE(CheckForTranslateUI(kEnglishTestPath, true));
-  EXPECT_EQ("en", GetLanguageState().current_language());
+  ASSERT_NO_FATAL_FAILURE(CheckForTranslateUI(kGermanTestPath, true));
+  EXPECT_EQ("de", GetLanguageState().current_language());
   ASSERT_NO_FATAL_FAILURE(Translate(false));
   EXPECT_EQ("es", GetLanguageState().current_language());
   EXPECT_EQ("es", GetTranslatePrefs()->GetRecentTargetLanguage());

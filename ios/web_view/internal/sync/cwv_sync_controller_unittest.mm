@@ -30,6 +30,8 @@
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
+#include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/base/resource/resource_bundle.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -47,7 +49,10 @@ using testing::Return;
 class CWVSyncControllerTest : public PlatformTest {
  protected:
   CWVSyncControllerTest()
-      : browser_state_(/*off_the_record=*/false),
+      : browser_state_(
+            // Using comma-operator to perform required initialization before
+            // creating browser_state.
+            (InitializeLocaleAndResources(), /*off_the_record=*/false)),
         signin_error_controller_(
             SigninErrorController::AccountMode::ANY_ACCOUNT,
             identity_test_env_.identity_manager()) {
@@ -74,6 +79,7 @@ class CWVSyncControllerTest : public PlatformTest {
   }
 
   ~CWVSyncControllerTest() override {
+    ui::ResourceBundle::CleanupSharedInstance();
     EXPECT_CALL(*profile_sync_service_, RemoveObserver(_));
   }
 
@@ -84,6 +90,13 @@ class CWVSyncControllerTest : public PlatformTest {
   void OnConfigureDone(const syncer::DataTypeManager::ConfigureResult& result) {
     sync_service_observer_->OnSyncConfigurationCompleted(
         profile_sync_service_.get());
+  }
+
+  static void InitializeLocaleAndResources() {
+    l10n_util::OverrideLocaleWithCocoaLocale();
+    ui::ResourceBundle::InitSharedInstanceWithLocale(
+        l10n_util::GetLocaleOverride(), /*delegate=*/nullptr,
+        ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
   }
 
   web::TestWebThreadBundle web_thread_bundle_;
