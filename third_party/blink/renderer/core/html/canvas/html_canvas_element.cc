@@ -795,8 +795,12 @@ scoped_refptr<StaticBitmapImage> HTMLCanvasElement::Snapshot(
     AccelerationHint hint) const {
   if (size_.IsEmpty())
     return nullptr;
+
   scoped_refptr<StaticBitmapImage> image_bitmap = nullptr;
-  if (Is3d()) {
+  if (PlaceholderFrame()) {  // Offscreen Canvas
+    DCHECK(PlaceholderFrame()->OriginClean());
+    image_bitmap = PlaceholderFrame()->Bitmap();
+  } else if (Is3d()) {  // WebGL or WebGL2 canvas
     if (context_->CreationAttributes().premultiplied_alpha) {
       context_->PaintRenderingResultsToCanvas(source_buffer);
       if (ResourceProvider())
@@ -818,15 +822,13 @@ scoped_refptr<StaticBitmapImage> HTMLCanvasElement::Snapshot(
         image_bitmap = StaticBitmapImage::Create(std::move(data_array), info);
       }
     }
-  } else if (context_ || PlaceholderFrame()) {
-    DCHECK(Is2d() || PlaceholderFrame());
-    if (canvas2d_bridge_) {
-      image_bitmap = canvas2d_bridge_->NewImageSnapshot(hint);
-    } else if (PlaceholderFrame()) {
-      DCHECK(PlaceholderFrame()->OriginClean());
-      image_bitmap = PlaceholderFrame()->Bitmap();
-    }
+  } else if (canvas2d_bridge_) {  // 2D Canvas
+    DCHECK(Is2d());
+    image_bitmap = canvas2d_bridge_->NewImageSnapshot(hint);
+  } else if (context_) {  // Bitmap renderer canvas
+    image_bitmap = context_->GetImage(hint);
   }
+
   if (!image_bitmap)
     image_bitmap = CreateTransparentImage(size_);
   return image_bitmap;
