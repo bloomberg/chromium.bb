@@ -20,7 +20,7 @@ class ApplicationCacheErrorEvent final : public Event {
  public:
   ApplicationCacheErrorEvent(mojom::AppCacheErrorReason,
                              const String& url,
-                             int status,
+                             uint16_t status,
                              const String& message);
   ApplicationCacheErrorEvent(const AtomicString& event_type,
                              const ApplicationCacheErrorEventInit* initializer);
@@ -28,7 +28,7 @@ class ApplicationCacheErrorEvent final : public Event {
 
   static ApplicationCacheErrorEvent* Create(mojom::AppCacheErrorReason reason,
                                             const String& url,
-                                            int status,
+                                            uint16_t status,
                                             const String& message) {
     return MakeGarbageCollected<ApplicationCacheErrorEvent>(reason, url, status,
                                                             message);
@@ -43,7 +43,7 @@ class ApplicationCacheErrorEvent final : public Event {
 
   const String& reason() const { return reason_; }
   const String& url() const { return url_; }
-  int status() const { return status_; }
+  uint16_t status() const { return status_; }
   const String& message() const { return message_; }
 
   const AtomicString& InterfaceName() const override {
@@ -55,7 +55,7 @@ class ApplicationCacheErrorEvent final : public Event {
  private:
   String reason_;
   String url_;
-  int status_;
+  uint16_t status_;
   String message_;
 };
 

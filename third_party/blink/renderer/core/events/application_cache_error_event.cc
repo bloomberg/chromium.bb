@@ -44,7 +44,7 @@ static const String& ErrorReasonToString(mojom::AppCacheErrorReason reason) {
 ApplicationCacheErrorEvent::ApplicationCacheErrorEvent(
     mojom::AppCacheErrorReason reason,
     const String& url,
-    int status,
+    uint16_t status,
     const String& message)
     : Event(event_type_names::kError, Bubbles::kNo, Cancelable::kNo),
       reason_(ErrorReasonToString(reason)),
