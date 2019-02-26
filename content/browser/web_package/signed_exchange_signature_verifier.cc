@@ -318,15 +318,6 @@ SignedExchangeSignatureVerifier::Result SignedExchangeSignatureVerifier::Verify(
         devtools_proxy, "Failed to verify signature \"sig\".");
     return Result::kErrSignatureVerificationFailed;
   }
-
-  if (!base::EqualsCaseInsensitiveASCII(envelope.signature().integrity,
-                                        "digest/mi-sha256-03")) {
-    signed_exchange_utils::ReportErrorAndTraceEvent(
-        devtools_proxy,
-        "The current implemention only supports \"digest/mi-sha256-03\" "
-        "integrity scheme.");
-    return Result::kErrInvalidSignatureIntegrity;
-  }
   return Result::kSuccess;
 }
 

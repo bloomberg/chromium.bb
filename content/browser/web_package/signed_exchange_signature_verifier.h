@@ -42,7 +42,7 @@ class CONTENT_EXPORT SignedExchangeSignatureVerifier final {
     kErrCertificateSHA256Mismatch,
     kErrInvalidSignatureFormat_deprecated,
     kErrSignatureVerificationFailed,
-    kErrInvalidSignatureIntegrity,
+    kErrInvalidSignatureIntegrity_deprecated,
     kErrInvalidTimestamp_deprecated,
     kErrUnsupportedCertType,
     kErrValidityPeriodTooLong,

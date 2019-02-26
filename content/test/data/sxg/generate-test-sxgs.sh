@@ -111,6 +111,21 @@ gen-signedexchange \
   -date 2018-03-12T05:53:20Z \
   -o test.example.org_hello.txt.sxg
 
+# Generate the signed exchange whose content is gzip-encoded.
+gzip -c test.html >$tmpdir/test.html.gz
+gen-signedexchange \
+  -version 1b3 \
+  -uri https://test.example.org/test/ \
+  -status 200 \
+  -content $tmpdir/test.html.gz \
+  -certificate prime256v1-sha256.public.pem \
+  -certUrl https://cert.example.org/cert.msg \
+  -validityUrl https://test.example.org/resource.validity.msg \
+  -privateKey prime256v1.key \
+  -responseHeader 'Content-Encoding: gzip' \
+  -date 2018-03-12T05:53:20Z \
+  -o test.example.org_test.html.gz.sxg
+
 echo "Update the test signatures in "
 echo "signed_exchange_signature_verifier_unittest.cc with the followings:"
 echo "===="

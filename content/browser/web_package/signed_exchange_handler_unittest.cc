@@ -460,6 +460,41 @@ TEST_P(SignedExchangeHandlerTest, MimeType) {
   EXPECT_EQ(rv, static_cast<int>(expected_payload.size()));
 }
 
+TEST_P(SignedExchangeHandlerTest, AdditionalContentEncodingShouldBeRejected) {
+  mock_cert_fetcher_factory_->ExpectFetch(
+      GURL("https://cert.example.org/cert.msg"),
+      GetTestFileContents("test.example.org.public.pem.cbor"));
+
+  // Make the MockCertVerifier treat the certificate
+  // "prime256v1-sha256.public.pem" as valid for "test.example.org".
+  scoped_refptr<net::X509Certificate> original_cert =
+      LoadCertificate("prime256v1-sha256.public.pem");
+  net::CertVerifyResult dummy_result;
+  dummy_result.verified_cert = original_cert;
+  dummy_result.cert_status = net::OK;
+  dummy_result.ocsp_result.response_status = net::OCSPVerifyResult::PROVIDED;
+  dummy_result.ocsp_result.revocation_status = net::OCSPRevocationStatus::GOOD;
+  auto mock_cert_verifier = std::make_unique<net::MockCertVerifier>();
+  mock_cert_verifier->AddResultForCertAndHost(original_cert, "test.example.org",
+                                              dummy_result, net::OK);
+  SetCertVerifier(std::move(mock_cert_verifier));
+
+  std::string contents =
+      GetTestFileContents("test.example.org_test.html.gz.sxg");
+  source_->AddReadResult(contents.data(), contents.size(), net::OK, GetParam());
+  source_->AddReadResult(nullptr, 0, net::OK, GetParam());
+
+  CreateSignedExchangeHandler(CreateTestURLRequestContext());
+  WaitForHeader();
+
+  ASSERT_TRUE(read_header());
+  EXPECT_EQ(SignedExchangeLoadResult::kInvalidIntegrityHeader, result());
+  EXPECT_EQ(net::ERR_INVALID_SIGNED_EXCHANGE, error());
+  EXPECT_EQ(kTestSxgInnerURL, inner_url());
+  // Drain the MockSourceStream, otherwise its destructer causes DCHECK failure.
+  ReadStream(source_, nullptr);
+}
+
 TEST_P(SignedExchangeHandlerTest, HeaderParseError) {
   const uint8_t data[] = {'s',  'x',  'g',  '1',  '-',  'b',  '2',  '\0',
                           0x00, 0x00, 0x01, 0x00, 0x00, 0x01, 0x00, 0x00};
