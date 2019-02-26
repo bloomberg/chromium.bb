@@ -100,7 +100,7 @@ def _GenerateBundleApks(info,
                         output_path,
                         minimal=False,
                         minimal_sdk_version=None,
-                        universal=False):
+                        mode=None):
   """Generate an .apks archive from a bundle on demand.
 
   Args:
@@ -108,8 +108,7 @@ def _GenerateBundleApks(info,
     output_path: Path of output .apks archive.
     minimal: Create the minimal set of apks possible (english-only).
     minimal_sdk_version: When minimal=True, use this sdkVersion.
-    universal: Whether to create a single APK that contains the contents of all
-        modules.
+    mode: Build mode, either None, or one of app_bundle_utils.BUILD_APKS_MODES.
   """
   app_bundle_utils.GenerateBundleApks(
       info.bundle_path,
@@ -118,7 +117,7 @@ def _GenerateBundleApks(info,
       info.keystore_path,
       info.keystore_password,
       info.keystore_alias,
-      universal=universal,
+      mode=mode,
       minimal=minimal,
       minimal_sdk_version=minimal_sdk_version)
 
@@ -1454,10 +1453,14 @@ class _BuildBundleApks(_Command):
     group.add_argument(
         '--sdk-version',
         help='Implies --minimal. The sdkVersion to build the .apks for.')
-    group.add_argument('--universal', action='store_true',
-                       help='Build .apks archive containing single APK with '
-                            'contents of all splits. NOTE: Won\'t add modules '
-                            'with <dist:fusing dist:include="false"/> flag.')
+    group.add_argument(
+        '--build-mode',
+        choices=app_bundle_utils.BUILD_APKS_MODES,
+        help='Specify which type of APKs archive to build. "default" '
+        'generates regular splits, "universal" generates an archive with a '
+        'single universal APK, "system" generates an archive with a system '
+        'image APK, while "system_compressed" generates a compressed system '
+        'APK, with an additional stub APK for the system image.')
 
   def Run(self):
     _GenerateBundleApks(
@@ -1465,7 +1468,7 @@ class _BuildBundleApks(_Command):
         self.args.output_apks,
         minimal=self.args.sdk_version is not None or self.args.minimal,
         minimal_sdk_version=self.args.sdk_version,
-        universal=self.args.universal)
+        mode=self.args.build_mode)
 
 
 # Shared commands for regular APKs and app bundles.

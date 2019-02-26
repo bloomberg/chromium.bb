@@ -16,6 +16,8 @@ from util import build_utils
 from util import md5_check
 import bundletool
 
+# List of valid modes for GenerateBundleApks()
+BUILD_APKS_MODES = ('default', 'universal', 'system', 'system_compressed')
 
 _ALL_ABIS = ['armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64']
 
@@ -48,7 +50,7 @@ def GenerateBundleApks(bundle_path,
                        keystore_path,
                        keystore_password,
                        keystore_alias,
-                       universal=False,
+                       mode=None,
                        minimal=False,
                        minimal_sdk_version=None,
                        check_for_noop=True):
@@ -62,8 +64,7 @@ def GenerateBundleApks(bundle_path,
     keystore_path: Path to keystore.
     keystore_password: Keystore password, as a string.
     keystore_alias: Keystore signing key alias.
-    universal: Whether to create a single APK that contains the contents of all
-      modules.
+    mode: Build mode, which must be either None or one of BUILD_APKS_MODES.
     minimal: Create the minimal set of apks possible (english-only).
     minimal_sdk_version: When minimal=True, use this sdkVersion.
     check_for_noop: Use md5_check to short-circuit when inputs have not changed.
@@ -90,8 +91,11 @@ def GenerateBundleApks(bundle_path,
         json.dump(device_spec, spec_file)
         spec_file.flush()
         cmd_args += ['--device-spec=' + spec_file.name]
-      if universal:
-        cmd_args += ['--mode=universal']
+      if mode is not None:
+        if mode not in BUILD_APKS_MODES:
+          raise Exception('Invalid mode parameter %s (should be in %s)' %
+                          (mode, BUILD_APKS_MODES))
+        cmd_args += ['--mode=' + mode]
       bundletool.RunBundleTool(cmd_args)
 
   if check_for_noop:
@@ -109,6 +113,9 @@ def GenerateBundleApks(bundle_path,
         bundletool.BUNDLETOOL_VERSION,
         device_spec,
     ]
+    if mode is not None:
+      input_strings.append(mode)
+
     md5_check.CallAndRecordIfStale(
         rebuild,
         input_paths=input_paths,
