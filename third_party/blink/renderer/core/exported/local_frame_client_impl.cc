@@ -1185,6 +1185,12 @@ bool LocalFrameClientImpl::IsPluginHandledExternally(
       &plugin_element, resource_url, suggesed_mime_type);
 }
 
+v8::Local<v8::Object> LocalFrameClientImpl::GetScriptableObject(
+    HTMLPlugInElement& plugin_element,
+    v8::Isolate* isolate) {
+  return web_frame_->Client()->GetScriptableObject(&plugin_element, isolate);
+}
+
 scoped_refptr<WebWorkerFetchContext>
 LocalFrameClientImpl::CreateWorkerFetchContext() {
   DCHECK(web_frame_->Client());

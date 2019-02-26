@@ -95,13 +95,19 @@ class CONTENT_EXPORT ContentRendererClient {
       const std::string& original_mime_type,
       int32_t instance_id_to_use);
 
-  // Allows the embedder to override creating a plugin. If it returns true, then
-  // |plugin| will contain the created plugin, although it could be NULL. If it
-  // returns false, the content layer will create the plugin.
-  virtual bool OverrideCreatePlugin(
-      RenderFrame* render_frame,
-      const blink::WebPluginParams& params,
-      blink::WebPlugin** plugin);
+  // Returns a scriptable object which implements custom javascript API for the
+  // given element. This is used for MimeHandlerView in providing API such as
+  // |postMessage| for <embed> and <object>.
+  virtual v8::Local<v8::Object> GetScriptableObject(
+      const blink::WebElement& plugin_element,
+      v8::Isolate* isolate);
+
+  // Allows the embedder to override creating a plugin. If it returns true,
+  // then |plugin| will contain the created plugin, although it could be
+  // NULL. If it returns false, the content layer will create the plugin.
+  virtual bool OverrideCreatePlugin(RenderFrame* render_frame,
+                                    const blink::WebPluginParams& params,
+                                    blink::WebPlugin** plugin);
 
   // Creates a replacement plugin that is shown when the plugin at |file_path|
   // couldn't be loaded. This allows the embedder to show a custom placeholder.

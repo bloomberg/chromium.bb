@@ -323,6 +323,14 @@ bool ChromeExtensionsRendererClient::MaybeCreateMimeHandlerView(
       element_instance_id);
 }
 
+v8::Local<v8::Object> ChromeExtensionsRendererClient::GetScriptableObject(
+    const blink::WebElement& plugin_element,
+    v8::Isolate* isolate) {
+  CHECK(content::MimeHandlerViewMode::UsesCrossProcessFrame());
+  return extensions::MimeHandlerViewFrameContainer::GetScriptableObject(
+      plugin_element, isolate);
+}
+
 // static
 blink::WebFrame* ChromeExtensionsRendererClient::FindFrame(
     blink::WebLocalFrame* relative_to_frame,

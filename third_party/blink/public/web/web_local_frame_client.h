@@ -810,6 +810,14 @@ class BLINK_EXPORT WebLocalFrameClient {
                                          const WebString& suggested_mime_type) {
     return false;
   }
+
+  // Returns a scriptable object for the given plugin element. This is used for
+  // having an external handler implement certain customized APIs for the
+  // plugin element (e.g., to expose postMessage).
+  virtual v8::Local<v8::Object> GetScriptableObject(const WebElement&,
+                                                    v8::Isolate*) {
+    return v8::Local<v8::Object>();
+  }
 };
 
 }  // namespace blink

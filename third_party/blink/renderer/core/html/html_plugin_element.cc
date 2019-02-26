@@ -181,6 +181,7 @@ bool HTMLPlugInElement::RequestObjectInternal(
           service_type_.IsEmpty() ? GetMIMETypeFromURL(completed_url)
                                   : service_type_);
   if (handled_externally_) {
+    ResetInstance();
     // This is a temporary placeholder and the logic around
     // |handled_externally_| might change as MimeHandlerView is moving towards
     // depending on OOPIFs instead of WebPlugin (https://crbug.com/659750).
@@ -389,7 +390,10 @@ v8::Local<v8::Object> HTMLPlugInElement::PluginWrapper() {
   // return the cached allocated Bindings::Instance. Not supporting this
   // edge-case is OK.
   v8::Isolate* isolate = V8PerIsolateData::MainThreadIsolate();
-  if (plugin_wrapper_.IsEmpty()) {
+  if (handled_externally_ && plugin_wrapper_.IsEmpty()) {
+    plugin_wrapper_.Reset(isolate,
+                          frame->Client()->GetScriptableObject(*this, isolate));
+  } else if (plugin_wrapper_.IsEmpty()) {
     WebPluginContainerImpl* plugin;
 
     if (persisted_plugin_)

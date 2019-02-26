@@ -305,6 +305,8 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   bool IsPluginHandledExternally(HTMLPlugInElement&,
                                  const KURL&,
                                  const String&) override;
+  v8::Local<v8::Object> GetScriptableObject(HTMLPlugInElement&,
+                                            v8::Isolate*) override;
 
   scoped_refptr<WebWorkerFetchContext> CreateWorkerFetchContext() override;
   std::unique_ptr<WebContentSettingsClient> CreateWorkerContentSettingsClient()

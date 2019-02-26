@@ -658,6 +658,17 @@ bool ChromeContentRendererClient::MaybeCreateMimeHandlerView(
 #endif
 }
 
+v8::Local<v8::Object> ChromeContentRendererClient::GetScriptableObject(
+    const blink::WebElement& plugin_element,
+    v8::Isolate* isolate) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  return ChromeExtensionsRendererClient::GetInstance()->GetScriptableObject(
+      plugin_element, isolate);
+#else
+  return v8::Local<v8::Object>();
+#endif
+}
+
 bool ChromeContentRendererClient::OverrideCreatePlugin(
     content::RenderFrame* render_frame,
     const WebPluginParams& params,

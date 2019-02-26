@@ -20,6 +20,13 @@ namespace content {
 struct WebPluginInfo;
 }  // namespace content
 
+namespace v8 {
+class Isolate;
+template <typename T>
+class Local;
+class Object;
+}  // namespace v8
+
 namespace extensions {
 
 // The frame-based implementation of MimeHandlerViewFrameContainer. This class
@@ -33,6 +40,9 @@ class MimeHandlerViewFrameContainer : public MimeHandlerViewContainerBase {
                      const std::string& mime_type,
                      const content::WebPluginInfo& plugin_info,
                      int32_t element_instance_id);
+  static v8::Local<v8::Object> GetScriptableObject(
+      const blink::WebElement& plugin_element,
+      v8::Isolate* isolate);
 
  private:
   class RenderFrameLifetimeObserver;
