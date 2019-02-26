@@ -116,7 +116,6 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
       CreditCard* card = nullptr,
       AutofillClient::SaveCreditCardOptions options =
           AutofillClient::SaveCreditCardOptions().with_show_prompt()) {
-    // TODO(crbug.com/852562): Migrate this to BindOnce/OnceClosure.
     controller()->OfferLocalSave(
         card ? CreditCard(*card)
              : autofill::test::GetCreditCard(),  // Visa by default
