@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -19,6 +20,8 @@ class RemotePlayback;
 // Collection of static methods only used for bindings in the context of the
 // Remote Playback API.
 class MODULES_EXPORT HTMLMediaElementRemotePlayback final {
+  STATIC_ONLY(HTMLMediaElementRemotePlayback);
+
  public:
   static bool FastHasAttribute(const QualifiedName&, const HTMLMediaElement&);
   static void SetBooleanAttribute(const QualifiedName&,

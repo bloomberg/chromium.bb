@@ -44,6 +44,8 @@ class MODULES_EXPORT ThreadSafeScriptContainer
   // Container of a script. All the fields of this class need to be
   // cross-thread-transfer-safe.
   class MODULES_EXPORT RawScriptData {
+    USING_FAST_MALLOC(RawScriptData);
+
    public:
     static std::unique_ptr<RawScriptData> Create(const String& encoding,
                                                  Vector<BytesChunk> script_text,
