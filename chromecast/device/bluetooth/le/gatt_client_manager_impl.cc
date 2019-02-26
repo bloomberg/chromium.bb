@@ -158,6 +158,12 @@ void GattClientManagerImpl::EnqueueReadRemoteRssiRequest(
   }
 }
 
+bool GattClientManagerImpl::IsConnectedLeDevice(
+    const bluetooth_v2_shlib::Addr& addr) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  return connected_devices_.find(addr) != connected_devices_.end();
+}
+
 scoped_refptr<base::SingleThreadTaskRunner>
 GattClientManagerImpl::task_runner() {
   return io_task_runner_;

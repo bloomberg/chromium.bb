@@ -250,6 +250,7 @@ TEST_F(GattClientManagerTest, RemoteDeviceConnect) {
 
   scoped_refptr<RemoteDevice> device = GetDevice(kTestAddr1);
   EXPECT_FALSE(device->IsConnected());
+  EXPECT_FALSE(gatt_client_manager_->IsConnectedLeDevice(kTestAddr1));
   EXPECT_EQ(kTestAddr1, device->addr());
 
   // These should fail if we're not connected.
@@ -280,6 +281,7 @@ TEST_F(GattClientManagerTest, RemoteDeviceConnect) {
   delegate->OnGetServices(kTestAddr1, {});
 
   EXPECT_TRUE(device->IsConnected());
+  EXPECT_TRUE(gatt_client_manager_->IsConnectedLeDevice(kTestAddr1));
 
   base::MockCallback<
       base::OnceCallback<void(std::vector<scoped_refptr<RemoteDevice>>)>>
@@ -298,6 +300,8 @@ TEST_F(GattClientManagerTest, RemoteDeviceConnect) {
   delegate->OnConnectChanged(kTestAddr1, true /* status */,
                              false /* connected */);
   EXPECT_FALSE(device->IsConnected());
+  EXPECT_FALSE(gatt_client_manager_->IsConnectedLeDevice(kTestAddr1));
+
   fake_task_runner_->RunUntilIdle();
 }
 

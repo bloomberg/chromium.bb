@@ -62,6 +62,9 @@ class GattClientManagerImpl
   // serially.
   void EnqueueReadRemoteRssiRequest(const bluetooth_v2_shlib::Addr& addr);
 
+  // True if it is a connected BLE device. Must be called on IO task runner.
+  bool IsConnectedLeDevice(const bluetooth_v2_shlib::Addr& addr);
+
   // TODO(bcf): Should be private and passed into objects which need it (e.g.
   // RemoteDevice, RemoteCharacteristic).
   bluetooth_v2_shlib::GattClient* gatt_client() const { return gatt_client_; }
