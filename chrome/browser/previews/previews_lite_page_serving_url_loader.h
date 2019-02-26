@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
+#include "base/timer/timer.h"
 #include "content/public/browser/url_loader_request_interceptor.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -93,6 +94,12 @@ class PreviewsLitePageServingURLLoader
   // Calls |result_callback_| with kFallback and cleans up.
   void Fallback();
 
+  // Calls timeout if the result was not previously determined (i.e., the
+  // response has not started yet). This method is called
+  // |LitePagePreviewsNavigationTimeoutDuration()| after the network request has
+  // started.
+  void Timeout();
+
   // Sets up mojo forwarding to the navigation path. Resumes
   // |network_url_loader_| calls. Serves the start of the response to the
   // navigation path.
@@ -120,6 +127,9 @@ class PreviewsLitePageServingURLLoader
 
   // The previews URL that is being requested.
   GURL previews_url_;
+
+  // The timer that triggers a timeout when the request takes too long.
+  base::OneShotTimer timeout_timer_;
 
   // Forwarding client binding.
   mojo::Binding<network::mojom::URLLoader> binding_;
