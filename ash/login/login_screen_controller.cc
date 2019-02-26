@@ -182,6 +182,21 @@ void LoginScreenController::AuthenticateUserWithEasyUnlock(
   login_screen_client_->AuthenticateUserWithEasyUnlock(account_id);
 }
 
+void LoginScreenController::ValidateParentAccessCode(
+    const AccountId& account_id,
+    const std::string& code,
+    OnParentAccessValidation callback) {
+  if (!login_screen_client_) {
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
+
+  login_screen_client_->ValidateParentAccessCode(
+      account_id, code,
+      base::BindOnce(&LoginScreenController::OnParentAccessValidationComplete,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
 void LoginScreenController::HardlockPod(const AccountId& account_id) {
   if (!login_screen_client_)
     return;
@@ -578,6 +593,12 @@ void LoginScreenController::OnAuthenticateComplete(
   authentication_stage_ = AuthenticationStage::kUserCallback;
   std::move(callback).Run(base::make_optional<bool>(success));
   authentication_stage_ = AuthenticationStage::kIdle;
+}
+
+void LoginScreenController::OnParentAccessValidationComplete(
+    OnParentAccessValidation callback,
+    bool success) {
+  std::move(callback).Run(base::make_optional<bool>(success));
 }
 
 LoginDataDispatcher* LoginScreenController::DataDispatcher() const {

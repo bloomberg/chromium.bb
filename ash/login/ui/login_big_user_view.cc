@@ -6,6 +6,7 @@
 #include "ash/public/cpp/login_constants.h"
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller.h"
+#include "components/account_id/account_id.h"
 #include "ui/views/background.h"
 #include "ui/views/layout/fill_layout.h"
 
@@ -87,7 +88,9 @@ void LoginBigUserView::ShowParentAccessView() {
     return;
 
   DCHECK(IsChildAccountUser(auth_user_->current_user()));
-  parent_access_ = new ParentAccessView(parent_access_callbacks_);
+  parent_access_ = new ParentAccessView(
+      auth_user_->current_user()->basic_user_info->account_id,
+      parent_access_callbacks_);
   RemoveChildView(auth_user_);
   AddChildView(parent_access_);
   parent_access_->RequestFocus();

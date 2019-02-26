@@ -306,8 +306,8 @@ class ASH_EXPORT LockContentsView
   // Called when the easy unlock icon is tapped.
   void OnEasyUnlockIconTapped();
 
-  // Called when parent access code was submitted by user.
-  void OnParentAccessCodeSubmitted(const std::string& code);
+  // Called when parent access validation finished.
+  void OnParentAccessValidationFinished(bool access_granted);
 
   // Returns keyboard controller for the view. Returns nullptr if keyboard is
   // not activated, view has not been added to the widget yet or keyboard is not

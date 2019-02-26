@@ -11,12 +11,19 @@
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/timer/timer.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_registry_simple.h"
 
 namespace chromeos {
 namespace parent_access {
 
 ParentAccessService::Delegate::Delegate() = default;
 ParentAccessService::Delegate::~Delegate() = default;
+
+// static
+void ParentAccessService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  registry->RegisterDictionaryPref(prefs::kParentAccessCodeConfig);
+}
 
 ParentAccessService::ParentAccessService(
     std::unique_ptr<ConfigSource> config_source)
@@ -27,7 +34,8 @@ ParentAccessService::ParentAccessService(
 }
 
 ParentAccessService::~ParentAccessService() {
-  LoginScreenClient::Get()->SetParentAccessDelegate(nullptr);
+  if (LoginScreenClient::HasInstance())
+    LoginScreenClient::Get()->SetParentAccessDelegate(nullptr);
 }
 
 void ParentAccessService::SetDelegate(Delegate* delegate) {

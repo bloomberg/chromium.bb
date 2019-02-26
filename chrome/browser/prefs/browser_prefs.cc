@@ -231,6 +231,7 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_bridge.h"
+#include "chrome/browser/chromeos/child_accounts/parent_access_code/parent_access_service.h"
 #include "chrome/browser/chromeos/child_accounts/screen_time_controller.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
@@ -759,6 +760,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   chromeos::quick_unlock::PinStoragePrefs::RegisterProfilePrefs(registry);
   chromeos::Preferences::RegisterProfilePrefs(registry);
   chromeos::SyncedPrintersManager::RegisterProfilePrefs(registry);
+  chromeos::parent_access::ParentAccessService::RegisterProfilePrefs(registry);
   chromeos::quick_unlock::RegisterProfilePrefs(registry);
   chromeos::SAMLOfflineSigninLimiter::RegisterProfilePrefs(registry);
   chromeos::ScreenTimeController::RegisterProfilePrefs(registry);

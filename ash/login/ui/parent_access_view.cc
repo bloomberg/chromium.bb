@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/login/login_screen_controller.h"
 #include "ash/login/ui/arrow_button_view.h"
 #include "ash/login/ui/login_button.h"
 #include "ash/login/ui/login_pin_view.h"
@@ -250,10 +251,12 @@ ParentAccessView::Callbacks::Callbacks(const Callbacks& other) = default;
 
 ParentAccessView::Callbacks::~Callbacks() = default;
 
-ParentAccessView::ParentAccessView(const Callbacks& callbacks)
-    : NonAccessibleView(kParentAccessViewClassName), callbacks_(callbacks) {
-  DCHECK(callbacks.on_submit);
-  DCHECK(callbacks.on_back);
+ParentAccessView::ParentAccessView(const AccountId& account_id,
+                                   const Callbacks& callbacks)
+    : NonAccessibleView(kParentAccessViewClassName),
+      callbacks_(callbacks),
+      account_id_(account_id) {
+  DCHECK(callbacks.on_finished);
 
   // Main view contains all other views aligned vertically and centered.
   auto layout = std::make_unique<views::BoxLayout>(
@@ -413,15 +416,34 @@ void ParentAccessView::RequestFocus() {
 void ParentAccessView::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
   if (sender == back_button_) {
-    callbacks_.on_back.Run();
+    callbacks_.on_finished.Run(false);
   } else if (sender == help_button_) {
     // TODO(agawronska): Implement help view.
     NOTIMPLEMENTED();
   } else if (sender == submit_button_) {
-    base::Optional<std::string> code = access_code_view_->GetCode();
-    DCHECK(code.has_value());
-    callbacks_.on_submit.Run(*code);
+    SubmitCode();
   }
+}
+
+void ParentAccessView::SubmitCode() {
+  base::Optional<std::string> code = access_code_view_->GetCode();
+  DCHECK(code.has_value());
+
+  Shell::Get()->login_screen_controller()->ValidateParentAccessCode(
+      account_id_, *code,
+      base::BindOnce(&ParentAccessView::OnValidationResult,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ParentAccessView::OnValidationResult(base::Optional<bool> result) {
+  if (result.has_value() && *result) {
+    VLOG(1) << "Parent access code successfully validated";
+    callbacks_.on_finished.Run(true);
+    return;
+  }
+
+  VLOG(1) << "Invalid parent access code entered";
+  // TODO(agawronska): Show error.
 }
 
 void ParentAccessView::OnCodeComplete(bool complete) {

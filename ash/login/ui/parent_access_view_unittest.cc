@@ -4,8 +4,10 @@
 
 #include "ash/login/ui/parent_access_view.h"
 
+#include <memory>
 #include <string>
 
+#include "ash/login/mock_login_screen_client.h"
 #include "ash/login/ui/arrow_button_view.h"
 #include "ash/login/ui/login_button.h"
 #include "ash/login/ui/login_pin_view.h"
@@ -13,6 +15,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "components/account_id/account_id.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/events/test/event_generator.h"
@@ -25,7 +28,8 @@ namespace {
 
 class ParentAccessViewTest : public LoginTestBase {
  protected:
-  ParentAccessViewTest() = default;
+  ParentAccessViewTest()
+      : account_id_(AccountId::FromUserEmail("child@gmail.com")) {}
   ~ParentAccessViewTest() override = default;
 
   // LoginScreenTest:
@@ -33,13 +37,13 @@ class ParentAccessViewTest : public LoginTestBase {
     LoginTestBase::SetUp();
 
     ParentAccessView::Callbacks callbacks;
-    callbacks.on_back = base::BindRepeating(&ParentAccessViewTest::OnBack,
-                                            base::Unretained(this));
-    callbacks.on_submit = base::BindRepeating(&ParentAccessViewTest::OnSubmit,
-                                              base::Unretained(this));
+    callbacks.on_finished = base::BindRepeating(
+        &ParentAccessViewTest::OnFinished, base::Unretained(this));
 
-    view_ = new ParentAccessView(callbacks);
+    view_ = new ParentAccessView(account_id_, callbacks);
     SetWidget(CreateWidgetWithContent(view_));
+
+    login_client_ = BindMockLoginScreenClient();
   }
 
   // Simulates mouse press event on a |button|.
@@ -56,23 +60,22 @@ class ParentAccessViewTest : public LoginTestBase {
     button->OnEvent(&event);
   }
 
-  // Back button callback.
-  void OnBack() { ++back_action_; }
-
-  // Submit button callback.
-  void OnSubmit(const std::string& code) {
-    code_ = code;
-    ++submit_action_;
+  // Called when ParentAccessView finished processing.
+  void OnFinished(bool access_granted) {
+    access_granted ? ++successful_validation_ : ++back_action_;
   }
+
+  const AccountId account_id_;
+  std::unique_ptr<MockLoginScreenClient> login_client_;
 
   // Submitted access code.
   base::Optional<std::string> code_;
 
-  // Number of times back button event was sent.
+  // Number of times the view was dismissed with back button.
   int back_action_ = 0;
 
-  // Number of times submit button event was sent.
-  int submit_action_ = 0;
+  // Number of times the view was dismissed after successful validation.
+  int successful_validation_ = 0;
 
   ParentAccessView* view_ = nullptr;  // Owned by test widget view hierarchy.
 
@@ -91,7 +94,7 @@ TEST_F(ParentAccessViewTest, BackButton) {
   SimulateButtonPress(test_api.back_button());
 
   EXPECT_EQ(1, back_action_);
-  EXPECT_EQ(0, submit_action_);
+  EXPECT_EQ(0, successful_validation_);
 }
 
 // Tests that submit button submits code from code input.
@@ -106,10 +109,14 @@ TEST_F(ParentAccessViewTest, SubmitButton) {
   }
   EXPECT_TRUE(test_api.submit_button()->enabled());
 
+  login_client_->set_validate_parent_access_code_result(true);
+  EXPECT_CALL(*login_client_,
+              ValidateParentAccessCode_(account_id_, "012345", testing::_))
+      .Times(1);
+
   SimulateButtonPress(test_api.submit_button());
-  ASSERT_TRUE(code_.has_value());
-  EXPECT_EQ("012345", *code_);
-  EXPECT_EQ(1, submit_action_);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, successful_validation_);
 }
 
 // Tests that access code can be entered with numpad.
@@ -121,10 +128,14 @@ TEST_F(ParentAccessViewTest, Numpad) {
     generator->PressKey(ui::KeyboardCode(ui::VKEY_NUMPAD0 + i), ui::EF_NONE);
   EXPECT_TRUE(test_api.submit_button()->enabled());
 
+  login_client_->set_validate_parent_access_code_result(true);
+  EXPECT_CALL(*login_client_,
+              ValidateParentAccessCode_(account_id_, "012345", testing::_))
+      .Times(1);
+
   SimulateButtonPress(test_api.submit_button());
-  ASSERT_TRUE(code_.has_value());
-  EXPECT_EQ("012345", *code_);
-  EXPECT_EQ(1, submit_action_);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, successful_validation_);
 }
 
 // Tests that backspace button works.
@@ -149,10 +160,14 @@ TEST_F(ParentAccessViewTest, Backspace) {
   generator->PressKey(ui::KeyboardCode::VKEY_3, ui::EF_NONE);
   EXPECT_TRUE(test_api.submit_button()->enabled());
 
+  login_client_->set_validate_parent_access_code_result(true);
+  EXPECT_CALL(*login_client_,
+              ValidateParentAccessCode_(account_id_, "111123", testing::_))
+      .Times(1);
+
   SimulateButtonPress(test_api.submit_button());
-  ASSERT_TRUE(code_.has_value());
-  EXPECT_EQ("111123", *code_);
-  EXPECT_EQ(1, submit_action_);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, successful_validation_);
 }
 
 // Tests input with virtual pin keyboard.
@@ -165,10 +180,14 @@ TEST_F(ParentAccessViewTest, PinKeyboard) {
     SimulatePinKeyboardPress(test_pin_keyboard.GetButton(i));
   EXPECT_TRUE(test_api.submit_button()->enabled());
 
+  login_client_->set_validate_parent_access_code_result(true);
+  EXPECT_CALL(*login_client_,
+              ValidateParentAccessCode_(account_id_, "012345", testing::_))
+      .Times(1);
+
   SimulateButtonPress(test_api.submit_button());
-  ASSERT_TRUE(code_.has_value());
-  EXPECT_EQ("012345", *code_);
-  EXPECT_EQ(1, submit_action_);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, successful_validation_);
 }
 
 }  // namespace ash
