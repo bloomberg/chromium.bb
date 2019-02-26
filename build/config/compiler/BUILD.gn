@@ -101,7 +101,8 @@ declare_args() {
   # So only enable this on linux if use_goma.  Elsewhere, there are no
   # drawbacks to using it, so always enable it there.
   strip_absolute_paths_from_debug_symbols =
-      is_android || is_nacl || (is_win && use_lld) || (use_goma && is_linux)
+      is_android || is_fuchsia || is_nacl || (is_win && use_lld) ||
+      (use_goma && is_linux)
 
   # Allow projects that wish to stay on C++11 to override Chromium's default.
   use_cxx11 = false
