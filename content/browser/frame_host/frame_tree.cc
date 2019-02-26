@@ -240,7 +240,11 @@ FrameTreeNode* FrameTree::AddFrame(
   // Now that the new node is part of the FrameTree and has a RenderFrameHost,
   // we can announce the creation of the initial RenderFrame which already
   // exists in the renderer process.
-  added_node->current_frame_host()->SetRenderFrameCreated(true);
+  if (added_node->frame_owner_element_type() !=
+      blink::FrameOwnerElementType::kPortal) {
+    // Portals do not have a live RenderFrame in the renderer process.
+    added_node->current_frame_host()->SetRenderFrameCreated(true);
+  }
   return added_node;
 }
 

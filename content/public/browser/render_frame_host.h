@@ -347,14 +347,32 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // received by the other end. For test use only.
   virtual void FlushNetworkAndNavigationInterfacesForTesting() = 0;
 
-  // Prepares this frame for attaching an inner WebContents to its own (outer)
-  // WebContents. This includes canceling all navigation requests as well as
-  // reseting the loading state. Returns false if attaching is not possible (
-  // if this is a main frame or a cross-process subframe), or true otherwise.
-  // Note: if this is called during an ongoing navigation it is not safe to
-  // attach WebContentses immediately after returning from this function (post
-  // task to ensure all observer calls related to the navigation complete).
-  virtual bool PrepareForInnerWebContentsAttach() = 0;
+  using PrepareForInnerWebContentsAttachCallback =
+      base::OnceCallback<void(RenderFrameHost*)>;
+  // This API is used to provide the caller with a RenderFrameHost which is safe
+  // for usage in WebContents::AttachToOuterWebContentsFrame API. The final
+  // frame returned with |callback| will share the same FrameTreeNodeId with
+  // this RenderFrameHost but might not necessarily be the same RenderFrameHost.
+  // IMPORTANT: This method can only be called on a child frame. It does not
+  // make sense to attach an inner WebContents to the outer WebContents main
+  // frame.
+  // Essentially, this method will:
+  //  1- Cancel any ongoing navigation and navigation requests for this frame.
+  //  2- Dispatch beforeunload event on this frame and all of the frame's
+  //     subframes, and wait for all beforeunload events to complete.
+  //  3- Will create and return a new RenderFrameHost (destroying this one) if
+  //     this RenderFrameHost is a cross-process subframe.
+  // After steps 1-3 are completed, the callback is invoked asynchronously with
+  // the RenderFrameHost which can be safely used for attaching. This
+  // RenderFrameHost could be different than |this| which is the case if this
+  // RenderFrameHost is for a cross-process frame. The callback could also be
+  // invoked with nullptr. This happens if:
+  //  1- This frame has beforeunload handlers under it and the user decides to
+  //     remain on the page in response to beforeunload prompt.
+  //  2- Preparations happened successfully but the frame was somehow removed (
+  //     e.g. parent frame detached).
+  virtual void PrepareForInnerWebContentsAttach(
+      PrepareForInnerWebContentsAttachCallback callback) = 0;
 
  private:
   // This interface should only be implemented inside content.

@@ -2947,12 +2947,10 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
     CHECK(!frame_entry || url_to_load == frame_entry->url());
   }
 
-  if (auto* rfh = node->current_frame_host()) {
-    if (rfh->is_attaching_inner_delegate()) {
-      // Avoid starting any new navigations since this node is now preparing for
-      // attaching an inner delegate.
-      return nullptr;
-    }
+  if (node->render_manager()->is_attaching_inner_delegate()) {
+    // Avoid starting any new navigations since this node is now preparing for
+    // attaching an inner delegate.
+    return nullptr;
   }
 
   if (!IsValidURLForNavigation(node->IsMainFrame(), virtual_url, url_to_load))
@@ -3066,12 +3064,10 @@ NavigationControllerImpl::CreateNavigationRequestFromEntry(
     origin_to_commit.reset();
   }
 
-  if (auto* rfh = frame_tree_node->current_frame_host()) {
-    if (rfh->is_attaching_inner_delegate()) {
-      // Avoid starting any new navigations since this node is now preparing for
-      // attaching an inner delegate.
-      return nullptr;
-    }
+  if (frame_tree_node->render_manager()->is_attaching_inner_delegate()) {
+    // Avoid starting any new navigations since this node is now preparing for
+    // attaching an inner delegate.
+    return nullptr;
   }
 
   if (!IsValidURLForNavigation(frame_tree_node->IsMainFrame(),

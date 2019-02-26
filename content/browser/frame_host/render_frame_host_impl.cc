@@ -2485,6 +2485,13 @@ bool RenderFrameHostImpl::IsWaitingForUnloadACK() const {
 }
 
 void RenderFrameHostImpl::OnSwapOutACK() {
+  if (frame_tree_node_->render_manager()->is_attaching_inner_delegate()) {
+    // This RFH was swapped out while attaching an inner delegate. The RFH
+    // will stay around but it will no longer be associated with a RenderFrame.
+    SetRenderFrameCreated(false);
+    return;
+  }
+
   // Ignore spurious swap out ack.
   if (!is_waiting_for_swapout_ack_)
     return;
@@ -2862,14 +2869,10 @@ void RenderFrameHostImpl::FlushNetworkAndNavigationInterfacesForTesting() {
   navigation_control_.FlushForTesting();
 }
 
-bool RenderFrameHostImpl::PrepareForInnerWebContentsAttach() {
-  DCHECK(MimeHandlerViewMode::UsesCrossProcessFrame());
-  if (IsCrossProcessSubframe() || !GetParent())
-    return false;
-  ResetNavigationRequests();
-  ResetLoadingState();
-  is_attaching_inner_delegate_ = true;
-  return true;
+void RenderFrameHostImpl::PrepareForInnerWebContentsAttach(
+    PrepareForInnerWebContentsAttachCallback callback) {
+  frame_tree_node_->render_manager()->PrepareForInnerDelegateAttach(
+      std::move(callback));
 }
 
 void RenderFrameHostImpl::OnDidAccessInitialDocument() {
@@ -3812,7 +3815,7 @@ void RenderFrameHostImpl::BeginNavigation(
     blink::mojom::BlobURLTokenPtr blob_url_token,
     mojom::NavigationClientAssociatedPtrInfo navigation_client,
     blink::mojom::NavigationInitiatorPtr navigation_initiator) {
-  if (is_attaching_inner_delegate_) {
+  if (frame_tree_node_->render_manager()->is_attaching_inner_delegate()) {
     // Avoid starting any new navigations since this frame is in the process of
     // attaching an inner delegate.
     return;
@@ -4181,11 +4184,14 @@ void RenderFrameHostImpl::DispatchBeforeUnload(BeforeUnloadType type,
   bool for_navigation =
       type == BeforeUnloadType::BROWSER_INITIATED_NAVIGATION ||
       type == BeforeUnloadType::RENDERER_INITIATED_NAVIGATION;
-  DCHECK(for_navigation || !is_reload);
+  bool for_inner_delegate_attach =
+      type == BeforeUnloadType::INNER_DELEGATE_ATTACH;
+  DCHECK(for_navigation || for_inner_delegate_attach || !is_reload);
 
   // TAB_CLOSE and DISCARD should only dispatch beforeunload on main frames.
   DCHECK(type == BeforeUnloadType::BROWSER_INITIATED_NAVIGATION ||
          type == BeforeUnloadType::RENDERER_INITIATED_NAVIGATION ||
+         type == BeforeUnloadType::INNER_DELEGATE_ATTACH ||
          frame_tree_node_->IsMainFrame());
 
   if (!for_navigation) {
@@ -6305,7 +6311,8 @@ void RenderFrameHostImpl::OnCrossDocumentCommitProcessed(
     } else {
       // This frame might be used for attaching an inner WebContents in which
       // case |navigation_requests_| are deleted during attaching.
-      DCHECK(is_attaching_inner_delegate_);
+      // TODO(ekaramad): Add a DCHECK to ensure the FrameTreeNode is attaching
+      // an inner delegate (https://crbug.com/911161).
     }
   }
   // Remove the requests from the list of NavigationRequests waiting to commit.

@@ -14437,4 +14437,158 @@ INSTANTIATE_TEST_CASE_P(SitePerProcess,
                             testing::Bool(),
                             /* window feature */
                             testing::ValuesIn({"", "noopener"})));
+
+enum class InnerWebContentsAttachChildFrameOriginType {
+  kSameOriginAboutBlank,
+  kSameOriginOther,
+  kCrossOrigin
+};
+
+class InnerWebContentsAttachTest
+    : public SitePerProcessBrowserTest,
+      public testing::WithParamInterface<
+          std::tuple<InnerWebContentsAttachChildFrameOriginType,
+                     bool /* original frame has beforeunload handlers */,
+                     bool /* user proceeds with attaching */>> {
+ public:
+  InnerWebContentsAttachTest() {}
+  ~InnerWebContentsAttachTest() override {}
+
+ protected:
+  // Helper class to initiate and conclude a frame preparation process for
+  // attaching an inner WebContents.
+  class PrepareFrameJob {
+   public:
+    PrepareFrameJob(RenderFrameHostImpl* original_render_frame_host,
+                    bool proceed_through_beforeunload) {
+      auto* web_contents =
+          WebContents::FromRenderFrameHost(original_render_frame_host);
+      // Need user gesture for 'beforeunload' to fire.
+      PrepContentsForBeforeUnloadTest(web_contents);
+      // Simulate user choosing to stay on the page after beforeunload fired.
+      SetShouldProceedOnBeforeUnload(
+          Shell::FromRenderViewHost(web_contents->GetRenderViewHost()),
+          true /* always_proceed */, proceed_through_beforeunload);
+      RenderFrameHost::PrepareForInnerWebContentsAttachCallback callback =
+          base::BindOnce(&PrepareFrameJob::OnPrepare, base::Unretained(this));
+      original_render_frame_host->PrepareForInnerWebContentsAttach(
+          std::move(callback));
+    }
+    virtual ~PrepareFrameJob() {}
+
+    void WaitForPreparedFrame() {
+      if (did_call_prepare_)
+        return;
+      run_loop_.Run();
+    }
+
+    RenderFrameHostImpl* prepared_frame() const {
+      return new_render_frame_host_;
+    }
+
+   private:
+    void OnPrepare(RenderFrameHost* render_frame_host) {
+      did_call_prepare_ = true;
+      new_render_frame_host_ =
+          static_cast<RenderFrameHostImpl*>(render_frame_host);
+      if (run_loop_.running())
+        run_loop_.Quit();
+    }
+
+    bool did_call_prepare_ = false;
+    RenderFrameHostImpl* new_render_frame_host_ = nullptr;
+    base::RunLoop run_loop_;
+
+    DISALLOW_COPY_AND_ASSIGN(PrepareFrameJob);
+  };
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    SitePerProcessBrowserTest::SetUpCommandLine(command_line);
+    feature_list_.InitAndEnableFeature(
+        features::kMimeHandlerViewInCrossProcessFrame);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(InnerWebContentsAttachTest);
+};
+
+// This is a test for the FrameTreeNode preparation process for various types
+// of outer WebContents RenderFrameHosts; essentially when connecting two
+// WebContents through a frame in a WebPage it is possible that the frame itself
+// has a nontrivial document (other than about:blank) with a beforeunload
+// handler, or even it is a cross-process frame. For such cases the frame first
+// needs to be sanitized to be later consumed by the WebContents attaching API.
+IN_PROC_BROWSER_TEST_P(InnerWebContentsAttachTest, PrepareFrame) {
+  ASSERT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL(
+                                 "a.com", "/page_with_object_fallback.html")));
+  InnerWebContentsAttachChildFrameOriginType child_frame_origin_type =
+      std::get<0>(GetParam());
+  bool test_beforeunload = std::get<1>(GetParam());
+  bool proceed_through_beforeunload = std::get<2>(GetParam());
+  GURL child_frame_url =
+      child_frame_origin_type ==
+              InnerWebContentsAttachChildFrameOriginType::kSameOriginAboutBlank
+          ? GURL(url::kAboutBlankURL)
+          : child_frame_origin_type ==
+                    InnerWebContentsAttachChildFrameOriginType::kSameOriginOther
+                ? embedded_test_server()->GetURL("a.com", "/title1.html")
+                : embedded_test_server()->GetURL("b.com", "/title1.html");
+  SCOPED_TRACE(testing::Message()
+               << " Child frame URL:" << child_frame_url.spec()
+               << " 'beforeunload' modal shown: " << test_beforeunload
+               << " proceed through'beforeunload':  "
+               << proceed_through_beforeunload);
+  auto* child_node = web_contents()->GetFrameTree()->root()->child_at(0);
+  NavigateFrameToURL(child_node, child_frame_url);
+  if (test_beforeunload) {
+    EXPECT_TRUE(ExecJs(child_node,
+                       "window.addEventListener('beforeunload', (e) => {"
+                       "e.returnValue = ''; return e; });"));
+  }
+  auto* original_child_frame = child_node->current_frame_host();
+  RenderFrameDeletedObserver original_child_frame_observer(
+      original_child_frame);
+  PrepareFrameJob prepare_job(original_child_frame,
+                              proceed_through_beforeunload);
+  if (test_beforeunload)
+    WaitForAppModalDialog(shell());
+  prepare_job.WaitForPreparedFrame();
+  auto* new_render_frame_host = prepare_job.prepared_frame();
+  bool did_prepare_frame = new_render_frame_host;
+  bool same_frame_used = (new_render_frame_host == original_child_frame);
+  // If a frame was not prepared, then it has to be due to beforeunload being
+  // dismissed.
+  ASSERT_TRUE(did_prepare_frame ||
+              (test_beforeunload && !proceed_through_beforeunload));
+  // If the original frame is in the same SiteInstance as its parent, then it
+  // can be reused; otherwise a new frame is expected here.
+  bool is_same_origin =
+      child_frame_origin_type !=
+      InnerWebContentsAttachChildFrameOriginType::kCrossOrigin;
+  if (!is_same_origin && did_prepare_frame) {
+    // For the cross-origin case we expect the original RenderFrameHost to go
+    // away during preparation.
+    original_child_frame_observer.WaitUntilDeleted();
+  }
+  ASSERT_TRUE(!did_prepare_frame || (is_same_origin == same_frame_used));
+  ASSERT_TRUE(!did_prepare_frame ||
+              (original_child_frame_observer.deleted() != is_same_origin));
+  // Finally, try the WebContents attach API and make sure we are doing OK.
+  if (new_render_frame_host)
+    CreateAndAttachInnerContents(new_render_frame_host);
+}
+
+INSTANTIATE_TEST_CASE_P(
+    SitePerProcess,
+    InnerWebContentsAttachTest,
+    testing::Combine(
+        testing::ValuesIn(
+            {InnerWebContentsAttachChildFrameOriginType::kSameOriginAboutBlank,
+             InnerWebContentsAttachChildFrameOriginType::kSameOriginOther,
+             InnerWebContentsAttachChildFrameOriginType::kCrossOrigin}),
+        testing::Bool(),
+        testing::Bool()));
 }  // namespace content

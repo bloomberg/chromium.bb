@@ -49,8 +49,10 @@
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/site_isolation_policy.h"
+#include "content/public/common/child_process_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/mime_handler_view_mode.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
@@ -211,10 +213,21 @@ void RenderFrameHostManager::SetIsLoading(bool is_loading) {
 void RenderFrameHostManager::OnBeforeUnloadACK(
     bool proceed,
     const base::TimeTicks& proceed_time) {
+  // If beforeunload was dispatched as part of preparing this frame for
+  // attaching an inner delegate, continue attaching now.
+  if (is_attaching_inner_delegate()) {
+    DCHECK(frame_tree_node_->parent());
+    if (proceed) {
+      CreateNewFrameForInnerDelegateAttachIfNecessary();
+    } else {
+      NotifyPrepareForInnerDelegateAttachComplete(false /* success */);
+    }
+    return;
+  }
+
   bool proceed_to_fire_unload = false;
   delegate_->BeforeUnloadFiredFromRenderManager(proceed, proceed_time,
                                                 &proceed_to_fire_unload);
-
   if (proceed_to_fire_unload) {
     // If we're about to close the tab and there's a speculative RFH, cancel it.
     // Otherwise, if the navigation in the speculative RFH completes before the
@@ -1154,6 +1167,25 @@ void RenderFrameHostManager::InitializeRenderFrameIfNecessary(
   }
 }
 
+void RenderFrameHostManager::PrepareForInnerDelegateAttach(
+    RenderFrameHost::PrepareForInnerWebContentsAttachCallback callback) {
+  DCHECK(MimeHandlerViewMode::UsesCrossProcessFrame());
+  CHECK(frame_tree_node_->parent());
+  attach_inner_delegate_callback_ = std::move(callback);
+  DCHECK_EQ(attach_to_inner_delegate_state_, AttachToInnerDelegateState::NONE);
+  attach_to_inner_delegate_state_ = AttachToInnerDelegateState::PREPARE_FRAME;
+  if (current_frame_host()->ShouldDispatchBeforeUnload(
+          false /* check_subframes_only */)) {
+    // If there are beforeunload handlers in the frame or a nested subframe we
+    // should first dispatch the event and wait for the ACK form the renderer
+    // before proceeding with CreateNewFrameForInnerDelegateAttachIfNecessary.
+    current_frame_host()->DispatchBeforeUnload(
+        RenderFrameHostImpl::BeforeUnloadType::INNER_DELEGATE_ATTACH, false);
+    return;
+  }
+  CreateNewFrameForInnerDelegateAttachIfNecessary();
+}
+
 RenderFrameHostManager::SiteInstanceDescriptor
 RenderFrameHostManager::DetermineSiteInstanceForURL(
     const GURL& dest_url,
@@ -1954,9 +1986,6 @@ void RenderFrameHostManager::SwapOuterDelegateFrame(
       false /* is_loading */,
       render_frame_host->frame_tree_node()->current_replication_state()));
   proxy->set_render_frame_proxy_created(true);
-
-  // There is no longer a RenderFrame associated with this RenderFrameHost.
-  render_frame_host->SetRenderFrameCreated(false);
 }
 
 void RenderFrameHostManager::SetRWHViewForInnerContents(
@@ -2706,6 +2735,69 @@ void RenderFrameHostManager::EnsureRenderFrameHostPageFocusConsistent() {
                                                  ->current_frame_host()
                                                  ->GetRenderWidgetHost()
                                                  ->is_focused());
+}
+
+void RenderFrameHostManager::CreateNewFrameForInnerDelegateAttachIfNecessary() {
+  DCHECK(is_attaching_inner_delegate());
+  // Remove all navigations and any speculative frames which might interfere
+  // with the loading state.
+  current_frame_host()->ResetNavigationRequests();
+  current_frame_host()->ResetLoadingState();
+  // Remove any speculative frames first and ongoing navigation state. This
+  // should reset the loading state for good.
+  frame_tree_node_->ResetNavigationRequest(false /* keep_state */,
+                                           false /* inform_renderer */);
+  if (speculative_render_frame_host_) {
+    // The FrameTreeNode::ResetNavigationRequest call above may not have cleaned
+    // up the speculative RenderFrameHost if the NavigationRequest had already
+    // been transferred to RenderFrameHost.  Ensure it is cleaned up now.
+    DiscardUnusedFrame(UnsetSpeculativeRenderFrameHost());
+  }
+
+  if (!current_frame_host()->IsCrossProcessSubframe()) {
+    // At this point the beforeunload is dispatched and the result has been to
+    // proceed with attaching. There are also no upcoming navigations which
+    // would interfere with the upcoming attach. If the frame is in the same
+    // SiteInstance as its parent it can be safely used for attaching an inner
+    // Delegate.
+    NotifyPrepareForInnerDelegateAttachComplete(true /* success */);
+    return;
+  }
+
+  // We need a new RenderFrameHost in its parent's SiteInstance to be able to
+  // safely use the WebContentsImpl attach API.
+  DCHECK(!speculative_render_frame_host_);
+  if (!CreateSpeculativeRenderFrameHost(
+          current_frame_host()->GetSiteInstance(),
+          current_frame_host()->GetParent()->GetSiteInstance())) {
+    NotifyPrepareForInnerDelegateAttachComplete(false /* success */);
+    return;
+  }
+  // Swap in the speculative frame. It will later on be swapped out when the
+  // WebContents::AttachToOuterWebContentsFrame is called.
+  speculative_render_frame_host_->Send(
+      new FrameMsg_SwapIn(speculative_render_frame_host_->GetRoutingID()));
+  CommitPending(std::move(speculative_render_frame_host_));
+  NotifyPrepareForInnerDelegateAttachComplete(true /* success */);
+}
+
+void RenderFrameHostManager::NotifyPrepareForInnerDelegateAttachComplete(
+    bool success) {
+  DCHECK(is_attaching_inner_delegate());
+  int32_t process_id = success ? render_frame_host_->GetProcess()->GetID()
+                               : ChildProcessHost::kInvalidUniqueID;
+  int32_t routing_id =
+      success ? render_frame_host_->GetRoutingID() : MSG_ROUTING_NONE;
+  // Invoking the callback asynchronously to meet the APIs promise.
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(
+          [](RenderFrameHost::PrepareForInnerWebContentsAttachCallback callback,
+             int32_t process_id, int32_t routing_id) {
+            std::move(callback).Run(
+                RenderFrameHostImpl::FromID(process_id, routing_id));
+          },
+          std::move(attach_inner_delegate_callback_), process_id, routing_id));
 }
 
 }  // namespace content

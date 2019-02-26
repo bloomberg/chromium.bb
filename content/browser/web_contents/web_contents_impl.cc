@@ -1808,28 +1808,17 @@ void WebContentsImpl::DispatchBeforeUnload(bool auto_cancel) {
   GetMainFrame()->DispatchBeforeUnload(before_unload_type, false);
 }
 
-bool WebContentsImpl::CanAttachToOuterContentsFrame(
-    RenderFrameHost* outer_contents_frame) {
-  bool web_contents_valid = !node_.outer_web_contents() &&
-                            FromRenderFrameHost(outer_contents_frame) != this;
-  bool rfh_valid = outer_contents_frame->GetParent()->GetSiteInstance() ==
-                   outer_contents_frame->GetSiteInstance();
-  bool rfh_is_loading = static_cast<RenderFrameHostImpl*>(outer_contents_frame)
-                            ->frame_tree_node()
-                            ->IsLoading();
-  return web_contents_valid && rfh_valid && !rfh_is_loading;
-}
-
 void WebContentsImpl::AttachToOuterWebContentsFrame(
     std::unique_ptr<WebContents> current_web_contents,
     RenderFrameHost* outer_contents_frame) {
   DCHECK(!node_.outer_web_contents());
   DCHECK_EQ(current_web_contents.get(), this);
-  DCHECK(CanAttachToOuterContentsFrame(outer_contents_frame));
   auto* outer_contents_frame_impl =
       static_cast<RenderFrameHostImpl*>(outer_contents_frame);
 
   RenderFrameHostManager* render_manager = GetRenderManager();
+  auto* outer_contnets_render_manager =
+      outer_contents_frame_impl->frame_tree_node()->render_manager();
 
   // When attaching a WebContents as an inner WebContents, we need to replace
   // the Webcontents' view with a WebContentsViewChildFrame.
@@ -1872,6 +1861,7 @@ void WebContentsImpl::AttachToOuterWebContentsFrame(
     SetFocusedFrame(frame_tree_.root(),
                     outer_contents_frame->GetSiteInstance());
   }
+  outer_contnets_render_manager->set_attach_complete();
 }
 
 std::unique_ptr<WebContents> WebContentsImpl::DetachFromOuterWebContents() {
