@@ -14,15 +14,12 @@
 #include <keyboard-configuration-unstable-v1-server-protocol.h>
 #include <keyboard-extension-unstable-v1-server-protocol.h>
 #include <linux-explicit-synchronization-unstable-v1-server-protocol.h>
-#include <linux/input.h>
 #include <notification-shell-unstable-v1-server-protocol.h>
 #include <pointer-gestures-unstable-v1-server-protocol.h>
 #include <presentation-time-server-protocol.h>
 #include <relative-pointer-unstable-v1-server-protocol.h>
 #include <remote-shell-unstable-v1-server-protocol.h>
 #include <secure-output-unstable-v1-server-protocol.h>
-#include <stddef.h>
-#include <stdint.h>
 #include <stylus-tools-unstable-v1-server-protocol.h>
 #include <stylus-unstable-v2-server-protocol.h>
 #include <text-input-unstable-v1-server-protocol.h>
@@ -32,40 +29,14 @@
 #include <wayland-server-protocol-core.h>
 #include <xdg-shell-unstable-v6-server-protocol.h>
 
-#include <algorithm>
-#include <cstdlib>
-#include <iterator>
-#include <map>
 #include <memory>
 #include <string>
 #include <utility>
-#include <vector>
 
-#include "base/atomic_sequence_num.h"
-#include "base/bind.h"
-#include "base/cancelable_callback.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/memory/free_deleter.h"
-#include "base/memory/ptr_util.h"
-#include "base/memory/weak_ptr.h"
-#include "base/stl_util.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "components/exo/buffer.h"
 #include "components/exo/display.h"
-#include "components/exo/gamepad_delegate.h"
-#include "components/exo/gaming_seat.h"
-#include "components/exo/gaming_seat_delegate.h"
-#include "components/exo/notification.h"
-#include "components/exo/surface.h"
-#include "components/exo/wayland/server_util.h"
 #include "components/exo/wayland/wayland_display_output.h"
-#include "components/exo/wayland/wayland_input_delegate.h"
-#include "components/exo/wayland/wayland_touch_delegate.h"
 #include "components/exo/wayland/wl_compositor.h"
 #include "components/exo/wayland/wl_data_device_manager.h"
 #include "components/exo/wayland/wl_output.h"
@@ -78,28 +49,10 @@
 #include "components/exo/wayland/zcr_secure_output.h"
 #include "components/exo/wayland/zcr_stylus.h"
 #include "components/exo/wayland/zcr_vsync_feedback.h"
-#include "components/exo/wm_helper.h"
-#include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
-#include "third_party/skia/include/core/SkRegion.h"
-#include "ui/base/buildflags.h"
-#include "ui/base/class_property.h"
-#include "ui/base/hit_test.h"
-#include "ui/compositor/compositor_vsync_manager.h"
-#include "ui/display/display_switches.h"
-#include "ui/display/manager/display_util.h"
-#include "ui/display/manager/managed_display_info.h"
+#include "ui/display/display.h"
 #include "ui/display/screen.h"
-#include "ui/events/keycodes/dom/keycode_converter.h"
-#include "ui/gfx/buffer_types.h"
-#include "ui/views/widget/widget.h"
-#include "ui/views/widget/widget_observer.h"
-#include "ui/wm/core/coordinate_conversion.h"
-#include "ui/wm/core/window_animations.h"
-#include "ui/wm/public/activation_change_observer.h"
 
 #if defined(OS_CHROMEOS)
-#include "components/exo/wayland/wayland_keyboard_delegate.h"
-#include "components/exo/wayland/wayland_pointer_delegate.h"
 #include "components/exo/wayland/wl_shell.h"
 #include "components/exo/wayland/zaura_shell.h"
 #include "components/exo/wayland/zcr_cursor_shapes.h"
@@ -115,29 +68,17 @@
 #include "components/exo/wayland/zwp_relative_pointer_manager.h"
 #include "components/exo/wayland/zwp_text_input_manager.h"
 #include "components/exo/wayland/zxdg_shell.h"
-#include "components/exo/wm_helper_chromeos.h"
 #endif
 
 #if defined(USE_OZONE)
 #include <linux-dmabuf-unstable-v1-server-protocol.h>
-
 #include "components/exo/wayland/zwp_linux_dmabuf.h"
-#if defined(OS_CHROMEOS)
-#include "ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.h"
-#endif
 #endif
 
 #if defined(USE_FULLSCREEN_SHELL)
 #include <fullscreen-shell-unstable-v1-server-protocol.h>
 #include "components/exo/wayland/zwp_fullscreen_shell.h"
 #endif
-
-#if BUILDFLAG(USE_XKBCOMMON)
-#include <xkbcommon/xkbcommon.h>
-#include "ui/events/keycodes/scoped_xkb.h"  // nogncheck
-#endif
-
-DEFINE_UI_CLASS_PROPERTY_TYPE(wl_resource*)
 
 namespace exo {
 namespace wayland {

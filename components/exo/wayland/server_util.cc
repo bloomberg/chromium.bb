@@ -11,6 +11,8 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
+DEFINE_UI_CLASS_PROPERTY_TYPE(wl_resource*)
+
 namespace exo {
 namespace wayland {
 
