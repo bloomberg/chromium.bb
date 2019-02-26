@@ -23,14 +23,16 @@ ChromeBroadcaster* TestFullscreenController::broadcaster() {
   return broadcaster_;
 }
 
-void TestFullscreenController::SetWebStateList(WebStateList* web_state_list) {}
+void TestFullscreenController::SetWebStateList(WebStateList* web_state_list) {
+  web_state_list_ = web_state_list;
+}
 
 const WebStateList* TestFullscreenController::GetWebStateList() const {
-  return nullptr;
+  return web_state_list_;
 }
 
 WebStateList* TestFullscreenController::GetWebStateList() {
-  return nullptr;
+  return web_state_list_;
 }
 
 void TestFullscreenController::AddObserver(
