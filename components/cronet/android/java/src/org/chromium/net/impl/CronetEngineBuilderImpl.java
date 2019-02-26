@@ -5,16 +5,12 @@ package org.chromium.net.impl;
 
 import static android.os.Process.THREAD_PRIORITY_LOWEST;
 
-import static org.chromium.net.CronetEngine.Builder.HTTP_CACHE_DISABLED;
-import static org.chromium.net.CronetEngine.Builder.HTTP_CACHE_DISK;
-import static org.chromium.net.CronetEngine.Builder.HTTP_CACHE_DISK_NO_HTTP;
-import static org.chromium.net.CronetEngine.Builder.HTTP_CACHE_IN_MEMORY;
-
 import android.content.Context;
 import android.support.annotation.IntDef;
 import android.support.annotation.VisibleForTesting;
 
 import org.chromium.net.CronetEngine;
+import org.chromium.net.CronetEngine.Builder;
 import org.chromium.net.ICronetEngineBuilder;
 
 import java.io.File;
@@ -103,7 +99,7 @@ public abstract class CronetEngineBuilderImpl extends ICronetEngineBuilder {
         enableQuic(false);
         enableHttp2(true);
         enableBrotli(false);
-        enableHttpCache(HTTP_CACHE_DISABLED, 0);
+        enableHttpCache(Builder.HTTP_CACHE_DISABLED, 0);
         enableNetworkQualityEstimator(false);
         enablePublicKeyPinningBypassForLocalTrustAnchors(true);
     }
@@ -199,15 +195,14 @@ public abstract class CronetEngineBuilderImpl extends ICronetEngineBuilder {
         return mBrotiEnabled;
     }
 
-    @IntDef({
-            HTTP_CACHE_DISABLED, HTTP_CACHE_IN_MEMORY, HTTP_CACHE_DISK_NO_HTTP, HTTP_CACHE_DISK,
-    })
+    @IntDef({Builder.HTTP_CACHE_DISABLED, Builder.HTTP_CACHE_IN_MEMORY,
+            Builder.HTTP_CACHE_DISK_NO_HTTP, Builder.HTTP_CACHE_DISK})
     @Retention(RetentionPolicy.SOURCE)
     public @interface HttpCacheSetting {}
 
     @Override
     public CronetEngineBuilderImpl enableHttpCache(@HttpCacheSetting int cacheMode, long maxSize) {
-        if (cacheMode == HTTP_CACHE_DISK || cacheMode == HTTP_CACHE_DISK_NO_HTTP) {
+        if (cacheMode == Builder.HTTP_CACHE_DISK || cacheMode == Builder.HTTP_CACHE_DISK_NO_HTTP) {
             if (storagePath() == null) {
                 throw new IllegalArgumentException("Storage path must be set");
             }
@@ -216,18 +211,19 @@ public abstract class CronetEngineBuilderImpl extends ICronetEngineBuilder {
                 throw new IllegalArgumentException("Storage path must not be set");
             }
         }
-        mDisableCache = (cacheMode == HTTP_CACHE_DISABLED || cacheMode == HTTP_CACHE_DISK_NO_HTTP);
+        mDisableCache = (cacheMode == Builder.HTTP_CACHE_DISABLED
+                || cacheMode == Builder.HTTP_CACHE_DISK_NO_HTTP);
         mHttpCacheMaxSize = maxSize;
 
         switch (cacheMode) {
-            case HTTP_CACHE_DISABLED:
+            case Builder.HTTP_CACHE_DISABLED:
                 mHttpCacheMode = HttpCacheType.DISABLED;
                 break;
-            case HTTP_CACHE_DISK_NO_HTTP:
-            case HTTP_CACHE_DISK:
+            case Builder.HTTP_CACHE_DISK_NO_HTTP:
+            case Builder.HTTP_CACHE_DISK:
                 mHttpCacheMode = HttpCacheType.DISK;
                 break;
-            case HTTP_CACHE_IN_MEMORY:
+            case Builder.HTTP_CACHE_IN_MEMORY:
                 mHttpCacheMode = HttpCacheType.MEMORY;
                 break;
             default:
