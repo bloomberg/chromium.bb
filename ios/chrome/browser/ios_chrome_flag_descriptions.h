@@ -230,10 +230,6 @@ extern const char kInfobarUIRebootDescription[];
 extern const char kInProductHelpDemoModeName[];
 extern const char kInProductHelpDemoModeDescription[];
 
-// Title and description for the flag to enable ITunes links store kit handling.
-extern const char kITunesUrlsStoreKitHandlingName[];
-extern const char kITunesUrlsStoreKitHandlingDescription[];
-
 // Title, description, and options for the MarkHttpAs setting that controls
 // display of omnibox warnings about non-secure pages.
 extern const char kMarkHttpAsName[];

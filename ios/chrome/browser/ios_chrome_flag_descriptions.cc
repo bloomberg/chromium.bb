@@ -289,12 +289,6 @@ const char kInProductHelpDemoModeDescription[] =
     "an individual promotion causes that promotion but no other promotions to "
     "occur.";
 
-const char kITunesUrlsStoreKitHandlingName[] =
-    "Store kit handling for ITunes links";
-const char kITunesUrlsStoreKitHandlingDescription[] =
-    "When enabled, opening itunes product URLs will be handled using the store "
-    "kit.";
-
 const char kMarkHttpAsName[] = "Mark non-secure origins as non-secure";
 const char kMarkHttpAsDescription[] = "Change the UI treatment for HTTP pages";
 

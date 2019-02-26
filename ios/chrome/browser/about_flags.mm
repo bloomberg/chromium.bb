@@ -51,7 +51,6 @@
 #include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
 #include "ios/chrome/browser/find_in_page/features.h"
 #include "ios/chrome/browser/ios_chrome_flag_descriptions.h"
-#include "ios/chrome/browser/itunes_urls/itunes_urls_flag.h"
 #include "ios/chrome/browser/search_engines/feature_flags.h"
 #include "ios/chrome/browser/signin/feature_flags.h"
 #include "ios/chrome/browser/system_flags.h"
@@ -305,10 +304,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNewClearBrowsingDataUIName,
      flag_descriptions::kNewClearBrowsingDataUIDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kNewClearBrowsingDataUI)},
-    {"itunes-urls-store-kit-handling",
-     flag_descriptions::kITunesUrlsStoreKitHandlingName,
-     flag_descriptions::kITunesUrlsStoreKitHandlingDescription,
-     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kITunesUrlsStoreKitHandling)},
     {"unified-consent", flag_descriptions::kUnifiedConsentName,
      flag_descriptions::kUnifiedConsentDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(unified_consent::kUnifiedConsent)},
