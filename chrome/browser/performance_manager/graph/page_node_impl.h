@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_PAGE_NODE_IMPL_H_
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_GRAPH_PAGE_NODE_IMPL_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/performance_manager/graph/node_base.h"
@@ -12,6 +14,7 @@
 namespace performance_manager {
 
 class FrameNodeImpl;
+class PageAlmostIdleData;
 class ProcessNodeImpl;
 
 class PageNodeImpl
@@ -20,6 +23,8 @@ class PageNodeImpl
           resource_coordinator::mojom::PageCoordinationUnit,
           resource_coordinator::mojom::PageCoordinationUnitRequest> {
  public:
+  struct PageAlmostIdleHelper;
+
   static resource_coordinator::CoordinationUnitType Type() {
     return resource_coordinator::CoordinationUnitType::kPage;
   }
@@ -89,6 +94,7 @@ class PageNodeImpl
   void set_has_nonempty_beforeunload(bool has_nonempty_beforeunload) {
     has_nonempty_beforeunload_ = has_nonempty_beforeunload;
   }
+  bool page_almost_idle() const { return page_almost_idle_; }
 
   const std::string& main_frame_url() const { return main_frame_url_; }
   int64_t navigation_id() const { return navigation_id_; }
@@ -125,6 +131,8 @@ class PageNodeImpl
 
  private:
   friend class FrameNodeImpl;
+
+  void set_page_almost_idle(bool page_almost_idle);
 
   // CoordinationUnitInterface implementation.
   void OnEventReceived(resource_coordinator::mojom::Event event) override;
@@ -208,7 +216,30 @@ class PageNodeImpl
   // is used as a signal that the frame has reported.
   size_t intervention_policy_frames_reported_ = 0;
 
+  // Page almost idle state. This is the output that is driven by the
+  // PageAlmostIdleDecorator.
+  bool page_almost_idle_ = false;
+
+  // TODO(chrisha): Hide away this type using a base class, and expose a
+  // strongly typed "WebContentsUserData" like mechanism.
+  // "User data" storage for the PageAlmostIdleDecorator.
+  std::unique_ptr<PageAlmostIdleData> page_almost_idle_data_;
+
   DISALLOW_COPY_AND_ASSIGN(PageNodeImpl);
+};
+
+// Helper that allows the PageAlmostIdleDecorator scoped access to the
+// PageNodeImpl.
+struct PageNodeImpl::PageAlmostIdleHelper {
+ protected:
+  friend class PageAlmostIdleDecorator;
+
+  static PageAlmostIdleData* GetOrCreateData(PageNodeImpl* page_node);
+  static PageAlmostIdleData* GetData(PageNodeImpl* page_node);
+  static void DestroyData(PageNodeImpl* page_node);
+
+  static void set_page_almost_idle(PageNodeImpl* page_node,
+                                   bool page_almost_idle);
 };
 
 }  // namespace performance_manager

@@ -54,7 +54,7 @@ class TestNodeWrapper {
   DISALLOW_COPY_AND_ASSIGN(TestNodeWrapper);
 };
 
-class GraphTestHarness : public testing::Test {
+class GraphTestHarness : public ::testing::Test {
  public:
   GraphTestHarness();
   ~GraphTestHarness() override;

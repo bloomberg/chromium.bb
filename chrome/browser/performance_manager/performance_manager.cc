@@ -13,6 +13,7 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "build/build_config.h"
+#include "chrome/browser/performance_manager/decorators/page_almost_idle_decorator.h"
 #include "chrome/browser/performance_manager/graph/system_node_impl.h"
 #include "chrome/browser/performance_manager/observers/metrics_collector.h"
 #include "chrome/browser/performance_manager/observers/page_signal_generator_impl.h"
@@ -110,6 +111,7 @@ void PerformanceManager::OnStartImpl(
   graph_.RegisterObserver(std::move(page_signal_generator_impl));
 
   graph_.RegisterObserver(std::make_unique<MetricsCollector>());
+  graph_.RegisterObserver(std::make_unique<PageAlmostIdleDecorator>());
 
 #if defined(OS_WIN)
   if (base::FeatureList::IsEnabled(features::kEmptyWorkingSet))
