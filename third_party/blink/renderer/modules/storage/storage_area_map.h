@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_STORAGE_STORAGE_AREA_MAP_H_
 
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -21,6 +22,8 @@ namespace blink {
 // counted as two bytes, even if the actual in-memory representation of the
 // string only uses one byte per character.
 class MODULES_EXPORT StorageAreaMap {
+  USING_FAST_MALLOC(StorageAreaMap);
+
  public:
   explicit StorageAreaMap(size_t quota);
 
