@@ -150,7 +150,7 @@ function testMetadataCacheSetClear() {
 function testMetadataCacheSetUpdateEvent() {
   const set = new MetadataCacheSet(new MetadataCacheSetStorageForObject({}));
   let event = null;
-  set.addEventListener('update', function(inEvent) {
+  set.addEventListener('update', inEvent => {
     event = inEvent;
   });
   set.startRequests(1, set.createRequests([entryA], ['propertyA']));

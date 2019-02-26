@@ -46,7 +46,7 @@ Id3Parser.prototype.__proto__ = MetadataParser.prototype;
  * @return {number} Synchsafe value.
  * @private
  */
-Id3Parser.readSynchSafe_ = function(reader, length) {
+Id3Parser.readSynchSafe_ = (reader, length) => {
   let rv = 0;
 
   switch (length) {
@@ -70,7 +70,7 @@ Id3Parser.readSynchSafe_ = function(reader, length) {
  * @return {number} Uint24 value.
  * @private
  */
-Id3Parser.readUInt24_ = function(reader) {
+Id3Parser.readUInt24_ = reader => {
   return reader.readScalar(2, false) << 16 | reader.readScalar(1, false);
 };
 
@@ -325,8 +325,8 @@ Id3Parser.prototype.parse = function(file, metadata, callback, onError) {
         }
       ],
       this,
-      function() {},
-      function(error) {});
+      () => {},
+      error => {});
 
   const id3v2Parser = new FunctionSequence(
       'id3v2parser',
@@ -431,7 +431,7 @@ Id3Parser.prototype.parse = function(file, metadata, callback, onError) {
           extract('title', 'TIT2', 'TT2');
           extract('artist', 'TPE1', 'TP1');
 
-          metadata.description.sort(function(a, b) {
+          metadata.description.sort((a, b) => {
             return Id3Parser.METADATA_ORDER.indexOf(a.key) -
                    Id3Parser.METADATA_ORDER.indexOf(b.key);
           });
@@ -439,14 +439,14 @@ Id3Parser.prototype.parse = function(file, metadata, callback, onError) {
         }
       ],
       this,
-      function() {},
-      function(error) {});
+      () => {},
+      error => {});
 
   const metadataParser = new FunctionParallel(
       'mp3metadataParser',
       [id3v1Parser, id3v2Parser],
       this,
-      function() {
+      () => {
         callback.call(null, metadata);
       },
       onError);

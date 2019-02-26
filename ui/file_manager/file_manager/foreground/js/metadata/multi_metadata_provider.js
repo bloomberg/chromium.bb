@@ -59,7 +59,7 @@ MultiMetadataProvider.prototype.get = function(requests) {
   const externalRequests = [];
   const contentRequests = [];
   const fallbackContentRequests = [];
-  requests.forEach(function(request) {
+  requests.forEach(request => {
     // Group property names.
     const fileSystemPropertyNames = [];
     const externalPropertyNames = [];
@@ -96,7 +96,7 @@ MultiMetadataProvider.prototype.get = function(requests) {
       }
     }
     const volumeInfo = this.volumeManager_.getVolumeInfo(request.entry);
-    const addRequests = function(list, names) {
+    const addRequests = (list, names) => {
       if (names.length) {
         list.push(new MetadataRequest(request.entry, names));
       }
@@ -120,10 +120,10 @@ MultiMetadataProvider.prototype.get = function(requests) {
           contentRequests,
           contentPropertyNames.concat(fallbackContentPropertyNames));
     }
-  }.bind(this));
+  });
 
-  const get = function(provider, inRequests) {
-    return provider.get(inRequests).then(function(results) {
+  const get = (provider, inRequests) => {
+    return provider.get(inRequests).then(results => {
       return {
         requests: inRequests,
         results: results
@@ -135,7 +135,7 @@ MultiMetadataProvider.prototype.get = function(requests) {
   const externalPromise = get(this.externalMetadataProvider_, externalRequests);
   const contentPromise = get(this.contentMetadataProvider_, contentRequests);
   const fallbackContentPromise = externalPromise.then(
-      function(requestsAndResults) {
+      requestsAndResults => {
         const requests = requestsAndResults.requests;
         const results = requestsAndResults.results;
         const dirtyMap = [];
@@ -145,10 +145,10 @@ MultiMetadataProvider.prototype.get = function(requests) {
         return get(
             this.contentMetadataProvider_,
             fallbackContentRequests.filter(
-                function(request) {
+                request => {
                   return dirtyMap[request.entry.toURL()];
                 }));
-      }.bind(this));
+      });
 
   // Merge results.
   return Promise.all([
@@ -156,7 +156,7 @@ MultiMetadataProvider.prototype.get = function(requests) {
     externalPromise,
     contentPromise,
     fallbackContentPromise
-  ]).then(function(resultsList) {
+  ]).then(resultsList => {
     const integratedResults = {};
     for (let i = 0; i < resultsList.length; i++) {
       const inRequests = resultsList[i].requests;
@@ -170,7 +170,7 @@ MultiMetadataProvider.prototype.get = function(requests) {
         }
       }
     }
-    return requests.map(function(request) {
+    return requests.map(request => {
       return integratedResults[request.entry.toURL()] || new MetadataItem();
     });
   });

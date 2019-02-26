@@ -71,10 +71,10 @@ function writeDirectory_(bytes, tag) {
  */
 function parseExifData_(bytes) {
   let exifParser = new ExifParser(this);
-  exifParser.log = function(arg) {
+  exifParser.log = arg => {
     console.log(arg);
   };
-  exifParser.vlog = function(arg) {
+  exifParser.vlog = arg => {
     console.log(arg);
   };
 

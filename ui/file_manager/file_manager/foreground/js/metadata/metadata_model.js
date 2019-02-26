@@ -101,14 +101,14 @@ class MetadataModel {
     this.cache_.startRequests(requestId, requests);
 
     // Register callback.
-    const promise = new Promise(function(fulfill) {
+    const promise = new Promise(fulfill => {
       this.callbackRequests_.push(new MetadataProviderCallbackRequest(
           entries, names, snapshot, fulfill));
-    }.bind(this));
+    });
 
     // If the requests are not empty, call the requests.
     if (requests.length) {
-      this.rawProvider_.get(requests).then(function(list) {
+      this.rawProvider_.get(requests).then(list => {
         // Obtain requested entries and ensure all the requested properties are
         // contained in the result.
         const requestedEntries = [];
@@ -136,7 +136,7 @@ class MetadataModel {
             i++;
           }
         }
-      }.bind(this));
+      });
     }
 
     return promise;

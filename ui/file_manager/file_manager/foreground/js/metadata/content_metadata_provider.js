@@ -81,7 +81,7 @@ ContentMetadataProvider.WORKER_SCRIPT =
  * @param {Object} metadata The content metadata.
  * @return {!MetadataItem} Converted metadata.
  */
-ContentMetadataProvider.convertContentMetadata = function(metadata) {
+ContentMetadataProvider.convertContentMetadata = metadata => {
   const item = new MetadataItem();
   item.contentImageTransform = metadata['imageTransform'];
   item.contentThumbnailTransform = metadata['thumbnailTransform'];
@@ -106,9 +106,9 @@ ContentMetadataProvider.prototype.get = function(requests) {
 
   const promises = [];
   for (let i = 0; i < requests.length; i++) {
-    promises.push(new Promise(function(request, fulfill) {
+    promises.push(new Promise(((request, fulfill) => {
       this.getImpl_(request.entry, request.names, fulfill);
-    }.bind(this, requests[i])));
+    }).bind(null, requests[i])));
   }
   return Promise.all(promises);
 };
@@ -158,8 +158,8 @@ ContentMetadataProvider.prototype.getImpl_ = function(entry, names, callback) {
 ContentMetadataProvider.prototype.getFromMediaGalleries_ =
     function(entry, names) {
   const self = this;
-  return new Promise(function(resolve, reject) {
-    entry.file(function(blob) {
+  return new Promise((resolve, reject) => {
+    entry.file(blob => {
       let metadataType = 'mimeTypeOnly';
       if (names.indexOf('mediaArtist') !== -1 ||
           names.indexOf('mediaTitle') !== -1 ||
@@ -171,7 +171,7 @@ ContentMetadataProvider.prototype.getFromMediaGalleries_ =
         metadataType = 'all';
       }
       chrome.mediaGalleries.getMetadata(blob, {metadataType: metadataType},
-          function(metadata) {
+          metadata => {
             if (chrome.runtime.lastError) {
               resolve(self.createError_(entry.toURL(),
                   'resolving metadata',
@@ -181,7 +181,7 @@ ContentMetadataProvider.prototype.getFromMediaGalleries_ =
                   .then(resolve, reject);
             }
           });
-    }, function(err) {
+    }, err => {
       resolve(self.createError_(entry.toURL(),
           'loading file entry',
           'failed to open file entry'));
@@ -262,7 +262,7 @@ ContentMetadataProvider.prototype.onResult_ = function(url, metadataItem) {
  * @param {Array<*>} arglist Log arguments.
  * @private
  */
-ContentMetadataProvider.prototype.onLog_ = function(arglist) {
+ContentMetadataProvider.prototype.onLog_ = arglist => {
   console.log.apply(console, ['ContentMetadataProvider log:'].concat(arglist));
 };
 
@@ -276,7 +276,7 @@ ContentMetadataProvider.prototype.onLog_ = function(arglist) {
  */
 ContentMetadataProvider.prototype.convertMediaMetadataToMetadataItem_ =
     function(entry, metadata) {
-  return new Promise(function(resolve, reject) {
+  return new Promise((resolve, reject) => {
     if (!metadata) {
       resolve(this.createError_(entry.toURL(), 'Reading a thumbnail image',
           "Failed to parse metadata"));
@@ -321,7 +321,7 @@ ContentMetadataProvider.prototype.convertMediaMetadataToMetadataItem_ =
       item.mediaTrack = '' + metadata['track'];
     }
     if (metadata.rawTags) {
-      metadata.rawTags.forEach(function(entry) {
+      metadata.rawTags.forEach(entry => {
         if (entry.type === 'mp3') {
           if (entry.tags['date']) {
             item.mediaYearRecorded = entry.tags['date'];
@@ -336,19 +336,19 @@ ContentMetadataProvider.prototype.convertMediaMetadataToMetadataItem_ =
     }
     if (metadata.attachedImages && metadata.attachedImages.length > 0) {
       const reader = new FileReader();
-      reader.onload = function(e) {
+      reader.onload = e => {
         item.contentThumbnailUrl = e.target.result;
         resolve(item);
       };
-      reader.onerror = function(e) {
+      reader.onerror = e => {
         resolve(this.createError_(entry.toURL(), 'Reading a thumbnail image',
             reader.error.toString()));
-      }.bind(this);
+      };
       reader.readAsDataURL(metadata.attachedImages[0]);
     } else {
       resolve(item);
     }
-  }.bind(this));
+  });
 };
 
 /**
@@ -359,8 +359,7 @@ ContentMetadataProvider.prototype.convertMediaMetadataToMetadataItem_ =
  * @return {!MetadataItem} Error metadata
  * @private
  */
-ContentMetadataProvider.prototype.createError_ = function(
-    url, step, errorDescription) {
+ContentMetadataProvider.prototype.createError_ = (url, step, errorDescription) => {
   // For error case, fill all fields with error object.
   const error = new ContentMetadataProvider.Error(url, step, errorDescription);
   const item = new MetadataItem();
