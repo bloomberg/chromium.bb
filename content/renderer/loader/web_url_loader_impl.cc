@@ -502,7 +502,11 @@ class WebURLLoaderImpl::RequestPeerImpl : public RequestPeer {
 // A sink peer that doesn't forward the data.
 class WebURLLoaderImpl::SinkPeer : public RequestPeer {
  public:
-  explicit SinkPeer(Context* context) : context_(context) {}
+  explicit SinkPeer(Context* context)
+      : context_(context),
+        body_watcher_(FROM_HERE,
+                      mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC,
+                      context->task_runner()) {}
 
   // RequestPeer implementation:
   void OnUploadProgress(uint64_t position, uint64_t size) override {}
@@ -512,12 +516,22 @@ class WebURLLoaderImpl::SinkPeer : public RequestPeer {
   }
   void OnReceivedResponse(const network::ResourceResponseInfo& info) override {}
   void OnStartLoadingResponseBody(
-      mojo::ScopedDataPipeConsumerHandle body) override {}
+      mojo::ScopedDataPipeConsumerHandle body) override {
+    body_handle_ = std::move(body);
+    body_watcher_.Watch(
+        body_handle_.get(),
+        MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+        MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+        base::BindRepeating(&SinkPeer::OnBodyAvailable,
+                            base::Unretained(this)));
+  }
   void OnReceivedData(std::unique_ptr<ReceivedData> data) override {}
   void OnTransferSizeUpdated(int transfer_size_diff) override {}
   void OnReceivedCachedMetadata(const char* data, int len) override {}
   void OnCompletedRequest(
       const network::URLLoaderCompletionStatus& status) override {
+    body_handle_.reset();
+    body_watcher_.Cancel();
     context_->resource_dispatcher()->Cancel(context_->request_id(),
                                             context_->task_runner());
   }
@@ -526,7 +540,30 @@ class WebURLLoaderImpl::SinkPeer : public RequestPeer {
   }
 
  private:
+  void OnBodyAvailable(MojoResult, const mojo::HandleSignalsState&) {
+    while (true) {
+      const void* buffer = nullptr;
+      uint32_t available = 0;
+      MojoResult rv = body_handle_->BeginReadData(&buffer, &available,
+                                                  MOJO_READ_DATA_FLAG_NONE);
+      if (rv == MOJO_RESULT_SHOULD_WAIT) {
+        return;
+      }
+      if (rv != MOJO_RESULT_OK) {
+        break;
+      }
+      rv = body_handle_->EndReadData(available);
+      if (rv != MOJO_RESULT_OK) {
+        break;
+      }
+    }
+    body_handle_.reset();
+    body_watcher_.Cancel();
+  }
+
   scoped_refptr<Context> context_;
+  mojo::ScopedDataPipeConsumerHandle body_handle_;
+  mojo::SimpleWatcher body_watcher_;
   DISALLOW_COPY_AND_ASSIGN(SinkPeer);
 };
 
