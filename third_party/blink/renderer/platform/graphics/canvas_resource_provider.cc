@@ -502,6 +502,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
   scoped_refptr<CanvasResource> ProduceCanvasResource() override {
     TRACE_EVENT0("blink",
                  "CanvasResourceProviderSharedImage::ProduceCanvasResource");
+    FlushSkia();
 
     scoped_refptr<CanvasResource> resource_snapshot = resource_;
 
@@ -514,6 +515,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
 
   scoped_refptr<StaticBitmapImage> Snapshot() override {
     TRACE_EVENT0("blink", "CanvasResourceProviderSharedImage::Snapshot");
+    FlushSkia();
 
     scoped_refptr<CanvasResource> resource_snapshot = resource_;
 
