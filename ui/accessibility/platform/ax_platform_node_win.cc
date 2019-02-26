@@ -3487,8 +3487,10 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPatternProvider(PATTERNID pattern_id,
       break;
 
     case UIA_RangeValuePatternId:
-      AddRef();
-      *result = static_cast<IRangeValueProvider*>(this);
+      if (IsRangeValueSupported()) {
+        AddRef();
+        *result = static_cast<IRangeValueProvider*>(this);
+      }
       break;
 
     case UIA_ScrollPatternId:

@@ -7,6 +7,8 @@
 
 #include "ui/accessibility/platform/ax_platform_node_unittest.h"
 
+#include <unordered_set>
+
 struct IAccessible;
 struct IAccessible2;
 struct IAccessible2_2;
@@ -37,6 +39,8 @@ class AXPlatformNodeWinTest : public ui::AXPlatformNodeTest {
 
  protected:
   template <typename T>
+  Microsoft::WRL::ComPtr<T> QueryInterfaceFromNodeId(int32_t id);
+  template <typename T>
   Microsoft::WRL::ComPtr<T> QueryInterfaceFromNode(AXNode* node);
   Microsoft::WRL::ComPtr<IRawElementProviderSimple>
   GetRootIRawElementProviderSimple();
@@ -64,6 +68,8 @@ class AXPlatformNodeWinTest : public ui::AXPlatformNodeTest {
                    bool option_3_is_selected,
                    ax::mojom::State additional_state);
 
+  using PatternSet = std::unordered_set<long>;
+  PatternSet GetSupportedPatternsFromNodeId(int32_t id);
   std::unique_ptr<AXFragmentRootWin> ax_fragment_root_;
 };
 
