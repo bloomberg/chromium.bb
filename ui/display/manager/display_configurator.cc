@@ -322,7 +322,7 @@ bool DisplayConfigurator::DisplayLayoutManagerImpl::GetDisplayLayout(
       }
       break;
     }
-    case MULTIPLE_DISPLAY_STATE_DUAL_MIRROR: {
+    case MULTIPLE_DISPLAY_STATE_MULTI_MIRROR: {
       if (configurator_->mirroring_controller_->IsSoftwareMirroringEnforced()) {
         LOG(WARNING) << "Ignoring request to enter hardware mirror mode "
                         "because software mirroring is enforced";
@@ -394,7 +394,7 @@ DisplayConfigurator::DisplayLayoutManagerImpl::GetDisplayStates() const {
 }
 
 bool DisplayConfigurator::DisplayLayoutManagerImpl::IsMirroring() const {
-  if (GetDisplayState() == MULTIPLE_DISPLAY_STATE_DUAL_MIRROR)
+  if (GetDisplayState() == MULTIPLE_DISPLAY_STATE_MULTI_MIRROR)
     return true;
 
   return GetSoftwareMirroringController() &&
@@ -1088,7 +1088,7 @@ void DisplayConfigurator::ResumeDisplays() {
 
   displays_suspended_ = false;
 
-  if (current_display_state_ == MULTIPLE_DISPLAY_STATE_DUAL_MIRROR ||
+  if (current_display_state_ == MULTIPLE_DISPLAY_STATE_MULTI_MIRROR ||
       current_display_state_ == MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED) {
     // When waking up from suspend while being in a multi display mode, we
     // schedule a delayed forced configuration, which will make

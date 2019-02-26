@@ -41,7 +41,7 @@ void DisplayErrorObserver::OnDisplayModeChangeFailed(
   }
 
   base::string16 message =
-      (new_state == display::MULTIPLE_DISPLAY_STATE_DUAL_MIRROR)
+      (new_state == display::MULTIPLE_DISPLAY_STATE_MULTI_MIRROR)
           ? l10n_util::GetStringUTF16(IDS_ASH_DISPLAY_FAILURE_ON_MIRRORING)
           : ui::SubstituteChromeOSDeviceType(
                 IDS_ASH_DISPLAY_FAILURE_ON_NON_MIRRORING);

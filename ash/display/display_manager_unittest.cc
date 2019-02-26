@@ -3508,7 +3508,7 @@ TEST_F(DisplayManagerTest, ForcedMirrorMode) {
       display_manager()->GetCurrentDisplayIdList();
   display_manager()->layout_store()->UpdateDefaultUnified(current_list,
                                                           false /* unified */);
-  EXPECT_EQ(display::MULTIPLE_DISPLAY_STATE_DUAL_MIRROR,
+  EXPECT_EQ(display::MULTIPLE_DISPLAY_STATE_MULTI_MIRROR,
             observer.GetStateForDisplayIds(outputs));
 
   display_manager()->layout_store()->set_forced_mirror_mode_for_tablet(false);

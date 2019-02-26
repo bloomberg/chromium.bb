@@ -179,7 +179,7 @@ MultipleDisplayState DisplayChangeObserver::GetStateForDisplayIds(
                               return display_state->display_id();
                             });
   return display_manager_->ShouldSetMirrorModeOn(list)
-             ? MULTIPLE_DISPLAY_STATE_DUAL_MIRROR
+             ? MULTIPLE_DISPLAY_STATE_MULTI_MIRROR
              : MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED;
 }
 

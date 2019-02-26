@@ -105,13 +105,13 @@ void UpdateDisplayConfigurationTask::EnterState(
 void UpdateDisplayConfigurationTask::OnStateEntered(
     ConfigureDisplaysTask::Status status) {
   bool success = status != ConfigureDisplaysTask::ERROR;
-  if (new_display_state_ == MULTIPLE_DISPLAY_STATE_DUAL_MIRROR &&
+  if (new_display_state_ == MULTIPLE_DISPLAY_STATE_MULTI_MIRROR &&
       status == ConfigureDisplaysTask::PARTIAL_SUCCESS)
     success = false;
 
   if (layout_manager_->GetSoftwareMirroringController()) {
     bool enable_software_mirroring = false;
-    if (!success && new_display_state_ == MULTIPLE_DISPLAY_STATE_DUAL_MIRROR) {
+    if (!success && new_display_state_ == MULTIPLE_DISPLAY_STATE_MULTI_MIRROR) {
       if (layout_manager_->GetDisplayState() !=
               MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED ||
           layout_manager_->GetPowerState() != new_power_state_ ||
