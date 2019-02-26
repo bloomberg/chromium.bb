@@ -122,9 +122,8 @@ TEST(HitTestDataProviderDrawQuad, HitTestDataRenderer) {
             hit_test_region_list->regions[0].transform);
 }
 
-// Test to ensure that we skip regions with non-invertible transforms and with
-// updated FrameSinkId between fallback and primary when preparing for hit-test
-// data.
+// Test to ensure that we skip regions with non-invertible transforms when
+// preparing for hit-test data.
 TEST(HitTestDataProviderDrawQuad, HitTestDataSkipQuads) {
   std::unique_ptr<HitTestDataProvider> hit_test_data_provider =
       std::make_unique<HitTestDataProviderDrawQuad>(
@@ -167,53 +166,45 @@ TEST(HitTestDataProviderDrawQuad, HitTestDataSkipQuads) {
       invertible_transform);
   pass_list.push_back(std::move(pass3));
 
-  // The draw quad's FrameSinkId changed between fallback and primary.
-  SurfaceId child_surface_id4 = CreateChildSurfaceId(5);
-  SurfaceId fallback_child_surface_id4 = CreateChildSurfaceId(6);
-  auto pass4 = CreateRenderPassWithChildSurface(
-      4, child_surface_id4, kFrameRect, child_rect, invertible_transform,
-      invertible_transform, fallback_child_surface_id4);
-  pass_list.push_back(std::move(pass4));
-
-  auto pass5_root = RenderPass::Create();
-  pass5_root->output_rect = kFrameRect;
-  pass5_root->id = 5;
-  auto* shared_quad_state5_root = pass5_root->CreateAndAppendSharedQuadState();
-  gfx::Rect rect5_root(kFrameRect);
-  shared_quad_state5_root->SetAll(
-      gfx::Transform(), /*quad_layer_rect=*/rect5_root,
-      /*visible_quad_layer_rect=*/rect5_root, /*clip_rect=*/rect5_root,
+  auto pass4_root = RenderPass::Create();
+  pass4_root->output_rect = kFrameRect;
+  pass4_root->id = 5;
+  auto* shared_quad_state4_root = pass4_root->CreateAndAppendSharedQuadState();
+  gfx::Rect rect4_root(kFrameRect);
+  shared_quad_state4_root->SetAll(
+      gfx::Transform(), /*quad_layer_rect=*/rect4_root,
+      /*visible_quad_layer_rect=*/rect4_root, /*clip_rect=*/rect4_root,
       /*is_clipped=*/false, /*are_contents_opaque=*/false,
       /*opacity=*/0.5f, SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
-  auto* quad5_root_1 =
-      pass5_root->quad_list.AllocateAndConstruct<RenderPassDrawQuad>();
-  quad5_root_1->SetNew(shared_quad_state5_root, /*rect=*/rect5_root,
-                       /*visible_rect=*/rect5_root, /*render_pass_id=*/1,
+  auto* quad4_root_1 =
+      pass4_root->quad_list.AllocateAndConstruct<RenderPassDrawQuad>();
+  quad4_root_1->SetNew(shared_quad_state4_root, /*rect=*/rect4_root,
+                       /*visible_rect=*/rect4_root, /*render_pass_id=*/1,
                        /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
                        gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false,
                        1.0f);
-  auto* quad5_root_2 =
-      pass5_root->quad_list.AllocateAndConstruct<RenderPassDrawQuad>();
-  quad5_root_2->SetNew(shared_quad_state5_root, /*rect=*/rect5_root,
-                       /*visible_rect=*/rect5_root, /*render_pass_id=*/2,
+  auto* quad4_root_2 =
+      pass4_root->quad_list.AllocateAndConstruct<RenderPassDrawQuad>();
+  quad4_root_2->SetNew(shared_quad_state4_root, /*rect=*/rect4_root,
+                       /*visible_rect=*/rect4_root, /*render_pass_id=*/2,
                        /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
                        gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false,
                        1.0f);
-  auto* quad5_root_3 =
-      pass5_root->quad_list.AllocateAndConstruct<RenderPassDrawQuad>();
-  quad5_root_3->SetNew(shared_quad_state5_root, /*rect=*/rect5_root,
-                       /*visible_rect=*/rect5_root, /*render_pass_id=*/3,
+  auto* quad4_root_3 =
+      pass4_root->quad_list.AllocateAndConstruct<RenderPassDrawQuad>();
+  quad4_root_3->SetNew(shared_quad_state4_root, /*rect=*/rect4_root,
+                       /*visible_rect=*/rect4_root, /*render_pass_id=*/3,
                        /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
                        gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false,
                        1.0f);
-  auto* quad5_root_4 =
-      pass5_root->quad_list.AllocateAndConstruct<RenderPassDrawQuad>();
-  quad5_root_4->SetNew(shared_quad_state5_root, /*rect=*/rect5_root,
-                       /*visible_rect=*/rect5_root, /*render_pass_id=*/4,
+  auto* quad4_root_4 =
+      pass4_root->quad_list.AllocateAndConstruct<RenderPassDrawQuad>();
+  quad4_root_4->SetNew(shared_quad_state4_root, /*rect=*/rect4_root,
+                       /*visible_rect=*/rect4_root, /*render_pass_id=*/4,
                        /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
                        gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false,
                        1.0f);
-  pass_list.push_back(std::move(pass5_root));
+  pass_list.push_back(std::move(pass4_root));
 
   auto compositor_frame =
       CompositorFrameBuilder().SetRenderPassList(std::move(pass_list)).Build();
