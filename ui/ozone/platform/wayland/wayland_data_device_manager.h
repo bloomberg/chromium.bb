@@ -7,7 +7,6 @@
 
 #include <wayland-client.h>
 
-#include "base/logging.h"
 #include "base/macros.h"
 #include "ui/ozone/platform/wayland/wayland_object.h"
 
@@ -17,21 +16,17 @@ class WaylandConnection;
 
 class WaylandDataDeviceManager {
  public:
-  explicit WaylandDataDeviceManager(wl_data_device_manager* device_manager);
+  WaylandDataDeviceManager(wl_data_device_manager* device_manager,
+                           WaylandConnection* connection);
   ~WaylandDataDeviceManager();
 
   wl_data_device* GetDevice();
   wl_data_source* CreateSource();
 
-  void set_connection(WaylandConnection* connection) {
-    DCHECK(connection);
-    connection_ = connection;
-  }
-
  private:
   wl::Object<wl_data_device_manager> device_manager_;
 
-  WaylandConnection* connection_ = nullptr;
+  WaylandConnection* connection_;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandDataDeviceManager);
 };

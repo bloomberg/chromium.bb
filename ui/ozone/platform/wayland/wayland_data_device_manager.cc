@@ -9,8 +9,12 @@
 namespace ui {
 
 WaylandDataDeviceManager::WaylandDataDeviceManager(
-    wl_data_device_manager* device_manager)
-    : device_manager_(device_manager) {}
+    wl_data_device_manager* device_manager,
+    WaylandConnection* connection)
+    : device_manager_(device_manager), connection_(connection) {
+  DCHECK(connection_);
+  DCHECK(device_manager_);
+}
 
 WaylandDataDeviceManager::~WaylandDataDeviceManager() = default;
 
