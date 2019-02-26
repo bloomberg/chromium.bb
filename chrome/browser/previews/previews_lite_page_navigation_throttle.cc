@@ -249,7 +249,18 @@ bool HandlePreviewsLitePageURLRewrite(
     content::BrowserContext* browser_context) {
   // Don't change the |url|, just register our interest in reversing it before
   // it is displayed to the user in |HandlePreviewsLitePageURLRewriteReverse|.
-  return previews::IsLitePageRedirectPreviewURL(*url);
+  // Without returning true here, |HandlePreviewsLitePageURLRewriteReverse|
+  // would not be called.
+
+  auto* data_reduction_proxy_settings =
+      DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+          browser_context);
+
+  if (!data_reduction_proxy_settings)
+    return false;
+
+  return data_reduction_proxy_settings->IsDataReductionProxyEnabled() &&
+         previews::params::IsLitePageServerPreviewsEnabled();
 }
 
 bool HandlePreviewsLitePageURLRewriteReverse(

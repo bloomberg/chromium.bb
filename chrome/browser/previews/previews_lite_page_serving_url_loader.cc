@@ -10,12 +10,14 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/previews/previews_lite_page_decider.h"
+#include "chrome/browser/previews/previews_lite_page_navigation_throttle.h"
 #include "chrome/browser/previews/previews_lite_page_navigation_throttle_manager.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
@@ -209,9 +211,19 @@ void PreviewsLitePageServingURLLoader::OnReceiveResponse(
 
   const net::HttpResponseHeaders* response_headers = head.headers.get();
   // TODO: evaluate all the responses we allow, don't hard code 200.
-  if (!response_headers || response_headers->response_code() != net::HTTP_OK) {
-    if (response_headers &&
-        response_headers->response_code() == net::HTTP_SERVICE_UNAVAILABLE) {
+  if (!response_headers) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Previews.ServerLitePage.ServerResponse",
+        PreviewsLitePageNavigationThrottle::ServerResponse::kFailed);
+    Fallback();
+    return;
+  }
+
+  if (response_headers->response_code() != net::HTTP_OK) {
+    if (response_headers->response_code() == net::HTTP_SERVICE_UNAVAILABLE) {
+      UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.ServerResponse",
+                                PreviewsLitePageNavigationThrottle::
+                                    ServerResponse::kServiceUnavailable);
       std::string retry_after_header;
       base::TimeDelta retry_after = base::TimeDelta::FromSeconds(base::RandInt(
           60, previews::params::PreviewServerLoadshedMaxSeconds()));
@@ -221,11 +233,23 @@ void PreviewsLitePageServingURLLoader::OnReceiveResponse(
                                              base::Time::Now(), &retry_after);
       }
       SetServerUnavailableFor(retry_after, frame_tree_node_id_);
+    } else if (response_headers->response_code() == net::HTTP_FORBIDDEN) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "Previews.ServerLitePage.ServerResponse",
+          PreviewsLitePageNavigationThrottle::ServerResponse::kAuthFailure);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION(
+          "Previews.ServerLitePage.ServerResponse",
+          PreviewsLitePageNavigationThrottle::ServerResponse::kOther);
     }
 
     Fallback();
     return;
   }
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "Previews.ServerLitePage.ServerResponse",
+      PreviewsLitePageNavigationThrottle::ServerResponse::kOk);
 
   // Store head and pause new messages until the forwarding client is set up.
   // Make a deep copy of ResourceResponseHead before passing it cross-thread.
@@ -253,6 +277,9 @@ void PreviewsLitePageServingURLLoader::OnReceiveRedirect(
   if (previews::ExtractOriginalURLFromLitePageRedirectURL(previews_url_,
                                                           &original_url) &&
       GURL(original_url) == redirect_info.new_url) {
+    UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.ServerResponse",
+                              PreviewsLitePageNavigationThrottle::
+                                  ServerResponse::kPreviewUnavailable);
     const net::HttpResponseHeaders* response_headers = head.headers.get();
 
     std::string chrome_proxy_header;
@@ -266,9 +293,17 @@ void PreviewsLitePageServingURLLoader::OnReceiveRedirect(
     if (blacklist_host)
       BlacklistBypassedHost(GURL(original_url).host(), kBlacklistDuration,
                             frame_tree_node_id_);
+
+    UMA_HISTOGRAM_BOOLEAN("Previews.ServerLitePage.HostBlacklistedOnBypass",
+                          blacklist_host);
+
     Fallback();
     return;
   }
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "Previews.ServerLitePage.ServerResponse",
+      PreviewsLitePageNavigationThrottle::ServerResponse::kRedirect);
 
   std::move(result_callback_)
       .Run(ServingLoaderResult::kRedirect, redirect_info, resource_response_);
@@ -306,10 +341,12 @@ void PreviewsLitePageServingURLLoader::OnComplete(
     return;
   }
 
+  UMA_HISTOGRAM_ENUMERATION(
+      "Previews.ServerLitePage.ServerResponse",
+      PreviewsLitePageNavigationThrottle::ServerResponse::kFailed);
+
   // If OnComplete is called before, OnReceiveResponse, this is indicative of a
   // failure of some sort.
-  // TODO(ryansturm): Handle specific errors with a bypass pattern.
-  // https://crbug.com/921744
   Fallback();
 }
 
@@ -352,6 +389,9 @@ void PreviewsLitePageServingURLLoader::OnConnectionError() {
   // When we are not yet bound to the navigation code, fallback, which will
   // destroy this object.
   if (!result_callback_.is_null()) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Previews.ServerLitePage.ServerResponse",
+        PreviewsLitePageNavigationThrottle::ServerResponse::kFailed);
     Fallback();
     return;
   }
