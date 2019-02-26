@@ -911,7 +911,6 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
     }
     *this_frame = next_frame;
   }
-  twopass->gf_zeromotion_pct = (int)(zero_motion_accumulator * 1000.0);
 
   // Was the group length constrained by the requirement for a new KF?
   rc->constrained_gf_group = (i >= rc->frames_to_key) ? 1 : 0;
@@ -1766,9 +1765,7 @@ void av1_twopass_postencode_update(AV1_COMP *cpi) {
   twopass->kf_group_bits = AOMMAX(twopass->kf_group_bits, 0);
 
   // If the rate control is drifting consider adjustment to min or maxq.
-  if ((cpi->oxcf.rc_mode != AOM_Q) &&
-      (cpi->twopass.gf_zeromotion_pct < VLOW_MOTION_THRESHOLD) &&
-      !cpi->rc.is_src_frame_alt_ref) {
+  if ((cpi->oxcf.rc_mode != AOM_Q) && !cpi->rc.is_src_frame_alt_ref) {
     const int maxq_adj_limit =
         rc->worst_quality - twopass->active_worst_quality;
     const int minq_adj_limit =
