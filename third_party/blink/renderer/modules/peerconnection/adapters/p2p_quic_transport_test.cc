@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/test/mock_p2p_quic_stream_delegate.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/test/mock_p2p_quic_transport_delegate.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/webrtc/rtc_base/rtc_certificate.h"
 #include "third_party/webrtc/rtc_base/ssl_fingerprint.h"
 #include "third_party/webrtc/rtc_base/ssl_identity.h"
@@ -43,6 +44,8 @@ const uint32_t kTransportDelegateReadBufferSize = 100 * 1024;
 //       .WillOnce(FireCallback(run_loop.CreateCallback()));
 //   run_loop.RunUntilCallbacksFired(task_runner);
 class FireCallbackAction {
+  STACK_ALLOCATED();
+
  public:
   FireCallbackAction(base::RepeatingCallback<void()> callback)
       : callback_(callback) {}
@@ -71,6 +74,8 @@ PolymorphicAction<FireCallbackAction> FireCallback(
 // case it will make more sense to use the TestCompletionCallback and the
 // RunLoop for driving the test.
 class CallbackRunLoop {
+  STACK_ALLOCATED();
+
  public:
   CallbackRunLoop(scoped_refptr<net::test::TestTaskRunner> task_runner)
       : task_runner_(task_runner) {}
@@ -234,6 +239,8 @@ class FakePacketTransport : public P2PQuicPacketTransport,
 // also keeps track of when callbacks are expected on the delegate objects,
 // which allows running the TestTaskRunner tasks until they have been fired.
 class QuicPeerForTest {
+  USING_FAST_MALLOC(QuicPeerForTest);
+
  public:
   QuicPeerForTest(
       std::unique_ptr<FakePacketTransport> packet_transport,

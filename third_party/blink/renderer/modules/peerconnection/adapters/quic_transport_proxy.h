@@ -14,6 +14,7 @@
 #include "base/threading/thread_checker.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport_factory.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/p2p_quic_transport_stats.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/webrtc/api/scoped_refptr.h"
 
 namespace blink {
@@ -31,6 +32,8 @@ class QuicTransportHost;
 // proxy and host threads used with the QuicTransportProxy should be the same as
 // the ones used with the connected IceTransportProxy.
 class QuicTransportProxy final {
+  USING_FAST_MALLOC(QuicTransportProxy);
+
  public:
   // Delegate for receiving callbacks from the QUIC implementation. These all
   // run on the proxy thread.

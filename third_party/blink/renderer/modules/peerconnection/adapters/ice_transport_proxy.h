@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_adapter.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_adapter_cross_thread_factory.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/webrtc/p2p/base/p2p_transport_channel.h"
 
 namespace rtc {
@@ -40,6 +41,8 @@ class QuicTransportProxy;
 // client should call all methods from the proxy thread and all callbacks will
 // be run on the proxy thread.
 class IceTransportProxy final {
+  USING_FAST_MALLOC(IceTransportProxy);
+
  public:
   // Delegate for receiving callbacks from the ICE implementation. These all run
   // on the proxy thread.
