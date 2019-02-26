@@ -141,7 +141,7 @@ class FakeProfileSessionDurationsService
   }
   void OnSessionEnded(base::TimeDelta session_length) override {
     ++session_ended_count_;
-  };
+  }
 
   // IOSProfileSessionDurationsService:
   int session_started_count() const { return session_started_count_; }

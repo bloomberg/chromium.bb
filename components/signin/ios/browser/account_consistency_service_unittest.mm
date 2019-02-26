@@ -106,7 +106,7 @@ class CustomGaiaCookieManagerService : public GaiaCookieManagerService {
  private:
   void ForceOnCookieChangeProcessing() override {
     calls_to_force_on_cookie_change_processing_++;
-  };
+  }
   uint8_t calls_to_force_on_cookie_change_processing_;
 };
 

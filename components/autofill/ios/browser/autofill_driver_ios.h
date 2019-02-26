@@ -65,7 +65,7 @@ class AutofillDriverIOS : public AutofillDriver {
       const gfx::RectF& bounding_box) override;
 
   bool is_processed() const { return processed_; }
-  void set_processed(bool processed) { processed_ = processed; };
+  void set_processed(bool processed) { processed_ = processed; }
 
  protected:
   AutofillDriverIOS(

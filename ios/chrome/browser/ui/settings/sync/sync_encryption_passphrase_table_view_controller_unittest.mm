@@ -79,7 +79,7 @@ class SyncEncryptionPassphraseTableViewControllerTest
     // will by default return false.  GetSyncServiceState(), however, returns an
     // enum, and thus always needs its default value set.
     TurnSyncErrorOff();
-  };
+  }
 
   void TearDown() override {
     [SyncController() stopObserving];

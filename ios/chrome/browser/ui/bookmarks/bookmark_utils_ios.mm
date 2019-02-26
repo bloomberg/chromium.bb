@@ -515,7 +515,7 @@ class FolderNodeComparator : public std::binary_function<const BookmarkNode*,
  private:
   icu::Collator* collator_;
 };
-};
+}  // namespace
 
 bool FolderHasAncestorInBookmarkNodes(const BookmarkNode* folder,
                                       const NodeSet& bookmarkNodes) {

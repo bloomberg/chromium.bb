@@ -6,9 +6,9 @@
 
 namespace remoting {
 
-FakeHostListFetcher::FakeHostListFetcher() : HostListFetcher(nullptr){};
+FakeHostListFetcher::FakeHostListFetcher() : HostListFetcher(nullptr) {}
 
-FakeHostListFetcher::~FakeHostListFetcher(){};
+FakeHostListFetcher::~FakeHostListFetcher() {}
 
 void FakeHostListFetcher::RetrieveHostlist(const std::string& access_token,
                                            HostlistCallback callback) {

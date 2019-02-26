@@ -69,7 +69,7 @@ class PreloadControllerTest : public PlatformTest {
 
     controller_ = [[PreloadController alloc]
         initWithBrowserState:chrome_browser_state_.get()];
-  };
+  }
 
   // Set the "Preload webpages" setting to "Always".
   void PreloadWebpagesAlways() {

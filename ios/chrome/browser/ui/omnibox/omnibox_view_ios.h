@@ -44,7 +44,7 @@ class OmniboxViewIOS : public OmniboxView,
 
   void SetPopupProvider(OmniboxPopupProvider* provider) {
     popup_provider_ = provider;
-  };
+  }
 
   // Returns a color representing |security_level|, adjusted based on whether
   // the browser is in Incognito mode.

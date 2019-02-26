@@ -21,7 +21,7 @@ class OmniboxPopupViewControllerTest : public PlatformTest {
   void SetUp() override {
     PlatformTest::SetUp();
     popup_view_controller_ = [[OmniboxPopupViewController alloc] init];
-  };
+  }
 
   OmniboxPopupViewController* popup_view_controller_;
 };

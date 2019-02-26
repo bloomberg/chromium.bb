@@ -46,7 +46,7 @@ class WebViewPersonalDataManagerObserverBridge
  public:
   explicit WebViewPersonalDataManagerObserverBridge(
       CWVAutofillDataManager* data_manager)
-      : data_manager_(data_manager){};
+      : data_manager_(data_manager) {}
   ~WebViewPersonalDataManagerObserverBridge() override = default;
 
   // autofill::PersonalDataManagerObserver implementation.

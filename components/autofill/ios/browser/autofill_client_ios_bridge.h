@@ -12,7 +12,7 @@
 namespace autofill {
 class AutofillPopupDelegate;
 struct Suggestion;
-};
+}
 
 // Interface used to pipe events from AutofillClientIOS to the embedder.
 @protocol AutofillClientIOSBridge

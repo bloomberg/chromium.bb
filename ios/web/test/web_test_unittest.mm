@@ -41,13 +41,13 @@ TEST_F(WebTestFixtureTest, FailsOnRenderCrash) {
 
   EXPECT_FATAL_FAILURE(web::SimulateWKWebViewCrash(web_view),
                        "Renderer process died unexpectedly");
-};
+}
 
 // Tests that |SetIgnoreRenderProcessCrashesDuringTesting()| properly ignores
 // intentional render process crashes.
 TEST_F(WebTestFixtureTest, SucceedsOnRenderCrash) {
   SetIgnoreRenderProcessCrashesDuringTesting(true);
   web::SimulateWKWebViewCrash(web_view_);
-};
+}
 
 }  // namespace

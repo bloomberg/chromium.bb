@@ -36,4 +36,4 @@ base::string16 IOSChromePasswordManagerInfoBarDelegate::GetDetailsMessageText()
 
 int IOSChromePasswordManagerInfoBarDelegate::GetIconId() const {
   return IDR_IOS_INFOBAR_SAVE_PASSWORD;
-};
+}

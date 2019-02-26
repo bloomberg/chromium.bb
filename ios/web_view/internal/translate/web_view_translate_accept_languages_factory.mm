@@ -85,6 +85,6 @@ web::BrowserState* WebViewTranslateAcceptLanguagesFactory::GetBrowserStateToUse(
   WebViewBrowserState* browser_state =
       WebViewBrowserState::FromBrowserState(context);
   return browser_state->GetRecordingBrowserState();
-};
+}
 
 }  // namespace ios_web_view

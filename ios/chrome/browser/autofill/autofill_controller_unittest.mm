@@ -80,7 +80,7 @@
 
 - (void)onNoSuggestionsAvailable {
   self.suggestionRetrievalComplete = YES;
-};
+}
 
 @end
 
@@ -339,7 +339,7 @@ TEST_F(AutofillControllerTest, ReadForm) {
   CheckField(form, ADDRESS_HOME_ZIP, "zip_1");
   ExpectMetric("Autofill.IsEnabled.PageLoad", 1);
   ExpectHappinessMetric(AutofillMetrics::FORMS_LOADED);
-};
+}
 
 // Checks that viewing an HTML page containing a form with an 'id' results in
 // the form being registered as a FormStructure by the AutofillManager, and the
@@ -354,7 +354,7 @@ TEST_F(AutofillControllerTest, ReadFormName) {
   const auto& forms = autofill_manager->form_structures();
   const auto& form = *(forms.begin()->second);
   EXPECT_EQ(base::UTF8ToUTF16("form1"), form.ToFormData().name);
-};
+}
 
 // Checks that an HTML page containing a profile-type form which is submitted
 // with scripts (simulating user form submission) results in a profile being
@@ -390,7 +390,7 @@ TEST_F(AutofillControllerTest, ProfileImport) {
             profile.GetInfo(AutofillType(ADDRESS_HOME_STATE), "en-US"));
   EXPECT_EQ(base::UTF8ToUTF16("55123"),
             profile.GetInfo(AutofillType(ADDRESS_HOME_ZIP), "en-US"));
-};
+}
 
 void AutofillControllerTest::SetUpForSuggestions(NSString* data) {
   PersonalDataManager* personal_data_manager =
@@ -423,7 +423,7 @@ TEST_F(AutofillControllerTest, ProfileSuggestions) {
   EXPECT_EQ(1U, [suggestion_controller() suggestions].count);
   FormSuggestion* suggestion = [suggestion_controller() suggestions][0];
   EXPECT_NSEQ(@"Homer Simpson", suggestion.value);
-};
+}
 
 // Tests that the system is able to offer suggestions for an anonymous form when
 // there is another anonymous form on the page.
@@ -438,7 +438,7 @@ TEST_F(AutofillControllerTest, ProfileSuggestionsTwoAnonymousForms) {
   EXPECT_EQ(1U, [suggestion_controller() suggestions].count);
   FormSuggestion* suggestion = [suggestion_controller() suggestions][0];
   EXPECT_NSEQ(@"Homer Simpson", suggestion.value);
-};
+}
 
 // Checks that focusing on a select element in a profile-type form will result
 // in suggestions being sent to the AutofillAgent, once data has been loaded
@@ -453,7 +453,7 @@ TEST_F(AutofillControllerTest, ProfileSuggestionsFromSelectField) {
   EXPECT_EQ(1U, [suggestion_controller() suggestions].count);
   FormSuggestion* suggestion = [suggestion_controller() suggestions][0];
   EXPECT_NSEQ(@"IL", suggestion.value);
-};
+}
 
 // Checks that multiple profiles will offer a matching number of suggestions.
 TEST_F(AutofillControllerTest, MultipleProfileSuggestions) {
@@ -525,7 +525,7 @@ TEST_F(AutofillControllerTest, KeyValueImport) {
   // One result should be returned, matching the filled value.
   ASSERT_EQ(1U, consumer.result_.size());
   EXPECT_EQ(base::UTF8ToUTF16("Hello"), consumer.result_[0].key().value());
-};
+}
 
 void AutofillControllerTest::SetUpKeyValueData() {
   scoped_refptr<AutofillWebDataService> web_data_service =
@@ -557,7 +557,7 @@ TEST_F(AutofillControllerTest, KeyValueSuggestions) {
   EXPECT_EQ(1U, [suggestion_controller() suggestions].count);
   FormSuggestion* suggestion = [suggestion_controller() suggestions][0];
   EXPECT_NSEQ(@"Bonjour", suggestion.value);
-};
+}
 
 // Checks that typing events (simulated in script) result in suggestions. Note
 // that the field is not explicitly focused before typing starts; this can
@@ -668,7 +668,7 @@ TEST_F(AutofillControllerTest, CreditCardImport) {
   EXPECT_EQ(
       base::UTF8ToUTF16("2999"),
       credit_card.GetInfo(AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR), "en-US"));
-};
+}
 
 }  // namespace
 

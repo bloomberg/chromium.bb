@@ -21,7 +21,7 @@ class UpgradeCenterTest : public PlatformTest {
   void SetUp() override {
     [[UpgradeCenter sharedInstance] resetForTests];
     count_ = 0;
-  };
+  }
 
   void TearDown() override { [[UpgradeCenter sharedInstance] resetForTests]; }
 };
@@ -59,7 +59,7 @@ TEST_F(UpgradeCenterTest, NoUpgrade) {
   [[UpgradeCenter sharedInstance] registerClient:fake withDispatcher:nil];
   EXPECT_EQ(count_, 0u);
   [[UpgradeCenter sharedInstance] unregisterClient:fake];
-};
+}
 
 TEST_F(UpgradeCenterTest, GoodUpgradeAfterRegistration) {
   EXPECT_EQ(count_, 0u);
@@ -74,7 +74,7 @@ TEST_F(UpgradeCenterTest, GoodUpgradeAfterRegistration) {
   [[UpgradeCenter sharedInstance] upgradeNotificationDidOccur:details];
   EXPECT_EQ(count_, 1u);
   [[UpgradeCenter sharedInstance] unregisterClient:fake];
-};
+}
 
 TEST_F(UpgradeCenterTest, GoodUpgradeBeforeRegistration) {
   UpgradeRecommendedDetails details;
@@ -87,7 +87,7 @@ TEST_F(UpgradeCenterTest, GoodUpgradeBeforeRegistration) {
   [[UpgradeCenter sharedInstance] registerClient:fake withDispatcher:nil];
   EXPECT_EQ(count_, 1u);
   [[UpgradeCenter sharedInstance] unregisterClient:fake];
-};
+}
 
 TEST_F(UpgradeCenterTest, NoRepeatedDisplay) {
   FakeUpgradeCenterClient* fake =
@@ -112,7 +112,7 @@ TEST_F(UpgradeCenterTest, NoRepeatedDisplay) {
   EXPECT_EQ(count_, 2u);
 
   [[UpgradeCenter sharedInstance] unregisterClient:fake];
-};
+}
 
 TEST_F(UpgradeCenterTest, NewVersionResetsInterval) {
   FakeUpgradeCenterClient* fake =
@@ -137,6 +137,6 @@ TEST_F(UpgradeCenterTest, NewVersionResetsInterval) {
   EXPECT_EQ(count_, 2u);
 
   [[UpgradeCenter sharedInstance] unregisterClient:fake];
-};
+}
 
 }  // namespace

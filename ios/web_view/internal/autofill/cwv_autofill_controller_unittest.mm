@@ -79,7 +79,7 @@ class CWVAutofillControllerTest : public PlatformTest {
                                     JSSuggestionManager:js_suggestion_manager_];
     test_form_activity_tab_helper_ =
         std::make_unique<autofill::TestFormActivityTabHelper>(&web_state_);
-  };
+  }
 
   web::WebClient web_client_;
   web::TestWebThreadBundle web_thread_bundle_;

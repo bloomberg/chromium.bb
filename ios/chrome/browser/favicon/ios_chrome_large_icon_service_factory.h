@@ -15,7 +15,7 @@ class KeyedService;
 
 namespace favicon {
 class LargeIconService;
-};
+}
 
 namespace ios {
 class ChromeBrowserState;

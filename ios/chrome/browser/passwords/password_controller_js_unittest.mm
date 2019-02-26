@@ -162,7 +162,7 @@ TEST_F(PasswordControllerJsTest,
           base_url.c_str()];
   EXPECT_NSEQ(result, ExecuteJavaScriptWithFormat(
                           @"__gCrWeb.passwords.findPasswordForms()"));
-};
+}
 
 // Check that multiple password forms are identified and serialized correctly.
 TEST_F(PasswordControllerJsTest,
@@ -217,7 +217,7 @@ TEST_F(PasswordControllerJsTest,
 
   EXPECT_NSEQ(result, ExecuteJavaScriptWithFormat(
                           @"__gCrWeb.passwords.findPasswordForms()"));
-};
+}
 
 // Test serializing of password forms.
 TEST_F(PasswordControllerJsTest, GetPasswordFormData) {
@@ -256,7 +256,7 @@ TEST_F(PasswordControllerJsTest, GetPasswordFormData) {
       ExecuteJavaScriptWithFormat(
           @"__gCrWeb.stringify(__gCrWeb.passwords.getPasswordFormData(%@))",
           parameter));
-};
+}
 
 // Check that if a form action is not set then the action is parsed to the
 // current url.
@@ -290,7 +290,7 @@ TEST_F(PasswordControllerJsTest, FormActionIsNotSet) {
           base_url.c_str(), base_url.c_str()];
   EXPECT_NSEQ(result, ExecuteJavaScriptWithFormat(
                           @"__gCrWeb.passwords.findPasswordForms()"));
-};
+}
 
 // Checks that a touchend event from a button which contains in a password form
 // works as a submission indicator for this password form.
@@ -354,7 +354,7 @@ TEST_F(PasswordControllerJsTest, TouchendAsSubmissionIndicator) {
   EXPECT_NSEQ(
       expected_command,
       ExecuteJavaScriptWithFormat(@"__gCrWeb.stringify(invokeOnHostArgument)"));
-};
+}
 
 // Check that a form is filled if url of a page and url in form fill data are
 // different only in pathes.
