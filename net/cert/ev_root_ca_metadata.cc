@@ -43,7 +43,7 @@ struct EVMetadata {
   SHA256HashValue fingerprint;
 
   // The EV policy OIDs of the root CA.
-  base::StringPiece policy_oids[kMaxOIDsPerCA];
+  const base::StringPiece policy_oids[kMaxOIDsPerCA];
 };
 
 // These certificates may be found in net/data/ssl/ev_roots.
