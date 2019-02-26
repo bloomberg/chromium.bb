@@ -39,7 +39,6 @@
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/layout/jank_tracker.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/loader/interactive_detector.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/core/page/autoscroll_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -120,14 +119,6 @@ WebInputEventResult PageWidgetDelegate::HandleInputEvent(
   if (root) {
     Document* document = root->GetDocument();
     DCHECK(document);
-
-    InteractiveDetector* interactive_detector(
-        InteractiveDetector::From(*document));
-
-    // interactive_detector is null in the OOPIF case.
-    // TODO(crbug.com/808089): report across OOPIFs.
-    if (interactive_detector)
-      interactive_detector->HandleForInputDelay(event);
 
     if (origin_trials::JankTrackingEnabled(document)) {
       if (LocalFrameView* view = document->View())
