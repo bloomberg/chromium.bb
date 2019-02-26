@@ -367,26 +367,35 @@ void TestRenderFrameHost::DidEnforceInsecureRequestPolicy(
 
 void TestRenderFrameHost::PrepareForCommit() {
   PrepareForCommitInternal(GURL(), net::IPEndPoint(),
-                           /* is_signed_exchange_inner_response=*/false);
+                           /* is_signed_exchange_inner_response=*/false,
+                           net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN,
+                           base::nullopt);
 }
 
 void TestRenderFrameHost::PrepareForCommitDeprecatedForNavigationSimulator(
     const net::IPEndPoint& remote_endpoint,
-    bool is_signed_exchange_inner_response) {
+    bool is_signed_exchange_inner_response,
+    net::HttpResponseInfo::ConnectionInfo connection_info,
+    base::Optional<net::SSLInfo> ssl_info) {
   PrepareForCommitInternal(GURL(), remote_endpoint,
-                           is_signed_exchange_inner_response);
+                           is_signed_exchange_inner_response, connection_info,
+                           ssl_info);
 }
 
 void TestRenderFrameHost::PrepareForCommitWithServerRedirect(
     const GURL& redirect_url) {
   PrepareForCommitInternal(redirect_url, net::IPEndPoint(),
-                           /* is_signed_exchange_inner_response=*/false);
+                           /* is_signed_exchange_inner_response=*/false,
+                           net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN,
+                           base::nullopt);
 }
 
 void TestRenderFrameHost::PrepareForCommitInternal(
     const GURL& redirect_url,
     const net::IPEndPoint& remote_endpoint,
-    bool is_signed_exchange_inner_response) {
+    bool is_signed_exchange_inner_response,
+    net::HttpResponseInfo::ConnectionInfo connection_info,
+    base::Optional<net::SSLInfo> ssl_info) {
   NavigationRequest* request = frame_tree_node_->navigation_request();
   CHECK(request);
   bool have_to_make_network_request =
@@ -427,6 +436,8 @@ void TestRenderFrameHost::PrepareForCommitInternal(
   response->head.remote_endpoint = remote_endpoint;
   response->head.is_signed_exchange_inner_response =
       is_signed_exchange_inner_response;
+  response->head.connection_info = connection_info;
+  response->head.ssl_info = ssl_info;
   // TODO(carlosk): Ideally, it should be possible someday to
   // fully commit the navigation at this call to CallOnResponseStarted.
   url_loader->CallOnResponseStarted(response, nullptr);

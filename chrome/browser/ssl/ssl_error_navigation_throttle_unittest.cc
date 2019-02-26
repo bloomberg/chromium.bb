@@ -130,7 +130,7 @@ TEST_P(SSLErrorNavigationThrottleTest, NoSSLInfo) {
   content::NavigationThrottle::ThrottleCheckResult result =
       throttle_->WillFailRequest();
 
-  EXPECT_FALSE(handle_->GetSSLInfo().is_valid());
+  EXPECT_FALSE(handle_->GetSSLInfo().has_value());
   EXPECT_EQ(content::NavigationThrottle::PROCEED, result);
 }
 
@@ -146,7 +146,7 @@ TEST_P(SSLErrorNavigationThrottleTest, SSLInfoWithoutCertError) {
   content::NavigationThrottle::ThrottleCheckResult result =
       throttle_->WillFailRequest();
 
-  EXPECT_EQ(net::CERT_STATUS_IS_EV, handle_->GetSSLInfo().cert_status);
+  EXPECT_EQ(net::CERT_STATUS_IS_EV, handle_->GetSSLInfo()->cert_status);
   EXPECT_EQ(content::NavigationThrottle::PROCEED, result);
 }
 

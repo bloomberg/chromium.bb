@@ -53,7 +53,12 @@ void TestNavigationURLLoader::SimulateServerRedirect(const GURL& redirect_url) {
 }
 
 void TestNavigationURLLoader::SimulateError(int error_code) {
-  delegate_->OnRequestFailed(network::URLLoaderCompletionStatus(error_code));
+  SimulateErrorWithStatus(network::URLLoaderCompletionStatus(error_code));
+}
+
+void TestNavigationURLLoader::SimulateErrorWithStatus(
+    const network::URLLoaderCompletionStatus& status) {
+  delegate_->OnRequestFailed(status);
 }
 
 void TestNavigationURLLoader::CallOnRequestRedirected(

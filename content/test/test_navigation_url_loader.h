@@ -45,6 +45,8 @@ class TestNavigationURLLoader
   void SimulateServerRedirect(const GURL& redirect_url);
 
   void SimulateError(int error_code);
+  void SimulateErrorWithStatus(
+      const network::URLLoaderCompletionStatus& status);
 
   void CallOnRequestRedirected(
       const net::RedirectInfo& redirect_info,

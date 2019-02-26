@@ -5796,7 +5796,7 @@ RenderFrameHostImpl::TakeNavigationRequestForSameDocumentCommit(
   }
 
   return NavigationRequest::CreateForCommit(
-      frame_tree_node_, pending_entry, params, is_renderer_initiated,
+      frame_tree_node_, this, pending_entry, params, is_renderer_initiated,
       true /* was_within_same_document */);
 }
 
@@ -5871,7 +5871,7 @@ RenderFrameHostImpl::TakeNavigationRequestForCommit(
   // pending_nav_entry_id. If the previous handle was a prematurely aborted
   // navigation loaded via LoadDataWithBaseURL, propagate the entry id.
   return NavigationRequest::CreateForCommit(
-      frame_tree_node_, entry_for_request, params,
+      frame_tree_node_, this, entry_for_request, params,
       is_renderer_initiated /* is_renderer_initiated */,
       false /* is_same_document */);
 }

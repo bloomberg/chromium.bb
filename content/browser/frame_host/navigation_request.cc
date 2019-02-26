@@ -418,6 +418,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
 // static
 std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
     FrameTreeNode* frame_tree_node,
+    RenderFrameHostImpl* render_frame_host,
     NavigationEntryImpl* entry,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
     bool is_renderer_initiated,
@@ -460,6 +461,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
   // Update the state of the NavigationRequest to match the fact that the
   // navigation just committed.
   navigation_request->state_ = RESPONSE_STARTED;
+  navigation_request->render_frame_host_ = render_frame_host;
   navigation_request->CreateNavigationHandle(true);
   DCHECK(navigation_request->navigation_handle());
   return navigation_request;
@@ -729,13 +731,13 @@ void NavigationRequest::BeginNavigation() {
   state_ = RESPONSE_STARTED;
 
   // Select an appropriate RenderFrameHost.
-  RenderFrameHostImpl* render_frame_host =
+  render_frame_host_ =
       frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
-  NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(render_frame_host,
+  NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(render_frame_host_,
                                                            common_params_.url);
 
   // Inform the NavigationHandle that the navigation will commit.
-  navigation_handle_->ReadyToCommitNavigation(render_frame_host, false);
+  navigation_handle_->ReadyToCommitNavigation(false);
 
   CommitNavigation();
 }
@@ -837,8 +839,8 @@ void NavigationRequest::RegisterSubresourceOverride(
 mojom::NavigationClient* NavigationRequest::GetCommitNavigationClient() {
   if (commit_navigation_client_ && commit_navigation_client_.is_bound())
     return commit_navigation_client_.get();
-  commit_navigation_client_ = navigation_handle_->GetRenderFrameHost()
-                                  ->GetNavigationClientFromInterfaceProvider();
+  commit_navigation_client_ =
+      render_frame_host_->GetNavigationClientFromInterfaceProvider();
   return commit_navigation_client_.get();
 }
 
@@ -849,6 +851,8 @@ void NavigationRequest::SetOriginPolicy(const std::string& policy) {
 void NavigationRequest::OnRequestRedirected(
     const net::RedirectInfo& redirect_info,
     const scoped_refptr<network::ResourceResponse>& response) {
+  response_ = response;
+  ssl_info_ = response->head.ssl_info;
 #if defined(OS_ANDROID)
   base::WeakPtr<NavigationRequest> this_ptr(weak_factory_.GetWeakPtr());
 
@@ -879,8 +883,7 @@ void NavigationRequest::OnRequestRedirected(
     // AwWebContents sees the new URL and thus passes that URL to onPageFinished
     // (rather than passing the old URL).
     navigation_handle_->UpdateStateFollowingRedirect(
-        GURL(redirect_info.new_referrer), response->head.headers,
-        response->head.connection_info,
+        GURL(redirect_info.new_referrer),
         base::Bind(&NavigationRequest::OnRedirectChecksComplete,
                    base::Unretained(this)));
     frame_tree_node_->ResetNavigationRequest(false, true);
@@ -1008,8 +1011,7 @@ void NavigationRequest::OnRequestRedirected(
   // It's safe to use base::Unretained because this NavigationRequest owns the
   // NavigationHandle where the callback will be stored.
   navigation_handle_->WillRedirectRequest(
-      common_params_.referrer.url, response->head.headers,
-      response->head.connection_info, expected_process,
+      common_params_.referrer.url, expected_process,
       base::Bind(&NavigationRequest::OnRedirectChecksComplete,
                  base::Unretained(this)));
 }
@@ -1024,6 +1026,8 @@ void NavigationRequest::OnResponseStarted(
     bool is_stream,
     base::Optional<SubresourceLoaderParams> subresource_loader_params) {
   is_download_ = is_download && IsNavigationDownloadAllowed(download_policy);
+  is_stream_ = is_stream;
+  request_id_ = request_id;
 
   // Log UseCounters for opener navigations.
   if (is_download &&
@@ -1127,17 +1131,18 @@ void NavigationRequest::OnResponseStarted(
   }
 
   // Select an appropriate renderer to commit the navigation.
-  RenderFrameHostImpl* render_frame_host = nullptr;
   if (response_should_be_rendered_) {
-    render_frame_host =
+    render_frame_host_ =
         frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
     NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(
-        render_frame_host, common_params_.url);
+        render_frame_host_, common_params_.url);
+  } else {
+    render_frame_host_ = nullptr;
   }
-  DCHECK(render_frame_host || !response_should_be_rendered_);
+  DCHECK(render_frame_host_ || !response_should_be_rendered_);
 
-  if (!browser_initiated_ && render_frame_host &&
-      render_frame_host != frame_tree_node_->current_frame_host()) {
+  if (!browser_initiated_ && render_frame_host_ &&
+      render_frame_host_ != frame_tree_node_->current_frame_host()) {
     // Reset the source location information if the navigation will not commit
     // in the current renderer process. This information originated in another
     // process (the current one), it should not be transferred to the new one.
@@ -1169,8 +1174,7 @@ void NavigationRequest::OnResponseStarted(
   // processed.
   response_ = response;
   url_loader_client_endpoints_ = std::move(url_loader_client_endpoints);
-  ssl_info_ = response->head.ssl_info.has_value() ? *response->head.ssl_info
-                                                  : net::SSLInfo();
+  ssl_info_ = response->head.ssl_info;
 
   subresource_loader_params_ = std::move(subresource_loader_params);
 
@@ -1187,15 +1191,15 @@ void NavigationRequest::OnResponseStarted(
   // navigation, and in the meantime another navigation reads the incorrect
   // IsUnused() value from the same process when making a process reuse
   // decision.
-  if (render_frame_host &&
+  if (render_frame_host_ &&
       SiteInstanceImpl::ShouldAssignSiteForURL(common_params_.url)) {
-    render_frame_host->GetProcess()->SetIsUsed();
+    render_frame_host_->GetProcess()->SetIsUsed();
 
     // For sites that require a dedicated process, set the site URL now if it
     // hasn't been set already. This will lock the process to that site, which
     // will prevent other sites from incorrectly reusing this process. See
     // https://crbug.com/738634.
-    SiteInstanceImpl* instance = render_frame_host->GetSiteInstance();
+    SiteInstanceImpl* instance = render_frame_host_->GetSiteInstance();
     if (!instance->HasSite() &&
         SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
             instance->GetBrowserContext(), instance->GetIsolationContext(),
@@ -1241,11 +1245,6 @@ void NavigationRequest::OnResponseStarted(
 
   // Check if the navigation should be allowed to proceed.
   navigation_handle_->WillProcessResponse(
-      render_frame_host, response->head.headers.get(),
-      response->head.connection_info, response->head.remote_endpoint, ssl_info_,
-      request_id, is_download_, is_stream,
-      response->head.is_signed_exchange_inner_response,
-      response->head.was_fetched_via_cache,
       base::Bind(&NavigationRequest::OnWillProcessResponseChecksComplete,
                  base::Unretained(this)));
 }
@@ -1269,6 +1268,8 @@ void NavigationRequest::OnRequestFailedInternal(
   DCHECK(!(status.error_code == net::ERR_ABORTED &&
            error_page_content.has_value()));
   common_params_.previews_state = content::PREVIEWS_OFF;
+  if (status.ssl_info.has_value())
+    ssl_info_ = status.ssl_info;
 
   devtools_instrumentation::OnNavigationRequestFailed(*this, status);
 
@@ -1324,9 +1325,15 @@ void NavigationRequest::OnRequestFailedInternal(
     }
   }
 
-  DCHECK(render_frame_host);
+  // Sanity check that we haven't changed the RenderFrameHost picked for the
+  // error page in OnRequestFailedInternal when running the WillFailRequest
+  // checks.
+  CHECK(!render_frame_host_ || render_frame_host_ == render_frame_host);
+  render_frame_host_ = render_frame_host;
 
-  NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(render_frame_host,
+  DCHECK(render_frame_host_);
+
+  NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(render_frame_host_,
                                                            common_params_.url);
 
   has_stale_copy_in_cache_ = status.exists_in_cache;
@@ -1335,13 +1342,11 @@ void NavigationRequest::OnRequestFailedInternal(
   if (skip_throttles) {
     // The NavigationHandle shouldn't be notified about renderer-debug URLs.
     // They will be handled by the renderer process.
-    CommitErrorPage(render_frame_host, error_page_content);
+    CommitErrorPage(error_page_content);
   } else {
     // Check if the navigation should be allowed to proceed.
-    navigation_handle_->WillFailRequest(
-        render_frame_host, status.ssl_info,
-        base::Bind(&NavigationRequest::OnFailureChecksComplete,
-                   base::Unretained(this), render_frame_host));
+    navigation_handle_->WillFailRequest(base::BindOnce(
+        &NavigationRequest::OnFailureChecksComplete, base::Unretained(this)));
   }
 }
 
@@ -1610,7 +1615,6 @@ void NavigationRequest::OnRedirectChecksComplete(
 }
 
 void NavigationRequest::OnFailureChecksComplete(
-    RenderFrameHostImpl* render_frame_host,
     NavigationThrottle::ThrottleCheckResult result) {
   DCHECK(result.action() != NavigationThrottle::DEFER);
 
@@ -1636,12 +1640,7 @@ void NavigationRequest::OnFailureChecksComplete(
         << net_error_ << " to " << result.net_error_code();
   }
 
-  // Sanity check that we haven't changed the RenderFrameHost picked for the
-  // error page in OnRequestFailedInternal when running the WillFailRequest
-  // checks.
-  CHECK_EQ(navigation_handle_->GetRenderFrameHost(), render_frame_host);
-
-  CommitErrorPage(render_frame_host, result.error_page_content());
+  CommitErrorPage(result.error_page_content());
   // DO NOT ADD CODE after this. The previous call to CommitErrorPage caused
   // the destruction of the NavigationRequest.
 }
@@ -1683,7 +1682,8 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
       download_manager->InterceptNavigation(
           std::move(resource_request), navigation_handle_->GetRedirectChain(),
           response_, std::move(url_loader_client_endpoints_),
-          ssl_info_.cert_status, frame_tree_node_->frame_tree_node_id());
+          ssl_info_.has_value() ? ssl_info_->cert_status : 0,
+          frame_tree_node_->frame_tree_node_id());
 
       OnRequestFailedInternal(
           network::URLLoaderCompletionStatus(net::ERR_ABORTED),
@@ -1717,6 +1717,10 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
   if (result.action() == NavigationThrottle::CANCEL_AND_IGNORE ||
       result.action() == NavigationThrottle::CANCEL ||
       !response_should_be_rendered_) {
+    // Reset the RenderFrameHost that had been computed for the commit of the
+    // navigation.
+    render_frame_host_ = nullptr;
+
     // TODO(clamy): distinguish between CANCEL and CANCEL_AND_IGNORE.
     if (!response_should_be_rendered_) {
       // DO NOT ADD CODE after this. The previous call to OnRequestFailed has
@@ -1742,6 +1746,9 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
 
   if (result.action() == NavigationThrottle::BLOCK_RESPONSE) {
     DCHECK_EQ(net::ERR_BLOCKED_BY_RESPONSE, result.net_error_code());
+    // Reset the RenderFrameHost that had been computed for the commit of the
+    // navigation.
+    render_frame_host_ = nullptr;
     OnRequestFailedInternal(
         network::URLLoaderCompletionStatus(result.net_error_code()),
         true /* skip_throttles */, result.error_page_content(),
@@ -1758,10 +1765,9 @@ void NavigationRequest::OnWillProcessResponseChecksComplete(
 }
 
 void NavigationRequest::CommitErrorPage(
-    RenderFrameHostImpl* render_frame_host,
     const base::Optional<std::string>& error_page_content) {
   UpdateCommitNavigationParamsHistory();
-  frame_tree_node_->TransferNavigationRequestOwnership(render_frame_host);
+  frame_tree_node_->TransferNavigationRequestOwnership(render_frame_host_);
   // Error pages commit in an opaque origin in the renderer process. If this
   // NavigationRequest resulted in committing an error page, just clear the
   // |origin_to_commit| and let the renderer process calculate the origin.
@@ -1772,7 +1778,7 @@ void NavigationRequest::CommitErrorPage(
   if (IsPerNavigationMojoInterfaceEnabled() && request_navigation_client_ &&
       request_navigation_client_.is_bound()) {
     if (associated_site_instance_id_ ==
-        render_frame_host->GetSiteInstance()->GetId()) {
+        render_frame_host_->GetSiteInstance()->GetId()) {
       // Reuse the request NavigationClient for commit.
       commit_navigation_client_ = std::move(request_navigation_client_);
     } else {
@@ -1783,10 +1789,10 @@ void NavigationRequest::CommitErrorPage(
     associated_site_instance_id_.reset();
   }
 
-  navigation_handle_->ReadyToCommitNavigation(render_frame_host, true);
-  render_frame_host->FailedNavigation(this, common_params_, commit_params_,
-                                      has_stale_copy_in_cache_, net_error_,
-                                      error_page_content);
+  navigation_handle_->ReadyToCommitNavigation(true);
+  render_frame_host_->FailedNavigation(this, common_params_, commit_params_,
+                                       has_stale_copy_in_cache_, net_error_,
+                                       error_page_content);
 }
 
 void NavigationRequest::CommitNavigation() {
@@ -1795,12 +1801,9 @@ void NavigationRequest::CommitNavigation() {
          navigation_handle_->IsSameDocument());
   DCHECK(!common_params_.url.SchemeIs(url::kJavaScriptScheme));
 
-  // Retrieve the RenderFrameHost that needs to commit the navigation.
-  RenderFrameHostImpl* render_frame_host =
-      navigation_handle_->GetRenderFrameHost();
-  DCHECK(render_frame_host ==
+  DCHECK(render_frame_host_ ==
              frame_tree_node_->render_manager()->current_frame_host() ||
-         render_frame_host ==
+         render_frame_host_ ==
              frame_tree_node_->render_manager()->speculative_frame_host());
 
   // TODO(https://crbug.com/880741): Remove this once the bug is fixed.
@@ -1809,11 +1812,11 @@ void NavigationRequest::CommitNavigation() {
     base::debug::DumpWithoutCrashing();
   }
 
-  frame_tree_node_->TransferNavigationRequestOwnership(render_frame_host);
+  frame_tree_node_->TransferNavigationRequestOwnership(render_frame_host_);
   if (IsPerNavigationMojoInterfaceEnabled() && request_navigation_client_ &&
       request_navigation_client_.is_bound()) {
     if (associated_site_instance_id_ ==
-        render_frame_host->GetSiteInstance()->GetId()) {
+        render_frame_host_->GetSiteInstance()->GetId()) {
       // Reuse the request NavigationClient for commit.
       commit_navigation_client_ = std::move(request_navigation_client_);
     } else {
@@ -1823,7 +1826,7 @@ void NavigationRequest::CommitNavigation() {
     }
     associated_site_instance_id_.reset();
   }
-  render_frame_host->CommitNavigation(
+  render_frame_host_->CommitNavigation(
       this, response_.get(), std::move(url_loader_client_endpoints_),
       common_params_, commit_params_, is_view_source_,
       std::move(subresource_loader_params_), std::move(subresource_overrides_),
@@ -1833,7 +1836,7 @@ void NavigationRequest::CommitNavigation() {
   // BrowserContext.  This is mostly needed to make sure the spare is warmed-up
   // if it wasn't done in RenderProcessHostImpl::GetProcessHostForSiteInstance.
   RenderProcessHostImpl::NotifySpareManagerAboutRecentlyUsedBrowserContext(
-      render_frame_host->GetSiteInstance()->GetBrowserContext());
+      render_frame_host_->GetSiteInstance()->GetBrowserContext());
 }
 
 bool NavigationRequest::IsAllowedByCSPDirective(
@@ -2027,7 +2030,7 @@ void NavigationRequest::UpdateCommitNavigationParamsHistory() {
 
 void NavigationRequest::OnRendererAbortedNavigation() {
   if (navigation_handle_->IsWaitingToCommit()) {
-    navigation_handle_->GetRenderFrameHost()->NavigationRequestCancelled(this);
+    render_frame_host_->NavigationRequestCancelled(this);
   } else {
     frame_tree_node_->navigator()->CancelNavigation(frame_tree_node_, false);
   }

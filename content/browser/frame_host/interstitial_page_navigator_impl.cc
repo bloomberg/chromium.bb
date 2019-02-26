@@ -38,8 +38,7 @@ void InterstitialPageNavigatorImpl::DidNavigate(
     return;
 
   navigation_request->navigation_handle()->DidCommitNavigation(
-      input_params, true, false, GURL(), NAVIGATION_TYPE_NEW_PAGE,
-      render_frame_host);
+      input_params, true, false, GURL(), NAVIGATION_TYPE_NEW_PAGE);
   navigation_request.reset();
 
   // TODO(nasko): Move implementation here, but for the time being call out

@@ -468,10 +468,12 @@ void NavigationSimulatorImpl::Redirect(const GURL& new_url) {
   redirect_info.new_referrer = referrer_.url.spec();
   redirect_info.new_referrer_policy =
       Referrer::ReferrerPolicyForUrlRequest(referrer_.policy);
+  scoped_refptr<network::ResourceResponse> response(
+      new network::ResourceResponse);
+  response->head.connection_info = http_connection_info_;
+  response->head.ssl_info = ssl_info_;
 
-  url_loader->CallOnRequestRedirected(
-      redirect_info,
-      scoped_refptr<network::ResourceResponse>(new network::ResourceResponse));
+  url_loader->CallOnRequestRedirected(redirect_info, response);
 
   MaybeWaitForThrottleChecksComplete(base::BindOnce(
       &NavigationSimulatorImpl::RedirectComplete, weak_factory_.GetWeakPtr(),
@@ -511,7 +513,8 @@ void NavigationSimulatorImpl::ReadyToCommit() {
   if (frame_tree_node_->navigation_request()) {
     static_cast<TestRenderFrameHost*>(frame_tree_node_->current_frame_host())
         ->PrepareForCommitDeprecatedForNavigationSimulator(
-            remote_endpoint_, is_signed_exchange_inner_response_);
+            remote_endpoint_, is_signed_exchange_inner_response_,
+            http_connection_info_, ssl_info_);
   }
 
   // Synchronous failure can cause the navigation to finish here.
@@ -654,7 +657,9 @@ void NavigationSimulatorImpl::FailWithResponseHeaders(
   TestNavigationURLLoader* url_loader =
       static_cast<TestNavigationURLLoader*>(request_->loader_for_testing());
   CHECK(url_loader);
-  url_loader->SimulateError(error_code);
+  network::URLLoaderCompletionStatus status(error_code);
+  status.ssl_info = ssl_info_;
+  url_loader->SimulateErrorWithStatus(status);
 
   auto complete_closure =
       base::BindOnce(&NavigationSimulatorImpl::FailComplete,
@@ -682,7 +687,11 @@ void NavigationSimulatorImpl::FailComplete(int error_code) {
   }
 
   if (should_result_in_error_page) {
-    CHECK_EQ(1, num_ready_to_commit_called_);
+    // TODO(clamy): Check that ReadyToCommit has been called once, once the test
+    // architecture of NavigationRequest vs NavigationHandle has been clarified.
+    // Currently, when auto-advance is off, this function will be called before
+    // NavigationRequest::CommitErrorPage which is the one that triggers the
+    // call to observers.
     CHECK_EQ(0, num_did_finish_navigation_called_);
     // Update the RenderFrameHost now that we know which RenderFrameHost will
     // commit the error page.
@@ -855,8 +864,8 @@ NavigationSimulatorImpl::GetLastThrottleCheckResult() {
   return last_throttle_check_result_.value();
 }
 
-NavigationHandle* NavigationSimulatorImpl::GetNavigationHandle() const {
-  CHECK_EQ(STARTED, state_);
+NavigationHandleImpl* NavigationSimulatorImpl::GetNavigationHandle() const {
+  CHECK_GE(state_, STARTED);
   return request_->navigation_handle();
 }
 

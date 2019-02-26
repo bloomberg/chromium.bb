@@ -119,6 +119,7 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // renderer-initiated navigations.
   static std::unique_ptr<NavigationRequest> CreateForCommit(
       FrameTreeNode* frame_tree_node,
+      RenderFrameHostImpl* render_frame_host,
       NavigationEntryImpl* entry,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
       bool is_renderer_initiated,
@@ -185,6 +186,16 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   const std::string& GetMimeType() {
     return response_ ? response_->head.mime_type : base::EmptyString();
   }
+
+  // The RenderFrameHost that will commit the navigation or an error page.
+  // This is computed when the response is received, or when the navigation
+  // fails and error page should be displayed.
+  RenderFrameHostImpl* render_frame_host() const { return render_frame_host_; }
+
+  const network::ResourceResponse* response() { return response_.get(); }
+  const GlobalRequestID& request_id() const { return request_id_; }
+  bool is_download() const { return is_download_; }
+  const base::Optional<net::SSLInfo>& ssl_info() { return ssl_info_; }
 
   void SetWaitingForRendererResponse();
 
@@ -292,16 +303,14 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // NavigationHandle.
   void OnStartChecksComplete(NavigationThrottle::ThrottleCheckResult result);
   void OnRedirectChecksComplete(NavigationThrottle::ThrottleCheckResult result);
-  void OnFailureChecksComplete(RenderFrameHostImpl* render_frame_host,
-                               NavigationThrottle::ThrottleCheckResult result);
+  void OnFailureChecksComplete(NavigationThrottle::ThrottleCheckResult result);
   void OnWillProcessResponseChecksComplete(
       NavigationThrottle::ThrottleCheckResult result);
 
   // Called either by OnFailureChecksComplete() or OnRequestFailed() directly.
   // |error_page_content| contains the content of the error page (i.e. flattened
   // HTML, JS, CSS).
-  void CommitErrorPage(RenderFrameHostImpl* render_frame_host,
-                       const base::Optional<std::string>& error_page_content);
+  void CommitErrorPage(const base::Optional<std::string>& error_page_content);
 
   // Have a RenderFrameHost commit the navigation. The NavigationRequest will
   // be destroyed after this call.
@@ -385,6 +394,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
 
   FrameTreeNode* frame_tree_node_;
 
+  RenderFrameHostImpl* render_frame_host_ = nullptr;
+
   // Initialized on creation of the NavigationRequest. Sent to the renderer when
   // the navigation is ready to commit.
   // Note: When the navigation is ready to commit, the url in |common_params|
@@ -451,8 +462,10 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // completed, these objects will be used to continue the navigation.
   scoped_refptr<network::ResourceResponse> response_;
   network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints_;
-  net::SSLInfo ssl_info_;
-  bool is_download_;
+  base::Optional<net::SSLInfo> ssl_info_;
+  bool is_download_ = false;
+  bool is_stream_ = false;
+  GlobalRequestID request_id_;
 
   // Holds information for the navigation while the WillFailRequest
   // checks are performed by the NavigationHandle.
