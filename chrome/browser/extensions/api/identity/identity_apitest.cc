@@ -31,6 +31,7 @@
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_test_util.h"
@@ -2420,8 +2421,14 @@ IN_PROC_BROWSER_TEST_F(OnSignInChangedEventTest, FireOnPrimaryAccountSignIn) {
 }
 
 #if !defined(OS_CHROMEOS)
-// Test that an event is fired when the primary account signs out.
+// Test that an event is fired when the primary account signs out. Only
+// applicable in non-DICE mode, as when DICE is enabled clearing the primary
+// account does not result in its refresh token being removed and hence does
+// not trigger an event to fire.
 IN_PROC_BROWSER_TEST_F(OnSignInChangedEventTest, FireOnPrimaryAccountSignOut) {
+  if (AccountConsistencyModeManager::IsDiceEnabledForProfile(profile()))
+    return;
+
   api::identity::AccountInfo account_info;
   account_info.id = "gaia_id_for_primary_example.com";
   AddExpectedEvent(api::identity::OnSignInChanged::Create(account_info, true));
