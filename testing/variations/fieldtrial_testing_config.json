@@ -4909,10 +4909,10 @@
             ],
             "experiments": [
                 {
-                    "name": "MaxDelayable_v1_3g_15_Weight3",
+                    "name": "MaxDelayable_3g_8_Weight3_20190215",
                     "params": {
                         "EffectiveConnectionType1": "3G",
-                        "MaxDelayableRequests1": "15",
+                        "MaxDelayableRequests1": "8",
                         "NonDelayableWeight1": "3.0"
                     },
                     "enable_features": [
