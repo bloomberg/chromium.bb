@@ -66,7 +66,9 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChromePhone;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChromeTablet;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeController;
 import org.chromium.chrome.browser.compositor.layouts.phone.StackLayout;
 import org.chromium.chrome.browser.contextual_suggestions.PageViewTimer;
 import org.chromium.chrome.browser.cookies.CookiesFetcher;
@@ -137,6 +139,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabWindowManager;
 import org.chromium.chrome.browser.tasks.TasksUma;
+import org.chromium.chrome.browser.tasks.tab_list_ui.GridTabSwitcherCoordinator;
 import org.chromium.chrome.browser.toolbar.ToolbarButtonInProductHelpController;
 import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
 import org.chromium.chrome.browser.usage_stats.UsageStatsService;
@@ -165,6 +168,7 @@ import org.chromium.ui.widget.Toast;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -320,6 +324,85 @@ public class ChromeTabbedActivity
             getTabModelSelector().getModel(true).closeAllTabs(false, false);
         }
     };
+
+    private GridTabSwitcherCoordinator mGridTabSwitcherCoordinator;
+
+    private final OverviewModeControllerContainer mOverviewModeController =
+            new OverviewModeControllerContainer();
+
+    private static class OverviewModeControllerContainer
+            implements OverviewModeObserver, OverviewModeController {
+        private OverviewModeController mInternalOverviewModeController;
+        private List<OverviewModeObserver> mOverviewModeObserverList = new ArrayList<>();
+
+        @Override
+        public boolean overviewVisible() {
+            return mInternalOverviewModeController != null
+                    && mInternalOverviewModeController.overviewVisible();
+        }
+
+        @Override
+        public void addOverviewModeObserver(OverviewModeObserver listener) {
+            mOverviewModeObserverList.add(listener);
+        }
+
+        @Override
+        public void removeOverviewModeObserver(OverviewModeObserver listener) {
+            mOverviewModeObserverList.remove(listener);
+        }
+
+        @Override
+        public void hideOverview(boolean animate) {
+            if (mInternalOverviewModeController != null)
+                mInternalOverviewModeController.hideOverview(animate);
+        }
+
+        @Override
+        public void showOverview(boolean animate) {
+            if (mInternalOverviewModeController != null)
+                mInternalOverviewModeController.showOverview(animate);
+        }
+
+        @Override
+        public void onOverviewModeStartedShowing(boolean showToolbar) {
+            for (OverviewModeObserver observer : mOverviewModeObserverList) {
+                observer.onOverviewModeStartedShowing(showToolbar);
+            }
+        }
+
+        @Override
+        public void onOverviewModeFinishedShowing() {
+            for (OverviewModeObserver observer : mOverviewModeObserverList) {
+                observer.onOverviewModeFinishedShowing();
+            }
+        }
+
+        @Override
+        public void onOverviewModeStartedHiding(boolean showToolbar, boolean delayAnimation) {
+            for (OverviewModeObserver observer : mOverviewModeObserverList) {
+                observer.onOverviewModeStartedHiding(showToolbar, delayAnimation);
+            }
+        }
+
+        @Override
+        public void onOverviewModeFinishedHiding() {
+            for (OverviewModeObserver observer : mOverviewModeObserverList) {
+                observer.onOverviewModeFinishedHiding();
+            }
+        }
+
+        /**
+         * Provide a new internal implementation to use for {@link OverviewModeController}.
+         * @param newOverviewModeController The new internal implementation to use.
+         */
+        void overrideOverviewModeController(OverviewModeController newOverviewModeController) {
+            if (mInternalOverviewModeController != null) {
+                mInternalOverviewModeController.removeOverviewModeObserver(this);
+            }
+            mInternalOverviewModeController = newOverviewModeController;
+            mInternalOverviewModeController.addOverviewModeObserver(this);
+        }
+    }
 
     private class TabbedAssistStatusHandler extends AssistStatusHandler {
         public TabbedAssistStatusHandler(Activity activity) {
@@ -648,7 +731,11 @@ public class ChromeTabbedActivity
             }
 
             if (FeatureUtilities.isGridTabSwitcherEnabled(this)) {
-                getComponent().resolveGridTabSwitcherCoordinator();
+                mGridTabSwitcherCoordinator = new GridTabSwitcherCoordinator(this,
+                        getLifecycleDispatcher(), getToolbarManager(), getTabModelSelector(),
+                        getTabContentManager(), getCompositorViewHolder());
+                mOverviewModeController.overrideOverviewModeController(
+                        mGridTabSwitcherCoordinator.getOverviewModeController());
             }
 
             super.finishNativeInitialization();
@@ -795,6 +882,13 @@ public class ChromeTabbedActivity
         return (ChromeTabCreator) super.getCurrentTabCreator();
     }
 
+    /**
+     * @return OverviewModeBehavior to use for OverviewMode related changes.
+     */
+    public OverviewModeBehavior getOverviewModeBehavior() {
+        return mOverviewModeController;
+    }
+
     @Override
     protected AssistStatusHandler createAssistStatusHandler() {
         return new TabbedAssistStatusHandler(this);
@@ -810,7 +904,7 @@ public class ChromeTabbedActivity
     }
 
     private void setInitialOverviewState() {
-        boolean isOverviewVisible = mLayoutManager.overviewVisible();
+        boolean isOverviewVisible = mOverviewModeController.overviewVisible();
 
         // Experiment: show tab switcher on return after {x} minutes (enable-tab-switcher-on-return}
         long lastBackgroundedTimeMillis =
@@ -841,13 +935,14 @@ public class ChromeTabbedActivity
                 mLayoutManager = new LayoutManagerChromePhone(compositorViewHolder);
             }
             mLayoutManager.setEnableAnimations(DeviceClassManager.enableAnimations());
-            mLayoutManager.addOverviewModeObserver(this);
+            mOverviewModeController.overrideOverviewModeController(mLayoutManager);
+            mOverviewModeController.addOverviewModeObserver(this);
 
             // TODO(yusufo): get rid of findViewById(R.id.url_bar).
             initializeCompositorContent(mLayoutManager, findViewById(R.id.url_bar),
                     mContentContainer, mControlContainer);
 
-            mTabModelSelectorImpl.setOverviewModeBehavior(mLayoutManager);
+            mTabModelSelectorImpl.setOverviewModeBehavior(mOverviewModeController);
 
             mUndoBarPopupController.initialize();
 
@@ -878,19 +973,19 @@ public class ChromeTabbedActivity
 
             getToolbarManager().initializeWithNative(mTabModelSelectorImpl,
                     getFullscreenManager().getBrowserVisibilityDelegate(), getFindToolbarManager(),
-                    mLayoutManager, mLayoutManager, tabSwitcherClickHandler, newTabClickHandler,
-                    bookmarkClickHandler, null);
+                    mOverviewModeController, mLayoutManager, tabSwitcherClickHandler,
+                    newTabClickHandler, bookmarkClickHandler, null);
 
             mLayoutManager.setToolbarManager(getToolbarManager());
 
             if (isTablet()) {
                 EmptyBackgroundViewWrapper bgViewWrapper = new EmptyBackgroundViewWrapper(
                         getTabModelSelector(), getTabCreator(false), ChromeTabbedActivity.this,
-                        getAppMenuHandler(), getSnackbarManager(), mLayoutManager);
+                        getAppMenuHandler(), getSnackbarManager(), mOverviewModeController);
                 bgViewWrapper.initialize();
             }
 
-            mLayoutManager.hideOverview(false);
+            mOverviewModeController.hideOverview(false);
 
             mScreenshotMonitor = new ScreenshotMonitor(ChromeTabbedActivity.this);
 
@@ -902,7 +997,7 @@ public class ChromeTabbedActivity
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
                 mNavigationBarColorController = new NavigationBarColorController(
-                        getWindow(), getTabModelSelector(), getLayoutManager());
+                        getWindow(), getTabModelSelector(), mOverviewModeController);
             }
 
             mUIWithNativeInitialized = true;
@@ -965,7 +1060,7 @@ public class ChromeTabbedActivity
         }
 
         if (isInOverviewMode() && !isTablet()) {
-            mLayoutManager.hideOverview(false);
+            mOverviewModeController.hideOverview(false);
         }
 
         if (!reuseOrCreateNewNtp()) return false;
@@ -1161,11 +1256,11 @@ public class ChromeTabbedActivity
         if (!mUIWithNativeInitialized) return;
 
         boolean accessibilityTabSwitcherEnabled = DeviceClassManager.enableAccessibilityLayout();
-        if (mLayoutManager != null && mLayoutManager.overviewVisible()
+        if (mOverviewModeController != null && mOverviewModeController.overviewVisible()
                 && (mIsAccessibilityTabSwitcherEnabled == null
-                           || mIsAccessibilityTabSwitcherEnabled
-                                   != DeviceClassManager.enableAccessibilityLayout())) {
-            mLayoutManager.hideOverview(false);
+                        || mIsAccessibilityTabSwitcherEnabled
+                                != DeviceClassManager.enableAccessibilityLayout())) {
+            mOverviewModeController.hideOverview(true);
             if (getTabModelSelector().getCurrentModel().getCount() == 0) {
                 getCurrentTabCreator().launchNTP();
             }
@@ -1206,8 +1301,8 @@ public class ChromeTabbedActivity
                 case TabOpenType.REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB:
                     // Used by the bookmarks application.
                     if (tabModel.getCount() > 0 && mUIWithNativeInitialized
-                            && mLayoutManager.overviewVisible()) {
-                        mLayoutManager.hideOverview(true);
+                            && mOverviewModeController.overviewVisible()) {
+                        mOverviewModeController.hideOverview(true);
                     }
                     mTabModelSelectorImpl.tryToRestoreTabStateForUrl(url);
                     int tabToBeClobberedIndex = TabModelUtils.getTabIndexByUrl(tabModel, url);
@@ -1243,8 +1338,8 @@ public class ChromeTabbedActivity
                     }
 
                     if (tabModel.getCount() > 0 && mUIWithNativeInitialized
-                            && mLayoutManager.overviewVisible()) {
-                        mLayoutManager.hideOverview(true);
+                            && mOverviewModeController.overviewVisible()) {
+                        mOverviewModeController.hideOverview(true);
                     }
 
                     logMobileReceivedExternalIntent(externalAppId, intent);
@@ -1733,7 +1828,7 @@ public class ChromeTabbedActivity
             // TODO(nileshagrawal) Record unique action for this. See bug http://b/5542946.
             RecordUserAction.record("MobileMenuCloseAllTabs");
         } else if (id == R.id.focus_url_bar) {
-            boolean isUrlBarVisible = !mLayoutManager.overviewVisible()
+            boolean isUrlBarVisible = !mOverviewModeController.overviewVisible()
                     && (!isTablet() || getCurrentTabModel().getCount() != 0);
             if (isUrlBarVisible) {
                 getToolbarManager().setUrlBarFocus(true);
@@ -1820,9 +1915,9 @@ public class ChromeTabbedActivity
         }
 
         // If we are in overview mode and not a tablet, then leave overview mode on back.
-        if (mLayoutManager.overviewVisible() && !isTablet()) {
+        if (mOverviewModeController.overviewVisible() && !isTablet()) {
             recordBackPressedUma("Hid overview", BackPressedResult.EXITED_TAB_SWITCHER);
-            mLayoutManager.hideOverview(true);
+            mOverviewModeController.hideOverview(true);
             return true;
         }
 
@@ -1913,7 +2008,7 @@ public class ChromeTabbedActivity
                 getCurrentTabModel().closeTab(tabToClose, false, true, false);
 
                 // If there is no next tab to open, enter overview mode.
-                if (!hasNextTab) mLayoutManager.showOverview(false);
+                if (!hasNextTab) mOverviewModeController.showOverview(false);
             }, CLOSE_TAB_ON_MINIMIZE_DELAY_MS);
         }
     }
@@ -1961,7 +2056,7 @@ public class ChromeTabbedActivity
     private Tab launchIntent(String url, String referer, String headers,
             String externalAppId, boolean forceNewTab, Intent intent) {
         if (mUIWithNativeInitialized && (getBottomSheet() == null || !NewTabPage.isNTPUrl(url))) {
-            mLayoutManager.hideOverview(false);
+            mOverviewModeController.hideOverview(false);
             getToolbarManager().finishAnimations();
         }
         if (TextUtils.equals(externalAppId, getPackageName())) {
@@ -2011,12 +2106,13 @@ public class ChromeTabbedActivity
         Tab currentTab = getActivityTab();
         // If we don't have a current tab, show the overview mode.
         if (currentTab == null) {
-            mLayoutManager.showOverview(false);
+            mOverviewModeController.showOverview(false);
             return;
         }
 
-        if (!mLayoutManager.overviewVisible()) {
-            getCompositorViewHolder().hideKeyboard(() -> mLayoutManager.showOverview(true));
+        if (!mOverviewModeController.overviewVisible()) {
+            getCompositorViewHolder().hideKeyboard(
+                    () -> mOverviewModeController.showOverview(true));
             updateAccessibilityState(false);
             TasksUma.recordTabLaunchType(getCurrentTabModel());
         } else {
@@ -2026,7 +2122,7 @@ public class ChromeTabbedActivity
             }
             if (getCurrentTabModel().getCount() != 0) {
                 // Don't hide overview if current tab stack is empty()
-                mLayoutManager.hideOverview(true);
+                mOverviewModeController.hideOverview(true);
                 updateAccessibilityState(true);
             }
         }
@@ -2051,7 +2147,8 @@ public class ChromeTabbedActivity
 
     @Override
     public void onDestroyInternal() {
-        if (mLayoutManager != null) mLayoutManager.removeOverviewModeObserver(this);
+        if (mOverviewModeController != null)
+            mOverviewModeController.removeOverviewModeObserver(this);
 
         if (mTabModelSelectorTabObserver != null) {
             mTabModelSelectorTabObserver.destroy();
@@ -2097,7 +2194,7 @@ public class ChromeTabbedActivity
             mHandler.postDelayed(mShowHistoryRunnable, ViewConfiguration.getLongPressTimeout());
             return super.onKeyDown(keyCode, event);
         }
-        boolean isCurrentTabVisible = !mLayoutManager.overviewVisible()
+        boolean isCurrentTabVisible = !mOverviewModeController.overviewVisible()
                 && (!isTablet() || getCurrentTabModel().getCount() != 0);
         return KeyboardShortcuts.onKeyDown(event, this, isCurrentTabVisible, true)
                 || super.onKeyDown(keyCode, event);
@@ -2187,8 +2284,7 @@ public class ChromeTabbedActivity
 
     @Override
     public boolean isInOverviewMode() {
-        return (mLayoutManager != null && mLayoutManager.overviewVisible())
-                || (mTabModelSelectorImpl != null && mTabModelSelectorImpl.isInOverviewMode());
+        return mOverviewModeController != null && mOverviewModeController.overviewVisible();
     }
 
     /**

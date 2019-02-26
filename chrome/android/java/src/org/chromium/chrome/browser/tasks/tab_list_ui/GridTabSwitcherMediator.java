@@ -4,14 +4,13 @@
 
 package org.chromium.chrome.browser.tasks.tab_list_ui;
 
+import static org.chromium.chrome.browser.tasks.tab_list_ui.TabListContainerProperties.ANIMATE_VISIBILITY_CHANGES;
+import static org.chromium.chrome.browser.tasks.tab_list_ui.TabListContainerProperties.INITIAL_SCROLL_INDEX;
 import static org.chromium.chrome.browser.tasks.tab_list_ui.TabListContainerProperties.IS_INCOGNITO;
 import static org.chromium.chrome.browser.tasks.tab_list_ui.TabListContainerProperties.IS_VISIBLE;
 import static org.chromium.chrome.browser.tasks.tab_list_ui.TabListContainerProperties.VISIBILITY_LISTENER;
 
-import android.view.View;
-
-import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeController;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -28,7 +27,9 @@ import java.util.List;
  * changes.
  */
 class GridTabSwitcherMediator
-        implements OverviewModeBehavior, TabListRecyclerView.VisibilityListener {
+        implements OverviewModeController, TabListRecyclerView.VisibilityListener {
+    private static final int INITIAL_SCROLL_INDEX_OFFSET = 3;
+
     private final GridTabSwitcherCoordinator mCoordinator;
     private final PropertyModel mContainerViewModel;
     private final TabModelSelector mTabModelSelector;
@@ -93,22 +94,17 @@ class GridTabSwitcherMediator
 
         mContainerViewModel.set(VISIBILITY_LISTENER, this);
         mContainerViewModel.set(IS_INCOGNITO, mTabModelSelector.getCurrentModel().isIncognito());
-    }
-
-    /**
-     * @return The {@link android.view.View.OnClickListener} to override for the tab switcher
-     *         button.
-     */
-    View.OnClickListener getTabSwitcherButtonClickListener() {
-        return view -> {
-            boolean setVisible = !mContainerViewModel.get(IS_VISIBLE);
-            setVisibility(setVisible);
-            if (setVisible) RecordUserAction.record("MobileToolbarShowStackView");
-        };
+        mContainerViewModel.set(ANIMATE_VISIBILITY_CHANGES, true);
     }
 
     private void setVisibility(boolean isVisible) {
-        if (isVisible) mCoordinator.resetWithTabModel(mTabModelSelector.getCurrentModel());
+        if (isVisible) {
+            mCoordinator.resetWithTabModel(mTabModelSelector.getCurrentModel());
+            int initialPosition = Math.max(
+                    mTabModelSelector.getCurrentModel().index() - INITIAL_SCROLL_INDEX_OFFSET, 0);
+            mContainerViewModel.set(INITIAL_SCROLL_INDEX, initialPosition);
+        }
+
         mContainerViewModel.set(IS_VISIBLE, isVisible);
     }
 
@@ -125,6 +121,20 @@ class GridTabSwitcherMediator
     @Override
     public void removeOverviewModeObserver(OverviewModeObserver listener) {
         mObservers.remove(listener);
+    }
+
+    @Override
+    public void hideOverview(boolean animate) {
+        if (!animate) mContainerViewModel.set(ANIMATE_VISIBILITY_CHANGES, false);
+        setVisibility(false);
+        mContainerViewModel.set(ANIMATE_VISIBILITY_CHANGES, true);
+    }
+
+    @Override
+    public void showOverview(boolean animate) {
+        if (!animate) mContainerViewModel.set(ANIMATE_VISIBILITY_CHANGES, false);
+        setVisibility(true);
+        mContainerViewModel.set(ANIMATE_VISIBILITY_CHANGES, true);
     }
 
     @Override

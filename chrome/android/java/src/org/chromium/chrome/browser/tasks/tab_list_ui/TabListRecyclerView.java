@@ -67,8 +67,9 @@ class TabListRecyclerView extends RecyclerView {
 
     /**
      * Start showing the tab list.
+     * @param animate Whether the visibility change should be animated.
      */
-    void startShowing() {
+    void startShowing(boolean animate) {
         mListener.startedShowing();
         cancelAllAnimations();
         setAlpha(0);
@@ -83,12 +84,14 @@ class TabListRecyclerView extends RecyclerView {
                 mListener.finishedShowing();
             }
         });
+        if (!animate) mFadeInAnimator.end();
     }
 
     /**
      * Start hiding the tab list.
+     * @param animate Whether the visibility change should be animated.
      */
-    void startHiding() {
+    void startHiding(boolean animate) {
         mListener.startedHiding();
         cancelAllAnimations();
         mFadeOutAnimator = ObjectAnimator.ofFloat(this, View.ALPHA, 0);
@@ -102,6 +105,7 @@ class TabListRecyclerView extends RecyclerView {
             }
         });
         mFadeOutAnimator.start();
+        if (!animate) mFadeOutAnimator.end();
     }
 
     private void cancelAllAnimations() {

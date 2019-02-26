@@ -150,17 +150,6 @@ public class BottomToolbarCoordinator {
     }
 
     /**
-     * Overrides tab switcher launching behavior.
-     * @param newClickListener The new {@link OnClickListener} for tab switcher button clicks.
-     * @param overviewModeBehavior The OverviewModeBehavior to be used for tab switcher states.
-     */
-    public void overrideTabSwitcherBehavior(
-            OnClickListener newClickListener, OverviewModeBehavior overviewModeBehavior) {
-        mBrowsingModeCoordinator.overrideTabSwitcherBehavior(
-                newClickListener, overviewModeBehavior);
-    }
-
-    /**
      * Clean up any state when the bottom toolbar is destroyed.
      */
     public void destroy() {
