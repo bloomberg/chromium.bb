@@ -30,7 +30,7 @@ class CryptAuthKeyRegistryImplTest : public testing::Test {
     const base::DictionaryValue* dict =
         pref_service_.GetDictionary(prefs::kCryptAuthKeyRegistry);
     ASSERT_TRUE(dict);
-    EXPECT_EQ(*dict, expected_dict);
+    EXPECT_EQ(expected_dict, *dict);
   }
 
   PrefService* pref_service() { return &pref_service_; }
@@ -69,7 +69,7 @@ TEST_F(CryptAuthKeyRegistryImplTest, GetActiveKey) {
   const CryptAuthKey* key =
       key_registry()->GetActiveKey(CryptAuthKeyBundle::Name::kUserKeyPair);
   ASSERT_TRUE(key);
-  EXPECT_EQ(*key, asym_key);
+  EXPECT_EQ(asym_key, *key);
 }
 
 TEST_F(CryptAuthKeyRegistryImplTest, AddKey) {
@@ -77,18 +77,18 @@ TEST_F(CryptAuthKeyRegistryImplTest, AddKey) {
                        cryptauthv2::KeyType::RAW256, "sym-handle");
   key_registry()->AddEnrolledKey(CryptAuthKeyBundle::Name::kUserKeyPair,
                                  sym_key);
-  const auto& it = key_registry()->enrolled_key_bundles().find(
-      CryptAuthKeyBundle::Name::kUserKeyPair);
-  ASSERT_TRUE(it != key_registry()->enrolled_key_bundles().end());
+  const CryptAuthKeyBundle* key_bundle =
+      key_registry()->GetKeyBundle(CryptAuthKeyBundle::Name::kUserKeyPair);
+  ASSERT_TRUE(key_bundle);
 
   const CryptAuthKey* active_key =
       key_registry()->GetActiveKey(CryptAuthKeyBundle::Name::kUserKeyPair);
   ASSERT_TRUE(active_key);
-  EXPECT_EQ(*active_key, sym_key);
+  EXPECT_EQ(sym_key, *active_key);
 
   CryptAuthKeyBundle expected_bundle(CryptAuthKeyBundle::Name::kUserKeyPair);
   expected_bundle.AddKey(sym_key);
-  EXPECT_EQ(expected_bundle, it->second);
+  EXPECT_EQ(expected_bundle, *key_bundle);
 
   base::Value expected_dict(base::Value::Type::DICTIONARY);
   expected_dict.SetKey(
@@ -104,12 +104,12 @@ TEST_F(CryptAuthKeyRegistryImplTest, AddKey) {
                                  asym_key);
 
   expected_bundle.AddKey(asym_key);
-  EXPECT_EQ(expected_bundle, it->second);
+  EXPECT_EQ(expected_bundle, *key_bundle);
 
   active_key =
       key_registry()->GetActiveKey(CryptAuthKeyBundle::Name::kUserKeyPair);
   ASSERT_TRUE(active_key);
-  EXPECT_EQ(*active_key, asym_key);
+  EXPECT_EQ(asym_key, *active_key);
 
   expected_dict.SetKey(
       CryptAuthKeyBundle::KeyBundleNameEnumToString(expected_bundle.name()),
@@ -136,7 +136,7 @@ TEST_F(CryptAuthKeyRegistryImplTest, SetActiveKey) {
   EXPECT_TRUE(key);
 
   sym_key.set_status(CryptAuthKey::Status::kActive);
-  EXPECT_EQ(*key, sym_key);
+  EXPECT_EQ(sym_key, *key);
 
   CryptAuthKeyBundle expected_bundle(CryptAuthKeyBundle::Name::kUserKeyPair);
   expected_bundle.AddKey(sym_key);
@@ -190,12 +190,14 @@ TEST_F(CryptAuthKeyRegistryImplTest, DeleteKey) {
   key_registry()->DeleteKey(CryptAuthKeyBundle::Name::kUserKeyPair,
                             "sym-handle");
 
-  const auto& it = key_registry()->enrolled_key_bundles().find(
-      CryptAuthKeyBundle::Name::kUserKeyPair);
-  ASSERT_TRUE(it != key_registry()->enrolled_key_bundles().end());
+  const CryptAuthKeyBundle* key_bundle =
+      key_registry()->GetKeyBundle(CryptAuthKeyBundle::Name::kUserKeyPair);
+  ASSERT_TRUE(key_bundle);
 
-  EXPECT_FALSE(base::ContainsKey(it->second.handle_to_key_map(), "sym-handle"));
-  EXPECT_TRUE(base::ContainsKey(it->second.handle_to_key_map(), "asym-handle"));
+  EXPECT_FALSE(
+      base::ContainsKey(key_bundle->handle_to_key_map(), "sym-handle"));
+  EXPECT_TRUE(
+      base::ContainsKey(key_bundle->handle_to_key_map(), "asym-handle"));
 
   CryptAuthKeyBundle expected_bundle(CryptAuthKeyBundle::Name::kUserKeyPair);
   expected_bundle.AddKey(asym_key);
@@ -217,13 +219,13 @@ TEST_F(CryptAuthKeyRegistryImplTest, SetKeyDirective) {
   key_registry()->SetKeyDirective(CryptAuthKeyBundle::Name::kUserKeyPair,
                                   key_directive);
 
-  const auto& it = key_registry()->enrolled_key_bundles().find(
-      CryptAuthKeyBundle::Name::kUserKeyPair);
-  ASSERT_TRUE(it != key_registry()->enrolled_key_bundles().end());
+  const CryptAuthKeyBundle* key_bundle =
+      key_registry()->GetKeyBundle(CryptAuthKeyBundle::Name::kUserKeyPair);
+  ASSERT_TRUE(key_bundle);
 
-  EXPECT_TRUE(it->second.key_directive());
-  EXPECT_EQ(it->second.key_directive()->SerializeAsString(),
-            key_directive.SerializeAsString());
+  EXPECT_TRUE(key_bundle->key_directive());
+  EXPECT_EQ(key_directive.SerializeAsString(),
+            key_bundle->key_directive()->SerializeAsString());
 
   CryptAuthKeyBundle expected_bundle(CryptAuthKeyBundle::Name::kUserKeyPair);
   expected_bundle.AddKey(sym_key);
@@ -249,16 +251,16 @@ TEST_F(CryptAuthKeyRegistryImplTest, ConstructorPopulatesBundlesUsingPref) {
   std::unique_ptr<CryptAuthKeyRegistry> new_registry =
       CryptAuthKeyRegistryImpl::Factory::Get()->BuildInstance(pref_service());
 
-  EXPECT_TRUE(new_registry->enrolled_key_bundles().size() == 1);
+  EXPECT_EQ(1u, new_registry->enrolled_key_bundles().size());
 
-  const auto& it = new_registry->enrolled_key_bundles().find(
-      CryptAuthKeyBundle::Name::kUserKeyPair);
-  ASSERT_TRUE(it != new_registry->enrolled_key_bundles().end());
+  const CryptAuthKeyBundle* key_bundle =
+      key_registry()->GetKeyBundle(CryptAuthKeyBundle::Name::kUserKeyPair);
+  ASSERT_TRUE(key_bundle);
 
   CryptAuthKeyBundle expected_bundle(CryptAuthKeyBundle::Name::kUserKeyPair);
   expected_bundle.AddKey(sym_key);
   expected_bundle.set_key_directive(key_directive);
-  EXPECT_EQ(it->second, expected_bundle);
+  EXPECT_EQ(expected_bundle, *key_bundle);
 }
 
 }  // namespace device_sync

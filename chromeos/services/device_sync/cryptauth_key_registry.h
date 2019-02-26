@@ -25,8 +25,13 @@ class CryptAuthKeyRegistry {
   // Returns the underlying map from the key-bundle name to the key bundle.
   virtual const KeyBundleMap& enrolled_key_bundles() const;
 
+  // Returns the key bundle with name |name| if it exists in the key registry,
+  // and returns null if it cannot be found.
+  virtual const CryptAuthKeyBundle* GetKeyBundle(
+      CryptAuthKeyBundle::Name name) const;
+
   // Returns the key with status kActive if one exists in the key bundle with
-  // name |name|.
+  // name |name|, and returns null if one cannot be found.
   virtual const CryptAuthKey* GetActiveKey(CryptAuthKeyBundle::Name name) const;
 
   // Adds |key| to the key bundle with |name|. If the key being added is active,
