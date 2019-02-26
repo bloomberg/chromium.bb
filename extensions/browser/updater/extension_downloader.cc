@@ -653,14 +653,11 @@ void ExtensionDownloader::HandleManifestResults(
     std::unique_ptr<ManifestFetchData> fetch_data,
     std::unique_ptr<UpdateManifestResults> results,
     const base::Optional<std::string>& error) {
-  // Keep a list of extensions that will not be updated, so that the |delegate_|
-  // can be notified once we're done here.
-  std::set<std::string> not_updated(fetch_data->extension_ids());
 
   if (!results) {
     VLOG(2) << "parsing manifest failed (" << fetch_data->full_url() << ")";
     NotifyExtensionsDownloadFailed(
-        not_updated, fetch_data->request_ids(),
+        fetch_data->extension_ids(), fetch_data->request_ids(),
         ExtensionDownloaderDelegate::MANIFEST_INVALID);
     return;
   } else {
@@ -1077,8 +1074,8 @@ void ExtensionDownloader::OnExtensionLoadComplete(base::FilePath crx_path) {
 }
 
 void ExtensionDownloader::NotifyExtensionsDownloadFailed(
-    const std::set<std::string>& extension_ids,
-    const std::set<int>& request_ids,
+    std::set<std::string> extension_ids,
+    std::set<int> request_ids,
     ExtensionDownloaderDelegate::Error error) {
   for (auto it = extension_ids.cbegin(); it != extension_ids.cend(); ++it) {
     const ExtensionDownloaderDelegate::PingResult& ping = ping_results_[*it];

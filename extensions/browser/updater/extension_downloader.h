@@ -284,9 +284,11 @@ class ExtensionDownloader {
   void OnExtensionLoadComplete(base::FilePath crx_path);
 
   // Invokes OnExtensionDownloadFailed() on the |delegate_| for each extension
-  // in the set, with |error| as the reason for failure.
-  void NotifyExtensionsDownloadFailed(const std::set<std::string>& id_set,
-                                      const std::set<int>& request_ids,
+  // in the set, with |error| as the reason for failure. Make a copy of
+  // arguments because there is no guarantee that callback won't indirectly
+  // change source of IDs.
+  void NotifyExtensionsDownloadFailed(std::set<std::string> id_set,
+                                      std::set<int> request_ids,
                                       ExtensionDownloaderDelegate::Error error);
 
   // Send a notification that an update was found for |id| that we'll
