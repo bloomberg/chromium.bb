@@ -537,7 +537,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
       AdaptCallbackForRepeating(CreatePendingTaskCompletionClosure()));
 
   // Remove browsing data stored in WKWebsiteDataStore if necessary.
-  RemoveDataFromWKWebsiteDataStore(delete_begin, mask);
+  RemoveDataFromWKWebsiteDataStore(delete_begin, delete_end, mask);
 
   // Record the combined deletion of cookies and cache.
   CookieOrCacheDeletionChoice choice;
@@ -561,6 +561,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
 // new API.
 void BrowsingDataRemoverImpl::RemoveDataFromWKWebsiteDataStore(
     base::Time delete_begin,
+    base::Time delete_end,
     BrowsingDataRemoveMask mask) {
   if (base::FeatureList::IsEnabled(kWebClearBrowsingData)) {
     web::ClearBrowsingDataMask types =
@@ -590,8 +591,7 @@ void BrowsingDataRemoverImpl::RemoveDataFromWKWebsiteDataStore(
       types |= web::ClearBrowsingDataMask::kRemoveVisitedLinks;
     }
 
-    web::ClearBrowsingData(browser_state_, types, delete_begin,
-                           CreatePendingTaskCompletionClosure());
+    web::ClearBrowsingData(browser_state_, types);
     return;
   }
 

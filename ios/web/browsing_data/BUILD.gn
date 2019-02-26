@@ -11,9 +11,7 @@ source_set("browsing_data") {
   ]
 
   deps = [
-    "//base",
     "//ios/web/public",
-    "//ios/web/web_state/ui:wk_web_view_configuration_provider",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -24,7 +22,6 @@ source_set("browsing_data_unittests") {
   testonly = true
   deps = [
     ":browsing_data",
-    "//base/test:test_support",
     "//ios/web/public/test/fakes",
     "//testing/gtest",
   ]
