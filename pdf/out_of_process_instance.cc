@@ -193,7 +193,7 @@ enum PDFFeatures {
 };
 
 // Used for UMA. Do not delete entries, and keep in sync with histograms.xml
-// and pdfium/public/fpdf_annot.h.
+// and third_party/pdfium/public/fpdf_annot.h.
 constexpr int kAnnotationTypesCount = 28;
 
 PP_Var GetLinkAtPosition(PP_Instance instance, PP_Point point) {
@@ -1403,16 +1403,15 @@ void OutOfProcessInstance::NotifyPageBecameVisible(
   }
 
   for (const int annotation_type : page_features->annotation_types) {
-    DCHECK_GE(annotation_type, 0);
-    DCHECK_LT(annotation_type, kAnnotationTypesCount);
-    if (annotation_type < 0 || annotation_type >= kAnnotationTypesCount)
+    if (annotation_type < 0 || annotation_type >= kAnnotationTypesCount) {
+      NOTREACHED();
       continue;
+    }
 
-    if (annotation_types_counted_.find(annotation_type) ==
-        annotation_types_counted_.end()) {
+    bool inserted = annotation_types_counted_.insert(annotation_type).second;
+    if (inserted) {
       HistogramEnumeration("PDF.AnnotationType", annotation_type,
                            kAnnotationTypesCount);
-      annotation_types_counted_.insert(annotation_type);
     }
   }
   page_is_processed_[page_features->index] = true;
