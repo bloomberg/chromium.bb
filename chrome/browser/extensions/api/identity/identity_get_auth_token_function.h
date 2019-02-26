@@ -100,10 +100,6 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
                                 base::Time expiration_time,
                                 const GoogleServiceAuthError& error);
 
-  // Invoked by the IdentityManager when the primary account is available.
-  void OnPrimaryAccountAvailable(const AccountInfo& account_info,
-                                 const identity::AccountState& account_state);
-
   // Starts a mint token request to GAIA.
   // Exposed for testing.
   virtual void StartGaiaRequest(const std::string& login_access_token);
@@ -146,6 +142,8 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
   void OnAccountsInCookieUpdated(
       const identity::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
       const GoogleServiceAuthError& error) override;
+  void OnPrimaryAccountSet(
+      const CoreAccountInfo& primary_account_info) override;
 
   // ExtensionFunction:
   bool RunAsync() override;
@@ -234,9 +232,10 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
   // This class can be listening to account changes, but only for one type of
   // events at a time.
   enum class AccountListeningMode {
-    kNotListening,      // Not listening account changes
-    kListeningCookies,  // Listening cookie changes
-    kListeningTokens    // Listening token changes
+    kNotListening,            // Not listening account changes
+    kListeningCookies,        // Listening cookie changes
+    kListeningTokens,         // Listening token changes
+    kListeningPrimaryAccount  // Listening primary account changes
   };
   AccountListeningMode account_listening_mode_ =
       AccountListeningMode::kNotListening;
