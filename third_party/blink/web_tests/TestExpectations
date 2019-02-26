@@ -5894,6 +5894,7 @@ crbug.com/935689 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central
 crbug.com/935689 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-cyclic-invalid.html [ Failure ]
 crbug.com/936083 external/wpt/import-maps/builtin-import-scheme.tentative.html [ Failure Pass ]
 crbug.com/936095 fast/css-intrinsic-dimensions/height-tables-collapsed.html [ Failure Pass ]
+crbug.com/934818 [ Linux ] virtual/threaded/http/tests/devtools/tracing/decode-resize.js [ Failure Pass ]
 
 # Device Sensor Events are being restricted to secure browsing contexts, but the change is still gated on a runtime flag.
 crbug.com/932078 http/tests/security/powerfulFeatureRestrictions/device-orientation-future-behavior-on-insecure-origin.html [ Skip ]
