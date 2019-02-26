@@ -426,13 +426,14 @@ Polymer({
     if (!this.editable || (this.isShared_() && !this.useSharedProxies)) {
       return false;
     }
-    if (!this.networkProperties.hasOwnProperty('ProxySettings')) {
-      return true;
-    }  // No proxy settings defined, so not enforced.
+    if (!this.networkProperties ||
+        !this.networkProperties.hasOwnProperty('ProxySettings')) {
+      return true;  // Default to editable if ProxySettings are not defined.
+    }
     const property = /** @type {!CrOnc.ManagedProperty|undefined} */ (
         this.get('ProxySettings.' + propertyName, this.networkProperties));
     if (!property) {
-      return true;
+      return true;  // Default to editable if specific property is not defined.
     }
     return this.isPropertyEditable_(property);
   },
