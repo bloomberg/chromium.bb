@@ -43,7 +43,7 @@ def NormalizeSourcePaths(source_paths):
   return results
 
 
-def GenerateSourcePathMapping(board, board_dependency_packages):
+def GenerateSourcePathMapping(packages, board):
   """Returns a map from each package to the source paths it depends on.
 
   A source path is considered dependency of a package if modifying files in that
@@ -64,9 +64,9 @@ def GenerateSourcePathMapping(board, board_dependency_packages):
        of B.
 
   Args:
-    board (str): The name of the board whose artifacts are being created.
-    board_dependency_packages: The list of packages names (str) required for
-      building the board.
+    packages: The list of packages CPV names (str)
+    board (str): The name of the board if packages are dependency of board. If
+      the packages are board agnostic, then this should be None.
 
   Returns:
     Map from each package to the source path (relative to the repo checkout
@@ -80,7 +80,8 @@ def GenerateSourcePathMapping(board, board_dependency_packages):
   results = {}
 
   packages_to_ebuild_paths = portage_util.FindEbuildsForPackages(
-      board_dependency_packages, sysroot=cros_build_lib.GetSysroot(board))
+      packages, sysroot=cros_build_lib.GetSysroot(board),
+      error_code_ok=False)
 
   # 1) Add the directory of ebuild files.
   for package, ebuild_path in packages_to_ebuild_paths.iteritems():
@@ -123,27 +124,6 @@ def GenerateSourcePathMapping(board, board_dependency_packages):
   return results
 
 
-def GenerateDepsGraphForBoard(board):
-  """Return the portage build dependency map for |board|."""
-  deps_graph = {}
-  non_board_specific_package = ['virtual/target-sdk', 'chromeos-base/chromite']
-  board_specific_packages = ['virtual/target-os', 'virtual/target-os-dev',
-                             'virtual/target-os-test']
-  # Since we don’t have a clear mapping from autotests to git repos
-  # and/or portage packages, we assume every board run all autotests.
-  board_specific_packages += ['chromeos-base/autotest-all']
-  try:
-    deps_graph.update(cros_extract_deps.ExtractDeps(
-        sysroot=cros_build_lib.GetSysroot(None),
-        package_list=non_board_specific_package))
-    deps_graph.update(cros_extract_deps.ExtractDeps(
-        sysroot=cros_build_lib.GetSysroot(board),
-        package_list=board_specific_packages))
-    return deps_graph
-  except SystemExit:
-    raise RuntimeError('Error extracting portage deps')
-
-
 def GetBuildDependency(board):
   """Return the build dependency and package -> source path map for |board|.
 
@@ -159,11 +139,32 @@ def GetBuildDependency(board):
   """
   results = {}
   results['target_board'] = board
-  results['package_deps'] = GenerateDepsGraphForBoard(board)
-  board_dependency_packages = set()
-  for package_deps in results['package_deps'].values():
-    package_name = package_deps['category'] + '/' + package_deps['name']
-    board_dependency_packages.add(package_name)
-  results['source_path_mapping'] = GenerateSourcePathMapping(
-      board, board_dependency_packages)
+  results['package_deps'] = {}
+  results['source_path_mapping'] = {}
+
+  board_specific_packages = ['virtual/target-os', 'virtual/target-os-dev',
+                             'virtual/target-os-test']
+  # Since we don’t have a clear mapping from autotests to git repos
+  # and/or portage packages, we assume every board run all autotests.
+  board_specific_packages += ['chromeos-base/autotest-all']
+
+  non_board_specific_packages = ['virtual/target-sdk', 'chromeos-base/chromite']
+
+  board_specific_deps = cros_extract_deps.ExtractDeps(
+      sysroot=cros_build_lib.GetSysroot(board),
+      package_list=board_specific_packages)
+
+  non_board_specific_deps = cros_extract_deps.ExtractDeps(
+      sysroot=cros_build_lib.GetSysroot(None),
+      package_list=non_board_specific_packages)
+
+  results['package_deps'].update(board_specific_deps)
+  results['package_deps'].update(non_board_specific_deps)
+
+  results['source_path_mapping'].update(
+      GenerateSourcePathMapping(board_specific_deps.keys(), board))
+
+  results['source_path_mapping'].update(
+      GenerateSourcePathMapping(non_board_specific_deps.keys(), board=None))
+
   return results

@@ -42,8 +42,9 @@ def CreateDepGraphProtoFromJsonMap(json_map):
       if cpv.version:
         dep_package.version = cpv.version
 
-    package_CP = '%s/%s' % (package_info.category, package_info.package_name)
-    for path in json_map['source_path_mapping'][package_CP]:
+    package_CPV = '%s/%s-%s' % (
+        package_info.category, package_info.package_name, package_info.version)
+    for path in json_map['source_path_mapping'][package_CPV]:
       source_path = package_dep_info.dependency_source_paths.add()
       source_path.path = path
 

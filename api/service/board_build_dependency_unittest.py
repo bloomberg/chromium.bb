@@ -44,14 +44,14 @@ class BoardBuilDependencyTest(cros_test_lib.TestCase):
                 'deps': [],
                 'rev_deps': ['commander/darthvader'],
                 'full_name': 'troop/robot-2.3.4',
-                'name': 'clone',
+                'name': 'robot',
                 'version': '2.3.4'
             },
         },
         'source_path_mapping': {
-            'commander/darthvader': ['/control/room'],
-            'troop/clone': ['/bunker'],
-            'troop/robot': ['/factory'],
+            'commander/darthvader-1.49.3.3': ['/control/room'],
+            'troop/clone-1.2.3': ['/bunker'],
+            'troop/robot-2.3.4': ['/factory'],
         },
     }
 
