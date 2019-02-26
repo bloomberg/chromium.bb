@@ -17,6 +17,15 @@ CryptAuthKeyRegistry::enrolled_key_bundles() const {
   return enrolled_key_bundles_;
 }
 
+const CryptAuthKeyBundle* CryptAuthKeyRegistry::GetKeyBundle(
+    CryptAuthKeyBundle::Name name) const {
+  auto it = enrolled_key_bundles_.find(name);
+  if (it == enrolled_key_bundles_.end())
+    return nullptr;
+
+  return &it->second;
+}
+
 const CryptAuthKey* CryptAuthKeyRegistry::GetActiveKey(
     CryptAuthKeyBundle::Name name) const {
   auto it_bundle = enrolled_key_bundles_.find(name);
