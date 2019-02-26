@@ -138,11 +138,27 @@ void FeedLoggingBridge::OnOpenedWithNoContent(JNIEnv* j_env,
   feed_logging_metrics_->OnPageShown(/*suggestions_count=*/0);
 }
 
-void FeedLoggingBridge::OnSpinnerShown(JNIEnv* j_env,
-                                       const JavaRef<jobject>& j_this,
-                                       const jlong j_shownTimeMs) {
-  feed_logging_metrics_->OnSpinnerShown(
-      base::TimeDelta::FromMilliseconds(j_shownTimeMs));
+void FeedLoggingBridge::OnSpinnerStarted(JNIEnv* j_env,
+                                         const JavaRef<jobject>& j_this,
+                                         const jint j_spinner_type) {
+  feed_logging_metrics_->OnSpinnerStarted(j_spinner_type);
+}
+
+void FeedLoggingBridge::OnSpinnerFinished(JNIEnv* j_env,
+                                          const JavaRef<jobject>& j_this,
+                                          const jlong j_shownTimeMs,
+                                          const jint j_spinner_type) {
+  feed_logging_metrics_->OnSpinnerFinished(
+      base::TimeDelta::FromMilliseconds(j_shownTimeMs), j_spinner_type);
+}
+
+void FeedLoggingBridge::OnSpinnerDestroyedWithoutCompleting(
+    JNIEnv* j_env,
+    const JavaRef<jobject>& j_this,
+    const jlong j_shownTimeMs,
+    const jint j_spinner_type) {
+  feed_logging_metrics_->OnSpinnerDestroyedWithoutCompleting(
+      base::TimeDelta::FromMilliseconds(j_shownTimeMs), j_spinner_type);
 }
 
 void FeedLoggingBridge::OnPietFrameRenderingEvent(

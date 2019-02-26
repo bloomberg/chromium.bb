@@ -180,7 +180,11 @@ public class FeedLoggingBridge implements BasicLoggingApi {
 
     @Override
     public void onSpinnerStarted(@SpinnerType int spinnerType) {
-        // TODO(https://crbug.com/924739): Implementation.
+        // Bridge could have been destroyed for policy when this is called.
+        // See https://crbug.com/901414.
+        if (mNativeFeedLoggingBridge == 0) return;
+
+        nativeOnSpinnerStarted(mNativeFeedLoggingBridge, spinnerType);
     }
 
     @Override
@@ -189,12 +193,17 @@ public class FeedLoggingBridge implements BasicLoggingApi {
         // See https://crbug.com/901414.
         if (mNativeFeedLoggingBridge == 0) return;
 
-        nativeOnSpinnerShown(mNativeFeedLoggingBridge, timeShownMs);
+        nativeOnSpinnerFinished(mNativeFeedLoggingBridge, timeShownMs, spinnerType);
     }
 
     @Override
     public void onSpinnerDestroyedWithoutCompleting(int timeShownMs, @SpinnerType int spinnerType) {
-        // TODO(https://crbug.com/924739): Implementation.
+        // Bridge could have been destroyed for policy when this is called.
+        // See https://crbug.com/901414.
+        if (mNativeFeedLoggingBridge == 0) return;
+
+        nativeOnSpinnerDestroyedWithoutCompleting(
+                mNativeFeedLoggingBridge, timeShownMs, spinnerType);
     }
 
     @Override
@@ -354,7 +363,11 @@ public class FeedLoggingBridge implements BasicLoggingApi {
             long nativeFeedLoggingBridge, int timeToPopulateMs, int contentCount);
     private native void nativeOnOpenedWithNoImmediateContent(long nativeFeedLoggingBridge);
     private native void nativeOnOpenedWithNoContent(long nativeFeedLoggingBridge);
-    private native void nativeOnSpinnerShown(long nativeFeedLoggingBridge, long spinnerShownTimeMs);
+    private native void nativeOnSpinnerStarted(long nativeFeedLoggingBridge, int spinnerType);
+    private native void nativeOnSpinnerFinished(
+            long nativeFeedLoggingBridge, long spinnerShownTimeMs, int spinnerType);
+    private native void nativeOnSpinnerDestroyedWithoutCompleting(
+            long nativeFeedLoggingBridge, long spinnerShownTimeMs, int spinnerType);
     private native void nativeOnPietFrameRenderingEvent(
             long nativeFeedLoggingBridge, int[] pietErrorCodes);
     private native void nativeOnContentTargetVisited(

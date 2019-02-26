@@ -80,7 +80,12 @@ class FeedLoggingMetrics {
 
   void OnNotInterestedInTopic(int position, bool committed);
 
-  void OnSpinnerShown(base::TimeDelta shown_time);
+  void OnSpinnerStarted(int spinner_type);
+
+  void OnSpinnerFinished(base::TimeDelta shown_time, int spinner_type);
+
+  void OnSpinnerDestroyedWithoutCompleting(base::TimeDelta shown_time,
+                                           int spinner_type);
 
   void OnPietFrameRenderingEvent(std::vector<int> piet_error_codes);
 
