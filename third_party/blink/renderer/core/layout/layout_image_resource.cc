@@ -89,8 +89,8 @@ void LayoutImageResource::ResetAnimation() {
   layout_object_->SetShouldDoFullPaintInvalidation();
 }
 
-bool LayoutImageResource::ImageHasRelativeSize() const {
-  return cached_image_ && cached_image_->GetImage()->HasRelativeSize();
+bool LayoutImageResource::HasIntrinsicSize() const {
+  return !cached_image_ || cached_image_->GetImage()->HasIntrinsicSize();
 }
 
 FloatSize LayoutImageResource::ImageSize(float multiplier) const {
@@ -98,7 +98,7 @@ FloatSize LayoutImageResource::ImageSize(float multiplier) const {
     return FloatSize();
   FloatSize size(cached_image_->IntrinsicSize(
       LayoutObject::ShouldRespectImageOrientation(layout_object_)));
-  if (multiplier != 1 && !ImageHasRelativeSize()) {
+  if (multiplier != 1 && HasIntrinsicSize()) {
     // Don't let images that have a width/height >= 1 shrink below 1 when
     // zoomed.
     FloatSize minimum_size(size.Width() > 0 ? 1 : 0, size.Height() > 0 ? 1 : 0);

@@ -714,7 +714,7 @@ FloatSize HTMLImageElement::DefaultDestinationSize(
   LayoutSize size(image_content->IntrinsicSize(
       LayoutObject::ShouldRespectImageOrientation(GetLayoutObject())));
   if (GetLayoutObject() && GetLayoutObject()->IsLayoutImage() &&
-      !image->HasRelativeSize())
+      image->HasIntrinsicSize())
     size.Scale(ToLayoutImage(GetLayoutObject())->ImageDevicePixelRatio());
   return FloatSize(size);
 }

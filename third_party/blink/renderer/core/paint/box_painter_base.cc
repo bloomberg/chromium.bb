@@ -374,7 +374,7 @@ void DrawTiledBackground(GraphicsContext& context,
   // generated image to be the tile size.
   FloatSize intrinsic_tile_size(image->Size());
   FloatSize scale(1, 1);
-  if (image->HasRelativeSize()) {
+  if (!image->HasIntrinsicSize()) {
     intrinsic_tile_size = tile_size;
   } else {
     scale = FloatSize(tile_size.Width() / intrinsic_tile_size.Width(),
@@ -507,9 +507,9 @@ inline bool PaintFastBottomLayer(Node* node,
 
   // Generated images will be created at the desired tile size, so assume their
   // intrinsic size is the requested tile size.
-  bool is_generated_image = image->HasRelativeSize();
+  bool has_intrinsic_size = image->HasIntrinsicSize();
   const FloatSize intrinsic_tile_size =
-      is_generated_image ? image_tile.Size() : FloatSize(image->Size());
+      !has_intrinsic_size ? image_tile.Size() : FloatSize(image->Size());
   // Subset computation needs the same location as was used with
   // ComputePhaseForBackground above, but needs the unsnapped destination
   // size to correctly calculate sprite subsets in the presence of zoom. But if
@@ -517,8 +517,8 @@ inline bool PaintFastBottomLayer(Node* node,
   // snapped value), use the snapped dest rect instead.
   FloatRect dest_rect_for_subset(
       FloatPoint(geometry.SnappedDestRect().Location()),
-      is_generated_image ? FloatSize(geometry.SnappedDestRect().Size())
-                         : FloatSize(geometry.UnsnappedDestRect().Size()));
+      !has_intrinsic_size ? FloatSize(geometry.SnappedDestRect().Size())
+                          : FloatSize(geometry.UnsnappedDestRect().Size()));
   // Content providers almost always choose source pixels at integer locations,
   // so snap to integers. This is particuarly important for sprite maps.
   // Calculation up to this point, in LayoutUnits, can lead to small variations
