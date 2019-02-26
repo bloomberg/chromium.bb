@@ -42,6 +42,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/translate/core/browser/translate_prefs.h"
+#include "components/ukm/ios/features.h"
 #include "components/unified_consent/feature.h"
 #include "ios/chrome/browser/app_launcher/app_launcher_flags.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_features.h"
@@ -559,6 +560,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"web-ui-scheme-handling", flag_descriptions::kWebUISchemeHandlingName,
      flag_descriptions::kWebUISchemeHandlingDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kWebUISchemeHandling)},
+    {"send-uma-cellular", flag_descriptions::kSendUmaOverCellularName,
+     flag_descriptions::kSendUmaOverCellularDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kUmaCellular)},
 };
 
 // Add all switches from experimental flags to |command_line|.

@@ -109,6 +109,7 @@ source_set("browser") {
     "//components/strings",
     "//components/sync",
     "//components/translate/core/browser",
+    "//components/ukm/ios:features",
     "//components/unified_consent",
     "//components/url_formatter",
     "//components/variations",
