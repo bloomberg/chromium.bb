@@ -230,9 +230,10 @@ def UserActTodo(opts):
 
 
 def UserActSearch(opts, query):
-  """List CLs matching the Gerrit <search query>"""
+  """List CLs matching the search query"""
   cls = FilteredQuery(opts, query)
   PrintCls(opts, cls)
+UserActSearch.usage = '<query>'
 
 
 def UserActMine(opts):
@@ -321,10 +322,11 @@ def UserActDeps(opts, query):
 
   transitives_raw = [cl.patch_dict for cl in transitives]
   PrintCls(opts, transitives_raw)
+UserActDeps.usage = '<query>'
 
 
 def UserActInspect(opts, *args):
-  """Inspect CL number <n> [n ...]"""
+  """Show the details of one or more CLs"""
   cls = []
   for arg in args:
     helper, cl = GetGerrit(opts, arg)
@@ -334,71 +336,79 @@ def UserActInspect(opts, *args):
     else:
       logging.warning('no results found for CL %s', arg)
   PrintCls(opts, cls)
+UserActInspect.usage = '<CLs...>'
 
 
 def UserActReview(opts, *args):
-  """Mark CL <n> [n ...] with code review status <-2,-1,0,1,2>"""
+  """Mark CLs with a code review status"""
   num = args[-1]
   for arg in args[:-1]:
     helper, cl = GetGerrit(opts, arg)
     helper.SetReview(cl, labels={'Code-Review': num},
                      dryrun=opts.dryrun, notify=opts.notify)
 UserActReview.arg_min = 2
+UserActReview.usage = '<CLs...> <-2|-1|0|1|2>'
 
 
 def UserActVerify(opts, *args):
-  """Mark CL <n> [n ...] with verify status <-1,0,1>"""
+  """Mark CLs with a verified status"""
   num = args[-1]
   for arg in args[:-1]:
     helper, cl = GetGerrit(opts, arg)
     helper.SetReview(cl, labels={'Verified': num},
                      dryrun=opts.dryrun, notify=opts.notify)
 UserActVerify.arg_min = 2
+UserActVerify.usage = '<CLs...> <-1|0|1>'
 
 
 def UserActReady(opts, *args):
-  """Mark CL <n> [n ...] with ready status <0,1>"""
+  """Mark CLs with a ready status"""
   num = args[-1]
   for arg in args[:-1]:
     helper, cl = GetGerrit(opts, arg)
     helper.SetReview(cl, labels={'Commit-Queue': num},
                      dryrun=opts.dryrun, notify=opts.notify)
 UserActReady.arg_min = 2
+UserActReady.usage = '<CLs...> <0|1>'
 
 
 def UserActTrybotready(opts, *args):
-  """Mark CL <n> [n ...] with trybot-ready status <0,1>"""
+  """Mark CLs with a trybot-ready status"""
   num = args[-1]
   for arg in args[:-1]:
     helper, cl = GetGerrit(opts, arg)
     helper.SetReview(cl, labels={'Trybot-Ready': num},
                      dryrun=opts.dryrun, notify=opts.notify)
 UserActTrybotready.arg_min = 2
+UserActTrybotready.usage = '<CLs...> <0|1>'
 
 
 def UserActSubmit(opts, *args):
-  """Submit CL <n> [n ...]"""
+  """Submit CLs"""
   for arg in args:
     helper, cl = GetGerrit(opts, arg)
     helper.SubmitChange(cl, dryrun=opts.dryrun)
+UserActSubmit.usage = '<CLs...>'
 
 
 def UserActAbandon(opts, *args):
-  """Abandon CL <n> [n ...]"""
+  """Abandon CLs"""
   for arg in args:
     helper, cl = GetGerrit(opts, arg)
     helper.AbandonChange(cl, dryrun=opts.dryrun)
+UserActAbandon.usage = '<CLs...>'
 
 
 def UserActRestore(opts, *args):
-  """Restore CL <n> [n ...] that was abandoned"""
+  """Restore CLs that were abandoned"""
   for arg in args:
     helper, cl = GetGerrit(opts, arg)
     helper.RestoreChange(cl, dryrun=opts.dryrun)
+UserActRestore.usage = '<CLs...>'
 
 
 def UserActReviewers(opts, cl, *args):
-  """Add/remove reviewers' emails for CL <n> (prepend with '~' to remove)"""
+  """Add/remove reviewers' emails for a CL (prepend with '~' to remove)"""
   emails = args
   # Allow for optional leading '~'.
   email_validator = re.compile(r'^[~]?%s$' % constants.EMAIL_REGEX)
@@ -420,28 +430,33 @@ def UserActReviewers(opts, cl, *args):
     helper, cl = GetGerrit(opts, cl)
     helper.SetReviewers(cl, add=add_list, remove=remove_list,
                         dryrun=opts.dryrun)
+UserActReviewers.usage = '<CL> <emails...>'
 
 
 def UserActAssign(opts, cl, assignee):
-  """Set assignee for CL <n>"""
+  """Set the assignee for a CL"""
   helper, cl = GetGerrit(opts, cl)
   helper.SetAssignee(cl, assignee, dryrun=opts.dryrun)
+UserActAssign.usage = '<CL> <assignee>'
 
 
 def UserActMessage(opts, cl, message):
-  """Add a message to CL <n>"""
+  """Add a message to a CL"""
   helper, cl = GetGerrit(opts, cl)
   helper.SetReview(cl, msg=message, dryrun=opts.dryrun)
+UserActMessage.usage = '<CL> <message>'
 
 
 def UserActTopic(opts, topic, *args):
-  """Set |topic| for CL number <n> [n ...]"""
+  """Set a topic for one or more CLs"""
   for arg in args:
     helper, arg = GetGerrit(opts, arg)
     helper.SetTopic(arg, topic, dryrun=opts.dryrun)
+UserActTopic.usage = '<topic> <CLs...>'
+
 
 def UserActPrivate(opts, cl, private_str):
-  """Set private bit on CL to private"""
+  """Set the private bit on a CL to private"""
   try:
     private = cros_build_lib.BooleanShellValue(private_str, False)
   except ValueError:
@@ -449,10 +464,11 @@ def UserActPrivate(opts, cl, private_str):
 
   helper, cl = GetGerrit(opts, cl)
   helper.SetPrivate(cl, private)
+UserActPrivate.usage = '<CL> <private str>'
 
 
 def UserActSethashtags(opts, cl, *args):
-  """Add/remove hashtags for CL <n> (prepend with '~' to remove)"""
+  """Add/remove hashtags on a CL (prepend with '~' to remove)"""
   hashtags = args
   add = []
   remove = []
@@ -463,17 +479,19 @@ def UserActSethashtags(opts, cl, *args):
       add.append(hashtag)
   helper, cl = GetGerrit(opts, cl)
   helper.SetHashtags(cl, add, remove, dryrun=opts.dryrun)
+UserActSethashtags.usage = '<CL> <hashtags...>'
 
 
 def UserActDeletedraft(opts, *args):
-  """Delete draft CL <n> [n ...]"""
+  """Delete draft CLs"""
   for arg in args:
     helper, cl = GetGerrit(opts, arg)
     helper.DeleteDraft(cl, dryrun=opts.dryrun)
+UserActDeletedraft.usage = '<CLs...>'
 
 
 def UserActAccount(opts):
-  """Get user account information."""
+  """Get the current user account information"""
   helper, _ = GetGerrit(opts)
   acct = helper.GetAccount()
   if opts.json:
@@ -483,10 +501,36 @@ def UserActAccount(opts):
           (acct['_account_id'], acct['name'], acct['email']))
 
 
+def _GetActionUsages():
+  """Formats a one-line usage and doc message for each action."""
+  actions = [x for x in globals() if x.startswith(ACTION_PREFIX)]
+  actions.sort()
+
+  cmds = [x[len(ACTION_PREFIX):] for x in actions]
+
+  # Sanity check names for devs adding new commands.  Should be quick.
+  for cmd in cmds:
+    expected_name = cmd.lower().capitalize()
+    if cmd != expected_name:
+      raise RuntimeError('callback "%s" is misnamed; should be "%s"' %
+                         (cmd, expected_name))
+
+  functions = [globals()[x] for x in actions]
+  usages = [getattr(x, 'usage', '') for x in functions]
+  docs = [x.__doc__ for x in functions]
+
+  action_usages = []
+  cmd_indent = len(max(cmds, key=len))
+  usage_indent = len(max(usages, key=len))
+  for cmd, usage, doc in zip(cmds, usages, docs):
+    action_usages.append('  %-*s %-*s : %s' %
+                         (cmd_indent, cmd.lower(), usage_indent, usage, doc))
+
+  return '\n'.join(action_usages)
+
+
 def GetParser():
   """Returns the parser to use for this module."""
-  actions = [x for x in globals() if x.startswith(ACTION_PREFIX)]
-
   usage = """%(prog)s [options] <action> [action args]
 
 There is no support for doing line-by-line code review via the command line.
@@ -510,15 +554,9 @@ ready.
 ready.
   $ gerrit --json search 'assignee:self'    # Dump all pending CLs in JSON.
 
-Actions:"""
-  indent = max([len(x) - len(ACTION_PREFIX) for x in actions])
-  for a in sorted(actions):
-    cmd = a[len(ACTION_PREFIX):]
-    # Sanity check for devs adding new commands.  Should be quick.
-    if cmd != cmd.lower().capitalize():
-      raise RuntimeError('callback "%s" is misnamed; should be "%s"' %
-                         (cmd, cmd.lower().capitalize()))
-    usage += '\n  %-*s: %s' % (indent, cmd.lower(), globals()[a].__doc__)
+Actions:
+"""
+  usage += _GetActionUsages()
 
   site_params = config_lib.GetSiteParams()
   parser = commandline.ArgumentParser(usage=usage)
