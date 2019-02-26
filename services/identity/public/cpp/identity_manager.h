@@ -277,6 +277,12 @@ class IdentityManager : public SigninManagerBase::Observer,
   // Returns true if all refresh tokens have been loaded from disk.
   bool AreRefreshTokensLoaded() const;
 
+  // Returns extended information for account identified by |account_info|.
+  // The information will be returned if the information is available and
+  // refresh token is available for account.
+  base::Optional<AccountInfo> FindExtendedAccountInfoForAccount(
+      const CoreAccountInfo& account_info) const;
+
   // Looks up and returns information for account with given |account_id|. If
   // the account cannot be found, return an empty optional. This is equivalent
   // to searching on the vector returned by GetAccountsWithRefreshTokens() but
