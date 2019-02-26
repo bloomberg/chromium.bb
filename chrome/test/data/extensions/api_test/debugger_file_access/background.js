@@ -20,6 +20,32 @@ function openTab(url) {
   });
 }
 
+function runNotAllowedTest(method, params, expectAllowed) {
+  const NOT_ALLOWED = "Not allowed";
+  chrome.tabs.create({url: 'dummy.html'}, function(tab) {
+    var debuggee = {tabId: tab.id};
+    chrome.debugger.attach(debuggee, '1.2', function() {
+      chrome.test.assertNoLastError();
+      chrome.debugger.sendCommand(debuggee, method, params, onResponse);
+
+      function onResponse() {
+        var message;
+        try {
+          message = JSON.parse(chrome.runtime.lastError.message).message;
+        } catch (e) {
+        }
+        chrome.debugger.detach(debuggee, () => {
+          const allowed = message !== NOT_ALLOWED;
+          if (allowed === expectAllowed)
+            chrome.test.succeed();
+          else
+            chrome.test.fail('' + message);
+        });
+      }
+    });
+  });
+}
+
 chrome.test.getConfig((config) => {
   const fileUrl = config.testDataDirectory + '/../body1.html';
   const expectFileAccess = !!config.customArg;
@@ -83,6 +109,20 @@ chrome.test.getConfig((config) => {
                                       {url: fileUrl}, onResponse);
         });
       });
+    },
+
+    // https://crbug.com/866426
+    function setDownloadBehavior() {
+      // We never allow to write local files.
+      runNotAllowedTest('Page.setDownloadBehavior', {behavior: 'allow'},
+          false);
+    },
+
+    // https://crbug.com/805557
+    function setFileInputFiles() {
+      // We only allow extensions with explicit file access to read local files.
+      runNotAllowedTest('DOM.setFileInputFiles', {nodeId: 1, files: []},
+          expectFileAccess);
     },
   ]);
 });

@@ -278,7 +278,7 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
       new protocol::EmulationHandler();
   session->AddHandler(base::WrapUnique(new protocol::BrowserHandler()));
   session->AddHandler(base::WrapUnique(
-      new protocol::DOMHandler(session->client()->MayAffectLocalFiles())));
+      new protocol::DOMHandler(session->client()->MayReadLocalFiles())));
   session->AddHandler(base::WrapUnique(emulation_handler));
   session->AddHandler(base::WrapUnique(new protocol::InputHandler()));
   session->AddHandler(base::WrapUnique(new protocol::InspectorHandler()));
@@ -301,7 +301,7 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
           : protocol::TargetHandler::AccessMode::kAutoAttachOnly,
       GetId(), GetRendererChannel(), session->GetRootSession())));
   session->AddHandler(base::WrapUnique(new protocol::PageHandler(
-      emulation_handler, session->client()->MayAffectLocalFiles())));
+      emulation_handler, session->client()->MayWriteLocalFiles())));
   session->AddHandler(base::WrapUnique(new protocol::SecurityHandler()));
   if (!frame_tree_node_ || !frame_tree_node_->parent()) {
     session->AddHandler(base::WrapUnique(

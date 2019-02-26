@@ -28,7 +28,7 @@ namespace protocol {
 
 namespace {
 
-static const char kNotAllowedError[] = "Not allowed.";
+static const char kNotAllowedError[] = "Not allowed";
 static const char kMethod[] = "method";
 static const char kResumeMethod[] = "Runtime.runIfWaitingForDebugger";
 

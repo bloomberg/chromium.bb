@@ -885,7 +885,7 @@ Response PageHandler::BringToFront() {
 Response PageHandler::SetDownloadBehavior(const std::string& behavior,
                                           Maybe<std::string> download_path) {
   if (!allow_set_download_behavior_)
-    return Response::Error("Not allowed.");
+    return Response::Error("Not allowed");
 
   WebContentsImpl* web_contents = GetWebContents();
   if (!web_contents)

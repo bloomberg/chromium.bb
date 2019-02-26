@@ -149,7 +149,8 @@ class ExtensionDevToolsClientHost : public content::DevToolsAgentHostClient,
   bool MayAttachToRenderer(content::RenderFrameHost* render_frame_host,
                            bool is_webui) override;
   bool MayAttachToBrowser() override;
-  bool MayAffectLocalFiles() override;
+  bool MayReadLocalFiles() override;
+  bool MayWriteLocalFiles() override;
 
  private:
   using PendingRequests =
@@ -386,7 +387,11 @@ bool ExtensionDevToolsClientHost::MayAttachToBrowser() {
   return false;
 }
 
-bool ExtensionDevToolsClientHost::MayAffectLocalFiles() {
+bool ExtensionDevToolsClientHost::MayReadLocalFiles() {
+  return util::AllowFileAccess(extension_->id(), profile_);
+}
+
+bool ExtensionDevToolsClientHost::MayWriteLocalFiles() {
   return false;
 }
 
