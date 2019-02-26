@@ -56,6 +56,13 @@ interface MediaController {
   // The |kDefaultSeekTimeSeconds| provides a default value for seeking by a
   // few seconds.
   Seek(mojo_base.mojom.TimeDelta seek_time);
+
+  // Creates an image observer that will be notified when the image of |type|
+  // for the underlying media session has changed. The image will be at least
+  // |minimum_size_pc| and closest to |desired_size_px|.
+  ObserveImages(
+      MediaSessionImageType type, int32 minimum_size_px, int32 desired_size_px,
+      MediaControllerImageObserver observer);
 };
 
 // The observer for observing media controller events. This is different to a
@@ -75,4 +82,14 @@ interface MediaControllerObserver {
   // Called when the bound media session action list has changed. This tells
   // the observer which actions can be used to control the session.
   MediaSessionActionsChanged(array<MediaSessionAction> action);
+};
+
+// The observer for observing when images associated with a media controller
+// change. This is a separate observer because not all clients need to handle
+// images.
+interface MediaControllerImageObserver {
+  // Called when the observed media controller has a new image of |type|.
+  // It may be null if there is no image.
+  MediaControllerImageChanged(
+      MediaSessionImageType type, MediaImageBitmap? bitmap);
 };

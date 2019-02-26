@@ -61,6 +61,10 @@ class MediaControllerTest : public testing::Test {
     return controller_manager_ptr_;
   }
 
+  static size_t GetImageObserverCount(const MediaController& controller) {
+    return controller.image_observers_.size();
+  }
+
  private:
   base::test::ScopedTaskEnvironment task_environment_;
   service_manager::TestConnectorFactory connector_factory_;
@@ -866,6 +870,138 @@ TEST_F(MediaControllerTest, ActiveController_AddObserver_Abandoned) {
     observer.WaitForEmptyInfo();
     observer.WaitForEmptyMetadata();
     observer.WaitForEmptyActions();
+  }
+}
+
+TEST_F(MediaControllerTest, ClearImageObserverOnError) {
+  MediaController controller;
+
+  mojom::MediaControllerPtr controller_ptr;
+  controller.BindToInterface(mojo::MakeRequest(&controller_ptr));
+  EXPECT_EQ(0u, GetImageObserverCount(controller));
+
+  {
+    test::TestMediaControllerImageObserver observer(controller_ptr);
+    EXPECT_EQ(1u, GetImageObserverCount(controller));
+  }
+
+  EXPECT_EQ(1u, GetImageObserverCount(controller));
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(0u, GetImageObserverCount(controller));
+}
+
+TEST_F(MediaControllerTest, ActiveController_SimulateImagesChanged) {
+  test::MockMediaSession media_session;
+  media_session.SetIsControllable(true);
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session);
+    RequestAudioFocus(media_session, mojom::AudioFocusType::kGain);
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+  }
+
+  std::vector<MediaImage> images;
+  MediaImage image;
+  image.src = GURL("https://www.google.com");
+  images.push_back(image);
+
+  {
+    test::TestMediaControllerImageObserver observer(controller());
+
+    // By default, we should receive an empty image.
+    observer.WaitForExpectedImageOfType(mojom::MediaSessionImageType::kArtwork,
+                                        true);
+    EXPECT_TRUE(media_session.last_image_src().is_empty());
+
+    // Check that we receive the correct image and that it was requested from
+    // |media_session| by the controller.
+    media_session.SetImagesOfType(mojom::MediaSessionImageType::kArtwork,
+                                  images);
+    observer.WaitForExpectedImageOfType(mojom::MediaSessionImageType::kArtwork,
+                                        false);
+    EXPECT_EQ(image.src, media_session.last_image_src());
+
+    // Check that we flush the observer with an empty image. Since the image is
+    // empty the last downloaded image by |media_session| should still be the
+    // previous image.
+    media_session.SetImagesOfType(mojom::MediaSessionImageType::kArtwork,
+                                  std::vector<MediaImage>());
+    observer.WaitForExpectedImageOfType(mojom::MediaSessionImageType::kArtwork,
+                                        true);
+    EXPECT_EQ(image.src, media_session.last_image_src());
+  }
+}
+
+TEST_F(MediaControllerTest,
+       ActiveController_SimulateImagesChanged_ToggleControllable) {
+  test::MockMediaSession media_session;
+  media_session.SetIsControllable(true);
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session);
+    RequestAudioFocus(media_session, mojom::AudioFocusType::kGain);
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+  }
+
+  std::vector<MediaImage> images;
+  MediaImage image;
+  image.src = GURL("https://www.google.com");
+  images.push_back(image);
+  media_session.SetImagesOfType(mojom::MediaSessionImageType::kArtwork, images);
+
+  {
+    test::TestMediaControllerImageObserver observer(controller());
+    observer.WaitForExpectedImageOfType(mojom::MediaSessionImageType::kArtwork,
+                                        false);
+    EXPECT_EQ(image.src, media_session.last_image_src());
+
+    // When the |media_session| becomes uncontrollable it is unbound from the
+    // media controller and we should flush the observer with an empty image.
+    media_session.SetIsControllable(false);
+    observer.WaitForExpectedImageOfType(mojom::MediaSessionImageType::kArtwork,
+                                        true);
+
+    // When the |media_session| becomes controllable again it will be bound to
+    // the media controller and we should flush the observer with the current
+    // images.
+    media_session.SetIsControllable(true);
+    observer.WaitForExpectedImageOfType(mojom::MediaSessionImageType::kArtwork,
+                                        false);
+    EXPECT_EQ(image.src, media_session.last_image_src());
+  }
+}
+
+TEST_F(MediaControllerTest,
+       ActiveController_SimulateImagesChanged_TypeChanged) {
+  test::MockMediaSession media_session;
+  media_session.SetIsControllable(true);
+
+  {
+    test::MockMediaSessionMojoObserver observer(media_session);
+    RequestAudioFocus(media_session, mojom::AudioFocusType::kGain);
+    observer.WaitForState(mojom::MediaSessionInfo::SessionState::kActive);
+  }
+
+  std::vector<MediaImage> images;
+  MediaImage image;
+  image.src = GURL("https://www.google.com");
+  images.push_back(image);
+  media_session.SetImagesOfType(mojom::MediaSessionImageType::kArtwork, images);
+
+  {
+    test::TestMediaControllerImageObserver observer(controller());
+    observer.WaitForExpectedImageOfType(mojom::MediaSessionImageType::kArtwork,
+                                        false);
+    EXPECT_EQ(image.src, media_session.last_image_src());
+
+    // If we clear all the images associated with the media session we should
+    // flush all the observers.
+    media_session.ClearAllImages();
+    observer.WaitForExpectedImageOfType(mojom::MediaSessionImageType::kArtwork,
+                                        true);
+    EXPECT_EQ(image.src, media_session.last_image_src());
   }
 }
 

@@ -7,6 +7,47 @@
 namespace media_session {
 namespace test {
 
+TestMediaControllerImageObserver::TestMediaControllerImageObserver(
+    mojom::MediaControllerPtr& controller) {
+  mojom::MediaControllerImageObserverPtr ptr;
+  binding_.Bind(mojo::MakeRequest(&ptr));
+
+  controller->ObserveImages(mojom::MediaSessionImageType::kArtwork, 0, 0,
+                            std::move(ptr));
+  controller.FlushForTesting();
+}
+
+TestMediaControllerImageObserver::~TestMediaControllerImageObserver() = default;
+
+void TestMediaControllerImageObserver::MediaControllerImageChanged(
+    mojom::MediaSessionImageType type,
+    const SkBitmap& bitmap) {
+  current_ = ImageTypePair(type, bitmap.isNull());
+
+  if (!expected_.has_value() || expected_ != current_)
+    return;
+
+  DCHECK(run_loop_);
+  run_loop_->Quit();
+  expected_.reset();
+}
+
+void TestMediaControllerImageObserver::WaitForExpectedImageOfType(
+    mojom::MediaSessionImageType type,
+    bool expect_null_image) {
+  ImageTypePair pair(type, expect_null_image);
+
+  if (current_ == pair)
+    return;
+
+  expected_ = pair;
+
+  DCHECK(!run_loop_);
+  run_loop_ = std::make_unique<base::RunLoop>();
+  run_loop_->Run();
+  run_loop_.reset();
+}
+
 TestMediaControllerObserver::TestMediaControllerObserver(
     mojom::MediaControllerPtr& media_controller)
     : binding_(this) {

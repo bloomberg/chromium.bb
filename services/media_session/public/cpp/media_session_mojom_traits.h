@@ -70,6 +70,7 @@ struct StructTraits<media_session::mojom::MediaImageBitmapDataView, SkBitmap> {
                    SkBitmap* out);
 
   static bool IsNull(const SkBitmap& r) { return r.isNull(); }
+  static void SetToNull(SkBitmap* out);
 };
 
 }  // namespace mojo

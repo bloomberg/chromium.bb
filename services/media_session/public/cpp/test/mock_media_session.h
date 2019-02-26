@@ -123,7 +123,7 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) MockMediaSession
   void GetMediaImageBitmap(const MediaImage& image,
                            int minimum_size_px,
                            int desired_size_px,
-                           GetMediaImageBitmapCallback callback) override {}
+                           GetMediaImageBitmapCallback callback) override;
 
   void SetIsControllable(bool value);
   void SetPreferStop(bool value) { prefer_stop_ = value; }
@@ -149,6 +149,10 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) MockMediaSession
 
   void SimulateMetadataChanged(const base::Optional<MediaMetadata>& metadata);
 
+  void ClearAllImages();
+  void SetImagesOfType(mojom::MediaSessionImageType type,
+                       const std::vector<MediaImage>& images);
+
   void EnableAction(mojom::MediaSessionAction action);
   void DisableAction(mojom::MediaSessionAction action);
 
@@ -156,6 +160,8 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) MockMediaSession
   int next_track_count() const { return next_track_count_; }
   int add_observer_count() const { return add_observer_count_; }
   int seek_count() const { return seek_count_; }
+
+  const GURL& last_image_src() const { return last_image_src_; }
 
  private:
   void SetState(mojom::MediaSessionInfo::SessionState);
@@ -179,6 +185,9 @@ class COMPONENT_EXPORT(MEDIA_SESSION_TEST_SUPPORT_CPP) MockMediaSession
 
   mojom::MediaSessionInfo::SessionState state_ =
       mojom::MediaSessionInfo::SessionState::kInactive;
+
+  base::flat_map<mojom::MediaSessionImageType, std::vector<MediaImage>> images_;
+  GURL last_image_src_;
 
   mojo::BindingSet<mojom::MediaSession> bindings_;
 

@@ -70,8 +70,8 @@ bool StructTraits<media_session::mojom::MediaImageBitmapDataView, SkBitmap>::
     return false;
   }
 
-  // Create the SkBitmap object which wraps the arc bitmap pixels. This
-  // doesn't copy and |data| and |bitmap| share the buffer.
+  // Create the SkBitmap object which wraps the media image bitmap pixels.
+  // This doesn't copy and |data| and |bitmap| share the buffer.
   SkBitmap bitmap;
   if (!bitmap.installPixels(info, const_cast<uint8_t*>(pixel_data.data()),
                             info.minRowBytes())) {
@@ -79,10 +79,15 @@ bool StructTraits<media_session::mojom::MediaImageBitmapDataView, SkBitmap>::
     return false;
   }
 
-  // Copy the pixels with converting color type.
-  SkImageInfo image_info = info.makeColorType(kN32_SkColorType);
-  return out->tryAllocPixels(image_info) &&
-         bitmap.readPixels(image_info, out->getPixels(), out->rowBytes(), 0, 0);
+  // Copy the pixels into |out|.
+  return out->tryAllocPixels(info) &&
+         bitmap.readPixels(info, out->getPixels(), out->rowBytes(), 0, 0);
+}
+
+// static
+void StructTraits<media_session::mojom::MediaImageBitmapDataView,
+                  SkBitmap>::SetToNull(SkBitmap* out) {
+  out->reset();
 }
 
 }  // namespace mojo
