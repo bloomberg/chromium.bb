@@ -20,6 +20,8 @@ issues]].
   are finally defined.
 - Fix a few issues with hungarian grade1 and grade2 Braille thanks to
   Attila Hammer.
+- Various improvements to Norwegian thanks to Jostein Austvik Jacobsen
+  and Ammar Usama from NLB.
 
 ** Other changes
 
