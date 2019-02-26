@@ -472,10 +472,10 @@ void WrapperTestLauncherDelegate::RunDependentTest(
     test_list.push_back(test_name);
     DoRunTests(test_launcher, test_list);
   } else {
-    // Otherwise skip the test.
+    // Otherwise mark the test as a failure.
     base::TestResult test_result;
     test_result.full_name = test_name;
-    test_result.status = base::TestResult::TEST_SKIPPED;
+    test_result.status = base::TestResult::TEST_FAILURE;
     test_launcher->OnTestFinished(test_result);
 
     if (base::ContainsKey(dependent_test_map_, test_name)) {
