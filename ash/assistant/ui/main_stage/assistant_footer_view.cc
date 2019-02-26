@@ -84,9 +84,8 @@ void AssistantFooterView::InitLayout() {
   AddChildView(suggestion_container_);
 
   // Opt in view.
-  opt_in_view_ = new AssistantOptInView();
+  opt_in_view_ = new AssistantOptInView(delegate_);
   opt_in_view_->set_can_process_events_within_subtree(!consent_given);
-  opt_in_view_->set_delegate(delegate_->GetOptInDelegate());
 
   // Opt in view will be animated on its own layer.
   opt_in_view_->SetPaintToLayer();

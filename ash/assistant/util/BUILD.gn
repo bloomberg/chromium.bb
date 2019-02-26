@@ -18,6 +18,8 @@ component("util") {
     "deep_link_util.h",
     "histogram_util.cc",
     "histogram_util.h",
+    "i18n_util.cc",
+    "i18n_util.h",
   ]
 
   deps = [

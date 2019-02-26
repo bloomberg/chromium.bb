@@ -7,7 +7,7 @@
 #include <array>
 #include <set>
 
-#include "base/i18n/rtl.h"
+#include "ash/assistant/util/i18n_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -41,15 +41,6 @@ constexpr char kAssistantSettingsPrefix[] = "googleassistant://settings";
 constexpr char kAssistantTaskManagerPrefix[] = "googleassistant://task-manager";
 constexpr char kAssistantWhatsOnMyScreenPrefix[] =
     "googleassistant://whats-on-my-screen";
-
-// Helpers ---------------------------------------------------------------------
-
-// Returns a GURL for the specified |url| having set the locale query parameter.
-GURL CreateLocalizedGURL(const std::string& url) {
-  static constexpr char kLocaleParamKey[] = "hl";
-  return net::AppendOrReplaceQueryParameter(GURL(url), kLocaleParamKey,
-                                            base::i18n::GetConfiguredLocale());
-}
 
 }  // namespace
 
