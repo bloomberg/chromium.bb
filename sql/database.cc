@@ -29,7 +29,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/scoped_blocking_call.h"
-#include "base/time/default_tick_clock.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
 #include "sql/database_memory_dump_provider.h"
@@ -148,14 +147,6 @@ int GetSqlite3FileAndSize(sqlite3* db,
   return (*file)->pMethods->xFileSize(*file, db_size);
 }
 
-// This should match UMA_HISTOGRAM_MEDIUM_TIMES().
-base::HistogramBase* GetMediumTimeHistogram(const std::string& name) {
-  return base::Histogram::FactoryTimeGet(
-      name, base::TimeDelta::FromMilliseconds(10),
-      base::TimeDelta::FromMinutes(3), 50,
-      base::HistogramBase::kUmaTargetedHistogramFlag);
-}
-
 std::string AsUTF8ForSQL(const base::FilePath& path) {
 #if defined(OS_WIN)
   return base::UTF16ToUTF8(path.value());
@@ -268,12 +259,7 @@ Database::Database()
       mmap_disabled_(false),
       mmap_enabled_(false),
       total_changes_at_last_release_(0),
-      stats_histogram_(nullptr),
-      commit_time_histogram_(nullptr),
-      autocommit_time_histogram_(nullptr),
-      update_time_histogram_(nullptr),
-      query_time_histogram_(nullptr),
-      clock_(std::make_unique<base::DefaultTickClock>()) {}
+      stats_histogram_(nullptr) {}
 
 Database::~Database() {
   Close();
@@ -287,49 +273,6 @@ void Database::RecordEvent(Events event, size_t count) {
   if (stats_histogram_) {
     for (size_t i = 0; i < count; ++i) {
       stats_histogram_->Add(event);
-    }
-  }
-}
-
-void Database::RecordCommitTime(const base::TimeDelta& delta) {
-  RecordUpdateTime(delta);
-  UMA_HISTOGRAM_MEDIUM_TIMES("Sqlite.CommitTime", delta);
-  if (commit_time_histogram_)
-    commit_time_histogram_->AddTime(delta);
-}
-
-void Database::RecordAutoCommitTime(const base::TimeDelta& delta) {
-  RecordUpdateTime(delta);
-  UMA_HISTOGRAM_MEDIUM_TIMES("Sqlite.AutoCommitTime", delta);
-  if (autocommit_time_histogram_)
-    autocommit_time_histogram_->AddTime(delta);
-}
-
-void Database::RecordUpdateTime(const base::TimeDelta& delta) {
-  RecordQueryTime(delta);
-  UMA_HISTOGRAM_MEDIUM_TIMES("Sqlite.UpdateTime", delta);
-  if (update_time_histogram_)
-    update_time_histogram_->AddTime(delta);
-}
-
-void Database::RecordQueryTime(const base::TimeDelta& delta) {
-  UMA_HISTOGRAM_MEDIUM_TIMES("Sqlite.QueryTime", delta);
-  if (query_time_histogram_)
-    query_time_histogram_->AddTime(delta);
-}
-
-void Database::RecordTimeAndChanges(const base::TimeDelta& delta,
-                                    bool read_only) {
-  if (read_only) {
-    RecordQueryTime(delta);
-  } else {
-    const int changes = sqlite3_changes(db_);
-    if (sqlite3_get_autocommit(db_)) {
-      RecordAutoCommitTime(delta);
-      RecordEvent(EVENT_CHANGES_AUTOCOMMIT, changes);
-    } else {
-      RecordUpdateTime(delta);
-      RecordEvent(EVENT_CHANGES, changes);
     }
   }
 }
@@ -856,7 +799,9 @@ size_t Database::GetAppropriateMmapSize() {
   if (mmap_ofs == MetaTable::kMmapFailure) {
     RecordOneEvent(EVENT_MMAP_FAILED);
     return 0;
-  } else if (mmap_ofs != MetaTable::kMmapSuccess) {
+  }
+
+  if (mmap_ofs != MetaTable::kMmapSuccess) {
     // Continue reading from previous offset.
     DCHECK_GE(mmap_ofs, 0);
 
@@ -893,7 +838,6 @@ size_t Database::GetAppropriateMmapSize() {
     // database was truncated after a previous pass.
     if (amount <= 0 && mmap_ofs < db_size) {
       DCHECK_EQ(0, amount);
-      RecordOneEvent(EVENT_MMAP_SUCCESS_NO_PROGRESS);
     } else {
       static const int kPageSize = 4096;
       char buf[kPageSize];
@@ -914,15 +858,10 @@ size_t Database::GetAppropriateMmapSize() {
       }
 
       // Log these events after update to distinguish meta update failure.
-      Events event;
       if (mmap_ofs >= db_size) {
         mmap_ofs = MetaTable::kMmapSuccess;
-        event = EVENT_MMAP_SUCCESS_NEW;
-      } else if (mmap_ofs > 0) {
-        event = EVENT_MMAP_SUCCESS_PARTIAL;
       } else {
-        DCHECK_EQ(MetaTable::kMmapFailure, mmap_ofs);
-        event = EVENT_MMAP_FAILED_NEW;
+        DCHECK(mmap_ofs > 0 || mmap_ofs == MetaTable::kMmapFailure);
       }
 
       if (mmap_alt_status_) {
@@ -937,7 +876,8 @@ size_t Database::GetAppropriateMmapSize() {
         }
       }
 
-      RecordOneEvent(event);
+      if (mmap_ofs == MetaTable::kMmapFailure)
+        RecordOneEvent(EVENT_MMAP_FAILED_NEW);
     }
   }
 
@@ -1174,7 +1114,6 @@ bool Database::BeginTransaction() {
     needs_rollback_ = false;
 
     Statement begin(GetCachedStatement(SQL_FROM_HERE, "BEGIN TRANSACTION"));
-    RecordOneEvent(EVENT_BEGIN);
     if (!begin.Run())
       return false;
   }
@@ -1218,19 +1157,12 @@ bool Database::CommitTransaction() {
 
   Statement commit(GetCachedStatement(SQL_FROM_HERE, "COMMIT"));
 
-  // Collect the commit time manually, sql::Statement would register it as query
-  // time only.
-  const base::TimeTicks before = NowTicks();
-  bool ret = commit.RunWithoutTimers();
-  const base::TimeDelta delta = NowTicks() - before;
-
-  RecordCommitTime(delta);
-  RecordOneEvent(EVENT_COMMIT);
+  bool succeeded = commit.Run();
 
   // Release dirty cache pages after the transaction closes.
   ReleaseCacheMemoryIfNeeded(false);
 
-  return ret;
+  return succeeded;
 }
 
 void Database::RollbackAllTransactions() {
@@ -1269,22 +1201,21 @@ bool Database::DetachDatabase(const char* attachment_point, InternalApiToken) {
 // caller wishes to execute multiple statements, that should be explicit, and
 // perhaps tucked into an explicit transaction with rollback in case of error.
 int Database::ExecuteAndReturnErrorCode(const char* sql) {
-  base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
-  InitScopedBlockingCall(&scoped_blocking_call);
+  DCHECK(sql);
 
   if (!db_) {
     DCHECK(poisoned_) << "Illegal use of Database without a db";
     return SQLITE_ERROR;
   }
-  DCHECK(sql);
 
-  RecordOneEvent(EVENT_EXECUTE);
+  base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
+  InitScopedBlockingCall(&scoped_blocking_call);
+
   int rc = SQLITE_OK;
   while ((rc == SQLITE_OK) && *sql) {
     sqlite3_stmt* stmt = nullptr;
     const char* leftover_sql;
 
-    const base::TimeTicks before = NowTicks();
     rc = sqlite3_prepare_v2(db_, sql, -1, &stmt, &leftover_sql);
     sql = leftover_sql;
 
@@ -1299,21 +1230,15 @@ int Database::ExecuteAndReturnErrorCode(const char* sql) {
     if (!stmt)
       continue;
 
-    // Save for use after statement is finalized.
-    const bool read_only = !!sqlite3_stmt_readonly(stmt);
-
-    RecordOneEvent(Database::EVENT_STATEMENT_RUN);
     while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
       // TODO(shess): Audit to see if this can become a DCHECK.  I think PRAGMA
-      // is the only legitimate case for this.
-      RecordOneEvent(Database::EVENT_STATEMENT_ROWS);
+      // is the only legitimate case for this. Previously recorded histograms
+      // show significant use of this code path.
     }
 
     // sqlite3_finalize() returns SQLITE_OK if the most recent sqlite3_step()
     // returned SQLITE_DONE or SQLITE_ROW, otherwise the error code.
     rc = sqlite3_finalize(stmt);
-    if (rc == SQLITE_OK)
-      RecordOneEvent(Database::EVENT_STATEMENT_SUCCESS);
 
     // sqlite3_exec() does this, presumably to avoid spinning the parser for
     // trailing whitespace.
@@ -1321,9 +1246,6 @@ int Database::ExecuteAndReturnErrorCode(const char* sql) {
     while (base::IsAsciiWhitespace(*sql)) {
       sql++;
     }
-
-    const base::TimeDelta delta = NowTicks() - before;
-    RecordTimeAndChanges(delta, read_only);
   }
 
   // Most calls to Execute() modify the database.  The main exceptions would be
@@ -1398,14 +1320,15 @@ scoped_refptr<Database::StatementRef> Database::GetUniqueStatement(
 scoped_refptr<Database::StatementRef> Database::GetStatementImpl(
     sql::Database* tracking_db,
     const char* sql) const {
-  base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
-  InitScopedBlockingCall(&scoped_blocking_call);
   DCHECK(sql);
   DCHECK(!tracking_db || tracking_db == this);
 
   // Return inactive statement.
   if (!db_)
     return base::MakeRefCounted<StatementRef>(nullptr, nullptr, poisoned_);
+
+  base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
+  InitScopedBlockingCall(&scoped_blocking_call);
 
   sqlite3_stmt* stmt = nullptr;
   int rc = sqlite3_prepare_v2(db_, sql, -1, &stmt, nullptr);
@@ -1546,13 +1469,13 @@ const char* Database::GetErrorMessage() const {
 
 bool Database::OpenInternal(const std::string& file_name,
                             Database::Retry retry_flag) {
-  base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
-  InitScopedBlockingCall(&scoped_blocking_call);
-
   if (db_) {
     DLOG(DCHECK) << "sql::Database is already open.";
     return false;
   }
+
+  base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
+  InitScopedBlockingCall(&scoped_blocking_call);
 
   EnsureSqliteInitialized();
 
@@ -1562,22 +1485,6 @@ bool Database::OpenInternal(const std::string& file_name,
     stats_histogram_ = base::LinearHistogram::FactoryGet(
         "Sqlite.Stats." + histogram_tag_, 1, EVENT_MAX_VALUE,
         EVENT_MAX_VALUE + 1, base::HistogramBase::kUmaTargetedHistogramFlag);
-
-    // The timer setup matches UMA_HISTOGRAM_MEDIUM_TIMES().  3 minutes is an
-    // unreasonable time for any single operation, so there is not much value to
-    // knowing if it was 3 minutes or 5 minutes.  In reality at that point
-    // things are entirely busted.
-    commit_time_histogram_ =
-        GetMediumTimeHistogram("Sqlite.CommitTime." + histogram_tag_);
-
-    autocommit_time_histogram_ =
-        GetMediumTimeHistogram("Sqlite.AutoCommitTime." + histogram_tag_);
-
-    update_time_histogram_ =
-        GetMediumTimeHistogram("Sqlite.UpdateTime." + histogram_tag_);
-
-    query_time_histogram_ =
-        GetMediumTimeHistogram("Sqlite.QueryTime." + histogram_tag_);
   }
 
   // If |poisoned_| is set, it means an error handler called
@@ -1745,14 +1652,7 @@ bool Database::OpenInternal(const std::string& file_name,
 void Database::DoRollback() {
   Statement rollback(GetCachedStatement(SQL_FROM_HERE, "ROLLBACK"));
 
-  // Collect the rollback time manually, sql::Statement would register it as
-  // query time only.
-  const base::TimeTicks before = NowTicks();
-  rollback.RunWithoutTimers();
-  const base::TimeDelta delta = NowTicks() - before;
-
-  RecordUpdateTime(delta);
-  RecordOneEvent(EVENT_ROLLBACK);
+  rollback.Run();
 
   // The cache may have been accumulating dirty pages for commit.  Note that in
   // some cases sql::Transaction can fire rollback after a database is closed.

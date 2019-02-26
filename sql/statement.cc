@@ -53,49 +53,25 @@ bool Statement::CheckValid() const {
   return is_valid();
 }
 
-int Statement::StepInternal(bool timer_flag) {
-  base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
-  ref_->InitScopedBlockingCall(&scoped_blocking_call);
+int Statement::StepInternal() {
   if (!CheckValid())
     return SQLITE_ERROR;
 
-  const bool was_stepped = stepped_;
+  base::Optional<base::ScopedBlockingCall> scoped_blocking_call;
+  ref_->InitScopedBlockingCall(&scoped_blocking_call);
+
   stepped_ = true;
-  int ret = SQLITE_ERROR;
-  if (!ref_->database()) {
-    ret = sqlite3_step(ref_->stmt());
-  } else {
-    if (!timer_flag) {
-      ret = sqlite3_step(ref_->stmt());
-    } else {
-      const base::TimeTicks before = ref_->database()->NowTicks();
-      ret = sqlite3_step(ref_->stmt());
-      const base::TimeTicks after = ref_->database()->NowTicks();
-      const bool read_only = !!sqlite3_stmt_readonly(ref_->stmt());
-      ref_->database()->RecordTimeAndChanges(after - before, read_only);
-    }
-
-    if (!was_stepped)
-      ref_->database()->RecordOneEvent(Database::EVENT_STATEMENT_RUN);
-
-    if (ret == SQLITE_ROW)
-      ref_->database()->RecordOneEvent(Database::EVENT_STATEMENT_ROWS);
-  }
+  int ret = sqlite3_step(ref_->stmt());
   return CheckError(ret);
 }
 
 bool Statement::Run() {
   DCHECK(!stepped_);
-  return StepInternal(true) == SQLITE_DONE;
-}
-
-bool Statement::RunWithoutTimers() {
-  DCHECK(!stepped_);
-  return StepInternal(false) == SQLITE_DONE;
+  return StepInternal() == SQLITE_DONE;
 }
 
 bool Statement::Step() {
-  return StepInternal(true) == SQLITE_ROW;
+  return StepInternal() == SQLITE_ROW;
 }
 
 void Statement::Reset(bool clear_bound_vars) {
@@ -109,9 +85,7 @@ void Statement::Reset(bool clear_bound_vars) {
     // before reaching SQLITE_DONE.  Don't call CheckError() because
     // sqlite3_reset() returns the last step error, which StepInternal() already
     // checked.
-    const int rc =sqlite3_reset(ref_->stmt());
-    if (rc == SQLITE_OK && ref_->database())
-      ref_->database()->RecordOneEvent(Database::EVENT_STATEMENT_SUCCESS);
+    sqlite3_reset(ref_->stmt());
   }
 
   // Potentially release dirty cache pages if an autocommit statement made
