@@ -8,12 +8,13 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "net/base/net_errors.h"
 #include "remoting/base/compound_buffer.h"
 #include "remoting/protocol/message_serialization.h"
@@ -23,7 +24,7 @@ namespace protocol {
 
 WebrtcDataStreamAdapter::WebrtcDataStreamAdapter(
     rtc::scoped_refptr<webrtc::DataChannelInterface> channel)
-    : channel_(channel.get()) {
+    : channel_(channel.get()), weak_ptr_factory_(this) {
   channel_->RegisterObserver(this);
   DCHECK_EQ(channel_->state(), webrtc::DataChannelInterface::kConnecting);
 }
@@ -34,8 +35,11 @@ WebrtcDataStreamAdapter::~WebrtcDataStreamAdapter() {
     channel_->Close();
 
     // Destroy |channel_| asynchronously as it may be on stack.
-    base::ThreadTaskRunnerHandle::Get()->ReleaseSoon(
-        FROM_HERE, base::WrapRefCounted(channel_.release()));
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(base::DoNothing::Once<
+                           rtc::scoped_refptr<webrtc::DataChannelInterface>>(),
+                       std::move(channel_)));
   }
 }
 
@@ -54,15 +58,38 @@ void WebrtcDataStreamAdapter::Send(google::protobuf::MessageLite* message,
   buffer.SetSize(message->ByteSize());
   message->SerializeWithCachedSizesToArray(
       reinterpret_cast<uint8_t*>(buffer.data()));
-  webrtc::DataBuffer data_buffer(std::move(buffer), true /* binary */);
-  if (!channel_->Send(data_buffer)) {
-    LOG(ERROR) << "Send failed on data channel " << channel_->label();
-    channel_->Close();
-    return;
-  }
+  pending_messages_.emplace(
+      webrtc::DataBuffer(std::move(buffer), true /* binary */),
+      std::move(done));
 
-  if (!done.is_null())
-    std::move(done).Run();
+  // Send asynchronously to avoid nested calls to Send.
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&WebrtcDataStreamAdapter::SendMessagesIfReady,
+                                weak_ptr_factory_.GetWeakPtr()));
+}
+
+void WebrtcDataStreamAdapter::SendMessagesIfReady() {
+  // We use our own send queue instead of queuing multiple messages in the
+  // data-channel queue so we can invoke the done callback as close to the
+  // message actually being sent as possible and avoid overrunning the data-
+  // channel queue. There is also lower-level buffering beneath the data-channel
+  // queue, which we do want to keep full to ensure the link is fully utilized.
+
+  // Send messages to the data channel until it has to add one to its own queue.
+  // This ensures that the lower-level buffers remain full.
+  while (channel_->buffered_amount() == 0 && !pending_messages_.empty()) {
+    PendingMessage message = std::move(pending_messages_.front());
+    pending_messages_.pop();
+    if (!channel_->Send(std::move(message.buffer))) {
+      LOG(ERROR) << "Send failed on data channel " << channel_->label();
+      channel_->Close();
+      return;
+    }
+
+    if (message.done_callback) {
+      std::move(message.done_callback).Run();
+    }
+  }
 }
 
 void WebrtcDataStreamAdapter::OnStateChange() {
@@ -98,6 +125,27 @@ void WebrtcDataStreamAdapter::OnMessage(const webrtc::DataBuffer& rtc_buffer) {
   buffer->Lock();
   event_handler_->OnMessageReceived(std::move(buffer));
 }
+
+void WebrtcDataStreamAdapter::OnBufferedAmountChange(uint64_t previous_amount) {
+  // WebRTC explicitly doesn't support sending from observer callbacks, so post
+  // a task to let the stack unwind.
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&WebrtcDataStreamAdapter::SendMessagesIfReady,
+                                weak_ptr_factory_.GetWeakPtr()));
+}
+
+WebrtcDataStreamAdapter::PendingMessage::PendingMessage(
+    webrtc::DataBuffer buffer,
+    base::OnceClosure done_callback)
+    : buffer(std::move(buffer)), done_callback(std::move(done_callback)) {}
+
+WebrtcDataStreamAdapter::PendingMessage&
+WebrtcDataStreamAdapter::PendingMessage::operator=(PendingMessage&&) = default;
+
+WebrtcDataStreamAdapter::PendingMessage::PendingMessage(PendingMessage&&) =
+    default;
+
+WebrtcDataStreamAdapter::PendingMessage::~PendingMessage() = default;
 
 }  // namespace protocol
 }  // namespace remoting
