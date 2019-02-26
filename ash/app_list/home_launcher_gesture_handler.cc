@@ -25,8 +25,8 @@
 #include "base/bind_helpers.h"
 #include "base/metrics/user_metrics.h"
 #include "base/numerics/ranges.h"
+#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/window_types.h"
-#include "ui/aura/null_window_targeter.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -176,15 +176,15 @@ class HomeLauncherGestureHandler::ScopedWindowModifier
  public:
   explicit ScopedWindowModifier(aura::Window* window) : window_(window) {
     DCHECK(window_);
-    original_targeter_ =
-        window_->SetEventTargeter(std::make_unique<aura::NullWindowTargeter>());
+    original_event_targeting_policy_ = window_->event_targeting_policy();
+    window_->SetEventTargetingPolicy(ws::mojom::EventTargetingPolicy::NONE);
   }
   ~ScopedWindowModifier() override {
     for (const auto& descendant : transient_descendants_values_)
       descendant.first->RemoveObserver(this);
 
     ResetOpacityAndTransform();
-    window_->SetEventTargeter(std::move(original_targeter_));
+    window_->SetEventTargetingPolicy(original_event_targeting_policy_);
   }
 
   bool IsAnimating() const {
@@ -262,7 +262,10 @@ class HomeLauncherGestureHandler::ScopedWindowModifier
   // target opacities and transforms.
   std::map<aura::Window*, WindowValues> transient_descendants_values_;
 
-  std::unique_ptr<aura::WindowTargeter> original_targeter_;
+  // For the duration of this object |window_| event targeting policy will be
+  // sent to NONE. Store the original so we can change it back when destroying
+  // this object.
+  ws::mojom::EventTargetingPolicy original_event_targeting_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedWindowModifier);
 };
