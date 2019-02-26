@@ -23,5 +23,8 @@ FAIL getIterator() throws if there's already a lock s.getIterator is not a funct
 FAIL Acquiring a reader after exhaustively async-iterating a stream promise_test: Unhandled rejection with value: object "TypeError: s is not async iterable"
 FAIL Acquiring a reader after partially async-iterating a stream promise_test: Unhandled rejection with value: object "TypeError: s is not async iterable"
 FAIL Acquiring a reader and reading the remaining chunks after partially async-iterating a stream with preventCancel = true promise_test: Unhandled rejection with value: object "TypeError: s.getIterator(...) is not a function or its return value is not async iterable"
+FAIL calling next() after return() should reject promise_test: Unhandled rejection with value: object "TypeError: rs.getIterator is not a function"
+FAIL return() should unlock the stream synchronously when preventCancel = false rs.getIterator is not a function
+FAIL return() should unlock the stream synchronously when preventCancel = true rs.getIterator is not a function
 Harness: the test ran to completion.
 
