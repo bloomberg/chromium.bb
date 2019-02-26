@@ -22,15 +22,18 @@ if (use_cups) {
     configs += [ "//printing:cups" ]
   }
 
-  fuzzer_test("ipp_message_parser_fuzzer") {
-    sources = [
-      "ipp_message_parser_fuzzer.cc",
-    ]
-    deps = [
-      ":cpp",
-    ]
+  # Fuzzer target only available on fuzzing builds.
+  if (use_fuzzing_engine) {
+    fuzzer_test("ipp_message_parser_fuzzer") {
+      sources = [
+        "ipp_message_parser_fuzzer.cc",
+      ]
+      deps = [
+        ":cpp",
+      ]
 
-    dict = "ipp_message_parser_fuzzer.dict"
+      dict = "ipp_message_parser_fuzzer.dict"
+    }
   }
 }
 
@@ -45,4 +48,8 @@ source_set("manifest") {
     "//chrome/services/cups_ipp_parser/public/mojom",
     "//services/service_manager/public/cpp",
   ]
+}
+
+# A dummy group to make fuzz targets discoverable.
+group("fuzzers") {
 }
