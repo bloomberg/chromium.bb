@@ -4076,7 +4076,10 @@
                         "session_rate": "==0",
                         "x_new_tab_opened_timeout": "5",
                         "x_tab_minimum_active_duration": "60"
-                    }
+                    },
+                    "enable_features": [
+                        "IPH_ReopenTab"
+                    ]
                 }
             ]
         }
