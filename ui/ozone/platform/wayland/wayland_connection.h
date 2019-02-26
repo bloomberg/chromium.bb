@@ -199,6 +199,9 @@ class WaylandConnection : public PlatformEventSource,
   // Terminates the GPU process on invalid data received
   void TerminateGpuProcess(std::string reason);
 
+  // Make sure data device is properly initialized
+  void EnsureDataDevice();
+
   // wl_registry_listener
   static void Global(void* data,
                      wl_registry* registry,

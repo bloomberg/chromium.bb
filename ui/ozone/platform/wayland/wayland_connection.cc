@@ -405,6 +405,14 @@ void WaylandConnection::TerminateGpuProcess(std::string reason) {
   buffer_manager_->ClearState();
 }
 
+void WaylandConnection::EnsureDataDevice() {
+  if (!data_device_manager_ || !seat_)
+    return;
+  DCHECK(!data_device_);
+  wl_data_device* data_device = data_device_manager_->GetDevice();
+  data_device_ = std::make_unique<WaylandDataDevice>(this, data_device);
+}
+
 // static
 void WaylandConnection::Global(void* data,
                                wl_registry* registry,
@@ -448,19 +456,7 @@ void WaylandConnection::Global(void* data,
       return;
     }
     wl_seat_add_listener(connection->seat_.get(), &seat_listener, connection);
-
-    // TODO(tonikitoo,msisov): The connection passed to WaylandInputDevice must
-    // have a valid data device manager. We should ideally be robust to the
-    // compositor advertising a wl_seat first. No known compositor does this,
-    // fortunately.
-    if (!connection->data_device_manager_) {
-      LOG(ERROR)
-          << "No data device manager. Clipboard won't be fully functional";
-      return;
-    }
-    wl_data_device* data_device = connection->data_device_manager_->GetDevice();
-    connection->data_device_.reset(
-        new WaylandDataDevice(connection, data_device));
+    connection->EnsureDataDevice();
   } else if (!connection->shell_v6_ &&
              strcmp(interface, "zxdg_shell_v6") == 0) {
     // Check for zxdg_shell_v6 first.
@@ -514,9 +510,9 @@ void WaylandConnection::Global(void* data,
       LOG(ERROR) << "Failed to bind to wl_data_device_manager global";
       return;
     }
-    connection->data_device_manager_.reset(
-        new WaylandDataDeviceManager(data_device_manager.release()));
-    connection->data_device_manager_->set_connection(connection);
+    connection->data_device_manager_.reset(new WaylandDataDeviceManager(
+        data_device_manager.release(), connection));
+    connection->EnsureDataDevice();
   } else if (!connection->buffer_manager_ &&
              (strcmp(interface, "zwp_linux_dmabuf_v1") == 0)) {
     wl::Object<zwp_linux_dmabuf_v1> zwp_linux_dmabuf =
