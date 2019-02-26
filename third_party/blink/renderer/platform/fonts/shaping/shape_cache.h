@@ -64,12 +64,12 @@ class ShapeCache {
           direction_(static_cast<unsigned>(TextDirection::kLtr)) {}
 
     SmallStringKey(const LChar* characters,
-                   unsigned short length,
+                   uint16_t length,
                    TextDirection direction)
         : length_(length), direction_(static_cast<unsigned>(direction)) {
       DCHECK(length <= kCapacity);
       // Up-convert from LChar to UChar.
-      for (unsigned short i = 0; i < length; ++i) {
+      for (uint16_t i = 0; i < length; ++i) {
         characters_[i] = characters[i];
       }
 
@@ -77,7 +77,7 @@ class ShapeCache {
     }
 
     SmallStringKey(const UChar* characters,
-                   unsigned short length,
+                   uint16_t length,
                    TextDirection direction)
         : length_(length), direction_(static_cast<unsigned>(direction)) {
       DCHECK(length <= kCapacity);
@@ -86,7 +86,7 @@ class ShapeCache {
     }
 
     const UChar* Characters() const { return characters_; }
-    unsigned short length() const { return length_; }
+    uint16_t length() const { return length_; }
     TextDirection Direction() const {
       return static_cast<TextDirection>(direction_);
     }
