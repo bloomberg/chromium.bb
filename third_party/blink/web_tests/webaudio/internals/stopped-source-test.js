@@ -15,10 +15,11 @@ function testStoppedSourceGC(task, should, options) {
   lastSrc1.connect(gain);
 
   lastSrc0.onended = () => {
-    // Have |lastSrc1| stop 10 render quanta from now (pretty arbitrary).
-    lastSrc1.stop(
+    asyncGC().then(function () {
+      // Have |lastSrc1| stop 10 render quanta from now (pretty arbitrary).
+      lastSrc1.stop(
         context.currentTime + 10 * RENDER_QUANTUM_FRAMES / context.sampleRate);
-    should(() => gc(), 'GC').notThrow();
+    });
   };
 
   lastSrc1.onended = () => {
@@ -28,35 +29,37 @@ function testStoppedSourceGC(task, should, options) {
     task.done();
   };
 
-  gc();
-  let initialCount = internals.audioHandlerCount();
+  let initialCount = 0;
+  asyncGC().then(function () {
+    initialCount = internals.audioHandlerCount();
 
-  // For information only.  This should obviously always pass.
-  should(initialCount, 'Number of handlers before test')
-      .beEqualTo(initialCount);
-  // Create a bunch of sources for testing.  Since we call stop(), these
-  // should all get collected, even though they're no longer connected to
-  // the destination.
-  for (let k = 0; k < numberOfNodes; ++k) {
-    let src = constructorMethod();
-    src.start();
-    src.connect(gain);
-    src.onended = () => {
-      ++countEndedNodes;
-      if (countEndedNodes == numberOfNodes) {
-        // For information only
-        should(countEndedNodes, `Number of ${nodeName}s tested`)
-            .beEqualTo(numberOfNodes);
-        lastSrc0.stop();
-      }
-    };
-    // Stop it after about 2 renders
-    src.stop(
-        context.currentTime + 2 * RENDER_QUANTUM_FRAMES / context.sampleRate);
-    src.disconnect();
-  }
+    // For information only.  This should obviously always pass.
+    should(initialCount, 'Number of handlers before test')
+        .beEqualTo(initialCount);
+    // Create a bunch of sources for testing.  Since we call stop(), these
+    // should all get collected, even though they're no longer connected to
+    // the destination.
+    for (let k = 0; k < numberOfNodes; ++k) {
+      let src = constructorMethod();
+      src.start();
+      src.connect(gain);
+      src.onended = () => {
+        ++countEndedNodes;
+        if (countEndedNodes == numberOfNodes) {
+          // For information only
+          should(countEndedNodes, `Number of ${nodeName}s tested`)
+              .beEqualTo(numberOfNodes);
+          lastSrc0.stop();
+        }
+      };
+      // Stop it after about 2 renders
+      src.stop(
+          context.currentTime + 2 * RENDER_QUANTUM_FRAMES / context.sampleRate);
+      src.disconnect();
+    }
 
-  // Start the sources
-  lastSrc0.start();
-  lastSrc1.start();
+    // Start the sources
+    lastSrc0.start();
+    lastSrc1.start();
+  });
 }
