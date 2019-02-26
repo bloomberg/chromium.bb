@@ -6,3 +6,4 @@
 * [Net debugging](/android_webview/docs/net-debugging.md)
 
 [home]: /android_webview/docs/README.md
+[logo]: /android_webview/docs/images/webview_logo.png
