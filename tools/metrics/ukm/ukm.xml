@@ -553,6 +553,20 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Autofill.SelectedMaskedServerCard">
+  <obsolete>
+    Deprecated 2/2019
+  </obsolete>
+  <owner>jiahuiguo@google.com</owner>
+  <metric name="MillisecondsSinceFormParsed">
+    <summary>
+      Obsolete.
+
+      Time since form parse.
+    </summary>
+  </metric>
+</event>
+
 <event name="Autofill.SuggestionFilled">
   <owner>jiahuiguo@google.com</owner>
   <summary>
