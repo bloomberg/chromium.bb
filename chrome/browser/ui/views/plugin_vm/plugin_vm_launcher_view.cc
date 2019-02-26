@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_image_manager_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -18,6 +19,7 @@
 #include "ui/chromeos/devicetype_utils.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/progress_bar.h"
 #include "ui/views/layout/box_layout.h"
@@ -40,10 +42,26 @@ void plugin_vm::ShowPluginVmLauncherView(Profile* profile) {
 PluginVmLauncherView::PluginVmLauncherView(Profile* profile)
     : plugin_vm_image_manager_(
           plugin_vm::PluginVmImageManagerFactory::GetForProfile(profile)) {
+  constexpr gfx::Size kLogoImageSize(32, 32);
+
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kVertical,
       provider->GetInsetsMetric(views::InsetsMetric::INSETS_DIALOG)));
+
+  views::ImageView* logo_image = new views::ImageView();
+  logo_image->SetImageSize(kLogoImageSize);
+  logo_image->SetImage(
+      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+          IDR_LOGO_PLUGIN_VM_DEFAULT_32));
+  logo_image->SetHorizontalAlignment(views::ImageView::LEADING);
+  AddChildView(logo_image);
+
+  big_message_label_ =
+      new views::Label(GetBigMessage(), views::style::CONTEXT_DIALOG_TITLE);
+  big_message_label_->SetMultiLine(true);
+  big_message_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  AddChildView(big_message_label_);
 
   message_label_ = new views::Label();
   message_label_->SetMultiLine(true);
@@ -53,6 +71,13 @@ PluginVmLauncherView::PluginVmLauncherView(Profile* profile)
   progress_bar_ = new views::ProgressBar();
   progress_bar_->SetVisible(false);
   AddChildView(progress_bar_);
+
+  big_image_ = new views::ImageView();
+  big_image_->SetImage(
+      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+          IDR_PLUGIN_VM_LAUNCHER));
+  big_image_->SetHorizontalAlignment(views::ImageView::CENTER);
+  AddChildView(big_image_);
 }
 
 int PluginVmLauncherView::GetDialogButtons() const {
@@ -89,18 +114,8 @@ base::string16 PluginVmLauncherView::GetDialogButtonLabel(
   }
 }
 
-base::string16 PluginVmLauncherView::GetWindowTitle() const {
-  switch (state_) {
-    case State::START_DOWNLOADING:
-    case State::DOWNLOADING:
-    case State::UNZIPPING:
-      return l10n_util::GetStringUTF16(
-          IDS_PLUGIN_VM_LAUNCHER_ENVIRONMENT_SETTING_TITLE);
-    case State::FINISHED:
-      return l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_FINISHED_TITLE);
-    case State::ERROR:
-      return l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_ERROR_TITLE);
-  }
+bool PluginVmLauncherView::ShouldShowWindowTitle() const {
+  return false;
 }
 
 bool PluginVmLauncherView::Accept() {
@@ -126,7 +141,7 @@ bool PluginVmLauncherView::Cancel() {
 
 gfx::Size PluginVmLauncherView::CalculatePreferredSize() const {
   const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
-      DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH);
+      DISTANCE_LARGE_MODAL_DIALOG_PREFERRED_WIDTH);
   return gfx::Size(width,
                    GetLayoutManager()->GetPreferredHeightForWidth(this, width));
 }
@@ -178,6 +193,20 @@ PluginVmLauncherView::GetPluginVmImageManagerForTesting() {
   return plugin_vm_image_manager_;
 }
 
+base::string16 PluginVmLauncherView::GetBigMessage() {
+  switch (state_) {
+    case State::START_DOWNLOADING:
+    case State::DOWNLOADING:
+    case State::UNZIPPING:
+      return l10n_util::GetStringUTF16(
+          IDS_PLUGIN_VM_LAUNCHER_ENVIRONMENT_SETTING_TITLE);
+    case State::FINISHED:
+      return l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_FINISHED_TITLE);
+    case State::ERROR:
+      return l10n_util::GetStringUTF16(IDS_PLUGIN_VM_LAUNCHER_ERROR_TITLE);
+  }
+}
+
 void PluginVmLauncherView::AddedToWidget() {
   StartPluginVmImageDownload();
 }
@@ -198,14 +227,35 @@ base::string16 PluginVmLauncherView::GetMessage() const {
   }
 }
 
-void PluginVmLauncherView::OnStateUpdated() {
-  DialogModelChanged();
-  GetWidget()->UpdateWindowTitle();
+void PluginVmLauncherView::SetBigMessageLabel() {
+  big_message_label_->SetText(GetBigMessage());
+  big_message_label_->SetVisible(true);
+}
 
+void PluginVmLauncherView::SetMessageLabel() {
   base::string16 message = GetMessage();
   const bool message_visible = !message.empty();
   message_label_->SetVisible(message_visible);
   message_label_->SetText(message);
+}
+
+void PluginVmLauncherView::SetBigImage() {
+  if (state_ == State::ERROR) {
+    big_image_->SetImage(
+        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+            IDR_PLUGIN_VM_LAUNCHER_ERROR));
+    return;
+  }
+  big_image_->SetImage(
+      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+          IDR_PLUGIN_VM_LAUNCHER));
+}
+
+void PluginVmLauncherView::OnStateUpdated() {
+  DialogModelChanged();
+  SetBigMessageLabel();
+  SetMessageLabel();
+  SetBigImage();
 
   const bool progress_bar_visible =
       state_ == State::DOWNLOADING || state_ == State::UNZIPPING;

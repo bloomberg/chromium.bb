@@ -28,5 +28,5 @@ void PluginVmAppModelBuilder::BuildModel() {
       profile(), model_updater(), GetSyncItem(*kPluginVmTerminalId),
       *kPluginVmTerminalId, kPluginVmTerminalAppName,
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          IDR_LOGO_PLUGIN_VM_LAUNCHER)));
+          IDR_LOGO_PLUGIN_VM_DEFAULT_192)));
 }

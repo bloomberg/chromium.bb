@@ -131,7 +131,10 @@
         <include name="IDR_CROSTINI_MASCOT" file="crostini/crostini_mascot_1x.svg" type="BINDATA" />
         <include name="IDR_LINUX_ILLUSTRATION" file="crostini/linux_illustration_2x.png" type="BINDATA" />
         <!-- PluginVm icons -->
-        <include name="IDR_LOGO_PLUGIN_VM_LAUNCHER" file="plugin_vm/logo_plugin_vm_launcher.png" type="BINDATA" />
+        <include name="IDR_LOGO_PLUGIN_VM_DEFAULT_32" file="plugin_vm/logo_plugin_vm_default_32.png" type="BINDATA" />
+        <include name="IDR_LOGO_PLUGIN_VM_DEFAULT_192" file="plugin_vm/logo_plugin_vm_default_192.png" type="BINDATA" />
+        <include name="IDR_PLUGIN_VM_LAUNCHER" file="plugin_vm/plugin_vm_launcher.png" type="BINDATA" />
+        <include name="IDR_PLUGIN_VM_LAUNCHER_ERROR" file="plugin_vm/plugin_vm_launcher_error.png" type="BINDATA" />
       </if>
     </includes>
   </release>
