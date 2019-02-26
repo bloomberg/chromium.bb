@@ -38,8 +38,7 @@ class MimeHandlerViewFrameContainer : public MimeHandlerViewContainerBase {
   static bool Create(const blink::WebElement& plugin_element,
                      const GURL& resource_url,
                      const std::string& mime_type,
-                     const content::WebPluginInfo& plugin_info,
-                     int32_t element_instance_id);
+                     const content::WebPluginInfo& plugin_info);
   static v8::Local<v8::Object> GetScriptableObject(
       const blink::WebElement& plugin_element,
       v8::Isolate* isolate);
@@ -62,8 +61,7 @@ class MimeHandlerViewFrameContainer : public MimeHandlerViewContainerBase {
   MimeHandlerViewFrameContainer(const blink::WebElement& plugin_element,
                                 const GURL& resource_url,
                                 const std::string& mime_type,
-                                const content::WebPluginInfo& plugin_info,
-                                int32_t element_instance_id);
+                                const content::WebPluginInfo& plugin_info);
 
   ~MimeHandlerViewFrameContainer() override;
 

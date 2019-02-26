@@ -93,8 +93,7 @@ class ChromeContentRendererClient
   bool MaybeCreateMimeHandlerView(content::RenderFrame* render_frame,
                                   const blink::WebElement& plugin_element,
                                   const GURL& original_url,
-                                  const std::string& mime_type,
-                                  int32_t instance_id_to_use) override;
+                                  const std::string& mime_type) override;
   v8::Local<v8::Object> GetScriptableObject(
       const blink::WebElement& plugin_element,
       v8::Isolate* isolate) override;

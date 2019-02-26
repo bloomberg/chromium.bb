@@ -97,8 +97,7 @@ class ChromeExtensionsRendererClient
       const blink::WebElement& plugin_element,
       const GURL& resource_url,
       const std::string& mime_type,
-      const content::WebPluginInfo& plugin_info,
-      int32_t element_instance_id);
+      const content::WebPluginInfo& plugin_info);
   static blink::WebFrame* FindFrame(blink::WebLocalFrame* relative_to_frame,
                                     const std::string& name);
 
