@@ -1613,7 +1613,7 @@
   },
   {
     "name": "enable-scroll-anchor-serialization",
-    // "owners": [ "your-team" ],
+    "owners": [ "pnoland" ],
     "expiry_milestone": 76
   },
   {
