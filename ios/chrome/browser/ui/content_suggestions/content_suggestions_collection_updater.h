@@ -84,10 +84,6 @@ addSuggestionsToModel:
 // items.
 - (BOOL)isContentSuggestionsSection:(NSInteger)section;
 
-// Updates the number of Most Visited tiles shown for the |size| on the model
-// only. The collection needs to be updated separately.
-- (void)updateMostVisitedForSize:(CGSize)size;
-
 // Dismisses the |item| from the model. Does not change the UI.
 - (void)dismissItem:(CollectionViewItem<SuggestedContent>*)item;
 

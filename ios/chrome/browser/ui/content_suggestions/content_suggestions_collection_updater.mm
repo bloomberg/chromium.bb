@@ -133,8 +133,6 @@ BOOL IsFromContentSuggestionsService(NSInteger sectionIdentifier) {
          sectionIdentifier == SectionIdentifierReadingList;
 }
 
-const CGFloat kNumberOfMostVisitedLines = 2;
-
 NSString* const kContentSuggestionsCollectionUpdaterSnackbarCategory =
     @"ContentSuggestionsCollectionUpdaterSnackbarCategory";
 
@@ -471,12 +469,6 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
   // Add the items from this section.
   [suggestions enumerateObjectsUsingBlock:^(CSCollectionViewItem* item,
                                             NSUInteger index, BOOL* stop) {
-    NSInteger section = [model sectionForSectionIdentifier:sectionIdentifier];
-    if ([self isMostVisitedSection:section] &&
-        [model numberOfItemsInSection:section] >=
-            [self mostVisitedPlaceCount]) {
-      return;
-    }
     ItemType type = ItemTypeForInfo(sectionInfo);
     if (type == ItemTypePromo && !self.promoAdded) {
       self.promoAdded = YES;
@@ -578,45 +570,6 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
   return IsFromContentSuggestionsService(
       [self.collectionViewController.collectionViewModel
           sectionIdentifierForSection:section]);
-}
-
-- (void)updateMostVisitedForSize:(CGSize)size {
-  self.collectionWidth = size.width;
-
-  CSCollectionViewModel* model =
-      self.collectionViewController.collectionViewModel;
-  if (![model hasSectionForSectionIdentifier:SectionIdentifierMostVisited])
-    return;
-
-  NSInteger mostVisitedSection =
-      [model sectionForSectionIdentifier:SectionIdentifierMostVisited];
-  ContentSuggestionsSectionInformation* mostVisitedSectionInfo =
-      self.sectionInfoBySectionIdentifier[@(SectionIdentifierMostVisited)];
-  NSArray<CSCollectionViewItem*>* mostVisited =
-      [self.dataSource itemsForSectionInfo:mostVisitedSectionInfo];
-  NSInteger newCount = MIN([self mostVisitedPlaceCount],
-                           static_cast<NSInteger>(mostVisited.count));
-  NSInteger currentCount = [model numberOfItemsInSection:mostVisitedSection];
-
-  if (currentCount == newCount)
-    return;
-
-  if (currentCount > newCount) {
-    for (NSInteger i = newCount; i < currentCount; i++) {
-      [self.collectionViewController.collectionViewModel
-                 removeItemWithType:ItemTypeMostVisited
-          fromSectionWithIdentifier:SectionIdentifierMostVisited
-                            atIndex:newCount];
-    }
-  } else {
-    for (NSInteger i = currentCount; i < newCount; i++) {
-      CSCollectionViewItem* item = mostVisited[i];
-      item.type = ItemTypeMostVisited;
-      [self.collectionViewController.collectionViewModel
-                          addItem:item
-          toSectionWithIdentifier:SectionIdentifierMostVisited];
-    }
-  }
 }
 
 - (void)dismissItem:(CSCollectionViewItem*)item {
@@ -835,13 +788,6 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
   [model addItem:item toSectionWithIdentifier:sectionIdentifier];
 
   return [NSIndexPath indexPathForItem:itemNumber inSection:section];
-}
-
-// Returns the maximum number of Most Visited tiles to be displayed in the
-// collection.
-- (NSInteger)mostVisitedPlaceCount {
-  return content_suggestions::numberOfTilesForWidth(self.collectionWidth) *
-         kNumberOfMostVisitedLines;
 }
 
 @end

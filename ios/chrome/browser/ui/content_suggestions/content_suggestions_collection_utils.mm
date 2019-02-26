@@ -74,10 +74,6 @@ const CGFloat kHintTextScale = 0.15;
 
 const NSUInteger kMostVisitedItemsPerLine = 4;
 
-NSUInteger numberOfTilesForWidth(CGFloat availableWidth) {
-  return kMostVisitedItemsPerLine;
-}
-
 CGFloat horizontalSpacingBetweenTiles() {
   return (!IsCompactWidth() && !IsCompactHeight())
              ? kHorizontalSpacingRegularXRegular
@@ -90,7 +86,7 @@ CGFloat verticalSpacingBetweenTiles() {
 
 CGFloat centeredTilesMarginForWidth(CGFloat width) {
   CGFloat horizontalSpace = horizontalSpacingBetweenTiles();
-  NSUInteger columns = numberOfTilesForWidth(width - 2 * horizontalSpace);
+  NSUInteger columns = kMostVisitedItemsPerLine;
   CGFloat whitespace =
       width -
       (columns * [ContentSuggestionsMostVisitedCell defaultSize].width) -
