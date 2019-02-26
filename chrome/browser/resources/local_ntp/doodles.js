@@ -396,7 +396,7 @@ doodles.showLogoOrDoodle = function(fromCache) {
           .classList.remove(doodles.CLASSES.SHOW_LOGO);
 
       // Log the impression in Chrome metrics.
-      var isCta = !!doodles.targetDoodle.metadata.animatedUrl;
+      var isCta = doodles.targetDoodle.metadata.animatedUrl;
       var eventType = isCta ?
           (fromCache ? doodles.LOG_TYPE.NTP_CTA_LOGO_SHOWN_FROM_CACHE :
                        doodles.LOG_TYPE.NTP_CTA_LOGO_SHOWN_FRESH) :

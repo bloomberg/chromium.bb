@@ -394,7 +394,7 @@ Polymer({
   onDeviceStatesChanged_: function(newValue, oldValue) {
     const wifiDeviceState = this.getDeviceState_(CrOnc.Type.WI_FI, newValue);
     let managedNetworkAvailable = false;
-    if (!!wifiDeviceState) {
+    if (wifiDeviceState) {
       managedNetworkAvailable = !!wifiDeviceState.ManagedNetworkAvailable;
     }
 

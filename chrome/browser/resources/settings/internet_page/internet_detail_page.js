@@ -350,7 +350,7 @@ Polymer({
    * @private
    */
   getNetworkDetails_: function() {
-    assert(!!this.guid);
+    assert(this.guid);
     if (this.isSecondaryUser_) {
       this.networkingPrivate.getState(
           this.guid, this.getStateCallback_.bind(this));
@@ -434,7 +434,7 @@ Polymer({
       return;
     }
 
-    assert(!!this.guid);
+    assert(this.guid);
     this.networkingPrivate.setProperties(this.guid, onc, () => {
       if (chrome.runtime.lastError) {
         // An error typically indicates invalid input; request the properties

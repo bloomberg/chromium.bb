@@ -570,7 +570,7 @@ Polymer({
     const newValue =
         /** @type {!print_preview.MarginsSetting} */ (
             this.getSettingValue('customMargins'));
-    if (!!this.lastCustomMargins_ &&
+    if (this.lastCustomMargins_ &&
         this.lastCustomMargins_.marginTop !== undefined &&
         this.getSettingValue('margins') ==
             print_preview.ticket_items.MarginsTypeValue.CUSTOM &&
@@ -588,7 +588,7 @@ Polymer({
     const newValue =
         /** @type {!print_preview_new.MediaSizeValue} */ (
             this.getSettingValue('mediaSize'));
-    if (!!this.lastMediaSize_ &&
+    if (this.lastMediaSize_ &&
         (newValue.height_microns != this.lastMediaSize_.height_microns ||
          newValue.width_microns != this.lastMediaSize_.width_microns)) {
       this.onSettingsChanged_();

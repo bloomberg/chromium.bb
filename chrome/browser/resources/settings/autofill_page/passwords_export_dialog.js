@@ -125,7 +125,7 @@ Polymer({
     // time (|delayedCompletionToken_| is not null) progress should be cached
     // for consumption when the blocking time ends.
     const progressBlocked =
-        !this.progressTaskToken_ && !!this.delayedCompletionToken_;
+        !this.progressTaskToken_ && this.delayedCompletionToken_;
     if (!progressBlocked) {
       clearTimeout(this.progressTaskToken_);
       this.progressTaskToken_ = null;

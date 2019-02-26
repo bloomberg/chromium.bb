@@ -152,7 +152,7 @@ function finishEditLink() {
   }
 
   // Update the link only if a field was changed.
-  if (!!newUrl || !!newTitle) {
+  if (newUrl || newTitle) {
     chrome.embeddedSearch.newTabPage.updateCustomLink(
         prepopulatedLink.rid, newUrl, newTitle);
   }

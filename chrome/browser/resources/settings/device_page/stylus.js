@@ -141,7 +141,7 @@ Polymer({
    * @private
    */
   toggleLockScreenSupport_: function() {
-    assert(!!this.selectedApp_);
+    assert(this.selectedApp_);
     if (this.selectedApp_.lockScreenSupport !=
             settings.NoteAppLockScreenSupport.ENABLED &&
         this.selectedApp_.lockScreenSupport !=

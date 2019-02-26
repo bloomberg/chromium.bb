@@ -799,7 +799,7 @@ Polymer({
    * @private
    */
   computeIssueBannerClass_: function(issue) {
-    return !!issue && !issue.isBlocking ? 'non-blocking' : '';
+    return issue && !issue.isBlocking ? 'non-blocking' : '';
   },
 
   /**
@@ -1374,7 +1374,7 @@ Polymer({
    * @private
    */
   maybeShowIssueView_: function(issue) {
-    if (!!issue) {
+    if (issue) {
       if (issue.isBlocking) {
         this.currentView_ = media_router.MediaRouterView.ISSUE;
       } else if (this.currentView_ == media_router.MediaRouterView.SINK_LIST) {
@@ -1389,7 +1389,7 @@ Polymer({
       this.showSinkList_();
     }
 
-    if (!!this.pendingCreatedRouteId_ && !!issue &&
+    if (this.pendingCreatedRouteId_ && issue &&
         issue.routeId == this.pendingCreatedRouteId_) {
       this.resetRouteCreationProperties_(false);
     }

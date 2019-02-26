@@ -287,7 +287,7 @@ function onProcessCpu(port) {
       } else if (process.type == 'gpu') {
         gpuProcessCpu = process.cpu;
       }
-      if (!!browserProcessCpu && !!gpuProcessCpu) {
+      if (browserProcessCpu && gpuProcessCpu) {
         break;
       }
     }

@@ -199,7 +199,7 @@ cr.define('cr.ui', function() {
       if (menuItem.hidden) {
         return false;
       }
-      if (!!menuItem.offsetParent) {
+      if (menuItem.offsetParent) {
         return true;
       }
       // A "position: fixed" element won't have an offsetParent, so we have to

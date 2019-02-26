@@ -494,8 +494,8 @@ Polymer({
    * @return {Element|null}
    */
   getAdvancedSyncSettingsAssociatedControl_: function() {
-    return !!this.unifiedConsentEnabled_ ? this.$$('#sync-setup') :
-                                           this.$$('#sync-status');
+    return this.unifiedConsentEnabled_ ? this.$$('#sync-setup') :
+                                         this.$$('#sync-status');
   },
 
   /**

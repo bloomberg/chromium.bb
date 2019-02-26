@@ -348,10 +348,10 @@ Polymer({
       const languageState = this.languages.enabled[i];
       this.set(
           `languages.enabled.${i}.spellCheckEnabled`,
-          !!spellCheckSet.has(languageState.language.code));
+          spellCheckSet.has(languageState.language.code));
       this.set(
           `languages.enabled.${i}.isManaged`,
-          !!spellCheckForcedSet.has(languageState.language.code));
+          spellCheckForcedSet.has(languageState.language.code));
     }
 
     this.set(
@@ -547,11 +547,11 @@ Polymer({
       }
       const languageState = /** @type {LanguageState} */ ({});
       languageState.language = language;
-      languageState.spellCheckEnabled = !!spellCheckSet.has(code);
+      languageState.spellCheckEnabled = spellCheckSet.has(code);
       languageState.translateEnabled = this.isTranslateEnabled_(
           code, !!language.supportsTranslate, translateBlockedSet,
           translateTarget, prospectiveUILanguage);
-      languageState.isManaged = !!spellCheckForcedSet.has(code);
+      languageState.isManaged = spellCheckForcedSet.has(code);
       languageState.downloadDictionaryFailureCount = 0;
       enabledLanguageStates.push(languageState);
     }

@@ -379,7 +379,7 @@ WallpaperManager.prototype.postDownloadDomInit_ = function() {
   };
 
   getThirdPartyAppName(function(appName) {
-    if (!!appName) {
+    if (appName) {
       $('message-container').textContent =
           loadTimeData.getStringF('currentWallpaperSetByMessage', appName);
       $('message-container').style.visibility = 'visible';
