@@ -24,12 +24,6 @@ void SetUpFontconfig() {
   // TODO(thomasanderson): This still stat()'s the real /etc/fonts/fonts.conf.
   // Prevent fontconfig from doing this.
   CHECK(env->SetVar("FONTCONFIG_SYSROOT", dir_module.value().c_str()));
-
-  CHECK(FcInit());
-}
-
-void TearDownFontconfig() {
-  FcFini();
 }
 
 }  // namespace base

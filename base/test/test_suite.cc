@@ -487,8 +487,6 @@ void TestSuite::Initialize() {
 #endif
 
 #if defined(OS_LINUX)
-  // TODO(thomasanderson): Call TearDownFontconfig() in Shutdown().  It would
-  // currently crash because of leaked FcFontSet's in font_fallback_linux.cc.
   SetUpFontconfig();
 #endif
 
