@@ -11,26 +11,6 @@
 
 FakeAccountFetcherService::FakeAccountFetcherService() {}
 
-void FakeAccountFetcherService::FakeUserInfoFetchSuccess(
-    const std::string& account_id,
-    const std::string& email,
-    const std::string& gaia,
-    const std::string& hosted_domain,
-    const std::string& full_name,
-    const std::string& given_name,
-    const std::string& locale,
-    const std::string& picture_url) {
-  base::DictionaryValue user_info;
-  user_info.SetString("id", gaia);
-  user_info.SetString("email", email);
-  user_info.SetString("hd", hosted_domain);
-  user_info.SetString("name", full_name);
-  user_info.SetString("given_name", given_name);
-  user_info.SetString("locale", locale);
-  user_info.SetString("picture", picture_url);
-  account_tracker_service()->SetAccountInfoFromUserInfo(account_id, &user_info);
-}
-
 void FakeAccountFetcherService::StartFetchingUserInfo(
     const std::string& account_id) {
   // In tests, don't do actual network fetch.
