@@ -58,20 +58,6 @@ namespace {{variant}} {
 #include "{{export_header}}"
 {%- endif %}
 
-{#--- WTF enum hashing #}
-{%- from "enum_macros.tmpl" import enum_hash_blink_forward%}
-{%- if for_blink %}
-{%-   if all_enums %}
-#include "third_party/blink/renderer/platform/wtf/hash_functions.h"
-{%-   endif %}
-
-{%-   for enum in all_enums %}
-{%-     if not enum|is_native_only_kind %}
-{{enum_hash_blink_forward(enum)}}
-{%-     endif %}
-{%-   endfor %}
-{%- endif %}
-
 {%- if variant %}
 {%-   for namespace in namespaces_as_array %}
 namespace {{namespace}} {
@@ -88,6 +74,20 @@ using {{enum|get_name_for_kind(flatten_nested_kind=True)}} = mojo::NativeEnum;
 
 {%-   for namespace in namespaces_as_array %}
 }  // namespace {{namespace}}
+{%-   endfor %}
+{%- endif %}
+
+{#--- WTF enum hashing #}
+{%- from "enum_macros.tmpl" import enum_hash_blink_forward%}
+{%- if for_blink %}
+{%-   if all_enums %}
+#include "third_party/blink/renderer/platform/wtf/hash_functions.h"
+{%-   endif %}
+
+{%-   for enum in all_enums %}
+{%-     if not enum|is_native_only_kind %}
+{{enum_hash_blink_forward(enum)}}
+{%-     endif %}
 {%-   endfor %}
 {%- endif %}
 
