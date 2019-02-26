@@ -219,6 +219,7 @@ _CONFIG = [
             'cc::ScrollbarLayerInterface',
             'cc::ScrollbarOrientation',
             'cc::ScrollbarPart',
+            'cc::ViewportLayers',
 
             # cc::Layer helper enums.
             'cc::HORIZONTAL',

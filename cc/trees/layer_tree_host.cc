@@ -1082,10 +1082,6 @@ void LayerTreeHost::SetNonBlinkManagedRootLayer(
     force_use_property_tree_builder_ = true;
 }
 
-LayerTreeHost::ViewportLayers::ViewportLayers() = default;
-
-LayerTreeHost::ViewportLayers::~ViewportLayers() = default;
-
 void LayerTreeHost::RegisterViewportLayers(const ViewportLayers& layers) {
   DCHECK(!layers.inner_viewport_scroll ||
          layers.inner_viewport_scroll != layers.outer_viewport_scroll);

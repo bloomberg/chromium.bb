@@ -3161,7 +3161,7 @@ void WebViewImpl::RegisterViewportLayersWithCompositor() {
 
   VisualViewport& visual_viewport = GetPage()->GetVisualViewport();
 
-  WebLayerTreeView::ViewportLayers viewport_layers;
+  cc::ViewportLayers viewport_layers;
   viewport_layers.overscroll_elasticity_element_id =
       visual_viewport.GetCompositorOverscrollElasticityElementId();
   viewport_layers.page_scale = visual_viewport.PageScaleLayer()->CcLayer();
@@ -3172,7 +3172,7 @@ void WebViewImpl::RegisterViewportLayersWithCompositor() {
       visual_viewport.ScrollLayer()->CcLayer();
   viewport_layers.outer_viewport_scroll = layout_viewport_scroll_cc_layer;
 
-  layer_tree_view_->RegisterViewportLayers(viewport_layers);
+  AsWidget().client->RegisterViewportLayers(viewport_layers);
 }
 
 void WebViewImpl::SetRootGraphicsLayer(GraphicsLayer* graphics_layer) {
@@ -3202,7 +3202,7 @@ void WebViewImpl::SetRootGraphicsLayer(GraphicsLayer* graphics_layer) {
     // attempt to paint too early in the next page load.
     scoped_defer_main_frame_update_ = layer_tree_view_->DeferMainFrameUpdate();
     AsWidget().client->SetRootLayer(nullptr);
-    layer_tree_view_->ClearViewportLayers();
+    AsWidget().client->RegisterViewportLayers(cc::ViewportLayers());
   }
 }
 
@@ -3218,7 +3218,7 @@ void WebViewImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
     // commits until Blink generates invalidations so we don't
     // attempt to paint too early in the next page load.
     scoped_defer_main_frame_update_ = layer_tree_view_->DeferMainFrameUpdate();
-    layer_tree_view_->ClearViewportLayers();
+    AsWidget().client->RegisterViewportLayers(cc::ViewportLayers());
   }
 }
 

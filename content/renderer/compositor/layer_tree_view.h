@@ -153,10 +153,6 @@ class LayerTreeView : public blink::WebLayerTreeView,
       override;
   void StartDeferringCommits() override;
   void StopDeferringCommits() override;
-  void RegisterViewportLayers(const ViewportLayers& viewport_layers) override;
-  void ClearViewportLayers() override;
-  void RegisterSelection(const cc::LayerSelection& selection) override;
-  void ClearSelection() override;
   void SetMutatorClient(std::unique_ptr<cc::LayerTreeMutator>) override;
   void SetPaintWorkletLayerPainterClient(
       std::unique_ptr<cc::PaintWorkletLayerPainter>) override;

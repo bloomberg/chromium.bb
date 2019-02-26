@@ -3213,6 +3213,14 @@ void RenderWidget::ZoomToFindInPageRectInMainFrame(
                                                          rect_to_zoom));
 }
 
+void RenderWidget::RegisterViewportLayers(const cc::ViewportLayers& layers) {
+  layer_tree_view_->layer_tree_host()->RegisterViewportLayers(layers);
+}
+
+void RenderWidget::RegisterSelection(const cc::LayerSelection& selection) {
+  layer_tree_view_->layer_tree_host()->RegisterSelection(selection);
+}
+
 void RenderWidget::RequestUnbufferedInputEvents() {
   if (input_event_queue_)
     input_event_queue_->RequestUnbufferedInputEvents();

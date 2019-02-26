@@ -29,7 +29,6 @@
 #include "base/callback.h"
 #include "cc/input/browser_controls_state.h"
 #include "cc/input/event_listener_properties.h"
-#include "cc/input/layer_selection_bound.h"
 #include "cc/input/overscroll_behavior.h"
 #include "cc/layers/layer.h"
 #include "cc/paint/paint_worklet_layer_painter.h"
@@ -143,23 +142,6 @@ class WebLayerTreeView {
   // allows document lifecycle updates but does not commit the layer tree.
   virtual void StartDeferringCommits() {}
   virtual void StopDeferringCommits() {}
-
-  struct ViewportLayers {
-    cc::ElementId overscroll_elasticity_element_id;
-    scoped_refptr<cc::Layer> page_scale;
-    scoped_refptr<cc::Layer> inner_viewport_container;
-    scoped_refptr<cc::Layer> outer_viewport_container;
-    scoped_refptr<cc::Layer> inner_viewport_scroll;
-    scoped_refptr<cc::Layer> outer_viewport_scroll;
-  };
-
-  // Identify key viewport layers to the compositor.
-  virtual void RegisterViewportLayers(const ViewportLayers& viewport_layers) {}
-  virtual void ClearViewportLayers() {}
-
-  // Used to update the active selection bounds.
-  virtual void RegisterSelection(const cc::LayerSelection&) {}
-  virtual void ClearSelection() {}
 
   // Mutations are plumbed back to the layer tree via the mutator client.
   virtual void SetMutatorClient(std::unique_ptr<cc::LayerTreeMutator>) {}

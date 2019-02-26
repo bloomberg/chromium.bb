@@ -632,6 +632,16 @@ void TestWebWidgetClient::SetRootLayer(scoped_refptr<cc::Layer> layer) {
   layer_tree_view_->layer_tree_host()->SetRootLayer(std::move(layer));
 }
 
+void TestWebWidgetClient::RegisterViewportLayers(
+    const cc::ViewportLayers& layers) {
+  layer_tree_view_->layer_tree_host()->RegisterViewportLayers(layers);
+}
+
+void TestWebWidgetClient::RegisterSelection(
+    const cc::LayerSelection& selection) {
+  layer_tree_view_->layer_tree_host()->RegisterSelection(selection);
+}
+
 void TestWebWidgetClient::DidMeaningfulLayout(
     WebMeaningfulLayout meaningful_layout) {
   switch (meaningful_layout) {

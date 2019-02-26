@@ -45,6 +45,7 @@
 #include "cc/trees/swap_promise.h"
 #include "cc/trees/swap_promise_manager.h"
 #include "cc/trees/target_property.h"
+#include "cc/trees/viewport_layers.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -324,19 +325,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // caller inform blink about the layer and remove the function.
   void SetNonBlinkManagedRootLayer(scoped_refptr<Layer> root_layer);
 
-  // Viewport Layers are used to identify key layers to the compositor thread,
-  // so that it can perform viewport-based scrolling independently, such as
-  // for pinch-zoom or overscroll elasticity.
-  struct CC_EXPORT ViewportLayers {
-    ViewportLayers();
-    ~ViewportLayers();
-    ElementId overscroll_elasticity_element_id;
-    scoped_refptr<Layer> page_scale;
-    scoped_refptr<Layer> inner_viewport_container;
-    scoped_refptr<Layer> outer_viewport_container;
-    scoped_refptr<Layer> inner_viewport_scroll;
-    scoped_refptr<Layer> outer_viewport_scroll;
-  };
   // Sets or gets the collection of viewport Layers, defined to allow pinch-zoom
   // transformations on the compositor thread.
   void RegisterViewportLayers(const ViewportLayers& viewport_layers);

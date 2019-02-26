@@ -3301,7 +3301,7 @@ class ViewportDeltasAppliedDuringPinch : public LayerTreeHostTest {
     page_scale_layer->AddChild(pinch);
     root_clip->AddChild(page_scale_layer);
 
-    LayerTreeHost::ViewportLayers viewport_layers;
+    ViewportLayers viewport_layers;
     viewport_layers.page_scale = page_scale_layer;
     viewport_layers.inner_viewport_container = root_clip;
     viewport_layers.inner_viewport_scroll = pinch;
@@ -5563,7 +5563,7 @@ class LayerTreeHostTestElasticOverscroll : public LayerTreeHostTest {
     inner_viewport_scroll_layer->AddChild(content_layer);
 
     layer_tree_host()->SetRootLayer(root_layer_);
-    LayerTreeHost::ViewportLayers viewport_layers;
+    ViewportLayers viewport_layers;
     viewport_layers.overscroll_elasticity_element_id =
         overscroll_elasticity_layer->element_id();
     viewport_layers.page_scale = page_scale_layer;
@@ -7072,7 +7072,7 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
     // pinch.
     pinch->AddChild(layer);
 
-    LayerTreeHost::ViewportLayers viewport_layers;
+    ViewportLayers viewport_layers;
     viewport_layers.page_scale = page_scale_layer;
     viewport_layers.inner_viewport_container = root_clip;
     viewport_layers.inner_viewport_scroll = pinch;
@@ -7382,7 +7382,7 @@ class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
     // pinch.
     pinch->AddChild(layer);
 
-    LayerTreeHost::ViewportLayers viewport_layers;
+    ViewportLayers viewport_layers;
     viewport_layers.page_scale = page_scale_layer;
     viewport_layers.inner_viewport_container = root_clip;
     viewport_layers.inner_viewport_scroll = pinch;
@@ -7754,7 +7754,7 @@ class LayerTreeTestPageScaleFlags : public LayerTreeTest {
     layer_tree_host()->SetRootLayer(root);
     LayerTreeTest::SetupTree();
 
-    LayerTreeHost::ViewportLayers viewport_layers;
+    ViewportLayers viewport_layers;
     viewport_layers.inner_viewport_container = root;
     viewport_layers.page_scale = page_scale;
     viewport_layers.inner_viewport_scroll = inner_viewport_scroll;

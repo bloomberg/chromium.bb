@@ -135,7 +135,7 @@ class LayerPositionConstraintTest : public testing::Test {
     child_->SetIsResizedByBrowserControls(true);
 
     layer_tree_host_->SetRootLayer(root_);
-    LayerTreeHost::ViewportLayers viewport_layers;
+    ViewportLayers viewport_layers;
     viewport_layers.page_scale = page_scale_layer_;
     viewport_layers.inner_viewport_container = inner_viewport_container_layer_;
     viewport_layers.outer_viewport_container = outer_viewport_container_layer_;

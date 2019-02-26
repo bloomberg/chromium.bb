@@ -422,6 +422,9 @@ class CONTENT_EXPORT RenderWidget
                                        const blink::WebRect& bounds) override;
   void ZoomToFindInPageRectInMainFrame(
       const blink::WebRect& rect_to_zoom) override;
+  void RegisterViewportLayers(
+      const cc::ViewportLayers& viewport_layers) override;
+  void RegisterSelection(const cc::LayerSelection& selection) override;
 
   // Override point to obtain that the current input method state and caret
   // position.

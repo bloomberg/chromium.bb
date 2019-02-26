@@ -32,7 +32,7 @@ ViewportLayersSetup::ViewportLayersSetup() {
   scroll_elasticity_layer_->SetElementId(cc::LayerIdToElementIdForTesting(
       scroll_elasticity_layer_->CcLayer()->id()));
 
-  cc::LayerTreeHost::ViewportLayers viewport_layers;
+  cc::ViewportLayers viewport_layers;
   viewport_layers.overscroll_elasticity_element_id =
       scroll_elasticity_layer_->GetElementId();
   viewport_layers.page_scale = page_scale_layer_->CcLayer();
