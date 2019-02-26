@@ -791,7 +791,7 @@
   },
   {
     "name": "enable-autofill-account-wallet-storage",
-    // "owners": [ "your-team" ],
+    "owners": [ "feuunk", "butter-team@google.com" ],
     "expiry_milestone": 76
   },
   {
