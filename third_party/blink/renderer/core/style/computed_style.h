@@ -545,9 +545,9 @@ class ComputedStyle : public ComputedStyleBase,
 
   // Column properties.
   // column-count (aka -webkit-column-count)
-  void SetColumnCount(unsigned short c) {
+  void SetColumnCount(uint16_t c) {
     SetHasAutoColumnCountInternal(false);
-    SetColumnCountInternal(clampTo<unsigned short>(c, 1));
+    SetColumnCountInternal(clampTo<uint16_t>(c, 1));
   }
   void SetHasAutoColumnCount() {
     SetHasAutoColumnCountInternal(true);
@@ -563,13 +563,13 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // column-rule-width (aka -webkit-column-rule-width)
-  unsigned short ColumnRuleWidth() const {
+  uint16_t ColumnRuleWidth() const {
     if (ColumnRuleStyle() == EBorderStyle::kNone ||
         ColumnRuleStyle() == EBorderStyle::kHidden)
       return 0;
-    return ColumnRuleWidthInternal().ToFloat();
+    return ColumnRuleWidthInternal().ToUnsigned();
   }
-  void SetColumnRuleWidth(unsigned short w) {
+  void SetColumnRuleWidth(uint16_t w) {
     SetColumnRuleWidthInternal(LayoutUnit(w));
   }
 
@@ -650,15 +650,12 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // outline-width
-  unsigned short OutlineWidth() const {
+  uint16_t OutlineWidth() const {
     if (OutlineStyle() == EBorderStyle::kNone)
       return 0;
-    // FIXME: Why is this stored as a float but converted to short?
-    return OutlineWidthInternal().ToFloat();
+    return OutlineWidthInternal().ToUnsigned();
   }
-  void SetOutlineWidth(unsigned short v) {
-    SetOutlineWidthInternal(LayoutUnit(v));
-  }
+  void SetOutlineWidth(uint16_t v) { SetOutlineWidthInternal(LayoutUnit(v)); }
 
   // outline-offset
   int OutlineOffset() const {

@@ -96,7 +96,7 @@ void PaintComplexOutline(GraphicsContext& graphics_context,
 
   // Construct a clockwise path along the outer edge of the outline.
   SkRegion region;
-  int width = style.OutlineWidth();
+  uint16_t width = style.OutlineWidth();
   int outset = style.OutlineOffset() + style.OutlineWidth();
   for (auto& r : rects) {
     IntRect rect = r;
