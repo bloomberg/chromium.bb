@@ -1185,12 +1185,6 @@
           '--jobs=1',
         ],
       },
-      'Linux Tests (dbg)(1)': {
-        'args': [
-          '--xvfb',
-          '--jobs=1',
-        ],
-      },
       'linux-xenial-rel': {
         'args': [
           '--xvfb',
@@ -1232,6 +1226,8 @@
       },
     },
     'remove_from': [
+      # crbug.com/934885
+      'Linux Tests (dbg)(1)',
       'Linux Tests (dbg)(1)(32)',
       'Mac10.13 Tests',
       'Mac10.13 Tests (dbg)',
