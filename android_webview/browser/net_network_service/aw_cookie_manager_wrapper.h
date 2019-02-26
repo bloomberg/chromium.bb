@@ -30,6 +30,8 @@ class AwCookieManagerWrapper {
       network::mojom::CookieManager::SetCanonicalCookieCallback;
   using DeleteCookiesCallback =
       network::mojom::CookieManager::DeleteCookiesCallback;
+  using FlushCookieStoreCallback =
+      network::mojom::CookieManager::FlushCookieStoreCallback;
 
   // Called when content layer starts up, to pass in a NetworkContextPtr for us
   // to use for Cookies APIs.
@@ -37,7 +39,6 @@ class AwCookieManagerWrapper {
       network::mojom::CookieManagerPtrInfo cookie_manager_info);
 
   // Thin wrappers around network::mojom::CookieManager APIs.
-  // TODO(ntfschr): implement the other APIs we need (http://crbug.com/933462).
   void GetCookieList(const GURL& url,
                      const net::CookieOptions& cookie_options,
                      GetCookieListCallback callback);
@@ -51,6 +52,8 @@ class AwCookieManagerWrapper {
                      DeleteCookiesCallback callback);
 
   void GetAllCookies(GetCookieListCallback callback);
+
+  void FlushCookieStore(FlushCookieStoreCallback callback);
 
  private:
   // A CookieManagerPtr which is cloned from the NetworkContext's

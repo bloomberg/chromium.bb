@@ -511,7 +511,11 @@ void CookieManager::FlushCookieStore() {
 }
 
 void CookieManager::FlushCookieStoreAsyncHelper(base::OnceClosure complete) {
-  GetCookieStore()->FlushStore(std::move(complete));
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    GetCookieManagerWrapper()->FlushCookieStore(std::move(complete));
+  } else {
+    GetCookieStore()->FlushStore(std::move(complete));
+  }
 }
 
 bool CookieManager::HasCookies() {

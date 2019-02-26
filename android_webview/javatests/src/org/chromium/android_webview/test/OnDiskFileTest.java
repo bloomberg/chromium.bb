@@ -4,6 +4,7 @@
 
 package org.chromium.android_webview.test;
 
+import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
@@ -13,6 +14,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwContents;
+import org.chromium.android_webview.AwCookieManager;
 import org.chromium.base.FileUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.test.util.TestWebServer;
@@ -20,14 +22,16 @@ import org.chromium.net.test.util.TestWebServer;
 import java.io.File;
 
 /**
- * Test suite for the HTTP cache.
+ * Test suite for files WebView creates on disk. This includes HTTP cache and the cookies file.
  */
 @RunWith(AwJUnit4ClassRunner.class)
-public class HttpCacheTest {
+public class OnDiskFileTest {
     @Rule
     public AwActivityTestRule mActivityTestRule = new AwActivityTestRule() {
         @Override
         public boolean needsBrowserProcessStarted() {
+            // We need to control when the browser process starts, so that we can delete the
+            // file-under-test before the test starts up.
             return false;
         }
     };
@@ -66,5 +70,25 @@ public class HttpCacheTest {
 
         Assert.assertTrue(webViewCacheDir.isDirectory());
         Assert.assertTrue(webViewCacheDir.list().length > 0);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testCookiePathIsInsideDataDir() throws Exception {
+        File webViewCookiePath = new File(InstrumentationRegistry.getInstrumentation()
+                                                  .getTargetContext()
+                                                  .getDir("webview", Context.MODE_PRIVATE)
+                                                  .getPath(),
+                "Cookies");
+        webViewCookiePath.delete();
+
+        // Set a cookie and flush it to disk. This should guarantee the cookie file is created.
+        final AwCookieManager cookieManager = new AwCookieManager();
+        final String url = "http://www.example.com";
+        cookieManager.setCookie(url, "key=value");
+        cookieManager.flushCookieStore();
+
+        Assert.assertTrue(webViewCookiePath.isFile());
     }
 }
