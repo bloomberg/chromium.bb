@@ -29,7 +29,7 @@ bool HasBluetoothStack() {
 
   if (has_bluetooth_stack == HBS_UNKNOWN) {
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::MAY_BLOCK);
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
     HRESULT hr = E_FAIL;
     __try {
       hr = __HrLoadAllImportsForDll("bthprops.cpl");

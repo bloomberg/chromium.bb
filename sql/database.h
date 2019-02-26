@@ -548,7 +548,7 @@ class COMPONENT_EXPORT(SQL) Database {
   void InitScopedBlockingCall(
       base::Optional<base::ScopedBlockingCall>* scoped_blocking_call) const {
     if (!in_memory_)
-      scoped_blocking_call->emplace(base::BlockingType::MAY_BLOCK);
+      scoped_blocking_call->emplace(FROM_HERE, base::BlockingType::MAY_BLOCK);
   }
 
   // Internal helper for Does*Exist() functions.
@@ -582,7 +582,7 @@ class COMPONENT_EXPORT(SQL) Database {
     // and for error handling.  Set to nullptr for invalid or untracked
     // refs.  |stmt| is the actual statement, and should only be null
     // to create an invalid ref.  |was_valid| indicates whether the
-    // statement should be considered valid for diagnistic purposes.
+    // statement should be considered valid for diagnostic purposes.
     // |was_valid| can be true for a null |stmt| if the Database has
     // been forcibly closed by an error handler.
     StatementRef(Database* database, sqlite3_stmt* stmt, bool was_valid);

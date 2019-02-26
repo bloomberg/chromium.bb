@@ -245,7 +245,7 @@ std::string DhcpPacFileAdapterFetcher::GetPacURLFromDhcp(
     // (e.g. http://support.microsoft.com/kb/885270) so we won't take any
     // chances on non-standard, poorly documented usage.
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::MAY_BLOCK);
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
     res = ::DhcpRequestParams(DHCPCAPI_REQUEST_SYNCHRONOUS,
                               NULL,
                               const_cast<LPWSTR>(adapter_name_wide.c_str()),

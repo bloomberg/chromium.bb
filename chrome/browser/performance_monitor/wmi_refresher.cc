@@ -94,7 +94,8 @@ void WMIRefresher::InitializeDiskIdleTimeConfigImpl(
     WMIRefresher::InitStatus* res) {
   DCHECK(res);
 
-  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
 
   // This assumes that CoInitialize(Ex) has already been called on this thread.
   AssertComApartmentType(base::win::ComApartmentType::MTA);

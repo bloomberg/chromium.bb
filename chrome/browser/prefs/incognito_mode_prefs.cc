@@ -96,7 +96,7 @@ class PlatformParentalControlsValue {
   static bool IsParentalControlActivityLoggingOnImpl() {
     // Since we can potentially block, make sure the thread is okay with this.
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::MAY_BLOCK);
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
     Microsoft::WRL::ComPtr<IWindowsParentalControlsCore> parent_controls;
     HRESULT hr = ::CoCreateInstance(__uuidof(WindowsParentalControls), nullptr,
                                     CLSCTX_ALL, IID_PPV_ARGS(&parent_controls));

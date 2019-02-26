@@ -64,7 +64,7 @@ class ImageClipboardCopyManager : public ImageDecoder::ImageRequest {
 
   void StartDecoding() {
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::WILL_BLOCK);
+        FROM_HERE, base::BlockingType::WILL_BLOCK);
 
     // Re-check the filesize since the file may be modified after downloaded.
     int64_t filesize;

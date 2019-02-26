@@ -228,7 +228,7 @@ LevelDBSiteCharacteristicsDatabase::AsyncHelper::ReadSiteCharacteristicsFromDB(
   std::string protobuf_value;
   {
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::MAY_BLOCK);
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
     s = db_->Get(read_options_, SerializeOriginIntoDatabaseKey(origin),
                  &protobuf_value);
   }
@@ -256,7 +256,7 @@ void LevelDBSiteCharacteristicsDatabase::AsyncHelper::
   leveldb::Status s;
   {
     base::ScopedBlockingCall scoped_blocking_call(
-        base::BlockingType::MAY_BLOCK);
+        FROM_HERE, base::BlockingType::MAY_BLOCK);
     s = db_->Put(write_options_, SerializeOriginIntoDatabaseKey(origin),
                  site_characteristic_proto.SerializeAsString());
   }

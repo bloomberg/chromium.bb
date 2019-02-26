@@ -80,7 +80,10 @@ TEST_F(ScopedBlockingCallTest, WillBlockMayBlock) {
                                             BlockingType::WILL_BLOCK);
   testing::Mock::VerifyAndClear(&observer_);
 
-  { ScopedBlockingCall scoped_blocking_call_b(BlockingType::MAY_BLOCK); }
+  {
+    ScopedBlockingCall scoped_blocking_call_b(FROM_HERE,
+                                              BlockingType::MAY_BLOCK);
+  }
 
   EXPECT_CALL(observer_, BlockingEnded());
 }
@@ -90,7 +93,10 @@ TEST_F(ScopedBlockingCallTest, MayBlockMayBlock) {
   ScopedBlockingCall scoped_blocking_call_a(FROM_HERE, BlockingType::MAY_BLOCK);
   testing::Mock::VerifyAndClear(&observer_);
 
-  { ScopedBlockingCall scoped_blocking_call_b(BlockingType::MAY_BLOCK); }
+  {
+    ScopedBlockingCall scoped_blocking_call_b(FROM_HERE,
+                                              BlockingType::MAY_BLOCK);
+  }
 
   EXPECT_CALL(observer_, BlockingEnded());
 }
@@ -101,7 +107,10 @@ TEST_F(ScopedBlockingCallTest, WillBlockWillBlock) {
                                             BlockingType::WILL_BLOCK);
   testing::Mock::VerifyAndClear(&observer_);
 
-  { ScopedBlockingCall scoped_blocking_call_b(BlockingType::WILL_BLOCK); }
+  {
+    ScopedBlockingCall scoped_blocking_call_b(FROM_HERE,
+                                              BlockingType::WILL_BLOCK);
+  }
 
   EXPECT_CALL(observer_, BlockingEnded());
 }
@@ -130,9 +139,9 @@ TEST_F(ScopedBlockingCallTest, MayBlockWillBlockTwice) {
 
 TEST(ScopedBlockingCallDestructionOrderTest, InvalidDestructionOrder) {
   auto scoped_blocking_call_a =
-      std::make_unique<ScopedBlockingCall>(BlockingType::WILL_BLOCK);
+      std::make_unique<ScopedBlockingCall>(FROM_HERE, BlockingType::WILL_BLOCK);
   auto scoped_blocking_call_b =
-      std::make_unique<ScopedBlockingCall>(BlockingType::WILL_BLOCK);
+      std::make_unique<ScopedBlockingCall>(FROM_HERE, BlockingType::WILL_BLOCK);
 
   EXPECT_DCHECK_DEATH({ scoped_blocking_call_a.reset(); });
 }

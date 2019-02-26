@@ -983,13 +983,15 @@ struct NestedBlockingType {
 class NestedScopedBlockingCall {
  public:
   NestedScopedBlockingCall(const NestedBlockingType& nested_blocking_type)
-      : first_scoped_blocking_call_(nested_blocking_type.first),
+      : first_scoped_blocking_call_(FROM_HERE, nested_blocking_type.first),
         second_scoped_blocking_call_(
             nested_blocking_type.second == OptionalBlockingType::WILL_BLOCK
-                ? std::make_unique<ScopedBlockingCall>(BlockingType::WILL_BLOCK)
+                ? std::make_unique<ScopedBlockingCall>(FROM_HERE,
+                                                       BlockingType::WILL_BLOCK)
                 : (nested_blocking_type.second ==
                            OptionalBlockingType::MAY_BLOCK
                        ? std::make_unique<ScopedBlockingCall>(
+                             FROM_HERE,
                              BlockingType::MAY_BLOCK)
                        : nullptr)) {}
 
@@ -1479,7 +1481,7 @@ TEST_F(TaskSchedulerWorkerPoolBlockingTest, MaximumWorkersTest) {
                Closure* early_threads_finished) {
               {
                 ScopedBlockingCall scoped_blocking_call(
-                    BlockingType::WILL_BLOCK);
+                    FROM_HERE, BlockingType::WILL_BLOCK);
                 early_threads_barrier_closure->Run();
                 test::WaitWithoutBlockingObserver(
                     early_release_threads_continue);
@@ -1761,7 +1763,7 @@ TEST_P(TaskSchedulerWorkerPoolBlockingCallAndMaxBestEffortTasksTest,
     background_runner->PostTask(
         FROM_HERE, base::BindLambdaForTesting([&]() {
           blocking_best_effort_tasks_running_barrier.Run();
-          ScopedBlockingCall scoped_blocking_call(GetParam());
+          ScopedBlockingCall scoped_blocking_call(FROM_HERE, GetParam());
           test::WaitWithoutBlockingObserver(
               &unblock_blocking_best_effort_tasks);
         }));
@@ -1803,7 +1805,7 @@ INSTANTIATE_TEST_SUITE_P(
     TaskSchedulerWorkerPoolBlockingCallAndMaxBestEffortTasksTest,
     ::testing::Values(BlockingType::WILL_BLOCK));
 
-// Verify that worker detachement doesn't race with worker cleanup, regression
+// Verify that worker detachment doesn't race with worker cleanup, regression
 // test for https://crbug.com/810464.
 TEST_F(TaskSchedulerWorkerPoolImplStartInBodyTest, RacyCleanup) {
 #if defined(OS_FUCHSIA)

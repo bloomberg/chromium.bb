@@ -88,7 +88,7 @@ void LoadSTHsFromDisk(
     std::string json_sth;
     {
       base::ScopedBlockingCall scoped_blocking_call(
-          base::BlockingType::MAY_BLOCK);
+          FROM_HERE, base::BlockingType::MAY_BLOCK);
       if (!base::ReadFileToString(sth_file_path, &json_sth)) {
         DVLOG(1) << "Failed reading from " << sth_file_path.value();
         continue;

@@ -486,7 +486,7 @@ TEST_P(TaskSchedulerTaskTrackerTest, IOAllowed) {
   Task task_with_may_block(FROM_HERE, Bind([]() {
                              // Shouldn't fail.
                              ScopedBlockingCall scope_blocking_call(
-                                 BlockingType::WILL_BLOCK);
+                                 FROM_HERE, BlockingType::WILL_BLOCK);
                            }),
                            TimeDelta());
   TaskTraits traits_with_may_block = TaskTraits(MayBlock(), GetParam());
