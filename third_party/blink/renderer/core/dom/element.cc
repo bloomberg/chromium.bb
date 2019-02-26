@@ -2551,15 +2551,18 @@ ShadowRoot& Element::CreateAndAttachShadowRoot(ShadowRootType type) {
 
   ShadowRoot* shadow_root = ShadowRoot::Create(GetDocument(), type);
 
-  if (type != ShadowRootType::V0) {
+  if (type != ShadowRootType::V0 && InActiveDocument()) {
     // Detach the host's children here for v1 (including UA shadow root),
     // because we skip SetNeedsDistributionRecalc() in attaching v1 shadow root.
     // See https://crrev.com/2822113002 for details.
-    // We need to call child.LazyReattachIfAttached() before setting a shadow
+    // We need to call child.RemovedFromFlatTree() before setting a shadow
     // root to the element because detach must use the original flat tree
-    // structure before attachShadow happens.
+    // structure before attachShadow happens. We cannot use
+    // FlatTreeParentChanged() because we don't know at this point whether a
+    // slot will be added and the child assigned to a slot on the next slot
+    // assignment update.
     for (Node& child : NodeTraversal::ChildrenOf(*this))
-      child.LazyReattachIfAttached();
+      child.RemovedFromFlatTree();
   }
   EnsureElementRareData().SetShadowRoot(*shadow_root);
   shadow_root->SetParentOrShadowHostNode(this);
