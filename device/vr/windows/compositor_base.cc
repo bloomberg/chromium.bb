@@ -5,12 +5,19 @@
 #include "device/vr/windows/compositor_base.h"
 
 #include "base/bind.h"
+#include "base/trace_event/common/trace_event_common.h"
 #include "ui/gfx/geometry/angle_conversions.h"
 #include "ui/gfx/transform.h"
 
 #if defined(OS_WIN)
 #include "device/vr/windows/d3d11_texture_helper.h"
 #endif
+
+namespace {
+// Number of frames to use for sliding averages for pose timings,
+// as used for estimating prediction times.
+constexpr unsigned kSlidingAverageSize = 5;
+}  // namespace
 
 namespace device {
 
@@ -33,6 +40,8 @@ XRCompositorCommon::OutstandingFrame::~OutstandingFrame() = default;
 XRCompositorCommon::XRCompositorCommon()
     : base::Thread("WindowsXRCompositor"),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      webxr_js_time_(kSlidingAverageSize),
+      webxr_gpu_time_(kSlidingAverageSize),
       presentation_binding_(this),
       frame_data_binding_(this),
       gamepad_provider_(this),
@@ -98,6 +107,7 @@ void XRCompositorCommon::SubmitFrameWithTextureHandle(
   }
 
   pending_frame_->waiting_for_webxr_ = false;
+  pending_frame_->submit_frame_time_ = base::TimeTicks::Now();
 
 #if defined(OS_WIN)
   MojoPlatformHandle platform_handle;
@@ -294,6 +304,7 @@ void XRCompositorCommon::GetFrameData(
 
   StartPendingFrame();
   pending_frame_->webxr_has_pose_ = true;
+  pending_frame_->sent_frame_data_time_ = base::TimeTicks::Now();
 
   // Yield here to let the event queue process pending mojo messages,
   // specifically the next gamepad callback request that's likely to
@@ -437,10 +448,26 @@ void XRCompositorCommon::MaybeCompositeAndSubmit() {
     copy_successful = texture_helper_.UpdateBackbufferSizes() &&
                       PreComposite() && texture_helper_.CompositeToBackBuffer();
     if (copy_successful) {
+      pending_frame_->frame_ready_time_ = base::TimeTicks::Now();
       if (!SubmitCompositedFrame()) {
         ExitPresent();
       }
     }
+  }
+
+  if (pending_frame_->webxr_submitted_ && copy_successful) {
+    // We've submitted a frame.
+    webxr_js_time_.AddSample(pending_frame_->submit_frame_time_ -
+                             pending_frame_->sent_frame_data_time_);
+    webxr_gpu_time_.AddSample(pending_frame_->frame_ready_time_ -
+                              pending_frame_->submit_frame_time_);
+
+    TRACE_EVENT_INSTANT2(
+        "gpu", "WebXR frame time (ms)", TRACE_EVENT_SCOPE_THREAD, "javascript",
+        webxr_js_time_.GetAverage().InMillisecondsF(), "rendering",
+        webxr_gpu_time_.GetAverage().InMillisecondsF());
+    fps_meter_.AddFrame(base::TimeTicks::Now());
+    TRACE_COUNTER1("gpu", "WebXR FPS", fps_meter_.GetFPS());
   }
 
   if (pending_frame_->webxr_submitted_ && submit_client_) {

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/vr/sliding_average.h"
+#include "device/vr/util/sliding_average.h"
 
-namespace vr {
+namespace device {
 
 SlidingAverage::SlidingAverage(size_t window_size) : values_(window_size) {}
 
@@ -35,4 +35,4 @@ base::TimeDelta SlidingTimeDeltaAverage::GetAverageOrDefault(
       sample_microseconds_.GetAverageOrDefault(default_value.InMicroseconds()));
 }
 
-}  // namespace vr
+}  // namespace device
