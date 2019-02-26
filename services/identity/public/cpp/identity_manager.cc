@@ -138,6 +138,25 @@ bool IdentityManager::AreRefreshTokensLoaded() const {
   return token_service_->AreAllCredentialsLoaded();
 }
 
+base::Optional<AccountInfo> IdentityManager::FindExtendedAccountInfoForAccount(
+    const CoreAccountInfo& account_info) const {
+  AccountInfo extended_account_info =
+      account_tracker_service_->GetAccountInfo(account_info.account_id);
+
+  // AccountTrackerService always returns an AccountInfo, even on failure. In
+  // case of failure, the AccountInfo will be unpopulated, thus we should not
+  // be able to find a valid refresh token.
+  if (!HasAccountWithRefreshToken(extended_account_info.account_id))
+    return base::nullopt;
+
+  // If the extended information is not available, AccountInfo::IsValid() will
+  // return false. If this is the case, return base::nullopt.
+  if (!extended_account_info.IsValid())
+    return base::nullopt;
+
+  return GetAccountInfoForAccountWithRefreshToken(account_info.account_id);
+}
+
 base::Optional<AccountInfo>
 IdentityManager::FindAccountInfoForAccountWithRefreshTokenByAccountId(
     const std::string& account_id) const {

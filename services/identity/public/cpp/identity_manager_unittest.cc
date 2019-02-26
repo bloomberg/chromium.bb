@@ -2417,4 +2417,71 @@ TEST_F(IdentityManagerTest, TestLegacyPickAccountIdForAccount) {
   }
 }
 
+// Check that FindExtendedAccountInfoForAccount returns a valid account info
+// iff the account is known, has refresh token and all the extended information
+// is available.
+TEST_F(IdentityManagerTest, FindExtendedAccountInfoForAccount) {
+  CoreAccountInfo account_info;
+  account_info.email = kTestEmail;
+  account_info.gaia = kTestGaiaId;
+  account_info.account_id = identity_manager()->LegacyPickAccountIdForAccount(
+      kTestGaiaId, kTestEmail);
+
+  // FindExtendedAccountInfoForAccount() returns empty optional if the
+  // account_info is invalid.
+  EXPECT_FALSE(identity_manager()
+                   ->FindExtendedAccountInfoForAccount(CoreAccountInfo{})
+                   .has_value());
+
+  // FindExtendedAccountInfoForAccount() returns empty optional if the
+  // account_info is unknown.
+  EXPECT_FALSE(identity_manager()
+                   ->FindExtendedAccountInfoForAccount(account_info)
+                   .has_value());
+
+  // Insert the core account information in the AccountTrackerService.
+  const std::string account_id =
+      account_tracker()->SeedAccountInfo(kTestGaiaId, kTestEmail);
+  ASSERT_EQ(account_info.account_id, account_id);
+
+  // FindExtendedAccountInfoForAccount() returns empty optional if the account
+  // has no refresh token.
+  EXPECT_FALSE(identity_manager()
+                   ->FindExtendedAccountInfoForAccount(account_info)
+                   .has_value());
+
+  // Insert refresh token for account.
+  SetRefreshTokenForAccount(identity_manager(), account_info.account_id,
+                            "refresh-token");
+
+  // FindExtendedAccountInfoForAccount() returns empty optional if the account
+  // has not extended information.
+  EXPECT_FALSE(identity_manager()
+                   ->FindExtendedAccountInfoForAccount(account_info)
+                   .has_value());
+
+  // Populate the extended information of the account.
+  base::DictionaryValue user_info;
+  user_info.SetString("id", account_info.gaia);
+  user_info.SetString("email", account_info.email);
+  user_info.SetString("hd", "hosted_domain");
+  user_info.SetString("name", "full_name");
+  user_info.SetString("given_name", "given_name");
+  user_info.SetString("locale", "locale");
+  user_info.SetString("picture", "picture_url");
+  account_tracker()->SetAccountInfoFromUserInfo(account_info.account_id,
+                                                &user_info);
+
+  // FindExtendedAccountInfoForAccount() returns extended account information if
+  // the account is know, has valid refresh token and has extended account
+  // information.
+  const base::Optional<AccountInfo> extended_account_info =
+      identity_manager()->FindExtendedAccountInfoForAccount(account_info);
+
+  ASSERT_TRUE(extended_account_info.has_value());
+  EXPECT_EQ(account_info.gaia, extended_account_info.value().gaia);
+  EXPECT_EQ(account_info.email, extended_account_info.value().email);
+  EXPECT_EQ(account_info.account_id, extended_account_info.value().account_id);
+}
+
 }  // namespace identity
