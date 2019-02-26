@@ -49,6 +49,7 @@
 #include "content/browser/renderer_host/compositor_impl_android.h"
 #include "content/browser/renderer_host/delegated_frame_host_client_android.h"
 #include "content/browser/renderer_host/dip_util.h"
+#include "content/browser/renderer_host/display_util.h"
 #include "content/browser/renderer_host/frame_metadata_util.h"
 #include "content/browser/renderer_host/input/input_router.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target_android.h"
@@ -2383,6 +2384,16 @@ RenderWidgetHostViewAndroid::DidUpdateVisualProperties(
       &RenderWidgetHostViewAndroid::OnDidUpdateVisualPropertiesComplete,
       weak_ptr_factory_.GetWeakPtr(), metadata);
   return viz::ScopedSurfaceIdAllocator(std::move(allocation_task));
+}
+
+void RenderWidgetHostViewAndroid::GetScreenInfo(ScreenInfo* screen_info) const {
+  auto* window = view_.GetWindowAndroid();
+  if (!window) {
+    RenderWidgetHostViewBase::GetScreenInfo(screen_info);
+    return;
+  }
+  DisplayUtil::DisplayToScreenInfo(screen_info,
+                                   window->GetDisplayWithWindowColorSpace());
 }
 
 void RenderWidgetHostViewAndroid::WasEvicted() {

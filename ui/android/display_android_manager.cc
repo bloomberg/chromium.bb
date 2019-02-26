@@ -69,6 +69,28 @@ Display DisplayAndroidManager::GetDisplayMatching(
   return GetPrimaryDisplay();
 }
 
+void DisplayAndroidManager::DoUpdateDisplay(display::Display* display,
+                                            gfx::Size size_in_pixels,
+                                            float dipScale,
+                                            int rotationDegrees,
+                                            int bitsPerPixel,
+                                            int bitsPerComponent,
+                                            bool isWideColorGamut) {
+  if (!Display::HasForceDeviceScaleFactor())
+    display->set_device_scale_factor(dipScale);
+  if (!Display::HasForceDisplayColorProfile()) {
+    // TODO(ccameron): Use CreateDisplayP3D65 if isWideColorGamut is true, once
+    // the feature is ready to use.
+    display->set_color_space(gfx::ColorSpace::CreateSRGB());
+  }
+
+  display->set_size_in_pixels(size_in_pixels);
+  display->SetRotationAsDegree(rotationDegrees);
+  display->set_color_depth(bitsPerPixel);
+  display->set_depth_per_component(bitsPerComponent);
+  display->set_is_monochrome(bitsPerComponent == 0);
+}
+
 // Methods called from Java
 
 void DisplayAndroidManager::UpdateDisplay(
@@ -87,20 +109,8 @@ void DisplayAndroidManager::UpdateDisplay(
       gfx::ScaleToCeiledSize(bounds_in_pixels.size(), 1.0f / dipScale));
 
   display::Display display(sdkDisplayId, bounds_in_dip);
-  if (!Display::HasForceDeviceScaleFactor())
-    display.set_device_scale_factor(dipScale);
-  if (!Display::HasForceDisplayColorProfile()) {
-    // TODO(ccameron): Use CreateDisplayP3D65 if isWideColorGamut is true, once
-    // the feature is ready to use.
-    display.set_color_space(gfx::ColorSpace::CreateSRGB());
-  }
-
-  display.set_size_in_pixels(bounds_in_pixels.size());
-  display.SetRotationAsDegree(rotationDegrees);
-  display.set_color_depth(bitsPerPixel);
-  display.set_depth_per_component(bitsPerComponent);
-  display.set_is_monochrome(bitsPerComponent == 0);
-
+  DoUpdateDisplay(&display, bounds_in_pixels.size(), dipScale, rotationDegrees,
+                  bitsPerPixel, bitsPerComponent, isWideColorGamut);
   ProcessDisplayChanged(display, sdkDisplayId == primary_display_id_);
 }
 

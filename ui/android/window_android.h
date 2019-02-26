@@ -20,6 +20,7 @@
 #include "ui/gfx/geometry/vector2d_f.h"
 
 namespace display {
+class Display;
 class DisplayAndroidManager;
 }  // namespace display
 
@@ -41,7 +42,11 @@ class UI_ANDROID_EXPORT WindowAndroid : public ViewAndroid {
   static WindowAndroid* FromJavaWindowAndroid(
       const base::android::JavaParamRef<jobject>& jwindow_android);
 
-  WindowAndroid(JNIEnv* env, jobject obj, int display_id, float scroll_factor);
+  WindowAndroid(JNIEnv* env,
+                jobject obj,
+                int display_id,
+                float scroll_factor,
+                bool window_is_wide_color_gamut);
 
   ~WindowAndroid() override;
 
@@ -95,6 +100,12 @@ class UI_ANDROID_EXPORT WindowAndroid : public ViewAndroid {
   // Return the window token for this window, if one exists.
   base::android::ScopedJavaLocalRef<jobject> GetWindowToken();
 
+  // This should return the same Display as Screen::GetDisplayNearestWindow
+  // except the color space depends on the status of this particular window
+  // rather than the display itself.
+  // See comment on WindowAndroid.getWindowIsWideColorGamut for details.
+  display::Display GetDisplayWithWindowColorSpace();
+
  private:
   class WindowBeginFrameSource;
   class ScopedOnBeginFrame;
@@ -112,6 +123,7 @@ class UI_ANDROID_EXPORT WindowAndroid : public ViewAndroid {
 
   base::android::ScopedJavaGlobalRef<jobject> java_window_;
   const int display_id_;
+  const bool window_is_wide_color_gamut_;
   WindowAndroidCompositor* compositor_;
 
   base::ObserverList<WindowAndroidObserver>::Unchecked observer_list_;

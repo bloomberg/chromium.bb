@@ -36,6 +36,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.compat.ApiHelperForO;
+import org.chromium.base.compat.ApiHelperForOMR1;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.VSyncMonitor;
 import org.chromium.ui.display.DisplayAndroid;
@@ -88,6 +89,8 @@ public class WindowAndroid implements AndroidPermissionDelegate {
 
     // Error code returned when an Intent fails to start an Activity.
     public static final int START_INTENT_FAILURE = -1;
+
+    private boolean mWindowisWideColorGamut;
 
     protected SparseArray<IntentCallback> mOutstandingIntents;
     // We use a weak reference here to prevent this from leaking in WebView.
@@ -641,8 +644,8 @@ public class WindowAndroid implements AndroidPermissionDelegate {
     @CalledByNative
     private long getNativePointer() {
         if (mNativeWindowAndroid == 0) {
-            mNativeWindowAndroid =
-                    nativeInit(mDisplayAndroid.getDisplayId(), getMouseWheelScrollFactor());
+            mNativeWindowAndroid = nativeInit(mDisplayAndroid.getDisplayId(),
+                    getMouseWheelScrollFactor(), getWindowIsWideColorGamut());
             nativeSetVSyncPaused(mNativeWindowAndroid, mVSyncPaused);
         }
         return mNativeWindowAndroid;
@@ -663,6 +666,25 @@ public class WindowAndroid implements AndroidPermissionDelegate {
             return outValue.getDimension(context.getResources().getDisplayMetrics());
         }
         return 0;
+    }
+
+    // Helper to get the android Window. Always null for application context. Need to null check
+    // result returning value.
+    private Window getWindow() {
+        Activity activity = activityFromContext(mContextRef.get());
+        if (activity == null) return null;
+        return activity.getWindow();
+    }
+
+    // This is android.view.Window.isWideColorGamut, which is only set if the passed in Context is
+    // an Activity. This is normally not needed for apps which can decide whether to enable wide
+    // gamut (on supported hardware and os). However it is important for embedders like WebView
+    // which do not make the wide gamut decision to check this at run time.
+    private boolean getWindowIsWideColorGamut() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O_MR1) return false;
+        Window window = getWindow();
+        if (window == null) return false;
+        return ApiHelperForOMR1.isWideColorGamut(window);
     }
 
     /**
@@ -774,9 +796,7 @@ public class WindowAndroid implements AndroidPermissionDelegate {
      */
     @CalledByNative
     protected IBinder getWindowToken() {
-        Activity activity = activityFromContext(mContextRef.get());
-        if (activity == null) return null;
-        Window window = activity.getWindow();
+        Window window = getWindow();
         if (window == null) return null;
         View decorView = window.peekDecorView();
         if (decorView == null) return null;
@@ -816,7 +836,8 @@ public class WindowAndroid implements AndroidPermissionDelegate {
         if (mNativeWindowAndroid != 0) nativeSetVSyncPaused(mNativeWindowAndroid, paused);
     }
 
-    private native long nativeInit(int displayId, float scrollFactor);
+    private native long nativeInit(
+            int displayId, float scrollFactor, boolean windowIsWideColorGamut);
     private native void nativeOnVSync(long nativeWindowAndroid,
                                       long vsyncTimeMicros,
                                       long vsyncPeriodMicros);
