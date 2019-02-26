@@ -39,6 +39,7 @@ namespace blink {
 
 class Document;
 class Gamepad;
+class GamepadDispatcher;
 class GamepadList;
 class Navigator;
 
@@ -113,6 +114,8 @@ class MODULES_EXPORT NavigatorGamepad final
 
   // True while processing gamepad events.
   bool processing_events_ = false;
+
+  Member<GamepadDispatcher> gamepad_dispatcher_;
 };
 
 }  // namespace blink

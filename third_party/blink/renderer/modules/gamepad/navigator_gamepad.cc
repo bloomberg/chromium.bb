@@ -109,13 +109,14 @@ static void SampleGamepad(uint32_t index,
   }
 }
 
-static void SampleGamepads(GamepadList* into,
+static void SampleGamepads(GamepadDispatcher* gamepad_dispatcher,
+                           GamepadList* into,
                            ExecutionContext* context,
                            const TimeTicks& navigation_start,
                            const TimeTicks& gamepads_start) {
   device::Gamepads gamepads;
 
-  GamepadDispatcher::Instance().SampleGamepads(gamepads);
+  gamepad_dispatcher->SampleGamepads(gamepads);
 
   for (uint32_t i = 0; i < device::Gamepads::kItemsLengthCap; ++i) {
     device::Gamepad& web_gamepad = gamepads.items[i];
@@ -206,6 +207,7 @@ GamepadList* NavigatorGamepad::Gamepads() {
 void NavigatorGamepad::Trace(blink::Visitor* visitor) {
   visitor->Trace(gamepads_);
   visitor->Trace(gamepads_back_);
+  visitor->Trace(gamepad_dispatcher_);
   Supplement<Navigator>::Trace(visitor);
   DOMWindowClient::Trace(visitor);
   PlatformEventController::Trace(visitor);
@@ -237,9 +239,13 @@ void NavigatorGamepad::DidUpdateData() {
 NavigatorGamepad::NavigatorGamepad(Navigator& navigator)
     : Supplement<Navigator>(navigator),
       DOMWindowClient(navigator.DomWindow()),
-      PlatformEventController(navigator.GetFrame()
-                                  ? navigator.GetFrame()->GetDocument()
-                                  : nullptr) {
+      PlatformEventController(
+          navigator.GetFrame() ? navigator.GetFrame()->GetDocument() : nullptr),
+      // See https://bit.ly/2S0zRAS for task types
+      gamepad_dispatcher_(MakeGarbageCollected<GamepadDispatcher>(
+          navigator.GetFrame() ? navigator.GetFrame()->GetTaskRunner(
+                                     blink::TaskType::kMiscPlatformAPI)
+                               : nullptr)) {
   if (navigator.DomWindow())
     navigator.DomWindow()->RegisterEventListenerObserver(this);
 
@@ -255,11 +261,11 @@ NavigatorGamepad::NavigatorGamepad(Navigator& navigator)
 NavigatorGamepad::~NavigatorGamepad() = default;
 
 void NavigatorGamepad::RegisterWithDispatcher() {
-  GamepadDispatcher::Instance().AddController(this);
+  gamepad_dispatcher_->AddController(this);
 }
 
 void NavigatorGamepad::UnregisterWithDispatcher() {
-  GamepadDispatcher::Instance().RemoveController(this);
+  gamepad_dispatcher_->RemoveController(this);
 }
 
 bool NavigatorGamepad::HasLastData() {
@@ -315,8 +321,8 @@ void NavigatorGamepad::SampleAndCompareGamepadState() {
       // Allocate a buffer to hold the new gamepad state, if needed.
       if (!gamepads_back_)
         gamepads_back_ = GamepadList::Create();
-      SampleGamepads(gamepads_back_.Get(), execution_context, navigation_start_,
-                     gamepads_start_);
+      SampleGamepads(gamepad_dispatcher_, gamepads_back_.Get(),
+                     execution_context, navigation_start_, gamepads_start_);
 
       // Compare the new sample with the previous sample and record which
       // gamepad events should be dispatched. Swap buffers if the gamepad
