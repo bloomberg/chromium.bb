@@ -56,31 +56,31 @@ class RemoteTest(object):
     self._additional_args = unknown_args
     self._path_to_outdir = args.path_to_outdir
     self._test_launcher_summary_output = args.test_launcher_summary_output
-    self._vm_logs_dir = args.vm_logs_dir
+    self._logs_dir = args.logs_dir
 
     self._retries = 0
     self._timeout = None
 
-    self._vm_test_cmd = [
+    self._test_cmd = [
         CROS_RUN_TEST_PATH,
         '--board', args.board,
         '--cache-dir', args.cros_cache,
     ]
     if args.use_vm:
-      self._vm_test_cmd += [
+      self._test_cmd += [
           '--start',
           # Don't persist any filesystem changes after the VM shutsdown.
           '--copy-on-write',
           '--device', 'localhost'
       ]
     else:
-      self._vm_test_cmd += [
+      self._test_cmd += [
           '--device', args.device if args.device else LAB_DUT_HOSTNAME
       ]
-    if args.vm_logs_dir:
-      self._vm_test_cmd += [
+    if args.logs_dir:
+      self._test_cmd += [
           '--results-src', '/var/log/',
-          '--results-dest-dir', args.vm_logs_dir,
+          '--results-dest-dir', args.logs_dir,
       ]
 
     self._test_env = setup_env()
@@ -90,12 +90,12 @@ class RemoteTest(object):
     raise NotImplementedError('Child classes need to define suite name.')
 
   @property
-  def vm_test_cmd(self):
-    return self._vm_test_cmd
+  def test_cmd(self):
+    return self._test_cmd
 
   def run_test(self):
-    # Traps SIGTERM and kills all child processes of cros_run_vm_test when it's
-    # caught. This will allow us to capture logs from the VM if a test hangs
+    # Traps SIGTERM and kills all child processes of cros_run_test when it's
+    # caught. This will allow us to capture logs from the device if a test hangs
     # and gets timeout-killed by swarming. See also:
     # https://chromium.googlesource.com/infra/luci/luci-py/+/master/appengine/swarming/doc/Bot.md#graceful-termination_aka-the-sigterm-and-sigkill-dance
     test_proc = None
@@ -118,7 +118,7 @@ class RemoteTest(object):
       logging.info('Test attempt #%d', i)
       logging.info('########################################')
       test_proc = subprocess42.Popen(
-          self._vm_test_cmd, stdout=sys.stdout, stderr=sys.stderr,
+          self._test_cmd, stdout=sys.stdout, stderr=sys.stderr,
           env=self._test_env)
       try:
         test_proc.wait(timeout=self._timeout)
@@ -190,9 +190,9 @@ class TastTest(RemoteTest):
     # VMs don't have the disk space for an unstripped version of Chrome, so only
     # strip when running on VMs.
     if not self._use_vm:
-      self._vm_test_cmd.append('--nostrip')
+      self._test_cmd.append('--nostrip')
 
-    self._vm_test_cmd += [
+    self._test_cmd += [
         '--deploy',
         '--build-dir', os.path.relpath(self._path_to_outdir, CHROMIUM_SRC_PATH),
         '--cmd',
@@ -203,11 +203,11 @@ class TastTest(RemoteTest):
     if self._use_vm:
       # If we're running tests in VMs, tell the test runner to skip tests that
       # aren't compatible.
-      self._vm_test_cmd.append('-extrauseflags=tast_vm')
+      self._test_cmd.append('-extrauseflags=tast_vm')
     if self._conditional:
-      self._vm_test_cmd.append(pipes.quote(self._conditional))
+      self._test_cmd.append(pipes.quote(self._conditional))
     else:
-      self._vm_test_cmd.extend(self._tests)
+      self._test_cmd.extend(self._tests)
 
 
 class GTestTest(RemoteTest):
@@ -228,7 +228,7 @@ class GTestTest(RemoteTest):
     self._test_launcher_shard_index = args.test_launcher_shard_index
     self._test_launcher_total_shards = args.test_launcher_total_shards
 
-    self._on_vm_script = None
+    self._on_device_script = None
 
     # If set, pass this value to the LLVM_PROFILE_FILE env var in the vm.
     self._vm_profile_var = None
@@ -240,11 +240,11 @@ class GTestTest(RemoteTest):
   def build_test_command(self):
     # To keep things easy for us, ensure both types of output locations are
     # the same.
-    if self._test_launcher_summary_output and self._vm_logs_dir:
+    if self._test_launcher_summary_output and self._logs_dir:
       json_out_dir = os.path.dirname(self._test_launcher_summary_output) or '.'
-      if os.path.abspath(json_out_dir) != os.path.abspath(self._vm_logs_dir):
+      if os.path.abspath(json_out_dir) != os.path.abspath(self._logs_dir):
         raise TestFormatError(
-            '--test-launcher-summary-output and --vm-logs-dir must point to '
+            '--test-launcher-summary-output and --logs-dir must point to '
             'the same directory.')
 
     if self._test_launcher_summary_output:
@@ -252,12 +252,12 @@ class GTestTest(RemoteTest):
           self._test_launcher_summary_output)
       # If args.test_launcher_summary_output is a file in cwd, result_dir will
       # be an empty string, so replace it with '.' when this is the case so
-      # cros_run_vm_test can correctly handle it.
+      # cros_run_test can correctly handle it.
       if not result_dir:
         result_dir = '.'
-      vm_result_file = '/tmp/%s' % result_file
-      self._vm_test_cmd += [
-          '--results-src', vm_result_file,
+      device_result_file = '/tmp/%s' % result_file
+      self._test_cmd += [
+          '--results-src', device_result_file,
           '--results-dest-dir', result_dir,
       ]
 
@@ -272,22 +272,22 @@ class GTestTest(RemoteTest):
         self._vm_profile_var = '/tmp/profraw/%s' % vm_profile_file
 
         # This should make the vm test runner exfil the profiling data.
-        self._vm_test_cmd += [
+        self._test_cmd += [
             '--results-src', '/tmp/profraw'
         ]
 
-    # Build the shell script that will be used on the VM to invoke the test.
-    vm_test_script_contents = ['#!/bin/sh']
+    # Build the shell script that will be used on the device to invoke the test.
+    device_test_script_contents = ['#!/bin/sh']
 
-    # /home is mounted with "noexec" in the VM, but some of our tools
+    # /home is mounted with "noexec" in the device, but some of our tools
     # and tests use the home dir as a workspace (eg: vpython downloads
     # python binaries to ~/.vpython-root). /tmp doesn't have this
     # restriction, so change the location of the home dir for the
     # duration of the test.
-    vm_test_script_contents.append('export HOME=/tmp')
+    device_test_script_contents.append('export HOME=/tmp')
 
     if self._vm_profile_var:
-      vm_test_script_contents += [
+      device_test_script_contents += [
           'export LLVM_PROFILE_FILE=%s'% self._vm_profile_var,
       ]
 
@@ -297,7 +297,7 @@ class GTestTest(RemoteTest):
           self._path_to_outdir)
       # Initialize the vpython cache. This can take 10-20s, and some tests
       # can't afford to wait that long on the first invocation.
-      vm_test_script_contents.extend([
+      device_test_script_contents.extend([
           'export PATH=$PATH:$PWD/%s' % (self._vpython_dir),
           'vpython -vpython-spec %s -vpython-tool install' % (
               vpython_spec_path),
@@ -307,7 +307,7 @@ class GTestTest(RemoteTest):
     # TODO(crbug.com/904730): Once we start loading vivid in init service,
     # we can remove this code.
     if self._test_exe == 'capture_unittests':
-      vm_test_script_contents.append(
+      device_test_script_contents.append(
           'echo "test0000" | sudo -S modprobe vivid n_devs=1 node_types=0x1')
 
     test_invocation = (
@@ -317,20 +317,21 @@ class GTestTest(RemoteTest):
             self._test_launcher_total_shards)
     )
     if self._test_launcher_summary_output:
-      test_invocation += ' --test-launcher-summary-output=%s' % vm_result_file
+      test_invocation += ' --test-launcher-summary-output=%s' % (
+          device_result_file)
     if self._additional_args:
       test_invocation += ' %s' % ' '.join(self._additional_args)
-    vm_test_script_contents.append(test_invocation)
+    device_test_script_contents.append(test_invocation)
 
-    logging.info('Running the following command in the VM:')
-    logging.info('\n' + '\n'.join(vm_test_script_contents))
+    logging.info('Running the following command on the device:')
+    logging.info('\n' + '\n'.join(device_test_script_contents))
     fd, tmp_path = tempfile.mkstemp(suffix='.sh', dir=self._path_to_outdir)
     os.fchmod(fd, 0755)
     with os.fdopen(fd, 'wb') as f:
-      f.write('\n'.join(vm_test_script_contents))
-    self._on_vm_script = tmp_path
+      f.write('\n'.join(device_test_script_contents))
+    self._on_device_script = tmp_path
 
-    runtime_files = [os.path.relpath(self._on_vm_script)]
+    runtime_files = [os.path.relpath(self._on_device_script)]
     runtime_files += self._read_runtime_files()
     if self._vpython_dir:
       # --vpython-dir is relative to the out dir, but --files expects paths
@@ -345,17 +346,17 @@ class GTestTest(RemoteTest):
       runtime_files.append('.vpython')
 
     # Since we're pushing files, we need to set the cwd.
-    self._vm_test_cmd.extend(
+    self._test_cmd.extend(
         ['--cwd', os.path.relpath(self._path_to_outdir, CHROMIUM_SRC_PATH)])
     for f in runtime_files:
-      self._vm_test_cmd.extend(['--files', f])
+      self._test_cmd.extend(['--files', f])
 
-    self._vm_test_cmd += [
+    self._test_cmd += [
         # Some tests fail as root, so run as the less privileged user 'chronos'.
         '--as-chronos',
         '--cmd',
         '--',
-        './' + os.path.relpath(self._on_vm_script, self._path_to_outdir)
+        './' + os.path.relpath(self._on_device_script, self._path_to_outdir)
     ]
 
   def _read_runtime_files(self):
@@ -375,8 +376,8 @@ class GTestTest(RemoteTest):
     return rel_file_paths
 
   def post_run(self, _):
-    if self._on_vm_script:
-      os.remove(self._on_vm_script)
+    if self._on_device_script:
+      os.remove(self._on_device_script)
 
 
 class BrowserSanityTest(RemoteTest):
@@ -411,18 +412,18 @@ class BrowserSanityTest(RemoteTest):
           'Sanity test should not have additional args: %s' % (
               self._additional_args))
 
-    # run_cros_vm_test's default behavior when no cmd is specified is the sanity
-    # test that's baked into the VM image. This test smoke-checks the system
-    # browser, so deploy our locally-built chrome to the VM before testing.
-    self._vm_test_cmd += [
+    # run_cros_test's default behavior when no cmd is specified is the sanity
+    # test that's baked into the device image. This test smoke-checks the system
+    # browser, so deploy our locally-built chrome to the device before testing.
+    self._test_cmd += [
         '--deploy',
         '--nostrip',
         '--build-dir', os.path.relpath(self._path_to_outdir, CHROMIUM_SRC_PATH),
     ]
 
 
-def vm_test(args, unknown_args):
-  # cros_run_vm_test has trouble with relative paths that go up directories,
+def device_test(args, unknown_args):
+  # cros_run_test has trouble with relative paths that go up directories,
   # so cd to src/, which should be the root of all data deps.
   os.chdir(CHROMIUM_SRC_PATH)
 
@@ -437,8 +438,8 @@ def vm_test(args, unknown_args):
     test = GTestTest(args, unknown_args)
 
   test.build_test_command()
-  logging.info('Running the following command on the host:')
-  logging.info(' '.join(test.vm_test_cmd))
+  logging.info('Running the following command on the device:')
+  logging.info(' '.join(test.test_cmd))
 
   return test.run_test()
 
@@ -454,42 +455,42 @@ def host_cmd(args, unknown_args):
     raise TestFormatError(
         '--path-to-outdir must be specified if --deploy-chrome is passed.')
 
-  cros_run_vm_test_cmd = [
+  cros_run_test_cmd = [
       CROS_RUN_TEST_PATH,
       '--board', args.board,
       '--cache-dir', args.cros_cache,
   ]
   if args.use_vm:
-    cros_run_vm_test_cmd += [
+    cros_run_test_cmd += [
         '--start',
         # Don't persist any filesystem changes after the VM shutsdown.
         '--copy-on-write',
         '--device', 'localhost',
     ]
   else:
-    cros_run_vm_test_cmd += [
+    cros_run_test_cmd += [
         '--device', args.device if args.device else LAB_DUT_HOSTNAME
     ]
   if args.verbose:
-    cros_run_vm_test_cmd.append('--debug')
+    cros_run_test_cmd.append('--debug')
 
   test_env = setup_env()
   if args.deploy_chrome:
-    cros_run_vm_test_cmd += [
+    cros_run_test_cmd += [
         '--deploy',
         '--build-dir', os.path.abspath(args.path_to_outdir),
     ]
 
-  cros_run_vm_test_cmd += [
+  cros_run_test_cmd += [
       '--host-cmd',
       '--',
   ] + args.cmd
 
   logging.info('Running the following command:')
-  logging.info(' '.join(cros_run_vm_test_cmd))
+  logging.info(' '.join(cros_run_test_cmd))
 
   return subprocess42.call(
-      cros_run_vm_test_cmd, stdout=sys.stdout, stderr=sys.stderr, env=test_env)
+      cros_run_test_cmd, stdout=sys.stdout, stderr=sys.stderr, env=test_env)
 
 
 def setup_env():
@@ -498,7 +499,7 @@ def setup_env():
   # Some chromite scripts expect chromite/bin to be on PATH.
   env['PATH'] = env['PATH'] + ':' + os.path.join(CHROMITE_PATH, 'bin')
   # deploy_chrome needs a set of GN args used to build chrome to determine if
-  # certain libraries need to be pushed to the VM. It looks for the args via
+  # certain libraries need to be pushed to the device. It looks for the args via
   # an env var. To trigger the default deploying behavior, give it a dummy set
   # of args.
   # TODO(crbug.com/823996): Make the GN-dependent deps controllable via cmd
@@ -524,14 +525,15 @@ def add_common_args(parser):
   parser.add_argument(
       '--vpython-dir', type=str,
       help='Location on host of a directory containing a vpython binary to '
-           'deploy to the VM before the test starts. The location of this '
-           'dir will be added onto PATH in the VM. WARNING: The arch of the '
-           'VM might not match the arch of the host, so avoid using '
+           'deploy to the device before the test starts. The location of this '
+           'dir will be added onto PATH in the device. WARNING: The arch of '
+           'the device might not match the arch of the host, so avoid using '
            '"${platform}" when downloading vpython via CIPD.')
+  # TODO(bpastene): Switch all uses of "--vm-logs-dir" to "--logs-dir".
   parser.add_argument(
-      '--vm-logs-dir', type=str,
-      help='Will copy everything under /var/log/ from the VM after the test '
-           'into the specified dir.')
+      '--vm-logs-dir', '--logs-dir', type=str, dest='logs_dir',
+      help='Will copy everything under /var/log/ from the device after the '
+           'test into the specified dir.')
 
 
 def main():
@@ -553,7 +555,8 @@ def main():
   host_cmd_parser = subparsers.add_parser(
       'host-cmd',
       help='Runs a host-side test. Pass the host-side command to run after '
-           '"--". Hostname and port for the VM will be 127.0.0.1:9222.')
+           '"--". If --use-vm is passed, hostname and port for the device '
+           'will be 127.0.0.1:9222.')
   host_cmd_parser.set_defaults(func=host_cmd)
   host_cmd_parser.add_argument(
       '--cros-cache', type=str, default=DEFAULT_CROS_CACHE,
@@ -564,26 +567,26 @@ def main():
            'to the device.')
   host_cmd_parser.add_argument(
       '--deploy-chrome', action='store_true',
-      help='Will deploy a locally built Chrome binary to the VM before running '
-           'the host-cmd.')
+      help='Will deploy a locally built Chrome binary to the device before '
+           'running the host-cmd.')
   host_cmd_parser.add_argument('cmd', nargs=argparse.REMAINDER)
   # GTest args.
   # TODO(bpastene): Rename 'vm-test' arg to 'gtest'.
   gtest_parser = subparsers.add_parser(
       'vm-test',
-      help='Runs a vm-side gtest.')
-  gtest_parser.set_defaults(func=vm_test)
+      help='Runs a device-side gtest.')
+  gtest_parser.set_defaults(func=device_test)
   gtest_parser.add_argument(
       '--test-exe', type=str, required=True,
-      help='Path to test executable to run inside VM. If the value is '
-           '%s, the sanity test that ships with the VM '
-           'image runs instead. This test smokes-check the system browser '
-           '(eg: loads a simple webpage, executes some javascript), so a '
-           'fully-built Chrome binary that can get deployed to the VM is '
-           'expected to be available in the out-dir.' % SANITY_TEST_TARGET)
+      help='Path to test executable to run inside the device. If the value is '
+           '%s, the sanity test that ships with the device image runs instead. '
+           'This test smokes-check the system browser (eg: loads a simple '
+           'webpage, executes some javascript), so a fully-built Chrome binary '
+           'that can get deployed to the device is expected to be available in '
+           'the out-dir.' % SANITY_TEST_TARGET)
 
-  # GTest args. Some are passed down to the test binary in the VM. Others are
-  # parsed here since they might need tweaking or special handling.
+  # GTest args. Some are passed down to the test binary in the device. Others
+  # are parsed here since they might need tweaking or special handling.
   gtest_parser.add_argument(
       '--test-launcher-summary-output', type=str,
       help='When set, will pass the same option down to the test and retrieve '
@@ -602,9 +605,9 @@ def main():
   # pylint: disable=line-too-long
   tast_test_parser = subparsers.add_parser(
       'tast',
-      help='Runs a vm-side set of Tast tests. For more details, see: '
+      help='Runs a device-side set of Tast tests. For more details, see: '
            'https://chromium.googlesource.com/chromiumos/platform/tast/+/master/docs/running_tests.md')
-  tast_test_parser.set_defaults(func=vm_test)
+  tast_test_parser.set_defaults(func=device_test)
   tast_test_parser.add_argument(
       '--suite-name', type=str, required=True,
       help='Name to apply to the set of Tast tests to run. This has no effect '
@@ -620,7 +623,7 @@ def main():
            '(eg: ("dep:chrome" || "dep:chrome_login")).')
   tast_test_parser.add_argument(
       '--test', '-t', action='append', dest='tests',
-      help='A Tast test to run in the VM (eg: "ui.ChromeLogin").')
+      help='A Tast test to run in the device (eg: "ui.ChromeLogin").')
 
   add_common_args(gtest_parser)
   add_common_args(tast_test_parser)
