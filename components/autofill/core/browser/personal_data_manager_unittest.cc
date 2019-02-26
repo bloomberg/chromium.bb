@@ -60,6 +60,7 @@
 #include "components/webdata/common/web_database_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -135,7 +136,8 @@ void ExpectSameElements(const std::vector<T*>& expectations,
 
 class PersonalDataManagerTestBase {
  protected:
-  PersonalDataManagerTestBase() {
+  PersonalDataManagerTestBase()
+      : identity_test_env_(&test_url_loader_factory_) {
     // Enable account storage by default, some tests will override this to be
     // false.
     scoped_features_.InitWithFeatures(
@@ -302,6 +304,7 @@ class PersonalDataManagerTestBase {
   base::test::ScopedTaskEnvironment task_environment_{
       base::test::ScopedTaskEnvironment::MainThreadType::UI};
   std::unique_ptr<PrefService> prefs_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
   identity::IdentityTestEnvironment identity_test_env_;
   syncer::TestSyncService sync_service_;
   scoped_refptr<AutofillWebDataService> profile_database_service_;
@@ -7682,11 +7685,9 @@ TEST_F(PersonalDataManagerTest, OnUserAcceptedUpstreamOffer) {
   ///////////////////////////////////////////////////////////
   // Make a non-primary account available with both a refresh token and cookie
   // to be in Sync Transport for Wallet mode.
-  AccountInfo active_info;
-  active_info.email = kSyncTransportAccountEmail;
-  active_info.account_id = "account_id";
-  // TODO(treib): This seems wrong, we want a NON-primary account here.
-  identity_test_env_.SetPrimaryAccount(active_info.email);
+  CoreAccountInfo active_info =
+      identity_test_env_.MakeAccountAvailable(kSyncTransportAccountEmail);
+  identity_test_env_.SetCookieAccounts({{active_info.email, active_info.gaia}});
   sync_service_.SetAuthenticatedAccountInfo(active_info);
   sync_service_.SetIsAuthenticatedAccountPrimary(false);
   sync_service_.SetActiveDataTypes(
@@ -7694,13 +7695,10 @@ TEST_F(PersonalDataManagerTest, OnUserAcceptedUpstreamOffer) {
   // Make sure there are no opt-ins recorded yet.
   ASSERT_FALSE(prefs::IsUserOptedInWalletSyncTransport(prefs_.get(),
                                                        active_info.account_id));
-// The kSignedInAndWalletSyncTransportEnabled state is not available on CrOS.
-#if !defined(OS_CHROMEOS)
   {
     base::test::ScopedFeatureList scoped_features;
-    scoped_features.InitWithFeatures(
-        /*enabled_features=*/{features::kAutofillEnableAccountWalletStorage},
-        /*disabled_features=*/{});
+    scoped_features.InitAndEnableFeature(
+        features::kAutofillEnableAccountWalletStorage);
 
     EXPECT_EQ(AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled,
               personal_data_->GetSyncSigninState());
@@ -7710,7 +7708,6 @@ TEST_F(PersonalDataManagerTest, OnUserAcceptedUpstreamOffer) {
     EXPECT_TRUE(prefs::IsUserOptedInWalletSyncTransport(
         prefs_.get(), active_info.account_id));
   }
-#endif  // !defined(OS_CHROMEOS)
 
   // Clear the prefs.
   prefs::ClearSyncTransportOptIns(prefs_.get());
@@ -7721,10 +7718,11 @@ TEST_F(PersonalDataManagerTest, OnUserAcceptedUpstreamOffer) {
   // kSignedIn
   ///////////////////////////////////////////////////////////
   {
+    // Without AccountWalletStorage, kSignedInAndWalletSyncTransportEnabled
+    // shouldn't be available.
     base::test::ScopedFeatureList scoped_features;
-    scoped_features.InitWithFeatures(
-        /*enabled_features=*/{},
-        /*disabled_features=*/{features::kAutofillEnableAccountWalletStorage});
+    scoped_features.InitAndDisableFeature(
+        features::kAutofillEnableAccountWalletStorage);
 
     EXPECT_EQ(AutofillSyncSigninState::kSignedIn,
               personal_data_->GetSyncSigninState());
@@ -7742,8 +7740,24 @@ TEST_F(PersonalDataManagerTest, OnUserAcceptedUpstreamOffer) {
                                                        active_info.account_id));
 
   ///////////////////////////////////////////////////////////
+  // kSignedOut
+  ///////////////////////////////////////////////////////////
+  identity_test_env_.RemoveRefreshTokenForAccount(active_info.account_id);
+  {
+    EXPECT_EQ(AutofillSyncSigninState::kSignedOut,
+              personal_data_->GetSyncSigninState());
+
+    // Make sure an opt-in does not get recorded even if the user accepted an
+    // Upstream offer.
+    personal_data_->OnUserAcceptedUpstreamOffer();
+    EXPECT_FALSE(prefs::IsUserOptedInWalletSyncTransport(
+        prefs_.get(), active_info.account_id));
+  }
+
+  ///////////////////////////////////////////////////////////
   // kSignedInAndSyncFeature
   ///////////////////////////////////////////////////////////
+  identity_test_env_.SetPrimaryAccount(active_info.email);
   sync_service_.SetIsAuthenticatedAccountPrimary(true);
   {
     EXPECT_EQ(AutofillSyncSigninState::kSignedInAndSyncFeature,
@@ -7755,29 +7769,6 @@ TEST_F(PersonalDataManagerTest, OnUserAcceptedUpstreamOffer) {
     EXPECT_FALSE(prefs::IsUserOptedInWalletSyncTransport(
         prefs_.get(), active_info.account_id));
   }
-
-  // Clear the prefs.
-  prefs::ClearSyncTransportOptIns(prefs_.get());
-  ASSERT_FALSE(prefs::IsUserOptedInWalletSyncTransport(prefs_.get(),
-                                                       active_info.account_id));
-
-  ///////////////////////////////////////////////////////////
-  // kSignedOut
-  ///////////////////////////////////////////////////////////
-// ClearPrimaryAccount is not supported on CrOS.
-#if !defined(OS_CHROMEOS)
-  {
-    identity_test_env_.ClearPrimaryAccount();
-    EXPECT_EQ(AutofillSyncSigninState::kSignedOut,
-              personal_data_->GetSyncSigninState());
-
-    // Make sure an opt-in does not get recorded even if the user accepted an
-    // Upstream offer.
-    personal_data_->OnUserAcceptedUpstreamOffer();
-    EXPECT_FALSE(prefs::IsUserOptedInWalletSyncTransport(
-        prefs_.get(), active_info.account_id));
-  }
-#endif  // !defined(OS_CHROMEOS)
 }
 
 }  // namespace autofill
