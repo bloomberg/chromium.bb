@@ -829,4 +829,52 @@ TEST_F(FileAnalyzerTest, ZipFilesGetDirectoryCount) {
   EXPECT_EQ(1, result_.directory_count);
 }
 
+TEST_F(FileAnalyzerTest, RarFilesGetFileCount) {
+  scoped_refptr<MockBinaryFeatureExtractor> extractor =
+      new testing::StrictMock<MockBinaryFeatureExtractor>();
+  FileAnalyzer analyzer(extractor);
+  base::RunLoop run_loop;
+
+  base::FilePath target_path(FILE_PATH_LITERAL("has_exe.rar"));
+  base::FilePath rar_path;
+  EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &rar_path));
+  rar_path = rar_path.AppendASCII("safe_browsing")
+                 .AppendASCII("rar")
+                 .AppendASCII("has_exe.rar");
+
+  analyzer.Start(
+      target_path, rar_path,
+      base::BindOnce(&FileAnalyzerTest::DoneCallback, base::Unretained(this),
+                     run_loop.QuitClosure()));
+  run_loop.Run();
+
+  ASSERT_TRUE(has_result_);
+  EXPECT_EQ(1, result_.file_count);
+  EXPECT_EQ(0, result_.directory_count);
+}
+
+TEST_F(FileAnalyzerTest, RarFilesGetDirectoryCount) {
+  scoped_refptr<MockBinaryFeatureExtractor> extractor =
+      new testing::StrictMock<MockBinaryFeatureExtractor>();
+  FileAnalyzer analyzer(extractor);
+  base::RunLoop run_loop;
+
+  base::FilePath target_path(FILE_PATH_LITERAL("has_folder.rar"));
+  base::FilePath rar_path;
+  EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &rar_path));
+  rar_path = rar_path.AppendASCII("safe_browsing")
+                 .AppendASCII("rar")
+                 .AppendASCII("has_folder.rar");
+
+  analyzer.Start(
+      target_path, rar_path,
+      base::BindOnce(&FileAnalyzerTest::DoneCallback, base::Unretained(this),
+                     run_loop.QuitClosure()));
+  run_loop.Run();
+
+  ASSERT_TRUE(has_result_);
+  EXPECT_EQ(0, result_.file_count);
+  EXPECT_EQ(1, result_.directory_count);
+}
+
 }  // namespace safe_browsing

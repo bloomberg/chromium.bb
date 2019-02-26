@@ -268,6 +268,9 @@ void FileAnalyzer::OnRarAnalysisFinished(
     results_.type = ClientDownloadRequest::RAR_COMPRESSED_EXECUTABLE;
   }
 
+  results_.file_count = archive_results.file_count;
+  results_.directory_count = archive_results.directory_count;
+
   std::move(callback_).Run(std::move(results_));
 }
 
