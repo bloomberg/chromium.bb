@@ -2085,6 +2085,9 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="9" label="GET_MORE_CONTINUED"/>
   <int value="10" label="READY_SCREEN_SHOWN"/>
   <int value="11" label="READY_SCREEN_CONTINUED"/>
+  <int value="12" label="VOICE_MATCH_SHOWN"/>
+  <int value="13" label="VOICE_MATCH_ENROLLMENT_DONE"/>
+  <int value="14" label="VOICE_MATCH_ENROLLMENT_SKIPPED"/>
 </enum>
 
 <enum name="AssistantQueryResponseType">

@@ -31,8 +31,11 @@ enum AssistantOptInFlowStatus {
   GET_MORE_CONTINUED = 9,
   READY_SCREEN_SHOWN = 10,
   READY_SCREEN_CONTINUED = 11,
+  VOICE_MATCH_SHOWN = 12,
+  VOICE_MATCH_ENROLLMENT_DONE = 13,
+  VOICE_MATCH_ENROLLMENT_SKIPPED = 14,
   // Magic constant used by the histogram macros.
-  kMaxValue = READY_SCREEN_CONTINUED
+  kMaxValue = VOICE_MATCH_ENROLLMENT_SKIPPED
 };
 
 void RecordAssistantOptInStatus(AssistantOptInFlowStatus);

@@ -101,6 +101,7 @@ Polymer({
    * Signal from host to show the screen.
    */
   onShow: function() {
+    chrome.send('login.AssistantOptInFlowScreen.VoiceMatchScreen.screenShown');
     this.$['agree-button'].focus();
     if (loadTimeData.getBoolean('hotwordDspAvailable')) {
       this.$['no-dsp-message'].hidden = true;

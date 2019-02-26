@@ -124,6 +124,8 @@ void AssistantOptInFlowScreenHandler::RegisterMessages() {
               &AssistantOptInFlowScreenHandler::HandleValuePropScreenShown);
   AddCallback("login.AssistantOptInFlowScreen.ThirdPartyScreen.screenShown",
               &AssistantOptInFlowScreenHandler::HandleThirdPartyScreenShown);
+  AddCallback("login.AssistantOptInFlowScreen.VoiceMatchScreen.screenShown",
+              &AssistantOptInFlowScreenHandler::HandleVoiceMatchScreenShown);
   AddCallback("login.AssistantOptInFlowScreen.GetMoreScreen.screenShown",
               &AssistantOptInFlowScreenHandler::HandleGetMoreScreenShown);
   AddCallback("login.AssistantOptInFlowScreen.LoadingScreen.timeout",
@@ -437,8 +439,10 @@ void AssistantOptInFlowScreenHandler::HandleVoiceMatchScreenUserAction(
   PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
 
   if (action == kVoiceMatchDone) {
+    RecordAssistantOptInStatus(VOICE_MATCH_ENROLLMENT_DONE);
     ShowNextScreen();
   } else if (action == kSkipPressed) {
+    RecordAssistantOptInStatus(VOICE_MATCH_ENROLLMENT_SKIPPED);
     prefs->SetBoolean(arc::prefs::kVoiceInteractionHotwordEnabled, false);
     settings_manager_->StopSpeakerIdEnrollment(base::DoNothing());
     ShowNextScreen();
@@ -466,6 +470,10 @@ void AssistantOptInFlowScreenHandler::HandleValuePropScreenShown() {
 
 void AssistantOptInFlowScreenHandler::HandleThirdPartyScreenShown() {
   RecordAssistantOptInStatus(THIRD_PARTY_SHOWN);
+}
+
+void AssistantOptInFlowScreenHandler::HandleVoiceMatchScreenShown() {
+  RecordAssistantOptInStatus(VOICE_MATCH_SHOWN);
 }
 
 void AssistantOptInFlowScreenHandler::HandleGetMoreScreenShown() {
