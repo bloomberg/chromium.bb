@@ -1809,8 +1809,10 @@
   },
   {
     "name": "enable-touchscreen-calibration",
-    // "owners": [ "your-team" ],
-    "expiry_milestone": 76
+    "owners": [ "malaykeshav" ],
+    // This flag is used for testing new touchscreen ChromeOS hardware, both by
+    // dev and QA.
+    "expiry_milestone": -1
   },
   {
     "name": "enable-ui-devtools",
