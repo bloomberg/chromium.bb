@@ -312,12 +312,6 @@ public class Tab
     private FullscreenManager mFullscreenManager;
 
     /**
-     * Indicates whether this tab is detached from any activity and its corresponding
-     * {@link WindowAndroid}.
-     */
-    private boolean mIsDetached;
-
-    /**
      * The publisher URL for pages hosted on a trusted CDN, or null otherwise.
      */
     private @Nullable String mTrustedCdnPublisherUrl;
@@ -394,7 +388,6 @@ public class Tab
         mWindowAndroid = window;
         mLaunchType = type;
         mLaunchTypeAtCreation = type;
-        mIsDetached = getActivity() == null;
 
         Resources resources = mThemedApplicationContext.getResources();
         mIdealFaviconSize = resources.getDimensionPixelSize(R.dimen.default_favicon_size);
@@ -1154,23 +1147,21 @@ public class Tab
      * Detaches a tab from its current activity if any.
      *
      * In details, this function:
-     * - Tags the tab using mIsDetached.
      * - Removes the tab from its current {@link TabModelSelector}, effectively severing
      *   the {@link Activity} to {@link Tab} link.
      */
     private void detach() {
-        mIsDetached = true;
-
-        TabModelSelector tabModelSelector = getTabModelSelector();
-        if (tabModelSelector != null) {
-            tabModelSelector.getModel(mIncognito).removeTab(this);
-        }
         // TODO(yusufo): We can't call updateWindowAndroid here and set mWindowAndroid to null
         // because many code paths (including navigation) expect the tab to always be associated
         // with an activity, and will crash. crbug.com/657007
         WebContents webContents = getWebContents();
         if (webContents != null) webContents.setTopLevelNativeWindow(null);
         attachTabContentManager(null);
+
+        TabModelSelector tabModelSelector = getTabModelSelector();
+        if (tabModelSelector != null) {
+            tabModelSelector.getModel(mIncognito).removeTab(this);
+        }
 
         for (TabObserver observer : mObservers) {
             observer.onActivityAttachmentChanged(this, false);
@@ -1210,7 +1201,7 @@ public class Tab
      * @param tabDelegateFactory  The new delegate factory this tab should be using.
      */
     public void attach(ChromeActivity activity, TabDelegateFactory tabDelegateFactory) {
-        assert mIsDetached;
+        assert isDetached();
         updateWindowAndroid(activity.getWindowAndroid());
 
         // Update for the controllers that need the Compositor from the new Activity.
@@ -1221,8 +1212,6 @@ public class Tab
         mWebContentsDelegate = mDelegateFactory.createWebContentsDelegate(this);
         mBrowserControlsVisibilityDelegate =
                 mDelegateFactory.createBrowserControlsVisibilityDelegate(this);
-
-        mIsDetached = false;
 
         // Reload the NativePage (if any), since the old NativePage has a reference to the old
         // activity.
@@ -1261,7 +1250,13 @@ public class Tab
      * with {@link Tab#attachAndFinishReparenting}.
      */
     public boolean isDetached() {
-        return mIsDetached;
+        if (getWebContents() == null) return true;
+        // Should get WindowAndroid from WebContents since the one from |getWindowAndroid()|
+        // is always non-null even when the tab is in detached state. See the comment in |detach()|.
+        WindowAndroid window = getWebContents().getTopLevelNativeWindow();
+        if (window == null) return true;
+        Activity activity = WindowAndroid.activityFromContext(window.getContext().get());
+        return !(activity instanceof ChromeActivity);
     }
 
     /**
@@ -1421,8 +1416,8 @@ public class Tab
             }
 
             assert mNativeTabAndroid != 0;
-            nativeInitWebContents(mNativeTabAndroid, mIncognito, mIsDetached, webContents, parentId,
-                    mWebContentsDelegate,
+            nativeInitWebContents(mNativeTabAndroid, mIncognito, isDetached(), webContents,
+                    parentId, mWebContentsDelegate,
                     new TabContextMenuPopulator(
                             mDelegateFactory.createContextMenuPopulator(this), this));
 
@@ -1481,7 +1476,7 @@ public class Tab
         // While detached for reparenting we don't have an owning Activity, or TabModelSelector,
         // so we can't create the native page. The native page will be created once reparenting is
         // completed.
-        if (mIsDetached) return false;
+        if (isDetached()) return false;
         NativePage candidateForReuse = forceReload ? null : getNativePage();
         NativePage nativePage = NativePageFactory.createNativePageForURL(url, candidateForReuse,
                 this, getTabModelSelector(), getActivity());
