@@ -52,7 +52,7 @@ class CORE_EXPORT Response final : public Body {
   static Response* error(ScriptState*);
   static Response* redirect(ScriptState*,
                             const String& url,
-                            unsigned short status,
+                            uint16_t status,
                             ExceptionState&);
 
   explicit Response(ExecutionContext*);
@@ -65,7 +65,7 @@ class CORE_EXPORT Response final : public Body {
   String type() const;
   String url() const;
   bool redirected() const;
-  unsigned short status() const;
+  uint16_t status() const;
   bool ok() const;
   String statusText() const;
   Headers* headers() const;

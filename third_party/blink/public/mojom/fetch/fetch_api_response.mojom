@@ -26,7 +26,7 @@ struct FetchAPIResponse {
   // Status code as number, e.g.: 200, 404.
   // Zero status code indicates an error happened and the request was not
   // handled.
-  int32 status_code = 0;
+  uint16 status_code = 0;
 
   // Status code as text. e.g.: "OK", "Not Found".
   string status_text;
