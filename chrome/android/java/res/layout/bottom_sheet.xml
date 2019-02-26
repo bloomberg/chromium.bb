@@ -20,8 +20,7 @@
     <FrameLayout
         android:id="@+id/bottom_sheet_control_container"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="@dimen/bottom_sheet_peek_height" >
+        android:layout_height="wrap_content" >
 
         <ImageView
             android:id="@+id/bottom_sheet_toolbar_top_shadow"

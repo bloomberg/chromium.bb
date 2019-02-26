@@ -141,12 +141,6 @@ public class BottomSheet
     /** The desired height of a content that has just been shown or whose height was invalidated. */
     private static final float HEIGHT_UNSPECIFIED = -1.0f;
 
-    /**
-     * Information about the different scroll states of the sheet. Order is important for these,
-     * they go from smallest to largest.
-     */
-    private final float[] mStateRatios = new float[4];
-
     /** The interpolator that the height animator uses. */
     private final Interpolator mInterpolator = new DecelerateInterpolator(1.0f);
 
@@ -179,9 +173,6 @@ public class BottomSheet
 
     /** The animator set responsible for swapping the bottom sheet content. */
     private AnimatorSet mContentSwapAnimatorSet;
-
-    /** The height of the toolbar. */
-    private float mToolbarHeight;
 
     /** The width of the view that contains the bottom sheet. */
     private float mContainerWidth;
@@ -392,7 +383,7 @@ public class BottomSheet
         }
 
         float startX = mVisibleViewportRect.left;
-        float endX = mDefaultToolbarView.getWidth() + mVisibleViewportRect.left;
+        float endX = getToolbarView().getWidth() + mVisibleViewportRect.left;
         return currentEvent.getRawX() > startX && currentEvent.getRawX() < endX;
     }
 
@@ -528,8 +519,6 @@ public class BottomSheet
         mToolbarHolder =
                 (TouchRestrictingFrameLayout) findViewById(R.id.bottom_sheet_toolbar_container);
         mDefaultToolbarView = mToolbarHolder.findViewById(R.id.bottom_sheet_toolbar);
-        mToolbarHeight =
-                activity.getResources().getDimensionPixelSize(R.dimen.bottom_sheet_peek_height);
 
         mActivity = activity;
         mActionBarDelegate = new ViewShiftingActionBarDelegate(mActivity, this);
@@ -559,7 +548,9 @@ public class BottomSheet
                 mContainerHeight = bottom - top;
 
                 if (previousWidth != mContainerWidth || previousHeight != mContainerHeight) {
-                    updateSheetStateRatios();
+                    if (mCurrentState == SheetState.HALF && shouldSkipHalfState()) {
+                        setSheetState(SheetState.FULL, false);
+                    }
                     invalidateContentDesiredHeight();
                 }
 
@@ -794,9 +785,7 @@ public class BottomSheet
         View newToolbar = content != null && content.getToolbarView() != null
                 ? content.getToolbarView()
                 : mDefaultToolbarView;
-        View oldToolbar = mSheetContent != null && mSheetContent.getToolbarView() != null
-                ? mSheetContent.getToolbarView()
-                : mDefaultToolbarView;
+        View oldToolbar = getToolbarView();
         if (newToolbar != oldToolbar) {
             // For the toolbar transition, make sure we don't detach the default toolbar view.
             Animator transitionAnimator = getViewTransitionAnimator(
@@ -935,7 +924,7 @@ public class BottomSheet
         if (detachOldView && oldView.getParent() != null) {
             parent.removeView(oldView);
         } else {
-            oldView.setVisibility(View.INVISIBLE);
+            oldView.setVisibility(View.GONE);
         }
         if (parent != newView.getParent()) parent.addView(newView);
     }
@@ -992,28 +981,6 @@ public class BottomSheet
         setFocusable(false);
         setFocusableInTouchMode(false);
         setContentDescription(null);
-    }
-
-    /**
-     * Updates the bottom sheet's state ratios and adjusts the sheet's state if necessary.
-     */
-    private void updateSheetStateRatios() {
-        if (mContainerHeight <= 0) return;
-
-        // Though mStateRatios is a static constant, the peeking ratio is computed here because
-        // the correct toolbar height and container height are not know until those views are
-        // inflated. The other views are a specific DP distance from the top and bottom and are
-        // also updated.
-        mStateRatios[SheetState.HIDDEN] = 0;
-        mStateRatios[SheetState.PEEK] = (mToolbarHeight + mToolbarShadowHeight) / mContainerHeight;
-        mStateRatios[SheetState.HALF] = HALF_HEIGHT_RATIO;
-        // The max height ratio will be greater than 1 to account for the toolbar shadow.
-        mStateRatios[SheetState.FULL] =
-                (mContainerHeight + mToolbarShadowHeight) / mContainerHeight;
-
-        if (mCurrentState == SheetState.HALF && shouldSkipHalfState()) {
-            setSheetState(SheetState.FULL, false);
-        }
     }
 
     /**
@@ -1151,14 +1118,31 @@ public class BottomSheet
      */
     @VisibleForTesting
     float getHiddenRatio() {
-        return mStateRatios[SheetState.HIDDEN];
+        return 0;
     }
 
     /**
      * @return The ratio of the height of the screen that the peeking state is.
      */
     public float getPeekRatio() {
-        return mStateRatios[SheetState.PEEK];
+        if (mContainerHeight <= 0) return 0;
+        View toolbarView = getToolbarView();
+        int toolbarHeight = toolbarView.getHeight();
+        if (toolbarHeight == 0) {
+            // If the toolbar is not laid out yet and has a fixed height layout parameter, we assume
+            // that the toolbar will have this height in the future.
+            ViewGroup.LayoutParams layoutParams = toolbarView.getLayoutParams();
+            if (layoutParams != null && layoutParams.height > 0) {
+                toolbarHeight = layoutParams.height;
+            }
+        }
+        return (toolbarHeight + mToolbarShadowHeight) / mContainerHeight;
+    }
+
+    private View getToolbarView() {
+        return mSheetContent != null && mSheetContent.getToolbarView() != null
+                ? mSheetContent.getToolbarView()
+                : mDefaultToolbarView;
     }
 
     /**
@@ -1166,7 +1150,8 @@ public class BottomSheet
      */
     @VisibleForTesting
     float getHalfRatio() {
-        return mStateRatios[SheetState.HALF];
+        if (mContainerHeight <= 0) return 0;
+        return HALF_HEIGHT_RATIO;
     }
 
     /**
@@ -1174,7 +1159,8 @@ public class BottomSheet
      */
     @VisibleForTesting
     float getFullRatio() {
-        return mStateRatios[SheetState.FULL];
+        if (mContainerHeight <= 0) return 0;
+        return (mContainerHeight + mToolbarShadowHeight) / mContainerHeight;
     }
 
     /**
@@ -1389,7 +1375,22 @@ public class BottomSheet
             return mContentDesiredHeight;
         }
 
-        return mStateRatios[state] * mContainerHeight;
+        return getRatioForState(state) * mContainerHeight;
+    }
+
+    private float getRatioForState(int state) {
+        switch (state) {
+            case SheetState.HIDDEN:
+                return getHiddenRatio();
+            case SheetState.PEEK:
+                return getPeekRatio();
+            case SheetState.HALF:
+                return getHalfRatio();
+            case SheetState.FULL:
+                return getFullRatio();
+        }
+
+        throw new IllegalArgumentException("Invalid state: " + state);
     }
 
     /**
