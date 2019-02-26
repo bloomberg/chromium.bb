@@ -2612,6 +2612,16 @@ bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
     if (SupportsLocationBar())
       features |= FEATURE_LOCATIONBAR;
   }
+
+  // Hosted apps should always support the toolbar, so the title/origin of the
+  // current page can be shown when browsing a url that is not inside the app.
+  // Note: Final determination of whether or not the toolbar is shown is made by
+  // the |HostedAppBrowserController|.
+  if (hosted_app_controller() &&
+      hosted_app_controller()->IsForExperimentalHostedAppBrowser()) {
+    features |= FEATURE_TOOLBAR;
+  }
+
   return !!(features & feature);
 }
 

@@ -11,10 +11,13 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/location_bar/custom_tab_bar_view.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/web_applications/bookmark_apps/system_web_app_manager_browsertest.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "ui/base/theme_provider.h"
 
@@ -165,4 +168,21 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
       ->EnterFullscreenModeForTab(web_contents, web_contents->GetURL(), {});
 
   EXPECT_EQ(app_frame_view_->GetTopInset(false), 0);
+}
+
+// Tests that the custom tab bar is visible in fullscreen mode.
+IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
+                       CustomTabBarIsVisibleInFullscreen) {
+  InstallAndLaunchBookmarkApp();
+
+  content::WebContents* web_contents =
+      app_frame_view_->browser_view()->GetActiveWebContents();
+
+  ui_test_utils::NavigateToURL(app_browser_, GURL("http://example.com"));
+
+  static_cast<content::WebContentsDelegate*>(app_browser_)
+      ->EnterFullscreenModeForTab(web_contents, web_contents->GetURL(), {});
+
+  EXPECT_TRUE(
+      app_frame_view_->browser_view()->toolbar()->custom_tab_bar()->IsDrawn());
 }
