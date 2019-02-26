@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/modules/presentation/presentation_promise_property.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -19,6 +20,8 @@ namespace blink {
 // TODO(crbug.com/749327): Consider removing this class and have
 // PresentationAvailabilityState use PresentationAvailabilityProperty directly.
 class MODULES_EXPORT PresentationAvailabilityCallbacks {
+  USING_FAST_MALLOC(PresentationAvailabilityCallbacks);
+
  public:
   PresentationAvailabilityCallbacks(PresentationAvailabilityProperty*,
                                     const WTF::Vector<KURL>&);

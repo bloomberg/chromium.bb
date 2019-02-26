@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom-blink.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
@@ -22,6 +23,8 @@ class ScriptPromiseResolver;
 // take an existing connection object with which the promise will be resolved
 // on success.
 class PresentationConnectionCallbacks final {
+  USING_FAST_MALLOC(PresentationConnectionCallbacks);
+
  public:
   PresentationConnectionCallbacks(ScriptPromiseResolver*, PresentationRequest*);
   PresentationConnectionCallbacks(ScriptPromiseResolver*,
