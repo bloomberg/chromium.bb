@@ -9,7 +9,7 @@
  * @return {Promise} Promise to be fulfilled with on success.
  */
 testcase.openSingleVideoOnDownloads = function() {
-  var test = openSingleVideo('local', 'downloads', ENTRIES.world);
+  var test = openVideos('local', 'downloads', [ENTRIES.world]);
   return test
       .then(function() {
         // Video player starts playing given file automatically.
@@ -26,7 +26,7 @@ testcase.openSingleVideoOnDownloads = function() {
  * @return {Promise} Promise to be fulfilled with on success.
  */
 testcase.openSingleVideoOnDrive = function() {
-  var test = openSingleVideo('drive', 'drive', ENTRIES.world);
+  var test = openVideos('drive', 'drive', [ENTRIES.world]);
   return test
       .then(function() {
         // Video player starts playing given file automatically.
@@ -43,7 +43,7 @@ testcase.openSingleVideoOnDrive = function() {
  * @return {Promise} Promise to be fulfilled with on success.
  */
 testcase.openVideoWithSubtitle = async function() {
-  await openSingleVideo('local', 'downloads', ENTRIES.world, ENTRIES.subtitle);
+  await openVideos('local', 'downloads', [ENTRIES.world], [ENTRIES.subtitle]);
   await waitForFunctionResult('isPlaying', 'world.ogv', true);
   await waitForFunctionResult('hasSubtitle', 'world.ogv', true);
 };
@@ -53,7 +53,35 @@ testcase.openVideoWithSubtitle = async function() {
  * @return {Promise} Promise to be fulfilled with on success.
  */
 testcase.openVideoWithoutSubtitle = async function() {
-  await openSingleVideo('local', 'downloads', ENTRIES.video, ENTRIES.subtitle);
+  await openVideos('local', 'downloads', [ENTRIES.video], [ENTRIES.subtitle]);
   await waitForFunctionResult('isPlaying', 'video_long.ogv', true);
+  await waitForFunctionResult('hasSubtitle', 'video_long.ogv', false);
+};
+
+/**
+ * Test that if player will auto play next video and handle subtitles correctly.
+ * @return {Promise} Promise to be fulfilled with on success.
+ */
+testcase.openMultipleVideosOnDownloads = async function() {
+  const args = await openVideos(
+      'local', 'downloads', [ENTRIES.world, ENTRIES.video], [ENTRIES.subtitle]);
+  const appId = args[0];
+
+  // Video player should auto play first video.
+  await waitForFunctionResult('isPlaying', 'world.ogv', true);
+  await remoteCallVideoPlayer.waitForElement(
+      appId, '#video-player[first-video]');
+  await remoteCallVideoPlayer.waitForElement(
+      appId, '#video-player:not([last-video])');
+  await waitForFunctionResult('hasSubtitle', 'world.ogv', true);
+
+  // Auto play next video when previous video ends.
+  await waitForFunctionResult('isPlaying', 'video_long.ogv', true);
+  await remoteCallVideoPlayer.waitForElement(
+      appId, '#video-player:not([first-video])');
+  await remoteCallVideoPlayer.waitForElement(
+      appId, '#video-player[last-video]');
+
+  // Subtitle should be cleared
   await waitForFunctionResult('hasSubtitle', 'video_long.ogv', false);
 };
