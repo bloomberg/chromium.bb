@@ -49,7 +49,6 @@ source_set("browser") {
     "chrome_url_util.mm",
     "crash_loop_detection_util.h",
     "crash_loop_detection_util.mm",
-    "experimental_flags.h",
     "file_metadata_util.h",
     "file_metadata_util.mm",
     "install_time_util.h",
