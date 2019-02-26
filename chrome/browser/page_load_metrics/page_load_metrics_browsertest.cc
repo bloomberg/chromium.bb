@@ -258,6 +258,8 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NewPage) {
         kv.second.get(),
         PageLoad::kMainFrameResource_NavigationStartToRequestStartName));
     EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
+        kv.second.get(), PageLoad::kMainFrameResource_HttpProtocolSchemeName));
+    EXPECT_TRUE(test_ukm_recorder_->EntryHasMetric(
         kv.second.get(), PageLoad::kSiteEngagementScoreName));
   }
 
