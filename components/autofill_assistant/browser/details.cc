@@ -4,6 +4,8 @@
 
 #include "components/autofill_assistant/browser/details.h"
 
+#include <unordered_set>
+
 #include <base/strings/stringprintf.h>
 #include "base/strings/string_util.h"
 
@@ -62,24 +64,39 @@ base::Value Details::GetDebugContext() const {
 bool Details::UpdateFromParameters(
     const std::map<std::string, std::string>& parameters) {
   bool is_updated = false;
+
+  const std::unordered_set<std::string> title_parameters = {"MOVIES_MOVIE_NAME",
+                                                            "TITLE"};
+  const std::unordered_set<std::string> description_line1_parameters = {
+      "DESCRIPTION_LINE_1"};
+  const std::unordered_set<std::string> description_line2_parameters = {
+      "MOVIES_THEATER_NAME", "DESCRIPTION_LINE_2"};
+
   for (const auto& iter : parameters) {
-    std::string key = iter.first;
-    if (base::EndsWith(key, "MOVIE_NAME", base::CompareCase::SENSITIVE)) {
+    if (title_parameters.find(iter.first) != title_parameters.end()) {
       proto_.mutable_details()->set_title(iter.second);
       is_updated = true;
       continue;
     }
 
-    if (base::EndsWith(key, "DATETIME", base::CompareCase::SENSITIVE)) {
-      // TODO(crbug.com/806868): Parse the string here and fill
-      // proto.description_line1, then get rid of datetime_ in Details.
-      datetime_ = iter.second;
+    if (description_line1_parameters.find(iter.first) !=
+        description_line1_parameters.end()) {
+      proto_.mutable_details()->set_description_line1(iter.second);
       is_updated = true;
       continue;
     }
 
-    if (base::EndsWith(key, "THEATER_NAME", base::CompareCase::SENSITIVE)) {
+    if (description_line2_parameters.find(iter.first) !=
+        description_line2_parameters.end()) {
       proto_.mutable_details()->set_description_line2(iter.second);
+      is_updated = true;
+      continue;
+    }
+
+    if (iter.first.compare("MOVIES_SCREENING_DATETIME") == 0) {
+      // TODO(crbug.com/806868): Parse the string here and fill
+      // proto.description_line1, then get rid of datetime_ in Details.
+      datetime_ = iter.second;
       is_updated = true;
       continue;
     }
