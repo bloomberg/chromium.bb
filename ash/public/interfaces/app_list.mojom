@@ -82,6 +82,9 @@ struct SearchResultMetadata {
                                     // indicates its type, e.g. installable from
                                     // PlayStore, installable from WebStore,
                                     // etc.
+  // If set to true, whether or not to send visibility updates through to to
+  // the chrome side when this result is set visible/invisible.
+  bool notify_visibility_change;
 };
 
 // All possible states of the app list.
@@ -368,6 +371,10 @@ interface AppListClient {
   OnPageBreakItemAdded(string id, syncer.mojom.StringOrdinal position);
   // Invoked when a "page break" item with |id| is deleted.
   OnPageBreakItemDeleted(string id);
+
+  // Updated when item with |id| is set to |visible|. Only sent if
+  // |notify_visibility_change| was set on the SearchResultMetadata.
+  OnSearchResultVisibilityChanged(string id, bool visibility);
 
   // Acquires a NavigableContentsFactory (indirectly) from the Content Service
   // to allow the app list to display embedded web contents. Currently used only

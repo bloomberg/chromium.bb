@@ -57,6 +57,10 @@ class ChromeSearchResult {
   const gfx::ImageSkia& chip_icon() const { return metadata_->chip_icon; }
   const gfx::ImageSkia& badge_icon() const { return metadata_->badge_icon; }
 
+  bool notify_visibility_change() const {
+    return metadata_->notify_visibility_change;
+  }
+
   // The following methods set Chrome side data here, and call model updater
   // interface to update Ash.
   void SetTitle(const base::string16& title);
@@ -77,6 +81,7 @@ class ChromeSearchResult {
   void SetIcon(const gfx::ImageSkia& icon);
   void SetChipIcon(const gfx::ImageSkia& icon);
   void SetBadgeIcon(const gfx::ImageSkia& badge_icon);
+  void SetNotifyVisibilityChange(bool notify_visibility_change);
 
   // The following methods call model updater to update Ash.
   void SetPercentDownloaded(int percent_downloaded);
@@ -102,6 +107,9 @@ class ChromeSearchResult {
 
   // Opens the result. Clients should use AppListViewDelegate::OpenSearchResult.
   virtual void Open(int event_flags) = 0;
+
+  // Called if set visible/hidden.
+  virtual void OnVisibilityChanged(bool visibility);
 
   // Updates the result's relevance score, and sets its title and title tags,
   // based on a string match result.

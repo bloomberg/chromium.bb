@@ -317,7 +317,8 @@ class SearchResultAnswerCardView::AnswerCardResultView
 
 SearchResultAnswerCardView::SearchResultAnswerCardView(
     AppListViewDelegate* view_delegate)
-    : search_answer_container_view_(
+    : SearchResultContainerView(view_delegate),
+      search_answer_container_view_(
           new AnswerCardResultView(this, view_delegate)) {
   AddChildView(search_answer_container_view_);
   AddObservedResultView(search_answer_container_view_);

@@ -195,6 +195,8 @@ class ASH_EXPORT AppListControllerImpl
   void GetNavigableContentsFactory(
       content::mojom::NavigableContentsFactoryRequest request) override;
   ash::AssistantViewDelegate* GetAssistantViewDelegate() override;
+  void OnSearchResultVisibilityChanged(const std::string& id,
+                                       bool visibility) override;
 
   void AddObserver(AppListControllerObserver* observer);
   void RemoveObserver(AppListControllerObserver* obsever);

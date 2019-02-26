@@ -12,7 +12,11 @@
 
 namespace app_list {
 
-SearchResultContainerView::SearchResultContainerView() = default;
+SearchResultContainerView::SearchResultContainerView(
+    AppListViewDelegate* view_delegate)
+    : view_delegate_(view_delegate) {
+  DCHECK(view_delegate);
+}
 
 SearchResultContainerView::~SearchResultContainerView() {
   if (results_)
@@ -96,6 +100,16 @@ void SearchResultContainerView::ListItemsChanged(size_t /*start*/,
 SearchResultBaseView* SearchResultContainerView::GetFirstResultView() {
   return nullptr;
 }
+
+void SearchResultContainerView::SetShown(bool shown) {
+  if (shown_ == shown) {
+    return;
+  }
+  shown_ = shown;
+  OnShownChanged();
+}
+
+void SearchResultContainerView::OnShownChanged() {}
 
 void SearchResultContainerView::ScheduleUpdate() {
   // When search results are added one by one, each addition generates an update

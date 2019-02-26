@@ -120,6 +120,10 @@ AppListTestViewDelegate::GetAssistantViewDelegate() {
   return nullptr;
 }
 
+void AppListTestViewDelegate::OnSearchResultVisibilityChanged(
+    const std::string& id,
+    bool visibility) {}
+
 bool AppListTestViewDelegate::IsCommandIdChecked(int command_id) const {
   return true;
 }

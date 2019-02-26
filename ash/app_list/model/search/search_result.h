@@ -121,6 +121,14 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   int percent_downloaded() const { return percent_downloaded_; }
   void SetPercentDownloaded(int percent_downloaded);
 
+  bool notify_visibility_change() const {
+    return metadata_->notify_visibility_change;
+  }
+
+  void set_notify_visibility_change(bool notify_visibility_change) {
+    metadata_->notify_visibility_change = notify_visibility_change;
+  }
+
   bool is_omnibox_search() const { return metadata_->is_omnibox_search; }
   void set_is_omnibox_search(bool is_omnibox_search) {
     metadata_->is_omnibox_search = is_omnibox_search;

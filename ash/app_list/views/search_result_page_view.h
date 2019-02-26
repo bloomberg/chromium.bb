@@ -44,6 +44,8 @@ class APP_LIST_EXPORT SearchResultPageView
 
   // AppListPage overrides:
   void OnHidden() override;
+  void OnShown() override;
+
   gfx::Rect GetPageBoundsForState(ash::AppListState state) const override;
   void OnAnimationUpdated(double progress,
                           ash::AppListState from_state,

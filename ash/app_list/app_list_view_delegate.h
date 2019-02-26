@@ -137,6 +137,11 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
 
   // Returns the AssistantViewDelegate.
   virtual ash::AssistantViewDelegate* GetAssistantViewDelegate() = 0;
+
+  // Called if a search result has its visibility updated and wants to
+  // be notified (i.e. its notify_visibility_change() returns true).
+  virtual void OnSearchResultVisibilityChanged(const std::string& id,
+                                               bool visibility) = 0;
 };
 
 }  // namespace app_list

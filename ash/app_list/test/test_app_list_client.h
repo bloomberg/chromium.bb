@@ -55,6 +55,8 @@ class TestAppListClient : public mojom::AppListClient {
   void OnPageBreakItemDeleted(const std::string& id) override {}
   void GetNavigableContentsFactory(
       content::mojom::NavigableContentsFactoryRequest request) override {}
+  void OnSearchResultVisibilityChanged(const std::string& id,
+                                       bool visibility) override {}
 
  private:
   mojo::Binding<mojom::AppListClient> binding_;

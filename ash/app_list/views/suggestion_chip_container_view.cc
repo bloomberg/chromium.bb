@@ -31,13 +31,15 @@ constexpr int kChipSpacing = 8;
 
 SuggestionChipContainerView::SuggestionChipContainerView(
     ContentsView* contents_view)
-    : contents_view_(contents_view) {
+    : SearchResultContainerView(
+          contents_view != nullptr
+              ? contents_view->GetAppListMainView()->view_delegate()
+              : nullptr),
+      contents_view_(contents_view) {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
   DCHECK(contents_view);
-  view_delegate_ = contents_view_->GetAppListMainView()->view_delegate();
-
   views::BoxLayout* layout_manager =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
@@ -49,7 +51,7 @@ SuggestionChipContainerView::SuggestionChipContainerView(
                              AppListConfig::instance().num_start_page_tiles());
        ++i) {
     SearchResultSuggestionChipView* chip =
-        new SearchResultSuggestionChipView(view_delegate_);
+        new SearchResultSuggestionChipView(view_delegate());
     chip->SetVisible(false);
     chip->SetIndexInSuggestionChipContainer(i);
     suggestion_chip_views_.emplace_back(chip);
