@@ -51,6 +51,8 @@ class SettingsWindowManager {
   ~SettingsWindowManager();
 
   base::ObserverList<SettingsWindowManagerObserver>::Unchecked observers_;
+
+  // TODO(calamity): Remove when SystemWebApps are enabled by default.
   ProfileSessionMap settings_session_map_;
 
   DISALLOW_COPY_AND_ASSIGN(SettingsWindowManager);

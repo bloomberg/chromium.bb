@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_TEST_PENDING_APP_MANAGER_H_
 
 #include <map>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -49,6 +50,7 @@ class TestPendingAppManager : public PendingAppManager {
                      const UninstallCallback& callback) override;
   std::vector<GURL> GetInstalledAppUrls(
       InstallSource install_source) const override;
+  base::Optional<std::string> LookupAppId(const GURL& url) const override;
 
  private:
   std::vector<AppInfo> install_requests_;

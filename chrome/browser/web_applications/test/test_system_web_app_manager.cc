@@ -4,6 +4,9 @@
 
 #include "chrome/browser/web_applications/test/test_system_web_app_manager.h"
 
+#include <string>
+#include <utility>
+
 namespace web_app {
 
 TestSystemWebAppManager::TestSystemWebAppManager(
@@ -13,12 +16,9 @@ TestSystemWebAppManager::TestSystemWebAppManager(
 
 TestSystemWebAppManager::~TestSystemWebAppManager() = default;
 
-void TestSystemWebAppManager::SetSystemApps(std::vector<GURL> system_apps) {
-  system_apps_ = std::move(system_apps);
-}
-
-std::vector<GURL> TestSystemWebAppManager::CreateSystemWebApps() {
-  return std::move(system_apps_);
+void TestSystemWebAppManager::SetSystemApps(
+    base::flat_map<SystemAppType, GURL> system_app_urls) {
+  SetSystemAppsForTesting(std::move(system_app_urls));
 }
 
 }  // namespace web_app

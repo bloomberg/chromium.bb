@@ -114,6 +114,9 @@ class PendingAppManager {
   void SynchronizeInstalledApps(std::vector<AppInfo> desired_apps,
                                 InstallSource install_source);
 
+  // Returns the app id for |url| if the PendingAppManager is aware of it.
+  virtual base::Optional<std::string> LookupAppId(const GURL& url) const = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(PendingAppManager);
 };

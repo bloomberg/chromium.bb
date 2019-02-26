@@ -71,4 +71,9 @@ std::vector<GURL> TestPendingAppManager::GetInstalledAppUrls(
   return urls;
 }
 
+base::Optional<std::string> TestPendingAppManager::LookupAppId(
+    const GURL& url) const {
+  return base::Optional<std::string>();
+}
+
 }  // namespace web_app

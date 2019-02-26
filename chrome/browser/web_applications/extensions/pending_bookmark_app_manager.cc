@@ -131,6 +131,11 @@ std::vector<GURL> PendingBookmarkAppManager::GetInstalledAppUrls(
                                                        install_source);
 }
 
+base::Optional<std::string> PendingBookmarkAppManager::LookupAppId(
+    const GURL& url) const {
+  return extension_ids_map_.LookupExtensionId(url);
+}
+
 void PendingBookmarkAppManager::SetFactoriesForTesting(
     WebContentsFactory web_contents_factory,
     TaskFactory task_factory) {

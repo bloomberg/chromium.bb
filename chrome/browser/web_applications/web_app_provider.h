@@ -34,6 +34,7 @@ class PendingAppManager;
 class InstallManager;
 class WebAppAudioFocusIdMap;
 class WebAppTabHelperBase;
+class SystemWebAppManager;
 
 // Forward declarations for new extension-independent subsystems.
 class WebAppDatabase;
@@ -43,7 +44,6 @@ class WebAppRegistrar;
 
 // Forward declarations for legacy extension-based subsystems.
 class WebAppPolicyManager;
-class SystemWebAppManager;
 
 // Connects Web App features, such as the installation of default and
 // policy-managed web apps, with Profiles (as WebAppProvider is a
@@ -68,6 +68,10 @@ class WebAppProvider : public KeyedService,
   // Clients can use PendingAppManager to install, uninstall, and update
   // Web Apps.
   PendingAppManager& pending_app_manager() { return *pending_app_manager_; }
+
+  const SystemWebAppManager& system_web_app_manager() {
+    return *system_web_app_manager_;
+  }
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
   static WebAppTabHelperBase* CreateTabHelper(
@@ -110,10 +114,10 @@ class WebAppProvider : public KeyedService,
   // New generalized subsystems:
   std::unique_ptr<InstallManager> install_manager_;
   std::unique_ptr<PendingAppManager> pending_app_manager_;
+  std::unique_ptr<SystemWebAppManager> system_web_app_manager_;
 
   // Legacy extension-based subsystems:
   std::unique_ptr<WebAppPolicyManager> web_app_policy_manager_;
-  std::unique_ptr<SystemWebAppManager> system_web_app_manager_;
 
   content::NotificationRegistrar notification_registrar_;
 

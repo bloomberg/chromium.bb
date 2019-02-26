@@ -160,7 +160,7 @@ void ExtensionIdsMap::Insert(const GURL& url,
 }
 
 base::Optional<std::string> ExtensionIdsMap::LookupExtensionId(
-    const GURL& url) {
+    const GURL& url) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   const base::Value* v =

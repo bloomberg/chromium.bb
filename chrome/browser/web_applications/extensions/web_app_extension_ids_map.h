@@ -49,7 +49,7 @@ class ExtensionIdsMap {
   void Insert(const GURL& url,
               const std::string& extension_id,
               InstallSource install_source);
-  base::Optional<std::string> LookupExtensionId(const GURL& url);
+  base::Optional<std::string> LookupExtensionId(const GURL& url) const;
 
  private:
   PrefService* pref_service_;
