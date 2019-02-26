@@ -40,8 +40,13 @@ void TestInstallFinalizer::FinalizeInstall(
       FROM_HERE, base::BindOnce(std::move(callback), app_id, code));
 }
 
-void TestInstallFinalizer::CreateOsShortcuts(const AppId& app_id) {
+void TestInstallFinalizer::CreateOsShortcuts(
+    const AppId& app_id,
+    CreateOsShortcutsCallback callback) {
   ++num_create_os_shortcuts_calls_;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), true /* shortcuts_created */));
 }
 
 void TestInstallFinalizer::ReparentTab(const AppId& app_id,

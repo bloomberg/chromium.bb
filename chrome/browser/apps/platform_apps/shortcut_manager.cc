@@ -5,6 +5,7 @@
 #include "chrome/browser/apps/platform_apps/shortcut_manager.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
@@ -54,7 +55,7 @@ void CreateShortcutsForApp(Profile* profile, const Extension* app) {
       web_app::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS;
 
   web_app::CreateShortcuts(web_app::SHORTCUT_CREATION_AUTOMATED,
-                           creation_locations, profile, app);
+                           creation_locations, profile, app, base::DoNothing());
 }
 
 }  // namespace

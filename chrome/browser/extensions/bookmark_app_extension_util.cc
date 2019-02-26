@@ -4,6 +4,9 @@
 
 #include "chrome/browser/extensions/bookmark_app_extension_util.h"
 
+#include <utility>
+
+#include "base/callback.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
@@ -25,8 +28,10 @@
 
 namespace extensions {
 
-void BookmarkAppCreateOsShortcuts(Profile* profile,
-                                  const Extension* extension) {
+void BookmarkAppCreateOsShortcuts(
+    Profile* profile,
+    const Extension* extension,
+    base::OnceCallback<void(bool created_shortcuts)> callback) {
 #if !defined(OS_CHROMEOS)
   web_app::ShortcutLocations creation_locations;
 #if defined(OS_LINUX) || defined(OS_WIN)
@@ -40,7 +45,8 @@ void BookmarkAppCreateOsShortcuts(Profile* profile,
 
   Profile* current_profile = profile->GetOriginalProfile();
   web_app::CreateShortcuts(web_app::SHORTCUT_CREATION_BY_USER,
-                           creation_locations, current_profile, extension);
+                           creation_locations, current_profile, extension,
+                           std::move(callback));
 #else
   // ChromeLauncherController does not exist in unit tests.
   if (ChromeLauncherController::instance()) {

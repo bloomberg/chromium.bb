@@ -218,7 +218,9 @@ void WebAppInstallManager::OnInstallFinalized(
     RecordAppBanner(web_contents(), web_app_info->app_url);
 
     // TODO(loyso): Implement |create_shortcuts| to skip OS shortcuts creation.
-    install_finalizer_->CreateOsShortcuts(app_id);
+    // TODO(https://crbug.com/915571): Only re-parent tabs upon successful
+    // shortcut creation (at least on macOS).
+    install_finalizer_->CreateOsShortcuts(app_id, base::DoNothing());
     // TODO(loyso): Implement |reparent_tab| to skip tab reparenting logic.
     if (web_app_info->open_as_window)
       install_finalizer_->ReparentTab(app_id, web_contents());
