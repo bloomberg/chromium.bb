@@ -104,15 +104,6 @@ void AddHitTestDataFromRenderPass(const CompositorFrame& frame,
       if (surface_quad->ignores_input_event)
         continue;
 
-      // Skip the quad if the FrameSinkId between fallback and primary is not
-      // the same, because we don't know which FrameSinkId would be used to
-      // draw this quad.
-      if (surface_quad->surface_range.start() &&
-          surface_quad->surface_range.start()->frame_sink_id() !=
-              surface_quad->surface_range.end().frame_sink_id()) {
-        continue;
-      }
-
       // Skip the quad if the transform is not invertible (i.e. it will not
       // be able to receive events).
       gfx::Transform quad_to_target_transform =
@@ -125,6 +116,9 @@ void AddHitTestDataFromRenderPass(const CompositorFrame& frame,
       gfx::Transform hit_test_region_transform =
           target_to_quad_transform * transform_from_root_target;
 
+      // If |surface_range|.begin() and end() have different frame sinks, use
+      // end(). If there is no surface submitted for this FrameSinkId at
+      // aggregation time, an async hit test query will be sent to the client.
       const auto& filters = render_pass->filters;
       std::vector<gfx::Rect> filter_regions = ExtractAlphaRects(
           filters, surface_quad->rect, quad_to_target_transform,
