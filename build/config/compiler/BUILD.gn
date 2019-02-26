@@ -1590,7 +1590,8 @@ config("chromium_code") {
 
     # TODO(thakis): Enable this for more platforms, https://crbug.com/926235
     has_dchecks = is_debug || dcheck_always_on
-    if (has_dchecks && is_linux && !is_chromecast && !use_libfuzzer) {
+    if (has_dchecks &&
+        ((is_linux && !is_chromecast && !use_libfuzzer) || is_mac)) {
       cflags += [ "-Wextra-semi" ]
     }
   }
