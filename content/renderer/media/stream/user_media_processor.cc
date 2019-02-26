@@ -199,6 +199,18 @@ void SurfaceAudioProcessingSettings(blink::WebMediaStreamSource* source) {
   }
 }
 
+std::vector<VideoInputDeviceCapabilities> ToVideoInputDeviceCapabilities(
+    const std::vector<blink::mojom::VideoInputDeviceCapabilitiesPtr>&
+        input_capabilities) {
+  std::vector<VideoInputDeviceCapabilities> capabilities;
+  for (const auto& capability : input_capabilities) {
+    capabilities.emplace_back(capability->device_id, capability->group_id,
+                              capability->formats, capability->facing_mode);
+  }
+
+  return capabilities;
+}
+
 }  // namespace
 
 UserMediaRequest::UserMediaRequest(
@@ -631,7 +643,8 @@ void UserMediaProcessor::SelectVideoDeviceSettings(
       current_request_info_->stream_controls()->video.stream_type));
 
   VideoDeviceCaptureCapabilities capabilities;
-  capabilities.device_capabilities = std::move(video_input_capabilities);
+  capabilities.device_capabilities =
+      ToVideoInputDeviceCapabilities(video_input_capabilities);
   capabilities.noise_reduction_capabilities = {base::Optional<bool>(),
                                                base::Optional<bool>(true),
                                                base::Optional<bool>(false)};

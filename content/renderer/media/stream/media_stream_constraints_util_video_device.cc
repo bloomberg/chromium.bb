@@ -27,7 +27,9 @@ using ResolutionSet = media_constraints::ResolutionSet;
 using DoubleRangeSet = media_constraints::NumericRangeSet<double>;
 using IntRangeSet = media_constraints::NumericRangeSet<int32_t>;
 using BoolSet = media_constraints::DiscreteSet<bool>;
-using DeviceInfo = mojo::StructPtr<blink::mojom::VideoInputDeviceCapabilities>;
+// TODO(crbug.com/704136): Replace VideoInputDeviceCapabilities with Blink
+// mojo pointer type once dependent types are migrated to Blink.
+using DeviceInfo = VideoInputDeviceCapabilities;
 using DistanceVector = std::vector<double>;
 
 // Number of default settings to be used as final tie-breaking criteria for
@@ -410,20 +412,20 @@ bool FacingModeSatisfiesConstraint(media::VideoFacingMode value,
       const blink::WebMediaTrackConstraintSet& constraint_set,
       const char** failed_constraint_name = nullptr) {
     if (!constraint_set.device_id.Matches(
-            blink::WebString::FromUTF8(device->device_id))) {
+            blink::WebString::FromUTF8(device.device_id))) {
       UpdateFailedConstraintName(constraint_set.device_id,
                                  failed_constraint_name);
       return false;
     }
 
     if (!constraint_set.group_id.Matches(
-            blink::WebString::FromUTF8(device->group_id))) {
+            blink::WebString::FromUTF8(device.group_id))) {
       UpdateFailedConstraintName(constraint_set.group_id,
                                  failed_constraint_name);
       return false;
     }
 
-    if (!FacingModeSatisfiesConstraint(device->facing_mode,
+    if (!FacingModeSatisfiesConstraint(device.facing_mode,
                                        constraint_set.facing_mode)) {
       UpdateFailedConstraintName(constraint_set.facing_mode,
                                  failed_constraint_name);
@@ -453,12 +455,12 @@ bool OptionalBoolSatisfiesConstraint(
 double DeviceFitness(const DeviceInfo& device,
                      const blink::WebMediaTrackConstraintSet& constraint_set) {
   return StringConstraintFitnessDistance(
-             blink::WebString::FromUTF8(device->device_id),
+             blink::WebString::FromUTF8(device.device_id),
              constraint_set.device_id) +
          StringConstraintFitnessDistance(
-             blink::WebString::FromUTF8(device->group_id),
+             blink::WebString::FromUTF8(device.group_id),
              constraint_set.group_id) +
-         StringConstraintFitnessDistance(ToWebString(device->facing_mode),
+         StringConstraintFitnessDistance(ToWebString(device.facing_mode),
                                          constraint_set.facing_mode);
 }
 
@@ -495,7 +497,7 @@ void AppendDistancesFromDefault(
     DistanceVector* distance_vector) {
   // Favor IDs that appear first in the enumeration.
   for (size_t i = 0; i < capabilities.device_capabilities.size(); ++i) {
-    if (device->device_id == capabilities.device_capabilities[i]->device_id) {
+    if (device.device_id == capabilities.device_capabilities[i].device_id) {
       distance_vector->push_back(i);
       break;
     }
@@ -520,6 +522,25 @@ void AppendDistancesFromDefault(
 }
 
 }  // namespace
+
+VideoInputDeviceCapabilities::VideoInputDeviceCapabilities() = default;
+
+VideoInputDeviceCapabilities::VideoInputDeviceCapabilities(
+    std::string device_id,
+    std::string group_id,
+    std::vector<media::VideoCaptureFormat> formats,
+    media::VideoFacingMode facing_mode)
+    : device_id(std::move(device_id)),
+      group_id(std::move(group_id)),
+      formats(std::move(formats)),
+      facing_mode(facing_mode) {}
+
+VideoInputDeviceCapabilities::VideoInputDeviceCapabilities(
+    VideoInputDeviceCapabilities&& other) = default;
+VideoInputDeviceCapabilities& VideoInputDeviceCapabilities::operator=(
+    VideoInputDeviceCapabilities&& other) = default;
+
+VideoInputDeviceCapabilities::~VideoInputDeviceCapabilities() = default;
 
 blink::WebString GetVideoKindForFormat(
     const media::VideoCaptureFormat& format) {
@@ -612,7 +633,7 @@ VideoCaptureSettings SelectSettingsVideoDeviceCapture(
       continue;
     }
 
-    for (auto& format : device->formats) {
+    for (auto& format : device.formats) {
       CandidateFormat candidate_format(format);
       if (!candidate_format.ApplyConstraintSet(constraints.Basic(),
                                                &failed_constraint_name)) {
@@ -670,8 +691,8 @@ VideoCaptureSettings SelectSettingsVideoDeviceCapture(
           media::VideoCaptureParams capture_params;
           capture_params.requested_format = candidate_format.format();
           result = VideoCaptureSettings(
-              device->device_id, capture_params, noise_reduction,
-              track_settings, candidate_format.constrained_frame_rate().Min(),
+              device.device_id, capture_params, noise_reduction, track_settings,
+              candidate_format.constrained_frame_rate().Min(),
               candidate_format.constrained_frame_rate().Max());
         }
       }

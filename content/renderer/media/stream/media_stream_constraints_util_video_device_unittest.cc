@@ -74,12 +74,11 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
  public:
   void SetUp() override {
     // Default device. It is default because it is the first in the enumeration.
-    blink::mojom::VideoInputDeviceCapabilitiesPtr device =
-        blink::mojom::VideoInputDeviceCapabilities::New();
-    device->device_id = kDeviceID1;
-    device->group_id = kGroupID1;
-    device->facing_mode = media::MEDIA_VIDEO_FACING_NONE;
-    device->formats = {
+    VideoInputDeviceCapabilities device;
+    device.device_id = kDeviceID1;
+    device.group_id = kGroupID1;
+    device.facing_mode = media::MEDIA_VIDEO_FACING_NONE;
+    device.formats = {
         media::VideoCaptureFormat(gfx::Size(200, 200), 40.0f,
                                   media::PIXEL_FORMAT_I420),
         // This entry is is the closest to defaults.
@@ -91,11 +90,10 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
     capabilities_.device_capabilities.push_back(std::move(device));
 
     // A low-resolution device.
-    device = blink::mojom::VideoInputDeviceCapabilities::New();
-    device->device_id = kDeviceID2;
-    device->group_id = kGroupID2;
-    device->facing_mode = media::MEDIA_VIDEO_FACING_ENVIRONMENT;
-    device->formats = {
+    device.device_id = kDeviceID2;
+    device.group_id = kGroupID2;
+    device.facing_mode = media::MEDIA_VIDEO_FACING_ENVIRONMENT;
+    device.formats = {
         media::VideoCaptureFormat(gfx::Size(40, 30), 20.0f,
                                   media::PIXEL_FORMAT_I420),
         media::VideoCaptureFormat(gfx::Size(320, 240), 30.0f,
@@ -112,11 +110,10 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
     capabilities_.device_capabilities.push_back(std::move(device));
 
     // A high-resolution device.
-    device = blink::mojom::VideoInputDeviceCapabilities::New();
-    device->device_id = kDeviceID3;
-    device->group_id = kGroupID3;
-    device->facing_mode = media::MEDIA_VIDEO_FACING_USER;
-    device->formats = {
+    device.device_id = kDeviceID3;
+    device.group_id = kGroupID3;
+    device.facing_mode = media::MEDIA_VIDEO_FACING_USER;
+    device.formats = {
         media::VideoCaptureFormat(gfx::Size(600, 400), 10.0f,
                                   media::PIXEL_FORMAT_I420),
         media::VideoCaptureFormat(gfx::Size(640, 480), 10.0f,
@@ -144,21 +141,19 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
     capabilities_.device_capabilities.push_back(std::move(device));
 
     // A depth capture device.
-    device = blink::mojom::VideoInputDeviceCapabilities::New();
-    device->device_id = kDeviceID4;
-    device->group_id = kGroupID4;
-    device->facing_mode = media::MEDIA_VIDEO_FACING_ENVIRONMENT;
-    device->formats = {media::VideoCaptureFormat(gfx::Size(640, 480), 30.0f,
-                                                 media::PIXEL_FORMAT_Y16)};
+    device.device_id = kDeviceID4;
+    device.group_id = kGroupID4;
+    device.facing_mode = media::MEDIA_VIDEO_FACING_ENVIRONMENT;
+    device.formats = {media::VideoCaptureFormat(gfx::Size(640, 480), 30.0f,
+                                                media::PIXEL_FORMAT_Y16)};
     capabilities_.device_capabilities.push_back(std::move(device));
 
     // A device that reports invalid frame rates. These devices exist and should
     // be supported if no constraints are placed on the frame rate.
-    device = blink::mojom::VideoInputDeviceCapabilities::New();
-    device->device_id = kDeviceID5;
-    device->group_id = kGroupID5;
-    device->facing_mode = media::MEDIA_VIDEO_FACING_NONE;
-    device->formats = {
+    device.device_id = kDeviceID5;
+    device.group_id = kGroupID5;
+    device.facing_mode = media::MEDIA_VIDEO_FACING_NONE;
+    device.formats = {
         media::VideoCaptureFormat(
             gfx::Size(MediaStreamVideoSource::kDefaultWidth,
                       MediaStreamVideoSource::kDefaultHeight),
@@ -173,10 +168,10 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
         base::Optional<bool>(false),
     };
 
-    default_device_ = capabilities_.device_capabilities[0].get();
-    low_res_device_ = capabilities_.device_capabilities[1].get();
-    high_res_device_ = capabilities_.device_capabilities[2].get();
-    invalid_frame_rate_device_ = capabilities_.device_capabilities[4].get();
+    default_device_ = &capabilities_.device_capabilities[0];
+    low_res_device_ = &capabilities_.device_capabilities[1];
+    high_res_device_ = &capabilities_.device_capabilities[2];
+    invalid_frame_rate_device_ = &capabilities_.device_capabilities[4];
     default_closest_format_ = &default_device_->formats[1];
     low_res_closest_format_ = &low_res_device_->formats[2];
     high_res_closest_format_ = &high_res_device_->formats[3];
@@ -191,10 +186,10 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
   }
 
   VideoDeviceCaptureCapabilities capabilities_;
-  const blink::mojom::VideoInputDeviceCapabilities* default_device_;
-  const blink::mojom::VideoInputDeviceCapabilities* low_res_device_;
-  const blink::mojom::VideoInputDeviceCapabilities* high_res_device_;
-  const blink::mojom::VideoInputDeviceCapabilities* invalid_frame_rate_device_;
+  const VideoInputDeviceCapabilities* default_device_;
+  const VideoInputDeviceCapabilities* low_res_device_;
+  const VideoInputDeviceCapabilities* high_res_device_;
+  const VideoInputDeviceCapabilities* invalid_frame_rate_device_;
   // Closest formats to the default settings.
   const media::VideoCaptureFormat* default_closest_format_;
   const media::VideoCaptureFormat* low_res_closest_format_;
@@ -395,11 +390,10 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   // Manually adding device capabilities because VideoDeviceCaptureCapabilities
   // is move only.
   VideoDeviceCaptureCapabilities capabilities;
-  blink::mojom::VideoInputDeviceCapabilitiesPtr device =
-      blink::mojom::VideoInputDeviceCapabilities::New();
-  device->device_id = kDeviceID1;
-  device->facing_mode = media::MEDIA_VIDEO_FACING_NONE;
-  device->formats = {
+  VideoInputDeviceCapabilities device;
+  device.device_id = kDeviceID1;
+  device.facing_mode = media::MEDIA_VIDEO_FACING_NONE;
+  device.formats = {
       media::VideoCaptureFormat(gfx::Size(200, 200), 40.0f,
                                 media::PIXEL_FORMAT_I420),
   };
