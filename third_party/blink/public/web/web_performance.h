@@ -69,7 +69,7 @@ class WebPerformance {
   BLINK_EXPORT double UnloadEventEnd() const;
   BLINK_EXPORT double RedirectStart() const;
   BLINK_EXPORT double RedirectEnd() const;
-  BLINK_EXPORT unsigned short RedirectCount() const;
+  BLINK_EXPORT uint16_t RedirectCount() const;
   BLINK_EXPORT double FetchStart() const;
   BLINK_EXPORT double DomainLookupStart() const;
   BLINK_EXPORT double DomainLookupEnd() const;

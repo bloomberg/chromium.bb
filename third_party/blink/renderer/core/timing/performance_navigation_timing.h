@@ -53,7 +53,7 @@ class CORE_EXPORT PerformanceNavigationTiming final
   DOMHighResTimeStamp loadEventStart() const;
   DOMHighResTimeStamp loadEventEnd() const;
   AtomicString type() const;
-  unsigned short redirectCount() const;
+  uint16_t redirectCount() const;
 
   // PerformanceResourceTiming overrides:
   DOMHighResTimeStamp fetchStart() const override;
