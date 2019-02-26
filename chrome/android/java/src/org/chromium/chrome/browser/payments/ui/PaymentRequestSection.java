@@ -117,13 +117,13 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
     public static final int EDIT_BUTTON_ADD = 2;
 
     /** Normal mode: White background, displays the item assuming the user accepts it as is. */
-    static final int DISPLAY_MODE_NORMAL = 3;
+    public static final int DISPLAY_MODE_NORMAL = 3;
 
     /** Editable mode: White background, displays the item with an edit chevron. */
-    static final int DISPLAY_MODE_EXPANDABLE = 4;
+    public static final int DISPLAY_MODE_EXPANDABLE = 4;
 
     /** Focused mode: Gray background, more padding, no edit chevron. */
-    static final int DISPLAY_MODE_FOCUSED = 5;
+    public static final int DISPLAY_MODE_FOCUSED = 5;
 
     /** Checking mode: Gray background, spinner overlay hides everything except the title. */
     public static final int DISPLAY_MODE_CHECKING = 6;
@@ -267,6 +267,25 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
         mSummaryRightTextView.setText(rightText);
         mSummaryRightTextView.setVisibility(TextUtils.isEmpty(rightText) ? GONE : VISIBLE);
         updateControlLayout();
+    }
+
+    /**
+     * Changes the appearance of the title.
+     *
+     * @param resId @see android.widget.TextView#setTextAppearance(int id).
+     */
+    protected void setTitleAppearance(int resId) {
+        ApiCompatibilityUtils.setTextAppearance(mTitleView, resId);
+    }
+
+    /**
+     * Changes the appearance of the summary.
+     *
+     * @param resId @see android.widget.TextView#setTextAppearance(int id).
+     */
+    protected void setSummaryAppearance(int leftResId, int rightResId) {
+        ApiCompatibilityUtils.setTextAppearance(mSummaryLeftTextView, leftResId);
+        ApiCompatibilityUtils.setTextAppearance(mSummaryRightTextView, rightResId);
     }
 
     /**

@@ -336,13 +336,13 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         mOrderSummarySection = new LineItemBreakdownSection(context,
                 context.getString(R.string.payments_order_summary_label), this,
                 context.getString(R.string.payments_updated_label));
-        mShippingAddressSection = new OptionSection(
+        mShippingAddressSection = new AutofillAssistantPaymentRequestSection(
                 context, context.getString(mShippingStrings.getAddressLabel()), this);
-        mShippingOptionSection = new OptionSection(
+        mShippingOptionSection = new AutofillAssistantPaymentRequestSection(
                 context, context.getString(mShippingStrings.getOptionLabel()), this);
-        mContactDetailsSection = new OptionSection(
+        mContactDetailsSection = new AutofillAssistantPaymentRequestSection(
                 context, context.getString(R.string.payments_contact_details_label), this);
-        mPaymentMethodSection = new OptionSection(
+        mPaymentMethodSection = new AutofillAssistantPaymentRequestSection(
                 context, context.getString(R.string.payments_method_of_payment_label), this);
 
         // Display the summary of the selected address in multiple lines on bottom sheet.
@@ -386,13 +386,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                 new LinearLayout.LayoutParams(
                         LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 
-        PaymentRequestSection sections[] =
-                new PaymentRequestSection[] {mOrderSummarySection, mShippingAddressSection,
-                        mShippingOptionSection, mContactDetailsSection, mPaymentMethodSection};
-        for (int i = 0; i < sections.length; i++) {
-            clearLeftRightPadding(sections[i]);
-        }
-
         // Always expand separators to make them align with the rest of the UI.
         for (int i = 0; i < mSectionSeparators.size(); i++) {
             mSectionSeparators.get(i).expand();
@@ -405,11 +398,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
         // Force the initial appearance of edit chevrons next to all sections.
         updateSectionVisibility();
-    }
-
-    private void clearLeftRightPadding(PaymentRequestSection section) {
-        section.setPadding(
-                /*left=*/0, section.getPaddingTop(), /*right=*/0, section.getPaddingBottom());
     }
 
     /**
