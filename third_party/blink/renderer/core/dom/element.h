@@ -1105,6 +1105,8 @@ class CORE_EXPORT Element : public ContainerNode {
   void NotifyDisplayLockDidRecalcStyle();
 
   bool DisplayLockPreventsActivation() const;
+  FRIEND_TEST_ALL_PREFIXES(DisplayLockContextTest,
+                           DisplayLockPreventsActivation);
 
   Member<ElementData> element_data_;
 };

@@ -2139,7 +2139,7 @@ static void AssertLayoutTreeUpdated(Node& root) {
     if (RuntimeEnabledFeatures::DisplayLockingEnabled() &&
         node->IsElementNode() &&
         ToElement(node)->StyleRecalcBlockedByDisplayLock()) {
-      node = NodeTraversal::NextSkippingChildren(*node);
+      node = FlatTreeTraversal::NextSkippingChildren(*node);
       continue;
     }
 
@@ -2158,9 +2158,7 @@ static void AssertLayoutTreeUpdated(Node& root) {
             FlatTreeTraversal::Parent(*node)))
         << *node;
 
-    if (ShadowRoot* shadow_root = node->GetShadowRoot())
-      AssertLayoutTreeUpdated(*shadow_root);
-    node = NodeTraversal::Next(*node);
+    node = FlatTreeTraversal::Next(*node);
   }
 }
 #endif
@@ -2618,11 +2616,11 @@ void Document::EnsurePaintLocationDataValidForNode(const Node* node) {
   Vector<DisplayLockContext::ScopedForcedUpdate> scoped_update_forced_list;
   if (RuntimeEnabledFeatures::DisplayLockingEnabled() &&
       LockedDisplayLockCount() > 0) {
-    for (auto* ancestor = node; ancestor;
-         ancestor = ancestor->ParentOrShadowHostNode()) {
-      if (!ancestor->IsElementNode())
+    const_cast<Node*>(node)->UpdateDistributionForFlatTreeTraversal();
+    for (Node& ancestor : FlatTreeTraversal::InclusiveAncestorsOf(*node)) {
+      if (!ancestor.IsElementNode())
         continue;
-      if (auto* context = ToElement(ancestor)->GetDisplayLockContext())
+      if (auto* context = ToElement(ancestor).GetDisplayLockContext())
         scoped_update_forced_list.push_back(context->GetScopedForcedUpdate());
     }
   }

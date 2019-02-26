@@ -446,6 +446,130 @@ TEST_F(DisplayLockContextTest, LockedElementAndDescendantsAreNotFocusable) {
             GetDocument().getElementById("textfield"));
 }
 
+TEST_F(DisplayLockContextTest, DisplayLockPreventsActivation) {
+  ResizeAndFocus();
+  SetHtmlInnerHTML(R"HTML(
+    <body>
+    <div id="shadowHost">
+      <div id="slotted"></div>
+    </div>
+    </body>
+  )HTML");
+
+  auto* host = GetDocument().getElementById("shadowHost");
+  auto* slotted = GetDocument().getElementById("slotted");
+
+  ASSERT_FALSE(host->DisplayLockPreventsActivation());
+  ASSERT_FALSE(slotted->DisplayLockPreventsActivation());
+
+  ShadowRoot& shadow_root =
+      host->AttachShadowRootInternal(ShadowRootType::kOpen);
+  shadow_root.SetInnerHTMLFromString(
+      "<div id='container' style='contain:content;'><slot></slot></div>");
+  UpdateAllLifecyclePhasesForTest();
+
+  auto* container = shadow_root.getElementById("container");
+  EXPECT_FALSE(host->DisplayLockPreventsActivation());
+  EXPECT_FALSE(container->DisplayLockPreventsActivation());
+  EXPECT_FALSE(slotted->DisplayLockPreventsActivation());
+
+  auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
+  {
+    ScriptState::Scope scope(script_state);
+    container->getDisplayLockForBindings()->acquire(script_state, nullptr);
+  }
+
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
+  EXPECT_FALSE(host->DisplayLockPreventsActivation());
+  EXPECT_FALSE(container->DisplayLockPreventsActivation());
+  EXPECT_FALSE(slotted->DisplayLockPreventsActivation());
+
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
+  EXPECT_FALSE(host->DisplayLockPreventsActivation());
+  EXPECT_TRUE(container->DisplayLockPreventsActivation());
+  EXPECT_TRUE(slotted->DisplayLockPreventsActivation());
+
+  {
+    ScriptState::Scope scope(script_state);
+    container->getDisplayLockForBindings()->commit(script_state);
+  }
+
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
+  EXPECT_FALSE(host->DisplayLockPreventsActivation());
+  EXPECT_TRUE(container->DisplayLockPreventsActivation());
+  EXPECT_TRUE(slotted->DisplayLockPreventsActivation());
+
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
+  EXPECT_FALSE(host->DisplayLockPreventsActivation());
+  EXPECT_FALSE(container->DisplayLockPreventsActivation());
+  EXPECT_FALSE(slotted->DisplayLockPreventsActivation());
+}
+
+TEST_F(DisplayLockContextTest,
+       LockedElementAndFlatTreeDescendantsAreNotFocusable) {
+  ResizeAndFocus();
+  SetHtmlInnerHTML(R"HTML(
+    <body>
+    <div id="shadowHost">
+      <input id="textfield" type="text">
+    </div>
+    </body>
+  )HTML");
+
+  auto* host = GetDocument().getElementById("shadowHost");
+  auto* text_field = GetDocument().getElementById("textfield");
+  ShadowRoot& shadow_root =
+      host->AttachShadowRootInternal(ShadowRootType::kOpen);
+  shadow_root.SetInnerHTMLFromString(
+      "<div id='container' style='contain:content;'><slot></slot></div>");
+
+  UpdateAllLifecyclePhasesForTest();
+  ASSERT_TRUE(text_field->IsKeyboardFocusable());
+  ASSERT_TRUE(text_field->IsMouseFocusable());
+  ASSERT_TRUE(text_field->IsFocusable());
+
+  auto* element = shadow_root.getElementById("container");
+  {
+    auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
+    ScriptState::Scope scope(script_state);
+    element->getDisplayLockForBindings()->acquire(script_state, nullptr);
+  }
+  // We should be in pending acquire state, which means we would allow things
+  // like style and layout but disallow paint. This is still considered an
+  // unlocked state.
+  EXPECT_TRUE(element->GetDisplayLockContext()->ShouldStyle());
+  EXPECT_TRUE(element->GetDisplayLockContext()->ShouldLayout());
+  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint());
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 0);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 0);
+
+  UpdateAllLifecyclePhasesForTest();
+
+  // Sanity checks to ensure the element is locked.
+  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldStyle());
+  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldLayout());
+  EXPECT_FALSE(element->GetDisplayLockContext()->ShouldPaint());
+  EXPECT_EQ(GetDocument().LockedDisplayLockCount(), 1);
+  EXPECT_EQ(GetDocument().ActivationBlockingDisplayLockCount(), 1);
+
+  // The input should not be focusable now.
+  EXPECT_FALSE(text_field->IsKeyboardFocusable());
+  EXPECT_FALSE(text_field->IsMouseFocusable());
+  EXPECT_FALSE(text_field->IsFocusable());
+
+  // Calling explicit focus() should also not focus the element.
+  text_field->focus();
+  EXPECT_FALSE(GetDocument().FocusedElement());
+}
+
 TEST_F(DisplayLockContextTest, LockedCountsWithMultipleLocks) {
   ResizeAndFocus();
   SetHtmlInnerHTML(R"HTML(
