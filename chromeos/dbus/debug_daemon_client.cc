@@ -4,6 +4,7 @@
 
 #include "chromeos/dbus/debug_daemon_client.h"
 
+#include <dbus/dbus-protocol.h>
 #include <fcntl.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -14,8 +15,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-
-#include <dbus/dbus-protocol.h>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
