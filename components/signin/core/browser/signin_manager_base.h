@@ -63,7 +63,6 @@ class SigninManagerBase : public KeyedService {
    private:
     // SigninManagers that fire notifications.
     friend class SigninManager;
-    friend class FakeSigninManager;
   };
 
 // On non-ChromeOS platforms, SigninManagerBase should only be instantiated
@@ -175,9 +174,6 @@ class SigninManagerBase : public KeyedService {
   base::ObserverList<Observer, true>::Unchecked observer_list_;
 
  private:
-  friend class FakeSigninManagerBase;
-  friend class FakeSigninManager;
-
   // Added only to allow SigninManager to call the SigninManagerBase
   // constructor while disallowing any ad-hoc subclassing of
   // SigninManagerBase.

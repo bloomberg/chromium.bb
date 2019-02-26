@@ -9,7 +9,7 @@
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
-#include "components/signin/core/browser/fake_signin_manager.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "services/identity/identity_service.h"
@@ -24,12 +24,6 @@
 
 namespace identity {
 namespace {
-
-#if defined(OS_CHROMEOS)
-using SigninManagerForTest = SigninManagerBase;
-#else
-using SigninManagerForTest = FakeSigninManager;
-#endif  // OS_CHROMEOS
 
 const char kTestGaiaId[] = "dummyId";
 const char kTestEmail[] = "me@dummy.com";
@@ -47,7 +41,8 @@ class IdentityManagerImplTest : public testing::Test {
         signin_manager_(&signin_client_,
                         &token_service_,
                         &account_tracker_,
-                        nullptr),
+                        nullptr,
+                        signin::AccountConsistencyMethod::kDisabled),
 #endif
         service_(
             &account_tracker_,
@@ -153,7 +148,11 @@ class IdentityManagerImplTest : public testing::Test {
   AccountTrackerService account_tracker_;
   TestSigninClient signin_client_;
   FakeProfileOAuth2TokenService token_service_;
-  SigninManagerForTest signin_manager_;
+#if defined(OS_CHROMEOS)
+  SigninManagerBase signin_manager_;
+#else
+  SigninManager signin_manager_;
+#endif
 
   service_manager::TestConnectorFactory test_connector_factory_;
   IdentityService service_;

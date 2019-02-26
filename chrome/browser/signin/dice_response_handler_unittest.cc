@@ -24,11 +24,11 @@
 #include "components/signin/core/browser/dice_account_reconcilor_delegate.h"
 #include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
-#include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/signin/core/browser/mutable_profile_oauth2_token_service_delegate.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/signin_header_helper.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -103,7 +103,8 @@ class DiceResponseHandlerTest : public testing::Test,
         signin_manager_(&signin_client_,
                         &token_service_,
                         &account_tracker_service_,
-                        nullptr),
+                        nullptr,
+                        signin::AccountConsistencyMethod::kDisabled),
         cookie_service_(&token_service_, &signin_client_),
         identity_test_env_(&pref_service_,
                            &account_tracker_service_,
@@ -211,7 +212,7 @@ class DiceResponseHandlerTest : public testing::Test,
   FakeProfileOAuth2TokenService token_service_;
   AccountTrackerService account_tracker_service_;
   FakeAccountFetcherService account_fetcher_service_;
-  FakeSigninManager signin_manager_;
+  SigninManager signin_manager_;
   GaiaCookieManagerService cookie_service_;
   identity::IdentityTestEnvironment identity_test_env_;
   SigninErrorController signin_error_controller_;

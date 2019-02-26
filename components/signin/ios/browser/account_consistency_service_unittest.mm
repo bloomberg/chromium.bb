@@ -14,10 +14,10 @@
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/account_reconcilor_delegate.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/fake_account_fetcher_service.h"
-#include "components/signin/core/browser/fake_signin_manager.h"
+#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -166,9 +166,9 @@ class AccountConsistencyServiceTest : public PlatformTest {
     account_fetcher_service_.Initialize(
         signin_client_.get(), token_service_.get(), &account_tracker_service_,
         std::make_unique<TestImageDecoder>());
-    signin_manager_.reset(
-        new FakeSigninManager(signin_client_.get(), token_service_.get(),
-                              &account_tracker_service_, nullptr));
+    signin_manager_.reset(new SigninManager(
+        signin_client_.get(), token_service_.get(), &account_tracker_service_,
+        nullptr, signin::AccountConsistencyMethod::kDisabled));
     signin_manager_->Initialize(nullptr);
     identity_test_env_.reset(new identity::IdentityTestEnvironment(
         &prefs_, &account_tracker_service_, &account_fetcher_service_,
@@ -287,7 +287,7 @@ class AccountConsistencyServiceTest : public PlatformTest {
   std::unique_ptr<AccountConsistencyService> account_consistency_service_;
   std::unique_ptr<TestSigninClient> signin_client_;
   std::unique_ptr<FakeProfileOAuth2TokenService> token_service_;
-  std::unique_ptr<FakeSigninManager> signin_manager_;
+  std::unique_ptr<SigninManager> signin_manager_;
   std::unique_ptr<CustomGaiaCookieManagerService> gaia_cookie_manager_service_;
   std::unique_ptr<MockAccountReconcilor> account_reconcilor_;
   scoped_refptr<HostContentSettingsMap> settings_map_;

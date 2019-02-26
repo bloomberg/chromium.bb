@@ -136,7 +136,6 @@ class SigninManager : public SigninManagerBase,
       SigninClient::SignoutDecision signout_decision);
 
  private:
-  friend class FakeSigninManager;
   friend class identity::IdentityManager;
   FRIEND_TEST_ALL_PREFIXES(SigninManagerTest, Prohibited);
   FRIEND_TEST_ALL_PREFIXES(SigninManagerTest, TestAlternateWildcard);

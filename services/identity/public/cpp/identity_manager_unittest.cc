@@ -20,8 +20,8 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
-#include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/signin/core/browser/list_accounts_test_utils.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_switches.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -42,12 +42,6 @@
 
 namespace identity {
 namespace {
-
-#if defined(OS_CHROMEOS)
-using SigninManagerForTest = SigninManagerBase;
-#else
-using SigninManagerForTest = FakeSigninManager;
-#endif  // OS_CHROMEOS
 
 const char kTestGaiaId[] = "dummyId";
 const char kTestGaiaId2[] = "dummyId2";
@@ -353,7 +347,7 @@ class IdentityManagerTest : public testing::Test {
   }
   AccountTrackerServiceForTest* account_tracker() { return &account_tracker_; }
   FakeAccountFetcherService* account_fetcher() { return &account_fetcher_; }
-  SigninManagerForTest* signin_manager() { return signin_manager_.get(); }
+  SigninManagerBase* signin_manager() { return signin_manager_.get(); }
   CustomFakeProfileOAuth2TokenService* token_service() {
     return &token_service_;
   }
@@ -393,7 +387,7 @@ class IdentityManagerTest : public testing::Test {
     signin_manager_ = std::make_unique<SigninManagerBase>(
         &signin_client_, &token_service_, &account_tracker_);
 #else
-    signin_manager_ = std::make_unique<FakeSigninManager>(
+    signin_manager_ = std::make_unique<SigninManager>(
         &signin_client_, &token_service_, &account_tracker_,
         &gaia_cookie_manager_service_, account_consistency);
 #endif
@@ -476,7 +470,7 @@ class IdentityManagerTest : public testing::Test {
   CustomFakeProfileOAuth2TokenService token_service_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   GaiaCookieManagerService gaia_cookie_manager_service_;
-  std::unique_ptr<SigninManagerForTest> signin_manager_;
+  std::unique_ptr<SigninManagerBase> signin_manager_;
   std::unique_ptr<IdentityManager> identity_manager_;
   std::unique_ptr<TestIdentityManagerObserver> identity_manager_observer_;
   std::unique_ptr<TestIdentityManagerDiagnosticsObserver>
@@ -1449,7 +1443,8 @@ TEST_F(
   RecreateIdentityManager();
   signin_manager_observer.set_identity_manager(identity_manager());
 
-  signin_manager()->OnExternalSigninCompleted(kTestEmail);
+  SigninManager::FromSigninManagerBase(signin_manager())
+      ->OnExternalSigninCompleted(kTestEmail);
 
   run_loop.Run();
 
