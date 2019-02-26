@@ -816,6 +816,13 @@ IN_PROC_BROWSER_TEST_F(LocalFileSystemExtensionApiTest, AppFileHandler) {
       FLAGS_USE_FILE_HANDLER)) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(LocalFileSystemExtensionApiTest, DefaultFileHandler) {
+  EXPECT_TRUE(RunFileSystemExtensionApiTest("file_browser/default_file_handler",
+                                            FILE_PATH_LITERAL("manifest.json"),
+                                            "", FLAGS_NONE))
+      << message_;
+}
+
 //
 // RestrictedFileSystemExtensionApiTests.
 //

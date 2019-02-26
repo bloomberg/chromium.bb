@@ -72,7 +72,8 @@ TEST(FileManagerFileTasksTest, FullTaskDescriptor_WithIconAndDefault) {
   FullTaskDescriptor full_descriptor(
       TaskDescriptor("app-id", TASK_TYPE_FILE_BROWSER_HANDLER, "action-id"),
       "task title", Verb::VERB_OPEN_WITH, GURL("http://example.com/icon.png"),
-      true /* is_default */, false /* is_generic_file_handler */);
+      true /* is_default */, false /* is_generic_file_handler */,
+      false /* is_file_extension_match */);
 
   const std::string task_id =
       TaskDescriptorToId(full_descriptor.task_descriptor());
@@ -147,14 +148,14 @@ TEST(FileManagerFileTasksTest, ChooseAndSetDefaultTask_MultipleTasks) {
                                TASK_TYPE_FILE_HANDLER,
                                "action-id");
   std::vector<FullTaskDescriptor> tasks;
-  tasks.emplace_back(text_app_task, "Text.app", Verb::VERB_OPEN_WITH,
-                     GURL("http://example.com/text_app.png"),
-                     false /* is_default */,
-                     false /* is_generic_file_handler */);
-  tasks.emplace_back(nice_app_task, "Nice.app", Verb::VERB_ADD_TO,
-                     GURL("http://example.com/nice_app.png"),
-                     false /* is_default */,
-                     false /* is_generic_file_handler */);
+  tasks.emplace_back(
+      text_app_task, "Text.app", Verb::VERB_OPEN_WITH,
+      GURL("http://example.com/text_app.png"), false /* is_default */,
+      false /* is_generic_file_handler */, false /* is_file_extension_match */);
+  tasks.emplace_back(
+      nice_app_task, "Nice.app", Verb::VERB_ADD_TO,
+      GURL("http://example.com/nice_app.png"), false /* is_default */,
+      false /* is_generic_file_handler */, false /* is_file_extension_match */);
   std::vector<extensions::EntryInfo> entries;
   entries.emplace_back(base::FilePath::FromUTF8Unsafe("foo.txt"), "text/plain",
                        false);
@@ -208,10 +209,10 @@ TEST(FileManagerFileTasksTest, ChooseAndSetDefaultTask_FallbackFileBrowser) {
                                 TASK_TYPE_FILE_BROWSER_HANDLER,
                                 "view-in-browser");
   std::vector<FullTaskDescriptor> tasks;
-  tasks.emplace_back(files_app_task, "View in browser", Verb::VERB_OPEN_WITH,
-                     GURL("http://example.com/some_icon.png"),
-                     false /* is_default */,
-                     false /* is_generic_file_handler */);
+  tasks.emplace_back(
+      files_app_task, "View in browser", Verb::VERB_OPEN_WITH,
+      GURL("http://example.com/some_icon.png"), false /* is_default */,
+      false /* is_generic_file_handler */, false /* is_file_extension_match */);
   std::vector<extensions::EntryInfo> entries;
   entries.emplace_back(base::FilePath::FromUTF8Unsafe("foo.txt"), "text/plain",
                        false);
@@ -235,7 +236,8 @@ TEST(FileManagerFileTasksTest, ChooseAndSetDefaultTask_FallbackTextApp) {
   tasks.emplace_back(
       files_app_task, "Text", Verb::VERB_OPEN_WITH,
       GURL("chrome://extension-icon/mmfbcljfglbokpmkimbfghdkjmjhdgbg/16/1"),
-      false /* is_default */, false /* is_generic_file_handler */);
+      false /* is_default */, false /* is_generic_file_handler */,
+      false /* is_file_extension_match */);
   std::vector<extensions::EntryInfo> entries;
   entries.emplace_back(base::FilePath::FromUTF8Unsafe("foo.txt"), "text/plain",
                        false);
@@ -259,7 +261,8 @@ TEST(FileManagerFileTasksTest, ChooseAndSetDefaultTask_FallbackAudioPlayer) {
   tasks.emplace_back(
       files_app_task, "Audio Player", Verb::VERB_OPEN_WITH,
       GURL("chrome://extension-icon/cjbfomnbifhcdnihkgipgfcihmgjfhbf/32/1"),
-      false /* is_default */, false /* is_generic_file_handler */);
+      false /* is_default */, false /* is_generic_file_handler */,
+      false /* is_file_extension_match */);
   std::vector<extensions::EntryInfo> entries;
   entries.emplace_back(base::FilePath::FromUTF8Unsafe("sound.wav"), "audio/wav",
                        false);
@@ -285,7 +288,8 @@ TEST(FileManagerFileTasksTest, ChooseAndSetDefaultTask_FallbackOfficeEditing) {
       files_app_task, "Office Editing for Docs, Sheets & Slides",
       Verb::VERB_OPEN_WITH,
       GURL("chrome://extension-icon/bpmcpldpdmajfigpchkicefoigmkfalc/32/1"),
-      false /* is_default */, false /* is_generic_file_handler */);
+      false /* is_default */, false /* is_generic_file_handler */,
+      false /* is_file_extension_match */);
   std::vector<extensions::EntryInfo> entries;
   entries.emplace_back(base::FilePath::FromUTF8Unsafe("slides.pptx"), "",
                        false);

@@ -49,6 +49,9 @@ FileHandlerInfo::FileHandlerInfo()
 FileHandlerInfo::FileHandlerInfo(const FileHandlerInfo& other) = default;
 FileHandlerInfo::~FileHandlerInfo() {}
 
+FileHandlerMatch::FileHandlerMatch() = default;
+FileHandlerMatch::~FileHandlerMatch() = default;
+
 FileHandlers::FileHandlers() {}
 FileHandlers::~FileHandlers() {}
 

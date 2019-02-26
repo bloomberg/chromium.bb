@@ -99,10 +99,8 @@ function run() {
       onError('Got invalid number of tasks for "' + entry.fullPath + '": ' +
               tasks.length);
     }
-    if (tasks[0].isDefault) {
-      onError('Task "' + tasks[0].taskId + '" is default for "' +
-          entry.fullPath + '"');
-    }
+    // Task could be default from an explicit file extension match
+    // but if matched on MIME type we need to set the task as default
     chrome.fileManagerPrivate.setDefaultTask(
         tasks[0].taskId, [entry], [],
         function() {
