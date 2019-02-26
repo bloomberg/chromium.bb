@@ -64,6 +64,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/chromium_strings.h"
@@ -198,6 +199,11 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
     ash::mojom::ShelfObserverAssociatedPtrInfo ptr_info;
     observer_binding_.Bind(mojo::MakeRequest(&ptr_info));
     shelf_controller_->AddObserver(std::move(ptr_info));
+  }
+
+  if (!web_app::SystemWebAppManager::IsEnabled()) {
+    settings_window_observer_ = std::make_unique<SettingsWindowObserver>();
+    discover_window_observer_ = std::make_unique<DiscoverWindowObserver>();
   }
 
   if (!profile) {

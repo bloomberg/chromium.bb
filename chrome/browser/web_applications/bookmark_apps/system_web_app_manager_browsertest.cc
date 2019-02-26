@@ -150,8 +150,9 @@ SystemWebAppManagerBrowserTest::CreateWebAppProvider(Profile* profile) {
   test_system_web_app_manager_ = test_system_web_app_manager.get();
   provider->SetSystemWebAppManager(std::move(test_system_web_app_manager));
 
-  std::vector<GURL> system_apps;
-  system_apps.emplace_back(GURL("chrome://test-system-app/pwa.html"));
+  base::flat_map<SystemAppType, GURL> system_apps;
+  system_apps[SystemAppType::SETTINGS] =
+      GURL("chrome://test-system-app/pwa.html");
   test_system_web_app_manager_->SetSystemApps(std::move(system_apps));
 
   // Start registry and all dependent subsystems:
@@ -186,6 +187,11 @@ IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest, Install) {
   EXPECT_EQ(extensions::util::GetInstalledPwaForUrl(
                 browser()->profile(), GURL("chrome://test-system-app/")),
             app);
+  // The app should be retrievable from the Web Apps system.
+  EXPECT_EQ(app->id(),
+            WebAppProvider::Get(browser()->profile())
+                ->system_web_app_manager()
+                .GetAppIdForSystemApp(web_app::SystemAppType::SETTINGS));
 }
 
 }  // namespace web_app

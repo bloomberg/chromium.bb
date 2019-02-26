@@ -398,12 +398,16 @@ class ChromeLauncherController
   // Used to get app info for tabs.
   std::unique_ptr<LauncherControllerHelper> launcher_controller_helper_;
 
+  // TODO(crbug.com/836128): Remove this once SystemWebApps are enabled by
+  // default.
   // An observer that manages the shelf title and icon for settings windows.
-  SettingsWindowObserver settings_window_observer_;
+  std::unique_ptr<SettingsWindowObserver> settings_window_observer_;
 
+  // TODO(crbug.com/836128): Remove this once SystemWebApps are enabled by
+  // default.
   // An observer that manages the shelf title and icon for Chrome OS Discover
   // windows.
-  DiscoverWindowObserver dicover_window_observer_;
+  std::unique_ptr<DiscoverWindowObserver> discover_window_observer_;
 
   // Used to load the images for app items.
   std::vector<std::unique_ptr<AppIconLoader>> app_icon_loaders_;

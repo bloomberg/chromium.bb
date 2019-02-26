@@ -115,8 +115,8 @@ TEST_F(SystemWebAppManagerTest, Disabled) {
   SimulatePreviouslyInstalledApp(GURL(kAppUrl1),
                                  InstallSource::kSystemInstalled);
 
-  std::vector<GURL> system_apps;
-  system_apps.push_back(GURL(kAppUrl1));
+  base::flat_map<SystemAppType, GURL> system_apps;
+  system_apps[SystemAppType::SETTINGS] = GURL(kAppUrl1);
 
   system_web_app_manager()->SetSystemApps(std::move(system_apps));
   system_web_app_manager()->Start();
@@ -133,9 +133,9 @@ TEST_F(SystemWebAppManagerTest, Disabled) {
 
 // Test that System Apps do install with the feature enabled.
 TEST_F(SystemWebAppManagerTest, Enabled) {
-  std::vector<GURL> system_apps;
-  system_apps.push_back(GURL(kAppUrl1));
-  system_apps.push_back(GURL(kAppUrl2));
+  base::flat_map<SystemAppType, GURL> system_apps;
+  system_apps[SystemAppType::SETTINGS] = GURL(kAppUrl1);
+  system_apps[SystemAppType::DISCOVER] = GURL(kAppUrl2);
 
   system_web_app_manager()->SetSystemApps(std::move(system_apps));
   system_web_app_manager()->Start();
@@ -154,8 +154,8 @@ TEST_F(SystemWebAppManagerTest, UninstallAppInstalledInPreviousSession) {
   SimulatePreviouslyInstalledApp(GURL(kAppUrl2),
                                  InstallSource::kSystemInstalled);
   SimulatePreviouslyInstalledApp(GURL(kAppUrl3), InstallSource::kInternal);
-  std::vector<GURL> system_apps;
-  system_apps.push_back(GURL(kAppUrl1));
+  base::flat_map<SystemAppType, GURL> system_apps;
+  system_apps[SystemAppType::SETTINGS] = GURL(kAppUrl1);
 
   system_web_app_manager()->SetSystemApps(std::move(system_apps));
   system_web_app_manager()->Start();

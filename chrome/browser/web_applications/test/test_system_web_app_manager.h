@@ -21,14 +21,9 @@ class TestSystemWebAppManager : public SystemWebAppManager {
                           PendingAppManager* pending_app_manager);
   ~TestSystemWebAppManager() override;
 
-  void SetSystemApps(std::vector<GURL> system_apps);
-
-  // Overridden from SystemWebAppManager:
-  std::vector<GURL> CreateSystemWebApps() override;
+  void SetSystemApps(base::flat_map<SystemAppType, GURL> system_apps);
 
  private:
-  std::vector<GURL> system_apps_;
-
   DISALLOW_COPY_AND_ASSIGN(TestSystemWebAppManager);
 };
 

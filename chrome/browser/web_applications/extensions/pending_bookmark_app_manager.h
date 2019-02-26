@@ -54,6 +54,7 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager,
                      const UninstallCallback& callback) override;
   std::vector<GURL> GetInstalledAppUrls(
       web_app::InstallSource install_source) const override;
+  base::Optional<std::string> LookupAppId(const GURL& url) const override;
 
   void SetFactoriesForTesting(WebContentsFactory web_contents_factory,
                               TaskFactory task_factory);

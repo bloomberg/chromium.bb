@@ -55,6 +55,8 @@ class HostedAppBrowserController : public SiteEngagementObserver,
   explicit HostedAppBrowserController(Browser* browser);
   ~HostedAppBrowserController() override;
 
+  const std::string& app_id() const { return extension_id_; }
+
   // Returns true if the associated Hosted App is for a PWA.
   bool created_for_installed_pwa() const { return created_for_installed_pwa_; }
 
