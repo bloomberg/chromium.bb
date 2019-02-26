@@ -56,6 +56,7 @@
 #include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
@@ -224,6 +225,8 @@ void LocationBarView::Init() {
     params.types_enabled.push_back(PageActionIconType::kFind);
     params.types_enabled.push_back(PageActionIconType::kTranslate);
     params.types_enabled.push_back(PageActionIconType::kZoom);
+    if (base::FeatureList::IsEnabled(features::kDesktopPWAsOmniboxInstall))
+      params.types_enabled.push_back(PageActionIconType::kPwaInstall);
   }
   params.icon_size = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
   params.icon_color = icon_color;
@@ -239,19 +242,16 @@ void LocationBarView::Init() {
     save_credit_card_icon_view_ = new autofill::SaveCardIconView(
         command_updater(), browser_, this, font_list);
     page_action_icons_.push_back(save_credit_card_icon_view_);
-  }
-  if (browser_) {
+
     local_card_migration_icon_view_ = new autofill::LocalCardMigrationIconView(
         command_updater(), browser_, this, font_list);
     page_action_icons_.push_back(local_card_migration_icon_view_);
-  }
 
 #if defined(OS_CHROMEOS)
-  if (browser_)
     page_action_icons_.push_back(intent_picker_view_ =
                                      new IntentPickerView(browser_, this));
 #endif
-  if (browser_) {
+
     page_action_icons_.push_back(
         star_view_ = new StarView(command_updater(), browser_, this));
   }

@@ -19,6 +19,7 @@ class Browser;
 class CommandUpdater;
 class FindBarIcon;
 class ManagePasswordsIconViews;
+class PwaInstallView;
 class TranslateIconView;
 class ZoomView;
 
@@ -76,6 +77,7 @@ class PageActionIconContainerView : public views::View,
   ZoomView* zoom_view_ = nullptr;
   FindBarIcon* find_bar_icon_ = nullptr;
   ManagePasswordsIconViews* manage_passwords_icon_ = nullptr;
+  PwaInstallView* pwa_install_view_ = nullptr;
   TranslateIconView* translate_icon_ = nullptr;
   std::vector<PageActionIconView*> page_action_icons_;
 

@@ -28,6 +28,10 @@ void WebAppTabHelperBase::Init(WebAppAudioFocusIdMap* audio_focus_id_map) {
   SetAppId(FindAppIdInScopeOfUrl(init_url));
 }
 
+bool WebAppTabHelperBase::HasAssociatedApp() const {
+  return !app_id_.empty();
+}
+
 void WebAppTabHelperBase::SetAppId(const AppId& app_id) {
   if (app_id_ == app_id)
     return;
