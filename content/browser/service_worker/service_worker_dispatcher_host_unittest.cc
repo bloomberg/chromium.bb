@@ -55,13 +55,13 @@ std::unique_ptr<ServiceWorkerNavigationHandleCore> CreateNavigationHandleCore(
   std::unique_ptr<ServiceWorkerNavigationHandleCore> navigation_handle_core;
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {BrowserThread::UI},
-      base::Bind(
+      base::BindOnce(
           [](ServiceWorkerContextWrapper* wrapper) {
             return std::make_unique<ServiceWorkerNavigationHandleCore>(nullptr,
                                                                        wrapper);
           },
           base::RetainedRef(context_wrapper)),
-      base::Bind(
+      base::BindOnce(
           [](std::unique_ptr<ServiceWorkerNavigationHandleCore>* dest,
              std::unique_ptr<ServiceWorkerNavigationHandleCore> src) {
             *dest = std::move(src);

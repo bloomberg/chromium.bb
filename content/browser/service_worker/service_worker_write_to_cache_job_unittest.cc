@@ -176,8 +176,8 @@ class MockHttpProtocolHandler
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
   using JobCallback =
-      base::RepeatingCallback<net::URLRequestJob*(net::URLRequest*,
-                                                  net::NetworkDelegate*)>;
+      base::OnceCallback<net::URLRequestJob*(net::URLRequest*,
+                                             net::NetworkDelegate*)>;
 
   MockHttpProtocolHandler() {}
   ~MockHttpProtocolHandler() override {}
@@ -190,14 +190,14 @@ class MockHttpProtocolHandler
     if (handler) {
       return handler->MaybeCreateJob(request, network_delegate, nullptr);
     }
-    return create_job_callback_.Run(request, network_delegate);
+    return std::move(create_job_callback_).Run(request, network_delegate);
   }
   void SetCreateJobCallback(JobCallback callback) {
     create_job_callback_ = std::move(callback);
   }
 
  private:
-  JobCallback create_job_callback_;
+  mutable JobCallback create_job_callback_;
 };
 
 class ResponseVerifier : public base::RefCounted<ResponseVerifier> {
@@ -355,7 +355,7 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
 
   int CreateIncumbent(const std::string& response) {
     mock_protocol_handler_->SetCreateJobCallback(
-        base::Bind(&CreateResponseJob, response));
+        base::BindOnce(&CreateResponseJob, response));
     request_->Start();
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(net::URLRequestStatus::SUCCESS, request_->status().status());
@@ -392,7 +392,7 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
     EXPECT_TRUE(host);
     SetUpScriptRequest(helper_->mock_render_process_id(), host->provider_id());
     mock_protocol_handler_->SetCreateJobCallback(
-        base::Bind(&CreateResponseJob, response));
+        base::BindOnce(&CreateResponseJob, response));
     request_->Start();
     base::RunLoop().RunUntilIdle();
     return new_version;
@@ -444,7 +444,7 @@ TEST_F(ServiceWorkerWriteToCacheJobTest, Normal) {
     return;
 
   mock_protocol_handler_->SetCreateJobCallback(
-      base::Bind(&CreateNormalURLRequestJob));
+      base::BindOnce(&CreateNormalURLRequestJob));
   request_->Start();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(net::URLRequestStatus::SUCCESS, request_->status().status());
@@ -457,7 +457,7 @@ TEST_F(ServiceWorkerWriteToCacheJobTest, InvalidMimeType) {
     return;
 
   mock_protocol_handler_->SetCreateJobCallback(
-      base::Bind(&CreateInvalidMimeTypeJob));
+      base::BindOnce(&CreateInvalidMimeTypeJob));
   request_->Start();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(net::URLRequestStatus::FAILED, request_->status().status());
@@ -471,7 +471,7 @@ TEST_F(ServiceWorkerWriteToCacheJobTest, SSLCertificateError) {
     return;
 
   mock_protocol_handler_->SetCreateJobCallback(
-      base::Bind(&CreateSSLCertificateErrorJob));
+      base::BindOnce(&CreateSSLCertificateErrorJob));
   request_->Start();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(net::URLRequestStatus::FAILED, request_->status().status());
@@ -498,7 +498,7 @@ TEST_F(ServiceWorkerWriteToCacheLocalhostTest,
       switches::kAllowInsecureLocalhost);
 
   mock_protocol_handler_->SetCreateJobCallback(
-      base::Bind(&CreateSSLCertificateErrorJob));
+      base::BindOnce(&CreateSSLCertificateErrorJob));
   request_->Start();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(net::URLRequestStatus::SUCCESS, request_->status().status());
@@ -512,7 +512,7 @@ TEST_F(ServiceWorkerWriteToCacheLocalhostTest, SSLCertificateError) {
     return;
 
   mock_protocol_handler_->SetCreateJobCallback(
-      base::Bind(&CreateSSLCertificateErrorJob));
+      base::BindOnce(&CreateSSLCertificateErrorJob));
   request_->Start();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(net::URLRequestStatus::FAILED, request_->status().status());
@@ -530,7 +530,7 @@ TEST_F(ServiceWorkerWriteToCacheLocalhostTest,
       switches::kAllowInsecureLocalhost);
 
   mock_protocol_handler_->SetCreateJobCallback(
-      base::Bind(&CreateCertStatusErrorJob));
+      base::BindOnce(&CreateCertStatusErrorJob));
   request_->Start();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(net::URLRequestStatus::SUCCESS, request_->status().status());
@@ -544,7 +544,7 @@ TEST_F(ServiceWorkerWriteToCacheLocalhostTest, CertStatusError) {
     return;
 
   mock_protocol_handler_->SetCreateJobCallback(
-      base::Bind(&CreateCertStatusErrorJob));
+      base::BindOnce(&CreateCertStatusErrorJob));
   request_->Start();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(net::URLRequestStatus::FAILED, request_->status().status());
@@ -558,7 +558,7 @@ TEST_F(ServiceWorkerWriteToCacheJobTest, CertStatusError) {
     return;
 
   mock_protocol_handler_->SetCreateJobCallback(
-      base::Bind(&CreateCertStatusErrorJob));
+      base::BindOnce(&CreateCertStatusErrorJob));
   request_->Start();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(net::URLRequestStatus::FAILED, request_->status().status());
@@ -701,7 +701,7 @@ TEST_F(ServiceWorkerWriteToCacheJobTest, Error) {
     return;
 
   mock_protocol_handler_->SetCreateJobCallback(
-      base::Bind(&CreateFailedURLRequestJob));
+      base::BindOnce(&CreateFailedURLRequestJob));
   request_->Start();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(net::URLRequestStatus::FAILED, request_->status().status());
@@ -715,7 +715,7 @@ TEST_F(ServiceWorkerWriteToCacheJobTest, FailedWriteHeadersToCache) {
     return;
 
   mock_protocol_handler_->SetCreateJobCallback(
-      base::Bind(&CreateNormalURLRequestJob));
+      base::BindOnce(&CreateNormalURLRequestJob));
   DisableCache();
   request_->Start();
   base::RunLoop().RunUntilIdle();
