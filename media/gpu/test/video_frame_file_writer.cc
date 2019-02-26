@@ -165,7 +165,6 @@ void VideoFrameFileWriter::WriteVideoFrameYUV(
     scoped_refptr<const VideoFrame> video_frame,
     const base::FilePath& filename) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(writer_thread_sequence_checker_);
-
   auto mapped_frame = video_frame_mapper_->Map(std::move(video_frame));
   if (!mapped_frame) {
     LOG(ERROR) << "Failed to map video frame";
@@ -186,22 +185,24 @@ void VideoFrameFileWriter::WriteVideoFrameYUV(
   base::File yuv_file(file_path,
                       base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
 
-  // TODO(dstaessens@) Take stride into account when visible and coded sizes are
-  // different.
-  LOG_ASSERT(I420_out_frame->visible_rect().size() ==
-             I420_out_frame->coded_size());
-  const int width = I420_out_frame->visible_rect().width();
-  const int height = I420_out_frame->visible_rect().height();
-  const size_t num_planes = VideoFrame::NumPlanes(I420_out_frame->format());
+  const gfx::Size visible_size = I420_out_frame->visible_rect().size();
+  const VideoPixelFormat pixel_format = I420_out_frame->format();
+  const size_t num_planes = VideoFrame::NumPlanes(pixel_format);
   for (size_t i = 0; i < num_planes; i++) {
-    size_t plane_w = VideoFrame::Columns(i, I420_out_frame->format(), width);
-    size_t plane_h = VideoFrame::Rows(i, I420_out_frame->format(), height);
-    int data_size = base::checked_cast<int>(plane_w * plane_h);
     const uint8_t* data = I420_out_frame->data(i);
-    if (yuv_file.WriteAtCurrentPos(reinterpret_cast<const char*>(data),
-                                   data_size) != data_size) {
-      LOG(ERROR) << "Failed to write plane #" << i << " to file: "
-                 << base::File::ErrorToString(base::File::GetLastFileError());
+    const int stride = I420_out_frame->stride(i);
+    const size_t rows =
+        VideoFrame::Rows(i, pixel_format, visible_size.height());
+    const int row_bytes =
+        VideoFrame::RowBytes(i, pixel_format, visible_size.width());
+    LOG_ASSERT(stride > 0);
+    for (size_t row = 0; row < rows; ++row) {
+      if (yuv_file.WriteAtCurrentPos(
+              reinterpret_cast<const char*>(data + (stride * row)),
+              row_bytes) != row_bytes) {
+        LOG(ERROR) << "Failed to write plane #" << i << " to file: "
+                   << base::File::ErrorToString(base::File::GetLastFileError());
+      }
     }
   }
 }
