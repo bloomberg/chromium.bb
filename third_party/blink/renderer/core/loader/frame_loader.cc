@@ -441,9 +441,9 @@ void FrameLoader::DidFinishNavigation() {
   }
 
   // This code in this block is meant to prepare a document for display, but
-  // this code may also run on a document being unloaded. In that case, which
-  // is detectable via protect_provisional_loader_, skip the display work.
-  if (frame_->IsLoading() && !protect_provisional_loader_) {
+  // this code may also run when swapping out a provisional frame. In that case,
+  // skip the display work.
+  if (frame_->IsLoading() && !frame_->IsProvisional()) {
     progress_tracker_->ProgressCompleted();
     // Retry restoring scroll offset since finishing loading disables content
     // size clamping.
