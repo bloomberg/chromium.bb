@@ -175,7 +175,6 @@
 #include "third_party/blink/renderer/platform/wtf/dtoa.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding_registry.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -3404,7 +3403,8 @@ double Internals::monotonicTimeToZeroBasedDocumentTime(
     ExceptionState& exception_state) {
   return document_->Loader()
       ->GetTiming()
-      .MonotonicTimeToZeroBasedDocumentTime(TimeTicksFromSeconds(platform_time))
+      .MonotonicTimeToZeroBasedDocumentTime(
+          base::TimeTicks() + TimeDelta::FromSecondsD(platform_time))
       .InSecondsF();
 }
 

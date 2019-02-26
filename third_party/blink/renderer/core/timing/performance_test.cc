@@ -20,6 +20,12 @@
 #include "third_party/blink/renderer/core/timing/performance_observer_init.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 
+namespace {
+base::TimeTicks TimeTicksFromSecondsD(double seconds) {
+  return base::TimeTicks() + base::TimeDelta::FromSecondsD(seconds);
+}
+}  // namespace
+
 namespace blink {
 
 class TestPerformance : public Performance {
@@ -122,8 +128,8 @@ TEST_F(PerformanceTest, AddLongTaskTiming) {
   SubTaskAttribution::EntriesVector sub_task_attributions;
 
   // Add a long task entry, but no observer registered.
-  base_->AddLongTaskTiming(TimeTicksFromSeconds(1234),
-                           TimeTicksFromSeconds(5678), "same-origin",
+  base_->AddLongTaskTiming(TimeTicksFromSecondsD(1234),
+                           TimeTicksFromSecondsD(5678), "same-origin",
                            "www.foo.com/bar", "", "", sub_task_attributions);
   EXPECT_FALSE(base_->HasPerformanceObserverFor(PerformanceEntry::kLongTask));
   EXPECT_EQ(0, NumPerformanceEntriesInObserver());  // has no effect
@@ -138,8 +144,8 @@ TEST_F(PerformanceTest, AddLongTaskTiming) {
 
   EXPECT_TRUE(base_->HasPerformanceObserverFor(PerformanceEntry::kLongTask));
   // Add a long task entry
-  base_->AddLongTaskTiming(TimeTicksFromSeconds(1234),
-                           TimeTicksFromSeconds(5678), "same-origin",
+  base_->AddLongTaskTiming(TimeTicksFromSecondsD(1234),
+                           TimeTicksFromSecondsD(5678), "same-origin",
                            "www.foo.com/bar", "", "", sub_task_attributions);
   EXPECT_EQ(1, NumPerformanceEntriesInObserver());  // added an entry
 }

@@ -43,7 +43,6 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_timeline.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -230,9 +229,9 @@ double DocumentTimeline::CurrentTimeInternal(bool& is_null) {
     return std::numeric_limits<double>::quiet_NaN();
   }
   double result = playback_rate_ == 0
-                      ? TimeTicksInSeconds(ZeroTime())
+                      ? ZeroTime().since_origin().InSecondsF()
                       : (GetDocument()->GetAnimationClock().CurrentTime() -
-                         TimeTicksInSeconds(ZeroTime())) *
+                         ZeroTime().since_origin().InSecondsF()) *
                             playback_rate_;
   is_null = std::isnan(result);
   // This looks like it could never be NaN here.
@@ -295,10 +294,12 @@ void DocumentTimeline::SetPlaybackRate(double playback_rate) {
     return;
   double current_time = CurrentTimeInternal();
   playback_rate_ = playback_rate;
-  zero_time_ = TimeTicksFromSeconds(
+  double zero_time_seconds =
       playback_rate == 0 ? current_time
                          : GetDocument()->GetAnimationClock().CurrentTime() -
-                               current_time / playback_rate);
+                               current_time / playback_rate;
+  zero_time_ =
+      base::TimeTicks() + base::TimeDelta::FromSecondsD(zero_time_seconds);
   zero_time_initialized_ = true;
 
   // Corresponding compositor animation may need to be restarted to pick up

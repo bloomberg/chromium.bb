@@ -59,7 +59,6 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -964,8 +963,8 @@ DOMHighResTimeStamp Performance::MonotonicTimeToDOMHighResTimeStamp(
     return 0.0;
 
   double clamped_time_in_seconds =
-      ClampTimeResolution(TimeTicksInSeconds(monotonic_time)) -
-      ClampTimeResolution(TimeTicksInSeconds(time_origin));
+      ClampTimeResolution(monotonic_time.since_origin().InSecondsF()) -
+      ClampTimeResolution(time_origin.since_origin().InSecondsF());
   if (clamped_time_in_seconds < 0 && !allow_negative_value)
     return 0.0;
   return ConvertSecondsToDOMHighResTimeStamp(clamped_time_in_seconds);

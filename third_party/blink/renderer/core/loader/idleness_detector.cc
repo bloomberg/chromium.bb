@@ -132,8 +132,9 @@ void IdlenessDetector::WillProcessTask(base::TimeTicks start_time) {
   DocumentLoader* loader = local_frame_->Loader().GetDocumentLoader();
   if (in_network_2_quiet_period_ && !network_2_quiet_.is_null() &&
       start_time - network_2_quiet_ > network_quiet_window_) {
-    probe::lifecycleEvent(local_frame_, loader, "networkAlmostIdle",
-                          TimeTicksInSeconds(network_2_quiet_start_time_));
+    probe::lifecycleEvent(
+        local_frame_, loader, "networkAlmostIdle",
+        network_2_quiet_start_time_.since_origin().InSecondsF());
     if (::resource_coordinator::IsPageAlmostIdleSignalEnabled()) {
       if (auto* frame_resource_coordinator =
               local_frame_->GetFrameResourceCoordinator()) {
@@ -149,8 +150,9 @@ void IdlenessDetector::WillProcessTask(base::TimeTicks start_time) {
 
   if (in_network_0_quiet_period_ && !network_0_quiet_.is_null() &&
       start_time - network_0_quiet_ > network_quiet_window_) {
-    probe::lifecycleEvent(local_frame_, loader, "networkIdle",
-                          TimeTicksInSeconds(network_0_quiet_start_time_));
+    probe::lifecycleEvent(
+        local_frame_, loader, "networkIdle",
+        network_0_quiet_start_time_.since_origin().InSecondsF());
     FirstMeaningfulPaintDetector::From(*local_frame_->GetDocument())
         .OnNetwork0Quiet();
     in_network_0_quiet_period_ = false;

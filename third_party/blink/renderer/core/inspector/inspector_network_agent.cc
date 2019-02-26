@@ -80,7 +80,6 @@
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -440,7 +439,7 @@ void InspectorNetworkAgent::Restore() {
 static std::unique_ptr<protocol::Network::ResourceTiming> BuildObjectForTiming(
     const ResourceLoadTiming& timing) {
   return protocol::Network::ResourceTiming::create()
-      .setRequestTime(TimeTicksInSeconds(timing.RequestTime()))
+      .setRequestTime(timing.RequestTime().since_origin().InSecondsF())
       .setProxyStart(timing.CalculateMillisecondDelta(timing.ProxyStart()))
       .setProxyEnd(timing.CalculateMillisecondDelta(timing.ProxyEnd()))
       .setDnsStart(timing.CalculateMillisecondDelta(timing.DnsStart()))
@@ -455,8 +454,8 @@ static std::unique_ptr<protocol::Network::ResourceTiming> BuildObjectForTiming(
       .setSendEnd(timing.CalculateMillisecondDelta(timing.SendEnd()))
       .setReceiveHeadersEnd(
           timing.CalculateMillisecondDelta(timing.ReceiveHeadersEnd()))
-      .setPushStart(TimeTicksInSeconds(timing.PushStart()))
-      .setPushEnd(TimeTicksInSeconds(timing.PushEnd()))
+      .setPushStart(timing.PushStart().since_origin().InSecondsF())
+      .setPushEnd(timing.PushEnd().since_origin().InSecondsF())
       .build();
 }
 
@@ -1053,7 +1052,7 @@ void InspectorNetworkAgent::DidFinishLoading(unsigned long identifier,
 
   // TODO(npm): Use TimeTicks in Network.h.
   GetFrontend()->loadingFinished(
-      request_id, TimeTicksInSeconds(monotonic_finish_time),
+      request_id, monotonic_finish_time.since_origin().InSecondsF(),
       encoded_data_length, should_report_corb_blocking);
 }
 

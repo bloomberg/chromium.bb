@@ -68,12 +68,4 @@ double CurrentTimeTicksInMilliseconds() {
   return CurrentTimeTicks().since_origin().InMillisecondsF();
 }
 
-TimeTicks TimeTicksFromSeconds(double seconds) {
-  return TimeTicks() + TimeDelta::FromSecondsD(seconds);
-}
-
-double TimeTicksInSeconds(TimeTicks ticks) {
-  return (ticks - TimeTicks()).InSecondsF();
-}
-
 }  // namespace WTF

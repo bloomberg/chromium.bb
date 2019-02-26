@@ -1304,8 +1304,8 @@ TEST_F(FrameFetchContextTest, DispatchDidReceiveEncodedDataWhenDetached) {
 TEST_F(FrameFetchContextTest, DispatchDidFinishLoadingWhenDetached) {
   dummy_page_holder = nullptr;
 
-  GetFetchContext()->DispatchDidFinishLoading(4, TimeTicksFromSeconds(0.3), 8,
-                                              10, false);
+  GetFetchContext()->DispatchDidFinishLoading(
+      4, base::TimeTicks() + base::TimeDelta::FromSecondsD(0.3), 8, 10, false);
   // Should not crash.
 }
 
@@ -1351,8 +1351,8 @@ TEST_F(FrameFetchContextTest, DidLoadResourceWhenDetached) {
 }
 
 TEST_F(FrameFetchContextTest, AddResourceTimingWhenDetached) {
-  scoped_refptr<ResourceTimingInfo> info =
-      ResourceTimingInfo::Create("type", TimeTicksFromSeconds(0.3));
+  scoped_refptr<ResourceTimingInfo> info = ResourceTimingInfo::Create(
+      "type", base::TimeTicks() + base::TimeDelta::FromSecondsD(0.3));
 
   dummy_page_holder = nullptr;
 
