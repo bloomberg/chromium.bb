@@ -10,6 +10,7 @@ enum class PageActionIconType {
   // of LocationBar to this interface.
   kFind,
   kManagePasswords,
+  kPwaInstall,
   kTranslate,
   kZoom,
 };

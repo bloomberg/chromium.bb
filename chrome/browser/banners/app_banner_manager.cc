@@ -602,6 +602,13 @@ base::string16 AppBannerManager::GetInstallableAppName(
   return manager->GetAppName();
 }
 
+// static
+bool AppBannerManager::IsWebContentsInstallable(
+    content::WebContents* web_contents) {
+  AppBannerManager* manager = FromWebContents(web_contents);
+  return manager && manager->installable_ == Installable::INSTALLABLE_YES;
+}
+
 void AppBannerManager::RecordCouldShowBanner() {
   content::WebContents* contents = web_contents();
   DCHECK(contents);

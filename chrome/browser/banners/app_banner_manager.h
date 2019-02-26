@@ -116,10 +116,18 @@ class AppBannerManager : public content::WebContentsObserver,
   // Returns whether the new experimental flow and UI is enabled.
   static bool IsExperimentalAppBannersEnabled();
 
+  // TODO(https://crbug.com/930612): Move |GetInstallableAppName| and
+  // |IsWebContentsInstallable| out into a more general purpose installability
+  // check class.
+
   // Returns the app name if the current page is installable, otherwise returns
   // the empty string.
   static base::string16 GetInstallableAppName(
       content::WebContents* web_contents);
+
+  // Returns whether the |web_contents| has passed installability checks (e.g.
+  // having a service worker fetch event).
+  static bool IsWebContentsInstallable(content::WebContents* web_contents);
 
   // Requests an app banner. If |is_debug_mode| is true, any failure in the
   // pipeline will be reported to the devtools console.

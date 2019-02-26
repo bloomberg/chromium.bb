@@ -24,7 +24,7 @@
 #include "chrome/browser/badging/badge_manager.h"
 #include "chrome/browser/badging/badge_manager_delegate.h"
 #include "chrome/browser/badging/badge_manager_factory.h"
-#include "chrome/browser/banners/app_banner_manager_desktop.h"
+#include "chrome/browser/banners/test_app_banner_manager_desktop.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -258,62 +258,6 @@ AppMenuCommandState GetAppMenuCommandState(int command_id, Browser* browser) {
   }
   return model->IsEnabledAt(index) ? kEnabled : kDisabled;
 }
-
-class TestAppBannerManagerDesktop : public banners::AppBannerManagerDesktop {
- public:
-  explicit TestAppBannerManagerDesktop(WebContents* web_contents)
-      : AppBannerManagerDesktop(web_contents) {}
-
-  static TestAppBannerManagerDesktop* CreateForWebContents(
-      WebContents* web_contents) {
-    web_contents->SetUserData(
-        UserDataKey(),
-        std::make_unique<TestAppBannerManagerDesktop>(web_contents));
-    return static_cast<TestAppBannerManagerDesktop*>(
-        web_contents->GetUserData(UserDataKey()));
-  }
-
-  // Returns whether the installable check passed.
-  bool WaitForInstallableCheck() {
-    DCHECK(IsExperimentalAppBannersEnabled());
-
-    if (!installable_.has_value()) {
-      base::RunLoop run_loop;
-      quit_closure_ = run_loop.QuitClosure();
-      run_loop.Run();
-    }
-    DCHECK(installable_.has_value());
-    return *installable_;
-  }
-
-  // AppBannerManager:
-  void OnDidGetManifest(const InstallableData& result) override {
-    AppBannerManagerDesktop::OnDidGetManifest(result);
-
-    // AppBannerManagerDesktop does not call |OnDidPerformInstallableCheck| to
-    // complete the installability check in this case, instead it early exits
-    // with failure.
-    if (result.error_code != NO_ERROR_DETECTED)
-      SetInstallable(false);
-  }
-  void OnDidPerformInstallableCheck(const InstallableData& result) override {
-    AppBannerManagerDesktop::OnDidPerformInstallableCheck(result);
-    SetInstallable(result.error_code == NO_ERROR_DETECTED);
-  }
-
- private:
-  void SetInstallable(bool installable) {
-    DCHECK(!installable_.has_value());
-    installable_ = installable;
-    if (quit_closure_)
-      std::move(quit_closure_).Run();
-  }
-
-  base::Optional<bool> installable_;
-  base::OnceClosure quit_closure_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestAppBannerManagerDesktop);
-};
 
 }  // namespace
 
@@ -1258,7 +1202,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, UninstallMenuOption) {
 // incognito windows.
 IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, ShortcutMenuOptionsInIncognito) {
   Browser* incognito_browser = CreateIncognitoBrowser(profile());
-  auto* manager = TestAppBannerManagerDesktop::CreateForWebContents(
+  auto* manager = banners::TestAppBannerManagerDesktop::CreateForWebContents(
       incognito_browser->tab_strip_model()->GetActiveWebContents());
 
   ASSERT_TRUE(https_server()->Start());
@@ -1275,7 +1219,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, ShortcutMenuOptionsInIncognito) {
 // for an installable PWA.
 IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
                        ShortcutMenuOptionsForInstallablePWA) {
-  auto* manager = TestAppBannerManagerDesktop::CreateForWebContents(
+  auto* manager = banners::TestAppBannerManagerDesktop::CreateForWebContents(
       browser()->tab_strip_model()->GetActiveWebContents());
 
   ASSERT_TRUE(https_server()->Start());
@@ -1290,7 +1234,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
 // a non-installable site.
 IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
                        ShortcutMenuOptionsForNonInstallableSite) {
-  auto* manager = TestAppBannerManagerDesktop::CreateForWebContents(
+  auto* manager = banners::TestAppBannerManagerDesktop::CreateForWebContents(
       browser()->tab_strip_model()->GetActiveWebContents());
 
   ASSERT_TRUE(https_server()->Start());
@@ -1381,7 +1325,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
 // Tests that the manifest name of the current installable site is used in the
 // installation menu text.
 IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, InstallToShelfContainsAppName) {
-  auto* manager = TestAppBannerManagerDesktop::CreateForWebContents(
+  auto* manager = banners::TestAppBannerManagerDesktop::CreateForWebContents(
       browser()->tab_strip_model()->GetActiveWebContents());
 
   ASSERT_TRUE(https_server()->Start());
