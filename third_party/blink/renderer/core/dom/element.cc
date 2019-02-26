@@ -3402,11 +3402,10 @@ bool Element::DisplayLockPreventsActivation() const {
   // yield any "true" results in practice. We need to come up with a way to
   // check whether a node is in a locked subtree quickly.
   // See crbug.com/924550 for more details.
-  for (const Node* current = this; current;
-       current = current->ParentOrShadowHostNode()) {
-    if (!current->IsElementNode())
+  for (const Node& current : FlatTreeTraversal::InclusiveAncestorsOf(*this)) {
+    if (!current.IsElementNode())
       continue;
-    if (auto* context = ToElement(current)->GetDisplayLockContext()) {
+    if (auto* context = ToElement(current).GetDisplayLockContext()) {
       if (!context->IsActivatable())
         return true;
     }
