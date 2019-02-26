@@ -398,6 +398,10 @@ void AccountReconcilor::PerformMergeAction(const std::string& account_id) {
 void AccountReconcilor::PerformSetCookiesAction(
     const signin::MultiloginParameters& parameters) {
   reconcile_is_noop_ = false;
+  if (!delegate_->IsAccountConsistencyEnforced()) {
+    OnSetAccountsInCookieCompleted(GoogleServiceAuthError::AuthErrorNone());
+    return;
+  }
   VLOG(1) << "AccountReconcilor::PerformSetCookiesAction: "
           << base::JoinString(parameters.accounts_to_send, " ");
   // TODO (https://crbug.com/890321): pass mode to GaiaCookieManagerService.
