@@ -292,6 +292,15 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
 
 void XR::DispatchRequestSession(PendingSessionQuery* query) {
   if (!device_) {
+    if (query->mode == XRSession::kModeInline) {
+      XRSession* session = MakeGarbageCollected<XRSession>(
+          this, nullptr /* client request */, query->mode,
+          query->output_context, XRSession::kBlendModeOpaque);
+      sessions_.insert(session);
+      query->resolver->Resolve(session);
+      return;
+    }
+
     // If we don't have a device by the time we reach this call it indicates
     // that there's no WebXR hardware. Reject as not supported.
     query->resolver->Reject(DOMException::Create(
