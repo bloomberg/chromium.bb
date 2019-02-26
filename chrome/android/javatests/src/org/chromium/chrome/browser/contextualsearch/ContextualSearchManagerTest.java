@@ -697,8 +697,7 @@ public class ContextualSearchManagerTest {
         if (mPanel == null) {
             success = true;
         } else {
-            @PanelState
-            int panelState = mPanel.getPanelState();
+            PanelState panelState = mPanel.getPanelState();
             success = panelState == PanelState.CLOSED || panelState == PanelState.UNDEFINED;
         }
         Assert.assertTrue(success);
@@ -819,7 +818,7 @@ public class ContextualSearchManagerTest {
      * Waits for the Search Panel to enter the given {@code PanelState} and assert.
      * @param state The {@link PanelState} to wait for.
      */
-    private void waitForPanelToEnterState(final @PanelState int state) {
+    private void waitForPanelToEnterState(final PanelState state) {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -843,7 +842,7 @@ public class ContextualSearchManagerTest {
      *        should not change the panel state.
      * @throws InterruptedException
      */
-    private void assertPanelStillInState(final @PanelState int initialState)
+    private void assertPanelStillInState(final PanelState initialState)
             throws InterruptedException {
         boolean didChangeState = false;
         long startTime = SystemClock.uptimeMillis();
@@ -1618,8 +1617,7 @@ public class ContextualSearchManagerTest {
         CriteriaHelper.pollInstrumentationThread(new Criteria(){
             @Override
             public boolean isSatisfied() {
-                @PanelState
-                int panelState = mPanel.getPanelState();
+                PanelState panelState = mPanel.getPanelState();
                 return panelState != PanelState.PEEKED;
             }
         });
@@ -1718,8 +1716,7 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     public void testTapOnRoleIgnored() throws InterruptedException, TimeoutException {
-        @PanelState
-        int initialState = mPanel.getPanelState();
+        PanelState initialState = mPanel.getPanelState();
         clickNode("role");
         assertPanelStillInState(initialState);
     }
@@ -1732,8 +1729,7 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     public void testTapOnARIAIgnored() throws InterruptedException, TimeoutException {
-        @PanelState
-        int initialState = mPanel.getPanelState();
+        PanelState initialState = mPanel.getPanelState();
         clickNode("aria");
         assertPanelStillInState(initialState);
     }
@@ -1745,8 +1741,7 @@ public class ContextualSearchManagerTest {
     @SmallTest
     @Feature({"ContextualSearch"})
     public void testTapOnFocusableIgnored() throws InterruptedException, TimeoutException {
-        @PanelState
-        int initialState = mPanel.getPanelState();
+        PanelState initialState = mPanel.getPanelState();
         clickNode("focusable");
         assertPanelStillInState(initialState);
     }

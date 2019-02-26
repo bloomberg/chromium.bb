@@ -170,9 +170,8 @@ public class ContextualSearchPanel extends OverlayPanel {
     // ============================================================================================
 
     @Override
-    public void setPanelState(@PanelState int toState, @StateChangeReason int reason) {
-        @PanelState
-        int fromState = getPanelState();
+    public void setPanelState(PanelState toState, @StateChangeReason int reason) {
+        PanelState fromState = getPanelState();
 
         mPanelMetrics.onPanelStateChanged(
                 fromState, toState, reason, Profile.getLastUsedProfile().getOriginalProfile());
@@ -194,7 +193,7 @@ public class ContextualSearchPanel extends OverlayPanel {
     }
 
     @Override
-    protected boolean isSupportedState(@PanelState int state) {
+    protected boolean isSupportedState(PanelState state) {
         return canDisplayContentInPanel() || state != PanelState.MAXIMIZED;
     }
 
@@ -208,9 +207,8 @@ public class ContextualSearchPanel extends OverlayPanel {
     }
 
     @Override
-    protected @PanelState int getProjectedState(float velocity) {
-        @PanelState
-        int projectedState = super.getProjectedState(velocity);
+    protected PanelState getProjectedState(float velocity) {
+        PanelState projectedState = super.getProjectedState(velocity);
 
         // Prevent the fling gesture from moving the Panel from PEEKED to MAXIMIZED. This is to
         // make sure the Promo will be visible, considering that the EXPANDED state is the only
@@ -524,7 +522,7 @@ public class ContextualSearchPanel extends OverlayPanel {
     }
 
     @Override
-    public @PanelState int getPanelState() {
+    public PanelState getPanelState() {
         // NOTE(pedrosimonetti): exposing superclass method to the interface.
         return super.getPanelState();
     }

@@ -109,7 +109,7 @@ public class EphemeralTabPanel extends OverlayPanel {
     }
 
     @Override
-    public void setPanelState(@PanelState int toState, @StateChangeReason int reason) {
+    public void setPanelState(PanelState toState, @StateChangeReason int reason) {
         super.setPanelState(toState, reason);
         if (toState == PanelState.CLOSED) {
             RecordHistogram.recordBooleanHistogram("EphemeralTab.Ctr", mWasPanelOpened);
@@ -175,7 +175,7 @@ public class EphemeralTabPanel extends OverlayPanel {
     }
 
     @Override
-    protected boolean isSupportedState(@PanelState int state) {
+    protected boolean isSupportedState(PanelState state) {
         return state != PanelState.EXPANDED;
     }
 
