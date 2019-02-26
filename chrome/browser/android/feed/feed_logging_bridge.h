@@ -82,9 +82,20 @@ class FeedLoggingBridge {
   void OnOpenedWithNoContent(JNIEnv* j_env,
                              const base::android::JavaRef<jobject>& j_this);
 
-  void OnSpinnerShown(JNIEnv* j_env,
-                      const base::android::JavaRef<jobject>& j_this,
-                      const jlong j_shownTimeMs);
+  void OnSpinnerStarted(JNIEnv* j_env,
+                        const base::android::JavaRef<jobject>& j_this,
+                        const jint j_spinner_type);
+
+  void OnSpinnerFinished(JNIEnv* j_env,
+                         const base::android::JavaRef<jobject>& j_this,
+                         const jlong j_shownTimeMs,
+                         const jint j_spinner_type);
+
+  void OnSpinnerDestroyedWithoutCompleting(
+      JNIEnv* j_env,
+      const base::android::JavaRef<jobject>& j_this,
+      const jlong j_shownTimeMs,
+      const jint j_spinner_type);
 
   void OnPietFrameRenderingEvent(
       JNIEnv* j_env,

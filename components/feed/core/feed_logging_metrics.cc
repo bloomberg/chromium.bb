@@ -36,6 +36,42 @@ const int kMaxSuggestionsForArticle = 20;
 const char kHistogramArticlesUsageTimeLocal[] =
     "NewTabPage.ContentSuggestions.UsageTimeLocal";
 
+// Values correspond to
+// third_party/feed/src/src/main/java/com/google/android/libraries/feed/host/
+// logging/SpinnerType.java, enums.xml and histograms.xml.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class SpinnerType {
+  KInitialLoad = 1,
+  KZeroStateRefresh = 2,
+  KMoreButton = 3,
+  KSyntheticToken = 4,
+  KInfiniteFeed = 5,
+  kMaxValue = KInfiniteFeed
+};
+
+// Each suffix here should correspond to an entry under histogram suffix
+// ContentSuggestionCategory in histograms.xml.
+std::string GetSpinnerTypeSuffix(SpinnerType spinner_type) {
+  switch (spinner_type) {
+    case SpinnerType::KInitialLoad:
+      return "InitialLoad";
+    case SpinnerType::KZeroStateRefresh:
+      return "ZeroStateRefresh";
+    case SpinnerType::KMoreButton:
+      return "MoreButton";
+    case SpinnerType::KSyntheticToken:
+      return "SyntheticToken";
+    case SpinnerType::KInfiniteFeed:
+      return "InfiniteFeed";
+  }
+
+  // TODO(https://crbug.com/935602): Handle new values when adding new values on
+  // java side.
+  NOTREACHED();
+  return std::string();
+}
+
 // Records ContentSuggestions usage. Therefore the day is sliced into 20min
 // buckets. Depending on the current local time the count of the corresponding
 // bucket is increased.
@@ -96,6 +132,17 @@ void CheckURLVisitedDone(int position, bool committed, bool visited) {
     RecordUndoableActionUMA("NewTabPage.ContentSuggestions.DismissedUnvisited",
                             position, committed);
   }
+}
+
+void RecordSpinnerTimeUMA(const char* base_name,
+                          base::TimeDelta time,
+                          int spinner_type) {
+  SpinnerType type = static_cast<SpinnerType>(spinner_type);
+  std::string suffix = GetSpinnerTypeSuffix(type);
+  std::string histogram_name(
+      base::StringPrintf("%s.%s", base_name, suffix.c_str()));
+  base::UmaHistogramTimes(histogram_name, time);
+  base::UmaHistogramTimes(base_name, time);
 }
 
 }  // namespace
@@ -256,10 +303,28 @@ void FeedLoggingMetrics::OnNotInterestedInTopic(int position, bool committed) {
       committed);
 }
 
-void FeedLoggingMetrics::OnSpinnerShown(base::TimeDelta shown_time) {
-  base::UmaHistogramTimes(
-      "ContentSuggestions.Feed.FetchPendingSpinner.VisibleDuration",
-      shown_time);
+void FeedLoggingMetrics::OnSpinnerStarted(int spinner_type) {
+  // TODO(https://crbug.com/935602): Handle new values when adding new values on
+  // java side.
+  SpinnerType type = static_cast<SpinnerType>(spinner_type);
+  UMA_HISTOGRAM_ENUMERATION("ContentSuggestions.Feed.FetchPendingSpinner.Shown",
+                            type);
+}
+
+void FeedLoggingMetrics::OnSpinnerFinished(base::TimeDelta shown_time,
+                                           int spinner_type) {
+  RecordSpinnerTimeUMA(
+      "ContentSuggestions.Feed.FetchPendingSpinner.VisibleDuration", shown_time,
+      spinner_type);
+}
+
+void FeedLoggingMetrics::OnSpinnerDestroyedWithoutCompleting(
+    base::TimeDelta shown_time,
+    int spinner_type) {
+  RecordSpinnerTimeUMA(
+      "ContentSuggestions.Feed.FetchPendingSpinner."
+      "VisibleDurationWithoutCompleting",
+      shown_time, spinner_type);
 }
 
 void FeedLoggingMetrics::OnPietFrameRenderingEvent(

@@ -21767,6 +21767,14 @@ Called by update_net_error_codes.py.-->
   <int value="8" label="Refresh throttled"/>
 </enum>
 
+<enum name="FeedSpinnerType">
+  <int value="1" label="Initial load"/>
+  <int value="2" label="Zero state refresh"/>
+  <int value="3" label="More button"/>
+  <int value="4" label="Synthetic token"/>
+  <int value="5" label="Infinite feed"/>
+</enum>
+
 <enum name="FetchRequestMode">
   <int value="0" label="SameOrigin"/>
   <int value="1" label="NoCORS"/>
