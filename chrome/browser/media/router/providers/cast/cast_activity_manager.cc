@@ -113,6 +113,13 @@ void CastSessionClient::HandleParsedClientMessage(
     return;
   }
 
+  if (cast_message->type != CastInternalMessage::Type::kAppMessage &&
+      cast_message->type != CastInternalMessage::Type::kV2Message) {
+    DVLOG(2) << "Unhandled message type: "
+             << static_cast<int>(cast_message->type);
+    return;
+  }
+
   if (cast_message->session_id() != activity_->session_id()) {
     DVLOG(2) << "Session ID mismatch: expected: "
              << activity_->session_id().value_or("<missing>")
@@ -120,22 +127,15 @@ void CastSessionClient::HandleParsedClientMessage(
     return;
   }
 
-  if (cast_message->type == CastInternalMessage::Type::kAppMessage) {
-    if (cast_message->client_id != client_id_)
-      return;
-
+  if (cast_message->type == CastInternalMessage::Type::kAppMessage &&
+      activity_->SendAppMessageToReceiver(*cast_message) ==
+          cast_channel::Result::kOk) {
     // Send an ACK message back to SDK client to indicate it is handled.
-    if (activity_->SendAppMessageToReceiver(*cast_message) ==
-        cast_channel::Result::kOk) {
-      DCHECK(cast_message->sequence_number);
-      SendMessageToClient(CreateAppMessageAck(cast_message->client_id,
-                                              *cast_message->sequence_number));
-    }
+    DCHECK(cast_message->sequence_number);
+    SendMessageToClient(CreateAppMessageAck(cast_message->client_id,
+                                            *cast_message->sequence_number));
   } else if (cast_message->type == CastInternalMessage::Type::kV2Message) {
     HandleV2ProtocolMessage(*cast_message);
-  } else {
-    DVLOG(2) << "Unhandled message type: "
-             << static_cast<int>(cast_message->type);
   }
 }
 
