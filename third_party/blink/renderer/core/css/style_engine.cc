@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/processing_instruction.h"
@@ -1573,6 +1574,30 @@ void StyleEngine::MarkForWhitespaceReattachment() {
   for (auto element : whitespace_reattach_set_) {
     if (element->NeedsReattachLayoutTree() || !element->GetLayoutObject())
       continue;
+    if (RuntimeEnabledFeatures::DisplayLockingEnabled() &&
+        GetDocument().LockedDisplayLockCount() > 0) {
+      // This element might be located inside a display locked subtree, so we
+      // might mark it for ReattachLayoutTree later on instead.
+      // TODO(crbug.com/924550): Once we figure out a more efficient way to
+      // determine whether we're inside a locked subtree or not, change this.
+      bool is_in_locked_subtree = false;
+      for (const Node& ancestor :
+           FlatTreeTraversal::InclusiveAncestorsOf(*element)) {
+        if (!ancestor.IsElementNode())
+          continue;
+        if (auto* context = ToElement(ancestor).GetDisplayLockContext()) {
+          if (!context->IsLocked())
+            continue;
+          is_in_locked_subtree = true;
+          context->AddToWhitespaceReattachSet(*element);
+          break;
+        }
+      }
+      if (is_in_locked_subtree)
+        continue;
+      DCHECK(!element->NeedsStyleRecalc());
+      DCHECK(!element->ChildNeedsStyleRecalc());
+    }
     if (Node* first_child = LayoutTreeBuilderTraversal::FirstChild(*element))
       first_child->MarkAncestorsWithChildNeedsReattachLayoutTree();
   }

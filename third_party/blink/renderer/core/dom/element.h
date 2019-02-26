@@ -897,6 +897,7 @@ class CORE_EXPORT Element : public ContainerNode {
   DisplayLockContext* GetDisplayLockContext() const;
 
   bool StyleRecalcBlockedByDisplayLock() const;
+
   void ActivateDisplayLockIfNeeded();
 
  protected:
