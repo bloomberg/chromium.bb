@@ -58,12 +58,12 @@ ExternalMetadataProvider.prototype.get = function(requests) {
     return Promise.resolve([]);
   }
   return new Promise(function(fulfill) {
-    var entries = requests.map(function(request) {
+    const entries = requests.map(function(request) {
       return request.entry;
     });
-    var nameMap = {};
-    for (var i = 0; i < requests.length; i++) {
-      for (var j = 0; j < requests[i].names.length; j++) {
+    const nameMap = {};
+    for (let i = 0; i < requests.length; i++) {
+      for (let j = 0; j < requests[i].names.length; j++) {
         nameMap[requests[i].names[j]] = true;
       }
     }
@@ -89,10 +89,10 @@ ExternalMetadataProvider.prototype.get = function(requests) {
  */
 ExternalMetadataProvider.prototype.convertResults_ =
     function(requests, nameMap, propertiesList) {
-  var results = [];
-  for (var i = 0; i < propertiesList.length; i++) {
-    var prop = propertiesList[i];
-    var item = new MetadataItem();
+  const results = [];
+  for (let i = 0; i < propertiesList.length; i++) {
+    const prop = propertiesList[i];
+    const item = new MetadataItem();
     if (prop.alternateUrl !== undefined || nameMap['alternateUrl']) {
       item.alternateUrl = prop.alternateUrl;
     }

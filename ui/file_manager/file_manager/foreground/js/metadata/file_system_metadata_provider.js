@@ -33,7 +33,7 @@ FileSystemMetadataProvider.prototype.get = function(requests) {
     return new Promise(function(fulfill, reject) {
       request.entry.getMetadata(fulfill, reject);
     }).then(function(result) {
-      var item = new MetadataItem();
+      const item = new MetadataItem();
       item.modificationTime = result.modificationTime;
       item.size = request.entry.isDirectory ? -1 : result.size;
       item.present = true;

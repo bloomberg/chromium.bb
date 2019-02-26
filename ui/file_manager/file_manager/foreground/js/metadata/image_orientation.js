@@ -104,11 +104,11 @@ ImageOrientation.fromClockwiseRotation = function(rotation90) {
  * @return {!ImageOrientation}
  */
 ImageOrientation.fromRotationAndScale = function(transform) {
-  var scaleX = transform.scaleX;
-  var scaleY = transform.scaleY;
-  var rotate90 = transform.rotate90;
+  const scaleX = transform.scaleX;
+  const scaleY = transform.scaleY;
+  const rotate90 = transform.rotate90;
 
-  var orientation = ImageOrientation.fromClockwiseRotation(rotate90);
+  const orientation = ImageOrientation.fromClockwiseRotation(rotate90);
 
   // Flip X and Y.
   // In the Files app., CSS transformations are applied like
@@ -132,8 +132,8 @@ ImageOrientation.fromRotationAndScale = function(transform) {
  */
 ImageOrientation.prototype.getSizeAfterCancelling = function(
     imageWidth, imageHeight) {
-  var projectedX = this.a * imageWidth + this.c * imageHeight;
-  var projectedY = this.b * imageWidth + this.d * imageHeight;
+  const projectedX = this.a * imageWidth + this.c * imageHeight;
+  const projectedY = this.b * imageWidth + this.d * imageHeight;
   return {
     width: Math.abs(projectedX),
     height: Math.abs(projectedY)
@@ -150,12 +150,12 @@ ImageOrientation.prototype.getSizeAfterCancelling = function(
 ImageOrientation.prototype.cancelImageOrientation = function(
     context, imageWidth, imageHeight) {
   // Calculate where to project the point of (imageWidth, imageHeight).
-  var projectedX = this.a * imageWidth + this.c * imageHeight;
-  var projectedY = this.b * imageWidth + this.d * imageHeight;
+  const projectedX = this.a * imageWidth + this.c * imageHeight;
+  const projectedY = this.b * imageWidth + this.d * imageHeight;
 
   // If the projected point coordinates are negative, add offset to cancel it.
-  var offsetX = projectedX < 0 ? -projectedX : 0;
-  var offsetY = projectedY < 0 ? -projectedY : 0;
+  const offsetX = projectedX < 0 ? -projectedX : 0;
+  const offsetY = projectedY < 0 ? -projectedY : 0;
 
   // Apply the transform.
   context.setTransform(this.a, this.b, this.c, this.d, offsetX, offsetY);

@@ -9,7 +9,7 @@
  *  rotate90: number
  * }}
  */
-var ImageTransformation;
+let ImageTransformation;
 
 /**
  * Metadata of a file. Doesn't have @struct to allow for '[]' computed property

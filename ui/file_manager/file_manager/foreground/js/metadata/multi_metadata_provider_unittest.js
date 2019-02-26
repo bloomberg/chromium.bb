@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var entryA = /** @type {!Entry} */ ({
+const entryA = /** @type {!Entry} */ ({
   toURL: function() {
     return 'filesystem://A';
   },
 });
 
-var entryB = /** @type {!Entry} */ ({
+const entryB = /** @type {!Entry} */ ({
   toURL: function() {
     return 'filesystem://B';
   },
 });
 
-var entryC = /** @type {!Entry} */ ({
+const entryC = /** @type {!Entry} */ ({
   toURL: function() {
     return 'filesystem://C';
   },
 });
 
-var volumeManager = /** @type {!VolumeManager} */ ({
+const volumeManager = /** @type {!VolumeManager} */ ({
   getVolumeInfo: function(entry) {
     if (entry.toURL() === 'filesystem://A') {
       return {
@@ -40,7 +40,7 @@ var volumeManager = /** @type {!VolumeManager} */ ({
 });
 
 function testMultiMetadataProviderBasic(callback) {
-  var model = new MultiMetadataProvider(
+  const model = new MultiMetadataProvider(
       /** @type {!FileSystemMetadataProvider} */ ({
         get: function(requests) {
           assertEquals(1, requests.length);
@@ -98,7 +98,7 @@ function testMultiMetadataProviderBasic(callback) {
 }
 
 function testMultiMetadataProviderExternalAndContentProperty(callback) {
-  var model = new MultiMetadataProvider(
+  const model = new MultiMetadataProvider(
       /** @type {!FileSystemMetadataProvider} */ ({
         get: function(requests) {
           assertEquals(0, requests.length);

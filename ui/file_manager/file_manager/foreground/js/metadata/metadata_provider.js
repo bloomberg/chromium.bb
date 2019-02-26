@@ -15,14 +15,14 @@ function MetadataProvider(validPropertyNames) {
    * @const
    */
   this.validPropertyNames_ = {};
-  for (var i = 0; i < validPropertyNames.length; i++) {
+  for (let i = 0; i < validPropertyNames.length; i++) {
     this.validPropertyNames_[validPropertyNames[i]] = true;
   }
 }
 
 MetadataProvider.prototype.checkPropertyNames = function(names) {
   // Check if the property name is correct or not.
-  for (var i = 0; i < names.length; i++) {
+  for (let i = 0; i < names.length; i++) {
     assert(this.validPropertyNames_[names[i]]);
   }
 };

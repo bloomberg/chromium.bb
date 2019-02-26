@@ -27,11 +27,11 @@ class MetadataCacheSet extends cr.EventTarget {
    * @return {!Array<!MetadataRequest>}
    */
   createRequests(entries, names) {
-    var urls = util.entriesToURLs(entries);
-    var requests = [];
-    for (var i = 0; i < entries.length; i++) {
-      var item = this.items_.peek(urls[i]);
-      var requestedNames = item ? item.createRequests(names) : names;
+    const urls = util.entriesToURLs(entries);
+    const requests = [];
+    for (let i = 0; i < entries.length; i++) {
+      const item = this.items_.peek(urls[i]);
+      const requestedNames = item ? item.createRequests(names) : names;
       if (requestedNames.length) {
         requests.push(new MetadataRequest(entries[i], requestedNames));
       }
@@ -45,10 +45,10 @@ class MetadataCacheSet extends cr.EventTarget {
    * @param {!Array<!MetadataRequest>} requests
    */
   startRequests(requestId, requests) {
-    for (var i = 0; i < requests.length; i++) {
-      var request = requests[i];
-      var url = requests[i].entry['cachedUrl'] || requests[i].entry.toURL();
-      var item = this.items_.peek(url);
+    for (let i = 0; i < requests.length; i++) {
+      const request = requests[i];
+      const url = requests[i].entry['cachedUrl'] || requests[i].entry.toURL();
+      let item = this.items_.peek(url);
       if (!item) {
         item = new MetadataCacheItem();
         this.items_.put(url, item);
@@ -68,13 +68,13 @@ class MetadataCacheSet extends cr.EventTarget {
    * @return {boolean} Whether at least one result is stored or not.
    */
   storeProperties(requestId, entries, results, names) {
-    var changedEntries = [];
-    var urls = util.entriesToURLs(entries);
+    const changedEntries = [];
+    const urls = util.entriesToURLs(entries);
     const entriesMap = new Map();
 
-    for (var i = 0; i < entries.length; i++) {
-      var url = urls[i];
-      var item = this.items_.peek(url);
+    for (let i = 0; i < entries.length; i++) {
+      const url = urls[i];
+      const item = this.items_.peek(url);
       if (item && item.storeProperties(requestId, results[i])) {
         changedEntries.push(entries[i]);
         entriesMap.set(url, entries[i]);
@@ -85,7 +85,7 @@ class MetadataCacheSet extends cr.EventTarget {
       return false;
     }
 
-    var event = new Event('update');
+    const event = new Event('update');
     event.entries = changedEntries;
     event.entriesMap = entriesMap;
     event.names = new Set(names);
@@ -100,10 +100,10 @@ class MetadataCacheSet extends cr.EventTarget {
    * @param {!Array<string>} names Property names.
    */
   get(entries, names) {
-    var results = [];
-    var urls = util.entriesToURLs(entries);
-    for (var i = 0; i < entries.length; i++) {
-      var item = this.items_.get(urls[i]);
+    const results = [];
+    const urls = util.entriesToURLs(entries);
+    for (let i = 0; i < entries.length; i++) {
+      const item = this.items_.get(urls[i]);
       results.push(item ? item.get(names) : {});
     }
     return results;
@@ -117,9 +117,9 @@ class MetadataCacheSet extends cr.EventTarget {
    * @param {!Array<!Entry>} entries
    */
   invalidate(requestId, entries) {
-    var urls = util.entriesToURLs(entries);
-    for (var i = 0; i < entries.length; i++) {
-      var item = this.items_.peek(urls[i]);
+    const urls = util.entriesToURLs(entries);
+    for (let i = 0; i < entries.length; i++) {
+      const item = this.items_.peek(urls[i]);
       if (item) {
         item.invalidate(requestId);
       }
@@ -131,7 +131,7 @@ class MetadataCacheSet extends cr.EventTarget {
    * @param {!Array<string>} urls
    */
   clear(urls) {
-    for (var i = 0; i < urls.length; i++) {
+    for (let i = 0; i < urls.length; i++) {
       this.items_.remove(urls[i]);
     }
   }
@@ -148,11 +148,11 @@ class MetadataCacheSet extends cr.EventTarget {
    * @param {!Array<!Entry>} entries
    */
   createSnapshot(entries) {
-    var items = {};
-    var urls = util.entriesToURLs(entries);
-    for (var i = 0; i < entries.length; i++) {
-      var url = urls[i];
-      var item = this.items_.peek(url);
+    const items = {};
+    const urls = util.entriesToURLs(entries);
+    for (let i = 0; i < entries.length; i++) {
+      const url = urls[i];
+      const item = this.items_.peek(url);
       if (item) {
         items[url] = item.clone();
       }
@@ -170,9 +170,9 @@ class MetadataCacheSet extends cr.EventTarget {
     if (!names.length) {
       return true;
     }
-    var urls = util.entriesToURLs(entries);
-    for (var i = 0; i < entries.length; i++) {
-      var item = this.items_.peek(urls[i]);
+    const urls = util.entriesToURLs(entries);
+    for (let i = 0; i < entries.length; i++) {
+      const item = this.items_.peek(urls[i]);
       if (!(item && item.hasFreshCache(names))) {
         return false;
       }
@@ -262,7 +262,7 @@ class MetadataCacheSetStorageForObject {
    * @override
    */
   removeAll() {
-    for (var url in this.items_) {
+    for (const url in this.items_) {
       delete this.items_[url];
     }
   }
