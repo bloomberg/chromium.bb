@@ -24,6 +24,7 @@
 #include "net/log/net_log.h"
 #include "net/log/test_net_log.h"
 #include "net/test/ct_test_util.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using net::ct::SignedCertificateTimestamp;
@@ -77,8 +78,8 @@ TEST_F(TreeStateTrackerTest, TestDelegatesCorrectly) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(kCTLogAuditing);
 
-  tree_tracker_ =
-      std::make_unique<TreeStateTracker>(verifiers, &host_resolver_, &net_log_);
+  tree_tracker_ = std::make_unique<TreeStateTracker>(
+      verifiers, &host_resolver_, new net::TestURLRequestContext(), &net_log_);
 
   // Add a cache entry for kHostname that indicates it was looked up over DNS.
   // SingleTreeTracker requires this before it will request an inclusion proof,

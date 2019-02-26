@@ -28,6 +28,8 @@
 #include "net/dns/public/dns_protocol.h"
 #include "net/log/net_log.h"
 #include "net/test/gtest_util.h"
+#include "net/url_request/url_request_filter.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -104,6 +106,18 @@ std::vector<std::string> GetSampleAuditProof(size_t length) {
 }  // namespace
 
 class LogDnsClientTest : public ::testing::TestWithParam<net::IoMode> {
+  void SetUp() override {
+    net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
+    filter->AddHostnameInterceptor(
+        "https", "mock.http",
+        std::make_unique<MockLogDnsTraffic::DohJobInterceptor>());
+  }
+
+  void TearDown() override {
+    net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
+    filter->ClearHandlers();
+  }
+
  protected:
   LogDnsClientTest()
       : network_change_notifier_(net::NetworkChangeNotifier::CreateMock()) {
@@ -113,9 +127,9 @@ class LogDnsClientTest : public ::testing::TestWithParam<net::IoMode> {
 
   std::unique_ptr<LogDnsClient> CreateLogDnsClient(
       size_t max_concurrent_queries) {
-    return std::make_unique<LogDnsClient>(mock_dns_.CreateDnsClient(),
-                                          net::NetLogWithSource(),
-                                          max_concurrent_queries);
+    return std::make_unique<LogDnsClient>(
+        mock_dns_.CreateDnsClient(), new net::TestURLRequestContext(),
+        net::NetLogWithSource(), max_concurrent_queries);
   }
 
   // Convenience function for calling QueryAuditProof synchronously.
@@ -591,7 +605,8 @@ TEST_P(LogDnsClientTest,
 TEST_P(LogDnsClientTest, AdoptsLatestDnsConfigIfValid) {
   std::unique_ptr<net::DnsClient> tmp = mock_dns_.CreateDnsClient();
   net::DnsClient* dns_client = tmp.get();
-  LogDnsClient log_client(std::move(tmp), net::NetLogWithSource(), 0);
+  LogDnsClient log_client(std::move(tmp), new net::TestURLRequestContext(),
+                          net::NetLogWithSource(), 0);
 
   // Get the current DNS config, modify it and broadcast the update.
   net::DnsConfig config(*dns_client->GetConfig());
@@ -607,7 +622,8 @@ TEST_P(LogDnsClientTest, AdoptsLatestDnsConfigIfValid) {
 TEST_P(LogDnsClientTest, IgnoresLatestDnsConfigIfInvalid) {
   std::unique_ptr<net::DnsClient> tmp = mock_dns_.CreateDnsClient();
   net::DnsClient* dns_client = tmp.get();
-  LogDnsClient log_client(std::move(tmp), net::NetLogWithSource(), 0);
+  LogDnsClient log_client(std::move(tmp), new net::TestURLRequestContext(),
+                          net::NetLogWithSource(), 0);
 
   // Get the current DNS config, modify it and broadcast the update.
   net::DnsConfig config(*dns_client->GetConfig());
@@ -643,7 +659,8 @@ TEST_P(LogDnsClientTest, AdoptsLatestDnsConfigMidQuery) {
 
   std::unique_ptr<net::DnsClient> tmp = mock_dns_.CreateDnsClient();
   net::DnsClient* dns_client = tmp.get();
-  LogDnsClient log_client(std::move(tmp), net::NetLogWithSource(), 0);
+  LogDnsClient log_client(std::move(tmp), new net::TestURLRequestContext(),
+                          net::NetLogWithSource(), 0);
 
   // Start query.
   std::unique_ptr<LogDnsClient::AuditProofQuery> query;

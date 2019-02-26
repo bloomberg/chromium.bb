@@ -2025,7 +2025,7 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
     net::URLRequestContext* context = result.url_request_context.get();
     ct_tree_tracker_ =
         std::make_unique<certificate_transparency::TreeStateTracker>(
-            ct_logs, context->host_resolver(), net_log);
+            ct_logs, context->host_resolver(), context, net_log);
     context->cert_transparency_verifier()->SetObserver(ct_tree_tracker_.get());
     network_service_->sth_reporter()->RegisterObserver(ct_tree_tracker_.get());
   }
