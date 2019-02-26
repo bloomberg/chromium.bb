@@ -133,6 +133,7 @@ class TracingHandler : public DevToolsDomainHandler, public Tracing::Backend {
   bool did_initiate_recording_;
   bool return_as_stream_;
   bool gzip_compression_;
+  double buffer_usage_reporting_interval_;
   TraceDataBufferState trace_data_buffer_state_;
   std::unique_ptr<DevToolsVideoConsumer> video_consumer_;
   int number_of_screenshots_from_video_consumer_ = 0;
