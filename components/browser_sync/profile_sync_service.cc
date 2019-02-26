@@ -959,11 +959,6 @@ void ProfileSyncService::OnEngineInitialized(
   }
 
   NotifyObservers();
-
-  // Nobody will call us to start if no sign in is going to happen.
-  if (IsLocalSyncEnabled()) {
-    startup_controller_->TryStart(/*force_immediate=*/true);
-  }
 }
 
 void ProfileSyncService::OnSyncCycleCompleted(
