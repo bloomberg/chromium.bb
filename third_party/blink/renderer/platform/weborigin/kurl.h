@@ -161,7 +161,7 @@ class PLATFORM_EXPORT KURL {
   //
   // We treat URLs with out-of-range port numbers as invalid URLs, and they
   // will be rejected by the canonicalizer.
-  unsigned short Port() const;
+  uint16_t Port() const;
   bool HasPort() const;
   String User() const;
   String Pass() const;
@@ -190,7 +190,7 @@ class PLATFORM_EXPORT KURL {
   void SetHost(const String&);
 
   void RemovePort();
-  void SetPort(unsigned short);
+  void SetPort(uint16_t);
   void SetPort(const String&);
 
   // Input is like "foo.com" or "foo.com:8000".

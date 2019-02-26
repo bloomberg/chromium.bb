@@ -302,7 +302,7 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   static String CanonicalizeHost(const String& host, bool* success);
 
  private:
-  constexpr static const int kInvalidPort = 0;
+  constexpr static const uint16_t kInvalidPort = 0;
 
   friend struct mojo::UrlOriginAdapter;
   friend struct blink::SecurityOriginHash;
