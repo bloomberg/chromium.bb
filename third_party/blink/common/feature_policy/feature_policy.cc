@@ -233,6 +233,13 @@ void FeaturePolicy::SetHeaderPolicy(const ParsedFeaturePolicy& parsed_header) {
   }
 }
 
+FeaturePolicy::FeatureState FeaturePolicy::GetFeatureState() const {
+  FeatureState feature_state;
+  for (const auto& pair : GetDefaultFeatureList())
+    feature_state[pair.first] = GetFeatureValueForOrigin(pair.first, origin_);
+  return feature_state;
+}
+
 FeaturePolicy::FeaturePolicy(url::Origin origin,
                              const FeatureList& feature_list)
     : origin_(std::move(origin)), feature_list_(feature_list) {

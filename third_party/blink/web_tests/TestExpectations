@@ -5807,6 +5807,10 @@ crbug.com/926248 virtual/feature-policy-for-sandbox/mhtml/page_with_javascript.m
 crbug.com/926248 virtual/feature-policy-for-sandbox/mhtml/transfer_encoding_8bit.mht [ Failure ]
 crbug.com/926249 virtual/feature-policy-for-sandbox/http/tests/security/sandbox-iframe-blocks-modals.php [ Failure ]
 
+# This test requires FeaturePolicyForSandbox flag.
+crbug.com/791017 external/wpt/feature-policy/feature-policy-for-sandbox/feature-propagation-to-auxiliary-context.html [ Failure ]
+crbug.com/791017 virtual/unified-autoplay/external/wpt/feature-policy/feature-policy-for-sandbox/feature-propagation-to-auxiliary-context.html [ Failure ]
+
 # Sheriff 2019-01-25
 crbug.com/925325 [ Mac ] storage/indexeddb/index-population.html [ Pass Failure ]
 

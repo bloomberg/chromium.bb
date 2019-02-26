@@ -237,7 +237,9 @@ class BLINK_COMMON_EXPORT FeaturePolicy {
   // Unrecognized features will be ignored.
   void SetHeaderPolicy(const ParsedFeaturePolicy& parsed_header);
 
-  const FeatureState& inherited_policies() const { return inherited_policies_; }
+  // Returns the current state of feature policies for |origin_|. This includes
+  // the |inherited_policies_| as well as the header policies.
+  FeatureState GetFeatureState() const;
 
   const url::Origin& GetOriginForTest() { return origin_; }
 

@@ -105,6 +105,10 @@ class CORE_EXPORT WebRemoteFrameImpl final
 
   WebRemoteFrameClient* Client() const { return client_; }
 
+  const FeaturePolicy::FeatureState& OpenerFeatureState() const {
+    return opener_feature_state_;
+  }
+
   static WebRemoteFrameImpl* FromFrame(RemoteFrame&);
 
   void Trace(blink::Visitor*);

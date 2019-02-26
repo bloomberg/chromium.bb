@@ -249,10 +249,10 @@ static Frame* CreateNewWindow(LocalFrame& opener_frame,
       propagate_sandbox ? opener_frame.GetDocument()->GetSandboxFlags()
                         : kSandboxNone;
   bool not_sandboxed =
-      opener_frame.GetDocument()->GetSandboxFlags() != kSandboxNone;
+      opener_frame.GetDocument()->GetSandboxFlags() == kSandboxNone;
   FeaturePolicy::FeatureState opener_feature_state =
       (not_sandboxed || propagate_sandbox)
-          ? opener_frame.GetDocument()->GetFeaturePolicy()->inherited_policies()
+          ? opener_frame.GetDocument()->GetFeaturePolicy()->GetFeatureState()
           : FeaturePolicy::FeatureState();
 
   SessionStorageNamespaceId new_namespace_id =

@@ -1723,6 +1723,10 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
     // to inherit sandbox flags when a sandboxed frame does a window.open()
     // which triggers a cross-process navigation.
     new_frame->Loader().ForceSandboxFlags(static_cast<SandboxFlags>(flags));
+    // If there is an opener (even disowned), the opener policies must be
+    // inherited the same way as sandbox flag.
+    web_frame->opener_feature_state_ =
+        ToWebRemoteFrameImpl(old_web_frame)->OpenerFeatureState();
   }
 
   return web_frame;

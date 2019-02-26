@@ -998,6 +998,11 @@
     "args": ["--enable-blink-features=FeaturePolicyForSandbox"]
   },
   {
+    "prefix": "feature-policy-for-sandbox",
+    "base": "external/wpt/feature-policy/feature-policy-for-sandbox",
+    "args": ["--enable-blink-features=FeaturePolicyForSandbox"]
+  },
+  {
     "prefix": "secure-device-sensor-events",
     "base": "http/tests/security/powerfulFeatureRestrictions/",
     "args": ["--enable-features=RestrictDeviceSensorEventsToSecureContexts"]

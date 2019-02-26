@@ -767,7 +767,7 @@ std::unique_ptr<WebContentsImpl> WebContentsImpl::CreateWithOpener(
       // to the popups then opener's feature policy will apply to the new popup
       // as well.
       new_root->SetOpenerFeaturePolicyState(
-          opener_rfh->feature_policy()->inherited_policies());
+          opener_rfh->feature_policy()->GetFeatureState());
     }
   }
 

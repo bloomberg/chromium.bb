@@ -181,7 +181,7 @@ void SecurityContext::InitializeFeaturePolicy(
   }
 
   if (!opener_feature_state ||
-      !RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled()) {
+      !RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
     feature_policy_ = FeaturePolicy::CreateFromParentPolicy(
         parent_feature_policy, container_policy,
         security_origin_->ToUrlOrigin());
