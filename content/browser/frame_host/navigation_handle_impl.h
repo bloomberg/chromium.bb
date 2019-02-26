@@ -122,7 +122,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
                         const std::string& header_value) override;
   const net::HttpResponseHeaders* GetResponseHeaders() override;
   net::HttpResponseInfo::ConnectionInfo GetConnectionInfo() override;
-  const net::SSLInfo& GetSSLInfo() override;
+  const base::Optional<net::SSLInfo> GetSSLInfo() override;
   void RegisterThrottleForTesting(
       std::unique_ptr<NavigationThrottle> navigation_throttle) override;
   bool IsDeferredForTesting() override;
@@ -202,12 +202,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
     net_error_code_ = net_error_code;
   }
 
-  // Updates the RenderFrameHost that is about to commit the navigation. This
-  // is used during transfer navigations.
-  void set_render_frame_host(RenderFrameHostImpl* render_frame_host) {
-    render_frame_host_ = render_frame_host;
-  }
-
   void InitServiceWorkerHandle(
       ServiceWorkerContextWrapper* service_worker_context);
   ServiceWorkerNavigationHandle* service_worker_handle() const {
@@ -231,8 +225,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
   // redirect.
   void UpdateStateFollowingRedirect(
       const GURL& new_referrer_url,
-      scoped_refptr<net::HttpResponseHeaders> response_headers,
-      net::HttpResponseInfo::ConnectionInfo connection_info,
       ThrottleChecksFinishedCallback callback);
 
   // Called when the URLRequest will be redirected in the network stack.
@@ -246,38 +238,22 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
   // renderer process will be created at commit time.
   void WillRedirectRequest(
       const GURL& new_referrer_url,
-      scoped_refptr<net::HttpResponseHeaders> response_headers,
-      net::HttpResponseInfo::ConnectionInfo connection_info,
       RenderProcessHost* post_redirect_process,
       ThrottleChecksFinishedCallback callback);
 
-  // Called when the URLRequest will fail. |render_frame_host| corresponds to
-  // the RenderFrameHost in which the error page will load. |callback| will be
+  // Called when the URLRequest will fail. |callback| will be
   // called when all throttles check have completed. This will allow the caller
   // to explicitly cancel the navigation (with a custom error code and/or
   // custom error page HTML) or let the failure proceed as normal.
-  void WillFailRequest(RenderFrameHostImpl* render_frame_host,
-                       base::Optional<net::SSLInfo> ssl_info,
-                       ThrottleChecksFinishedCallback callback);
+  void WillFailRequest(ThrottleChecksFinishedCallback callback);
 
   // Called when the URLRequest has delivered response headers and metadata.
   // |callback| will be called when all throttle checks have completed,
   // allowing the caller to cancel the navigation or let it proceed.
   // NavigationHandle will not call |callback| with a result of DEFER.
   // If the result is PROCEED, then 'ReadyToCommitNavigation' will be called
-  // with |render_frame_host| and |response_headers| just before calling
-  // |callback|.
+  // just before calling |callback|.
   void WillProcessResponse(
-      RenderFrameHostImpl* render_frame_host,
-      scoped_refptr<net::HttpResponseHeaders> response_headers,
-      net::HttpResponseInfo::ConnectionInfo connection_info,
-      const net::IPEndPoint& remote_endpoint,
-      const net::SSLInfo& ssl_info,
-      const GlobalRequestID& request_id,
-      bool is_download,
-      bool is_stream,
-      bool is_signed_exchange_inner_response,
-      bool was_cached,
       ThrottleChecksFinishedCallback callback);
 
   // Returns the FrameTreeNode this navigation is happening in.
@@ -285,14 +261,11 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
     return navigation_request_->frame_tree_node();
   }
 
-  // Called when the navigation is ready to be committed in
-  // |render_frame_host|. This will update the |state_| and inform the
-  // delegate.
-  void ReadyToCommitNavigation(RenderFrameHostImpl* render_frame_host,
-                               bool is_error);
+  // Called when the navigation is ready to be committed. This will update the
+  // |state_| and inform the delegate.
+  void ReadyToCommitNavigation(bool is_error);
 
-  // Called when the navigation was committed in |render_frame_host|. This will
-  // update the |state_|.
+  // Called when the navigation was committed. This will update the |state_|.
   // |navigation_entry_committed| indicates whether the navigation changed which
   // NavigationEntry is current.
   // |did_replace_entry| is true if the committed entry has replaced the
@@ -302,8 +275,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
       bool navigation_entry_committed,
       bool did_replace_entry,
       const GURL& previous_url,
-      NavigationType navigation_type,
-      RenderFrameHostImpl* render_frame_host);
+      NavigationType navigation_type);
 
   // Called during commit. Takes ownership of the embedder's NavigationData
   // instance. This NavigationData may have been cloned prior to being added
@@ -444,15 +416,11 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
   scoped_refptr<SiteInstanceImpl> starting_site_instance_;
   Referrer sanitized_referrer_;
   net::Error net_error_code_;
-  RenderFrameHostImpl* render_frame_host_;
   const bool is_same_document_;
   bool was_redirected_;
   bool did_replace_entry_;
   bool should_update_history_;
   bool subframe_entry_committed_;
-  scoped_refptr<net::HttpResponseHeaders> response_headers_;
-  net::HttpResponseInfo::ConnectionInfo connection_info_;
-  net::SSLInfo ssl_info_;
 
   // The site URL of this navigation, as obtained from SiteInstance::GetSiteURL.
   GURL site_url_;
@@ -518,9 +486,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
   // The unique id to identify this to navigation with.
   int64_t navigation_id_;
 
-  // The id of the URLRequest tied to this navigation.
-  GlobalRequestID request_id_;
-
   // The chain of redirects.
   std::vector<GURL> redirect_chain_;
 
@@ -532,22 +497,11 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle,
 
   GURL previous_url_;
   GURL base_url_;
-  net::IPEndPoint remote_endpoint_;
   NavigationType navigation_type_;
 
   // Used to inform a RenderProcessHost that we expect this navigation to commit
   // in it.
   int expected_render_process_host_id_;
-
-  // Whether the navigation ended up being a download or a stream.
-  bool is_download_;
-  bool is_stream_;
-
-  // True if the target is an inner response of a signed exchange.
-  bool is_signed_exchange_inner_response_;
-
-  // Whether the response was cached.
-  bool was_cached_;
 
   // Which proxy server was used for this navigation, if any.
   net::ProxyServer proxy_server_;

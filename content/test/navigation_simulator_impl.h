@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/optional.h"
+#include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/common/content_security_policy/csp_disposition_enum.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_throttle.h"
@@ -88,7 +89,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   void SetAutoAdvance(bool auto_advance) override;
 
   NavigationThrottle::ThrottleCheckResult GetLastThrottleCheckResult() override;
-  NavigationHandle* GetNavigationHandle() const override;
+  NavigationHandleImpl* GetNavigationHandle() const override;
   content::GlobalRequestID GetGlobalRequestID() const override;
 
   // Additional utilites usable only inside content/.
@@ -112,6 +113,12 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   // Manually force the value of did_create_new__entry flag in DidCommit*Params
   // to |did_create_new_entry|.
   void set_did_create_new_entry(bool did_create_new_entry);
+
+  void set_http_connection_info(net::HttpResponseInfo::ConnectionInfo info) {
+    http_connection_info_ = info;
+  }
+
+  void set_ssl_info(net::SSLInfo ssl_info) { ssl_info_ = ssl_info; }
 
  private:
   NavigationSimulatorImpl(const GURL& original_url,
@@ -232,6 +239,9 @@ class NavigationSimulatorImpl : public NavigationSimulator,
       document_interface_broker_blink_request_;
   std::string contents_mime_type_;
   CSPDisposition should_check_main_world_csp_ = CSPDisposition::CHECK;
+  net::HttpResponseInfo::ConnectionInfo http_connection_info_ =
+      net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN;
+  base::Optional<net::SSLInfo> ssl_info_;
 
   bool auto_advance_ = true;
 

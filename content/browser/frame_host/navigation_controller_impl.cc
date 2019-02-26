@@ -1352,7 +1352,8 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
     new_entry = pending_entry_->Clone();
 
     update_virtual_url = new_entry->update_virtual_url_with_url();
-    new_entry->GetSSL() = SSLStatus(handle->GetSSLInfo());
+    new_entry->GetSSL() =
+        SSLStatus(handle->GetSSLInfo().value_or(net::SSLInfo()));
 
     if (params.url.SchemeIs(url::kHttpsScheme) && !rfh->GetParent() &&
         handle->GetNetErrorCode() == net::OK) {
@@ -1380,7 +1381,8 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
     // to show chrome://bookmarks/#1 when the bookmarks webui extension changes
     // the URL.
     update_virtual_url = needs_update;
-    new_entry->GetSSL() = SSLStatus(handle->GetSSLInfo());
+    new_entry->GetSSL() =
+        SSLStatus(handle->GetSSLInfo().value_or(net::SSLInfo()));
 
     if (params.url.SchemeIs(url::kHttpsScheme) && !rfh->GetParent() &&
         handle->GetNetErrorCode() == net::OK) {
@@ -1495,7 +1497,8 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
     // If this is a same document navigation, then there's no SSLStatus in the
     // NavigationHandle so don't overwrite the existing entry's SSLStatus.
     if (!is_same_document)
-      entry->GetSSL() = SSLStatus(handle->GetSSLInfo());
+      entry->GetSSL() =
+          SSLStatus(handle->GetSSLInfo().value_or(net::SSLInfo()));
 
     if (params.url.SchemeIs(url::kHttpsScheme) && !rfh->GetParent() &&
         handle->GetNetErrorCode() == net::OK) {
@@ -1532,8 +1535,9 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
       // In rapid back/forward navigations |handle| sometimes won't have a cert
       // (http://crbug.com/727892). So we use the handle's cert if it exists,
       // otherwise we only reuse the existing cert if the origins match.
-      if (handle->GetSSLInfo().is_valid()) {
-        entry->GetSSL() = SSLStatus(handle->GetSSLInfo());
+      if (handle->GetSSLInfo().has_value() &&
+          handle->GetSSLInfo()->is_valid()) {
+        entry->GetSSL() = SSLStatus(*(handle->GetSSLInfo()));
       } else if (entry->GetURL().GetOrigin() != handle->GetURL().GetOrigin()) {
         entry->GetSSL() = SSLStatus();
       }
@@ -1580,7 +1584,8 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
     // If this is a same document navigation, then there's no SSLStatus in the
     // NavigationHandle so don't overwrite the existing entry's SSLStatus.
     if (!is_same_document)
-      entry->GetSSL() = SSLStatus(handle->GetSSLInfo());
+      entry->GetSSL() =
+          SSLStatus(handle->GetSSLInfo().value_or(net::SSLInfo()));
 
     if (params.url.SchemeIs(url::kHttpsScheme) && !rfh->GetParent() &&
         handle->GetNetErrorCode() == net::OK) {
@@ -1678,7 +1683,8 @@ void NavigationControllerImpl::RendererDidNavigateToSamePage(
   // request do not have a valid SSL status, but since the document didn't
   // change, the previous SSLStatus is still valid.
   if (!is_same_document)
-    existing_entry->GetSSL() = SSLStatus(handle->GetSSLInfo());
+    existing_entry->GetSSL() =
+        SSLStatus(handle->GetSSLInfo().value_or(net::SSLInfo()));
 
   if (existing_entry->GetURL().SchemeIs(url::kHttpsScheme) &&
       !rfh->GetParent() && handle->GetNetErrorCode() == net::OK) {

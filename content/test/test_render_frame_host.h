@@ -147,7 +147,9 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   // remove this function.
   void PrepareForCommitDeprecatedForNavigationSimulator(
       const net::IPEndPoint& remote_endpoint,
-      bool is_signed_exchange_inner_response);
+      bool is_signed_exchange_inner_response,
+      net::HttpResponseInfo::ConnectionInfo connection_info,
+      base::Optional<net::SSLInfo> ssl_info);
 
   // This method does the same as PrepareForCommit.
   // PlzNavigate: Beyond doing the same as PrepareForCommit, this method will
@@ -246,9 +248,12 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
                                   int response_code,
                                   const ModificationCallback& callback);
 
-  void PrepareForCommitInternal(const GURL& redirect_url,
-                                const net::IPEndPoint& remote_endpoint,
-                                bool is_signed_exchange_inner_response);
+  void PrepareForCommitInternal(
+      const GURL& redirect_url,
+      const net::IPEndPoint& remote_endpoint,
+      bool is_signed_exchange_inner_response,
+      net::HttpResponseInfo::ConnectionInfo connection_info,
+      base::Optional<net::SSLInfo> ssl_info);
 
   // Computes the page ID for a pending navigation in this RenderFrameHost;
   int32_t ComputeNextPageID();

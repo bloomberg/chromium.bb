@@ -141,13 +141,11 @@ NavigationHandleImpl::NavigationHandleImpl(
     const Referrer& sanitized_referrer)
     : navigation_request_(navigation_request),
       net_error_code_(net::OK),
-      render_frame_host_(nullptr),
       is_same_document_(is_same_document),
       was_redirected_(false),
       did_replace_entry_(false),
       should_update_history_(false),
       subframe_entry_committed_(false),
-      connection_info_(net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN),
       request_headers_(std::move(request_headers)),
       state_(INITIAL),
       pending_nav_entry_id_(pending_nav_entry_id),
@@ -158,10 +156,6 @@ NavigationHandleImpl::NavigationHandleImpl(
       restore_type_(RestoreType::NONE),
       navigation_type_(NAVIGATION_TYPE_UNKNOWN),
       expected_render_process_host_id_(ChildProcessHost::kInvalidUniqueID),
-      is_download_(false),
-      is_stream_(false),
-      is_signed_exchange_inner_response_(false),
-      was_cached_(false),
       is_same_process_(true),
       throttle_runner_(this, this),
       weak_factory_(this) {
@@ -362,7 +356,8 @@ RenderFrameHostImpl* NavigationHandleImpl::GetRenderFrameHost() {
          "picked for this navigation.";
   static_assert(WILL_FAIL_REQUEST < WILL_PROCESS_RESPONSE,
                 "WillFailRequest state should come before WillProcessResponse");
-  return render_frame_host_;
+  return navigation_request_->render_frame_host();
+  ;
 }
 
 bool NavigationHandleImpl::IsSameDocument() {
@@ -390,16 +385,20 @@ void NavigationHandleImpl::SetRequestHeader(const std::string& header_name,
 const net::HttpResponseHeaders* NavigationHandleImpl::GetResponseHeaders() {
   if (response_headers_for_testing_)
     return response_headers_for_testing_.get();
-  return response_headers_.get();
+  return navigation_request_->response()
+             ? navigation_request_->response()->head.headers.get()
+             : nullptr;
 }
 
 net::HttpResponseInfo::ConnectionInfo
 NavigationHandleImpl::GetConnectionInfo() {
-  return connection_info_;
+  return navigation_request_->response()
+             ? navigation_request_->response()->head.connection_info
+             : net::HttpResponseInfo::ConnectionInfo();
 }
 
-const net::SSLInfo& NavigationHandleImpl::GetSSLInfo() {
-  return ssl_info_;
+const base::Optional<net::SSLInfo> NavigationHandleImpl::GetSSLInfo() {
+  return navigation_request_->ssl_info();
 }
 
 bool NavigationHandleImpl::IsWaitingToCommit() {
@@ -440,7 +439,9 @@ net::IPEndPoint NavigationHandleImpl::GetSocketAddress() {
   // WILL_PROCESS_RESPONSE, it's possible for the navigation to be cancelled
   // after and the caller might want this value.
   DCHECK(state_ >= CANCELING);
-  return remote_endpoint_;
+  return navigation_request_->response()
+             ? navigation_request_->response()->head.remote_endpoint
+             : net::IPEndPoint();
 }
 
 void NavigationHandleImpl::Resume(NavigationThrottle* resuming_throttle) {
@@ -515,11 +516,11 @@ void NavigationHandleImpl::RegisterSubresourceOverride(
 
 const GlobalRequestID& NavigationHandleImpl::GetGlobalRequestID() {
   DCHECK(state_ >= PROCESSING_WILL_PROCESS_RESPONSE);
-  return request_id_;
+  return navigation_request_->request_id();
 }
 
 bool NavigationHandleImpl::IsDownload() {
-  return is_download_;
+  return navigation_request_->is_download();
 }
 
 bool NavigationHandleImpl::IsFormSubmission() {
@@ -539,11 +540,16 @@ const base::Optional<url::Origin>& NavigationHandleImpl::GetInitiatorOrigin() {
 }
 
 bool NavigationHandleImpl::IsSignedExchangeInnerResponse() {
-  return is_signed_exchange_inner_response_;
+  return navigation_request_->response()
+             ? navigation_request_->response()
+                   ->head.is_signed_exchange_inner_response
+             : false;
 }
 
 bool NavigationHandleImpl::WasResponseCached() {
-  return was_cached_;
+  return navigation_request_->response()
+             ? navigation_request_->response()->head.was_fetched_via_cache
+             : false;
 }
 
 const net::ProxyServer& NavigationHandleImpl::GetProxyServer() {
@@ -600,8 +606,6 @@ void NavigationHandleImpl::WillStartRequest(
 
 void NavigationHandleImpl::UpdateStateFollowingRedirect(
     const GURL& new_referrer_url,
-    scoped_refptr<net::HttpResponseHeaders> response_headers,
-    net::HttpResponseInfo::ConnectionInfo connection_info,
     ThrottleChecksFinishedCallback callback) {
   // The navigation should not redirect to a "renderer debug" url. It should be
   // blocked in NavigationRequest::OnRequestRedirected or in
@@ -617,8 +621,6 @@ void NavigationHandleImpl::UpdateStateFollowingRedirect(
         Referrer::SanitizeForRequest(GetURL(), sanitized_referrer_);
   }
 
-  response_headers_ = response_headers;
-  connection_info_ = connection_info;
   was_redirected_ = true;
   redirect_chain_.push_back(GetURL());
 
@@ -628,15 +630,12 @@ void NavigationHandleImpl::UpdateStateFollowingRedirect(
 
 void NavigationHandleImpl::WillRedirectRequest(
     const GURL& new_referrer_url,
-    scoped_refptr<net::HttpResponseHeaders> response_headers,
-    net::HttpResponseInfo::ConnectionInfo connection_info,
     RenderProcessHost* post_redirect_process,
     ThrottleChecksFinishedCallback callback) {
   TRACE_EVENT_ASYNC_STEP_INTO1("navigation", "NavigationHandle", this,
                                "WillRedirectRequest", "url",
                                GetURL().possibly_invalid_spec());
-  UpdateStateFollowingRedirect(new_referrer_url, response_headers,
-                               connection_info, std::move(callback));
+  UpdateStateFollowingRedirect(new_referrer_url, std::move(callback));
   UpdateSiteURL(post_redirect_process);
 
   if (IsSelfReferentialURL()) {
@@ -653,15 +652,10 @@ void NavigationHandleImpl::WillRedirectRequest(
 }
 
 void NavigationHandleImpl::WillFailRequest(
-    RenderFrameHostImpl* render_frame_host,
-    base::Optional<net::SSLInfo> ssl_info,
     ThrottleChecksFinishedCallback callback) {
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
                                "WillFailRequest");
-  if (ssl_info.has_value())
-    ssl_info_ = ssl_info.value();
 
-  render_frame_host_ = render_frame_host;
   complete_callback_ = std::move(callback);
   state_ = PROCESSING_WILL_FAIL_REQUEST;
 
@@ -673,32 +667,11 @@ void NavigationHandleImpl::WillFailRequest(
 }
 
 void NavigationHandleImpl::WillProcessResponse(
-    RenderFrameHostImpl* render_frame_host,
-    scoped_refptr<net::HttpResponseHeaders> response_headers,
-    net::HttpResponseInfo::ConnectionInfo connection_info,
-    const net::IPEndPoint& remote_endpoint,
-    const net::SSLInfo& ssl_info,
-    const GlobalRequestID& request_id,
-    bool is_download,
-    bool is_stream,
-    bool is_signed_exchange_inner_response,
-    bool was_cached,
     ThrottleChecksFinishedCallback callback) {
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
                                "WillProcessResponse");
 
-  DCHECK(!render_frame_host_ || render_frame_host_ == render_frame_host);
-  render_frame_host_ = render_frame_host;
-  response_headers_ = response_headers;
-  connection_info_ = connection_info;
-  request_id_ = request_id;
-  is_download_ = is_download;
-  is_stream_ = is_stream;
-  is_signed_exchange_inner_response_ = is_signed_exchange_inner_response;
-  was_cached_ = was_cached;
   state_ = PROCESSING_WILL_PROCESS_RESPONSE;
-  ssl_info_ = ssl_info;
-  remote_endpoint_ = remote_endpoint;
   complete_callback_ = std::move(callback);
 
   // Notify each throttle of the response.
@@ -708,37 +681,22 @@ void NavigationHandleImpl::WillProcessResponse(
   // by the previous call.
 }
 
-void NavigationHandleImpl::ReadyToCommitNavigation(
-    RenderFrameHostImpl* render_frame_host,
-    bool is_error) {
+void NavigationHandleImpl::ReadyToCommitNavigation(bool is_error) {
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
                                "ReadyToCommitNavigation");
 
-  // If the NavigationHandle already has a RenderFrameHost set at
-  // WillProcessResponse time, we should not be changing it.  One exception is
-  // errors originating from WillProcessResponse throttles, which might commit
-  // in a different RenderFrameHost.  For example, a throttle might return
-  // CANCEL with an error code from WillProcessResponse, which will cancel the
-  // navigation and get here to commit the error page, with |render_frame_host|
-  // recomputed for the error page.
-  DCHECK(!render_frame_host_ || is_error ||
-         render_frame_host_ == render_frame_host)
-      << "Unsupported RenderFrameHost change from " << render_frame_host_
-      << " to " << render_frame_host << " with is_error=" << is_error;
-
-  render_frame_host_ = render_frame_host;
   state_ = READY_TO_COMMIT;
   ready_to_commit_time_ = base::TimeTicks::Now();
   RestartCommitTimeout();
 
   if (appcache_handle_)
-    appcache_handle_->SetProcessId(render_frame_host->GetProcess()->GetID());
+    appcache_handle_->SetProcessId(GetRenderFrameHost()->GetProcess()->GetID());
 
   // Record metrics for the time it takes to get to this state from the
   // beginning of the navigation.
   if (!IsSameDocument() && !is_error) {
     is_same_process_ =
-        render_frame_host_->GetProcess()->GetID() ==
+        GetRenderFrameHost()->GetProcess()->GetID() ==
         frame_tree_node()->current_frame_host()->GetProcess()->GetID();
     LogIsSameProcess(GetPageTransition(), is_same_process_);
 
@@ -773,7 +731,7 @@ void NavigationHandleImpl::ReadyToCommitNavigation(
     }
   }
 
-  SetExpectedProcess(render_frame_host->GetProcess());
+  SetExpectedProcess(GetRenderFrameHost()->GetProcess());
 
   if (!IsSameDocument())
     GetDelegate()->ReadyToCommitNavigation(this);
@@ -784,15 +742,11 @@ void NavigationHandleImpl::DidCommitNavigation(
     bool navigation_entry_committed,
     bool did_replace_entry,
     const GURL& previous_url,
-    NavigationType navigation_type,
-    RenderFrameHostImpl* render_frame_host) {
-  DCHECK(!render_frame_host_ || render_frame_host_ == render_frame_host);
-  DCHECK_EQ(frame_tree_node(), render_frame_host->frame_tree_node());
+    NavigationType navigation_type) {
   CHECK_EQ(GetURL(), params.url);
 
   did_replace_entry_ = did_replace_entry;
   should_update_history_ = params.should_update_history;
-  render_frame_host_ = render_frame_host;
   previous_url_ = previous_url;
   base_url_ = params.base_url;
   navigation_type_ = navigation_type;
@@ -820,7 +774,7 @@ void NavigationHandleImpl::DidCommitNavigation(
         now - navigation_request_->common_params().navigation_start;
     ui::PageTransition transition = GetPageTransition();
     base::Optional<bool> is_background =
-        render_frame_host->GetProcess()->IsProcessBackgrounded();
+        GetRenderFrameHost()->GetProcess()->IsProcessBackgrounded();
     LOG_NAVIGATION_TIMING_HISTOGRAM("StartToCommit", transition, is_background,
                                     delta);
     if (IsInMainFrame()) {
@@ -985,9 +939,9 @@ void NavigationHandleImpl::OnWillProcessResponseProcessed(
     // If the navigation is done processing the response, then it's ready to
     // commit. Inform observers that the navigation is now ready to commit,
     // unless it is not set to commit (204/205s/downloads).
-    if (render_frame_host_) {
+    if (GetRenderFrameHost()) {
       base::WeakPtr<NavigationHandleImpl> weak_ptr = weak_factory_.GetWeakPtr();
-      ReadyToCommitNavigation(render_frame_host_, false);
+      ReadyToCommitNavigation(false);
       // TODO(https://crbug.com/880741): Remove this once the bug is fixed.
       if (!weak_ptr) {
         base::debug::DumpWithoutCrashing();

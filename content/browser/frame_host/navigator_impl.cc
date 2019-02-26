@@ -282,7 +282,7 @@ void NavigatorImpl::DidNavigate(
               did_navigate ? details.is_main_frame : false);
     navigation_request->navigation_handle()->DidCommitNavigation(
         params, did_navigate, details.did_replace_entry, details.previous_url,
-        details.type, render_frame_host);
+        details.type);
     navigation_request.reset();
   }
 
