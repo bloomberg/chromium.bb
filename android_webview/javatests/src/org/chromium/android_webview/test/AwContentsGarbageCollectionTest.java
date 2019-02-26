@@ -22,7 +22,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwContents;
-import org.chromium.android_webview.AwGLFunctor;
+import org.chromium.android_webview.gfx.AwGLFunctor;
 import org.chromium.android_webview.test.AwActivityTestRule.TestDependencyFactory;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
