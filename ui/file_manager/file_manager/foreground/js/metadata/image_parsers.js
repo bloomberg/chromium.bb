@@ -31,7 +31,7 @@ SimpleImageParser.prototype.parse = function(
   const self = this;
   MetadataParser.readFileBytes(
       file, 0, this.headerSize,
-      function(file, br) {
+      (file, br) => {
         try {
           self.parseHeader(metadata, br);
           callback(metadata);
@@ -47,7 +47,7 @@ SimpleImageParser.prototype.parse = function(
  * @param {Object} metadata Dictionary to store the parsed metadata.
  * @param {ByteReader} byteReader Reader for header binary data.
  */
-SimpleImageParser.prototype.parseHeader = function(metadata, byteReader) {};
+SimpleImageParser.prototype.parseHeader = (metadata, byteReader) => {};
 
 /**
  * Parser for the header of png files.
@@ -65,7 +65,7 @@ PngParser.prototype = {__proto__: SimpleImageParser.prototype};
 /**
  * @override
  */
-PngParser.prototype.parseHeader = function(metadata, br) {
+PngParser.prototype.parseHeader = (metadata, br) => {
   br.setByteOrder(ByteReader.BIG_ENDIAN);
 
   const signature = br.readString(8);
@@ -101,7 +101,7 @@ BmpParser.prototype = {__proto__: SimpleImageParser.prototype};
 /**
  * @override
  */
-BmpParser.prototype.parseHeader = function(metadata, br) {
+BmpParser.prototype.parseHeader = (metadata, br) => {
   br.setByteOrder(ByteReader.LITTLE_ENDIAN);
 
   const signature = br.readString(2);
@@ -132,7 +132,7 @@ GifParser.prototype = {__proto__: SimpleImageParser.prototype};
 /**
  * @override
  */
-GifParser.prototype.parseHeader = function(metadata, br) {
+GifParser.prototype.parseHeader = (metadata, br) => {
   br.setByteOrder(ByteReader.LITTLE_ENDIAN);
 
   const signature = br.readString(6);
@@ -162,7 +162,7 @@ WebpParser.prototype = {__proto__: SimpleImageParser.prototype};
 /**
  * @override
  */
-WebpParser.prototype.parseHeader = function(metadata, br) {
+WebpParser.prototype.parseHeader = (metadata, br) => {
   br.setByteOrder(ByteReader.LITTLE_ENDIAN);
 
   const riffSignature = br.readString(4);
@@ -234,7 +234,7 @@ IcoParser.prototype = {__proto__: SimpleImageParser.prototype};
 /**
  * @override
  */
-IcoParser.prototype.parseHeader = function(metadata, byteReader) {
+IcoParser.prototype.parseHeader = (metadata, byteReader) => {
   byteReader.setByteOrder(ByteReader.LITTLE_ENDIAN);
 
   const signature = byteReader.readString(4);

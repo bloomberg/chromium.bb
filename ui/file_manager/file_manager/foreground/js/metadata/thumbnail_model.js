@@ -35,7 +35,7 @@ ThumbnailModel.prototype.get = function(entries) {
             'modificationTime', 'customIconUrl', 'contentMimeType',
             'thumbnailUrl', 'croppedThumbnailUrl', 'present'
           ])
-      .then(function(metadataList) {
+      .then(metadataList => {
         const contentRequestEntries = [];
         for (let i = 0; i < entries.length; i++) {
           const url = entries[i].toURL();
@@ -75,7 +75,7 @@ ThumbnailModel.prototype.get = function(entries) {
                 'contentThumbnailUrl',
                 'contentThumbnailTransform',
                 'contentImageTransform'
-              ]).then(function(contentMetadataList) {
+              ]).then(contentMetadataList => {
                 for (let i = 0; i < contentRequestEntries.length; i++) {
                   const url = contentRequestEntries[i].toURL();
                   results[url].thumbnail.url =
@@ -93,9 +93,9 @@ ThumbnailModel.prototype.get = function(entries) {
                 }
               });
         }
-      }.bind(this))
-      .then(function() {
-        return entries.map(function(entry) {
+      })
+      .then(() => {
+        return entries.map(entry => {
           return results[entry.toURL()];
         });
       });

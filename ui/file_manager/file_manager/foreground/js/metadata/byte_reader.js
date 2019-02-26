@@ -60,7 +60,7 @@ ByteReader.SEEK_END = 2;
  * @param {number} size Number of bytes to read.
  * @param {number} end Maximum position to read from.
  */
-ByteReader.validateRead = function(pos, size, end) {
+ByteReader.validateRead = (pos, size, end) => {
   if (pos < 0 || pos >= end) {
     throw new Error('Invalid read position');
   }
@@ -82,7 +82,7 @@ ByteReader.validateRead = function(pos, size, end) {
  * @param {number=} opt_end Maximum position to read from.
  * @return {string} Read string.
  */
-ByteReader.readString = function(dataView, pos, size, opt_end) {
+ByteReader.readString = (dataView, pos, size, opt_end) => {
   ByteReader.validateRead(pos, size, opt_end || dataView.byteLength);
 
   const codes = [];
@@ -106,7 +106,7 @@ ByteReader.readString = function(dataView, pos, size, opt_end) {
  * @param {number=} opt_end Maximum position to read from.
  * @return {string} Read string.
  */
-ByteReader.readNullTerminatedString = function(dataView, pos, size, opt_end) {
+ByteReader.readNullTerminatedString = (dataView, pos, size, opt_end) => {
   ByteReader.validateRead(pos, size, opt_end || dataView.byteLength);
 
   const codes = [];
@@ -133,8 +133,7 @@ ByteReader.readNullTerminatedString = function(dataView, pos, size, opt_end) {
  * @param {number=} opt_end Maximum position to read from.
  * @return {string} Read string.
  */
-ByteReader.readNullTerminatedStringUTF16 = function(
-    dataView, pos, bom, size, opt_end) {
+ByteReader.readNullTerminatedStringUTF16 = (dataView, pos, bom, size, opt_end) => {
   ByteReader.validateRead(pos, size, opt_end || dataView.byteLength);
 
   let littleEndian = false;
@@ -178,7 +177,7 @@ ByteReader.base64Alphabet_ =
  * @param {number=} opt_end Maximum position to read from.
  * @return {string} Base 64 encoded value.
  */
-ByteReader.readBase64 = function(dataView, pos, size, opt_end) {
+ByteReader.readBase64 = (dataView, pos, size, opt_end) => {
   ByteReader.validateRead(pos, size, opt_end || dataView.byteLength);
 
   const rv = [];
@@ -230,7 +229,7 @@ ByteReader.readBase64 = function(dataView, pos, size, opt_end) {
  * @param {number=} opt_end Maximum position to read from.
  * @return {string} Image as a data url.
  */
-ByteReader.readImage = function(dataView, pos, size, opt_end) {
+ByteReader.readImage = (dataView, pos, size, opt_end) => {
   opt_end = opt_end || dataView.byteLength;
   ByteReader.validateRead(pos, size, opt_end);
 

@@ -82,7 +82,7 @@ function testMultiMetadataProviderBasic(callback) {
         entryA, ['size', 'modificationTime', 'contentThumbnailUrl']),
     new MetadataRequest(
         entryB, ['size', 'modificationTime', 'contentThumbnailUrl'])
-  ]).then(function(results) {
+  ]).then(results => {
     assertEquals(2, results.length);
     assertEquals(
         new Date(2015, 0, 1).toString(),
@@ -135,7 +135,7 @@ function testMultiMetadataProviderExternalAndContentProperty(callback) {
     new MetadataRequest(entryA, ['imageWidth']),
     new MetadataRequest(entryB, ['imageWidth']),
     new MetadataRequest(entryC, ['imageWidth'])
-  ]).then(function(results) {
+  ]).then(results => {
     assertEquals(3, results.length);
     assertEquals(100, results[0].imageWidth);
     assertEquals(200, results[1].imageWidth);

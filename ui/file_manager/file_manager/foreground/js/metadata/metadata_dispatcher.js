@@ -210,14 +210,14 @@ MetadataDispatcher.prototype.processOneFile = function(fileURL, callback) {
 
     // Step two, turn the url into an entry.
     function getEntry(parser) {
-      webkitResolveLocalFileSystemURL(fileURL, function(entry) {
+      webkitResolveLocalFileSystemURL(fileURL, entry => {
         nextStep(entry, parser);
       }, onError);
     },
 
     // Step three, turn the entry into a file.
     function getFile(entry, parser) {
-      entry.file(function(file) {
+      entry.file(file => {
         nextStep(file, parser);
       }, onError);
     },
@@ -242,7 +242,7 @@ MetadataDispatcher.prototype.processOneFile = function(fileURL, callback) {
 const global = self;
 
 if (global.constructor.name == 'SharedWorkerGlobalScope') {
-  global.addEventListener('connect', function(e) {
+  global.addEventListener('connect', e => {
     const port = e.ports[0];
     new MetadataDispatcher(port);
     port.start();
@@ -256,6 +256,6 @@ if (global.constructor.name == 'SharedWorkerGlobalScope') {
  * @param {function(new:MetadataParser, !MetadataParserLogger)} parserClass
  *     Parser constructor function.
  */
-registerParserClass = function(parserClass) {
+registerParserClass = parserClass => {
   MetadataDispatcher.parserClasses_.push(parserClass);
 };

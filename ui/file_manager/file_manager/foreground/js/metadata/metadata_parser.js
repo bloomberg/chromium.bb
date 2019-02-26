@@ -61,12 +61,12 @@ MetadataParser.prototype.createDefaultMetadata = function() {
  * @param {function(File, ByteReader)} callback Callback to invoke.
  * @param {function(string)} onError Error handler.
  */
-MetadataParser.readFileBytes = function(file, begin, end, callback, onError) {
+MetadataParser.readFileBytes = (file, begin, end, callback, onError) => {
   const fileReader = new FileReader();
-  fileReader.onerror = function(event) {
+  fileReader.onerror = event => {
     onError(event.type);
   };
-  fileReader.onloadend = function() {
+  fileReader.onloadend = () => {
     callback(file, new ByteReader(
         /** @type {ArrayBuffer} */ (fileReader.result)));
   };

@@ -57,8 +57,8 @@ ExternalMetadataProvider.prototype.get = function(requests) {
   if (!requests.length) {
     return Promise.resolve([]);
   }
-  return new Promise(function(fulfill) {
-    const entries = requests.map(function(request) {
+  return new Promise(fulfill => {
+    const entries = requests.map(request => {
       return request.entry;
     });
     const nameMap = {};
@@ -68,16 +68,16 @@ ExternalMetadataProvider.prototype.get = function(requests) {
       }
     }
     chrome.fileManagerPrivate.getEntryProperties(
-        entries, Object.keys(nameMap), function(results) {
+        entries, Object.keys(nameMap), results => {
           if (!chrome.runtime.lastError) {
-            fulfill(this.convertResults_(requests, nameMap, results));
+            fulfill(this.convertResults_(requests, nameMap, assert(results)));
           } else {
-            fulfill(requests.map(function() {
+            fulfill(requests.map(() => {
               return new MetadataItem();
             }));
           }
-        }.bind(this));
-  }.bind(this));
+        });
+  });
 };
 
 /**
@@ -88,7 +88,7 @@ ExternalMetadataProvider.prototype.get = function(requests) {
  * @return {!Array<!MetadataItem>}
  */
 ExternalMetadataProvider.prototype.convertResults_ =
-    function(requests, nameMap, propertiesList) {
+    (requests, nameMap, propertiesList) => {
   const results = [];
   for (let i = 0; i < propertiesList.length; i++) {
     const prop = propertiesList[i];

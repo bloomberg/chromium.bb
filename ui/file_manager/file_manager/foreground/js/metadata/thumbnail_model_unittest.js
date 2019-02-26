@@ -55,7 +55,7 @@ function setUp() {
 }
 
 function testThumbnailModelGetBasic(callback) {
-  reportPromise(thumbnailModel.get([imageEntry]).then(function(results) {
+  reportPromise(thumbnailModel.get([imageEntry]).then(results => {
     assertEquals(1, results.length);
     assertEquals(
         new Date(2015, 0, 1).toString(),
@@ -71,7 +71,7 @@ function testThumbnailModelGetBasic(callback) {
 
 function testThumbnailModelGetNotPresent(callback) {
   metadata.present = false;
-  reportPromise(thumbnailModel.get([imageEntry]).then(function(results) {
+  reportPromise(thumbnailModel.get([imageEntry]).then(results => {
     assertEquals(1, results.length);
     assertEquals(
         new Date(2015, 0, 1).toString(),
@@ -86,7 +86,7 @@ function testThumbnailModelGetNotPresent(callback) {
 }
 
 function testThumbnailModelGetNonImage(callback) {
-  reportPromise(thumbnailModel.get([nonImageEntry]).then(function(results) {
+  reportPromise(thumbnailModel.get([nonImageEntry]).then(results => {
     assertEquals(1, results.length);
     assertEquals(
         new Date(2015, 0, 1).toString(),

@@ -130,7 +130,7 @@ function testMetadataCacheItemErrorShouldNotFetchedDirectly() {
   metadataWithError.contentThumbnailUrlError = new Error('Error');
 
   item.storeProperties(1, metadataWithError);
-  assertThrows(function() {
+  assertThrows(() => {
     item.get(['contentThumbnailUrlError']);
   });
 }

@@ -88,7 +88,7 @@ function testExternalMetadataProviderBasic(callback) {
       entryA, ['contentThumbnailUrl', 'contentThumbnailTransform']),
     new MetadataRequest(
       entryB, ['contentThumbnailUrl', 'contentThumbnailTransform']),
-  ]).then(function(results) {
+  ]).then(results => {
     assertEquals(2, results.length);
     assertEquals(entryA.url + ',url', results[0].contentThumbnailUrl);
     assertEquals(

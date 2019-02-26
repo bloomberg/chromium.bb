@@ -25,7 +25,7 @@ MpegParser.HEADER_SIZE = 8;
  * @param {number=} opt_end End of atom position.
  * @return {number} Atom size.
  */
-MpegParser.readAtomSize = function(br, opt_end) {
+MpegParser.readAtomSize = (br, opt_end) => {
   const pos = br.tell();
 
   if (opt_end) {
@@ -53,7 +53,7 @@ MpegParser.readAtomSize = function(br, opt_end) {
  * @param {number=} opt_end End of atom position.
  * @return {string} Atom name.
  */
-MpegParser.readAtomName = function(br, opt_end) {
+MpegParser.readAtomName = (br, opt_end) => {
   return br.readString(4, opt_end).toLowerCase();
 };
 
@@ -61,7 +61,7 @@ MpegParser.readAtomName = function(br, opt_end) {
  * @param {Object} metadata Metadata object.
  * @return {Object} Root of the parser tree.
  */
-MpegParser.createRootParser = function(metadata) {
+MpegParser.createRootParser = metadata => {
   function findParentAtom(atom, name) {
     for (;;) {
       atom = atom.parent;
@@ -246,7 +246,7 @@ MpegParser.prototype.requestRead = function(
   const self = this;
   const reader = new FileReader();
   reader.onerror = onError;
-  reader.onload = function(event) {
+  reader.onload = event => {
     self.processTopLevelAtom(
         /** @type {ArrayBuffer} */ (reader.result), rootParser, file, filePos,
         size, name, onError, onSuccess);

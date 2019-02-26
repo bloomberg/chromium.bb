@@ -57,7 +57,7 @@ ExifParser.prototype.requestSlice = function(
   const self = this;
   const reader = new FileReader();
   reader.onerror = errorCallback;
-  reader.onload = function() {
+  reader.onload = () => {
     self.parseSlice(
         file, callback, errorCallback, metadata, filePos,
         /** @type{ArrayBuffer} */ (reader.result));
@@ -97,7 +97,7 @@ ExifParser.prototype.parseSlice = function(
      * @param {number=} opt_offset
      * @param {number=} opt_bytes
      */
-    const reread = function(opt_offset, opt_bytes) {
+    const reread = (opt_offset, opt_bytes) => {
       self.requestSlice(file, callback, errorCallback, metadata,
           filePos + br.tell() + (opt_offset || 0), opt_bytes);
     };
@@ -151,7 +151,7 @@ ExifParser.prototype.parseSlice = function(
  * @param {number} mark Mark to be checked.
  * @return {boolean} True if the mark is SOF.
  */
-ExifParser.isSOF_ = function(mark) {
+ExifParser.isSOF_ = mark => {
   // There are 13 variants of SOF fragment format distinguished by the last
   // hex digit of the mark, but the part we want is always the same.
   if ((mark & ~0xF) !== Exif.Mark.SOF) return false;
@@ -254,7 +254,7 @@ ExifParser.prototype.parseExifSection = function(metadata, buf, br) {
  * @param {number} width Width in pixels.
  * @param {number} height Height in pixels.
  */
-ExifParser.setImageSize = function(metadata, width, height) {
+ExifParser.setImageSize = (metadata, width, height) => {
   if (metadata.imageTransform && metadata.imageTransform.rotate90) {
     metadata.width = height;
     metadata.height = width;
@@ -268,7 +268,7 @@ ExifParser.setImageSize = function(metadata, width, height) {
  * @param {ByteReader} br Byte reader to be used for reading.
  * @return {number} Mark value.
  */
-ExifParser.prototype.readMark = function(br) {
+ExifParser.prototype.readMark = br => {
   return br.readScalar(2);
 };
 
@@ -276,7 +276,7 @@ ExifParser.prototype.readMark = function(br) {
  * @param {ByteReader} br Bye reader to be used for reading.
  * @return {number} Size of the mark at the current position.
  */
-ExifParser.prototype.readMarkLength = function(br) {
+ExifParser.prototype.readMarkLength = br => {
   // Length includes the 2 bytes used to store the length.
   return br.readScalar(2) - 2;
 };
@@ -328,9 +328,9 @@ ExifParser.prototype.readTagValue = function(br, tag) {
    * @param {boolean=} opt_signed
    */
   function unsafeRead(size, opt_readFunction, opt_signed) {
-    const readFunction = opt_readFunction || function(size) {
+    const readFunction = opt_readFunction || (size => {
       return br.readScalar(size, opt_signed);
-    };
+    });
 
     const totalSize = tag.componentCount * size;
     if (totalSize < 1) {
@@ -398,13 +398,13 @@ ExifParser.prototype.readTagValue = function(br, tag) {
       break;
 
     case 5: // Rational
-      safeRead(8, function() {
+      safeRead(8, () => {
         return [br.readScalar(4), br.readScalar(4)];
       });
       break;
 
     case 10: // Signed Rational
-      safeRead(8, function() {
+      safeRead(8, () => {
         return [br.readScalar(4, true), br.readScalar(4, true)];
       });
       break;
@@ -465,7 +465,7 @@ ExifParser.ROTATE90 = [0, 0, 0, 0, 1, 1, 1, 1];
  * @param {Object} ifd Exif property dictionary (image or thumbnail).
  * @return {Object} Orientation object.
  */
-ExifParser.prototype.parseOrientation = function(ifd) {
+ExifParser.prototype.parseOrientation = ifd => {
   if (ifd[Exif.Tag.ORIENTATION]) {
     const index = (ifd[Exif.Tag.ORIENTATION].value || 1) - 1;
     return {

@@ -51,7 +51,7 @@ function ImageOrientation(a, b, c, d) {
  * @param {number} orientation 1-based orientation number defined by EXIF.
  * @return {!ImageOrientation}
  */
-ImageOrientation.fromExifOrientation = function(orientation) {
+ImageOrientation.fromExifOrientation = orientation => {
   switch (~~orientation) {
     case 1:
       return new ImageOrientation(1, 0, 0, 1);
@@ -79,7 +79,7 @@ ImageOrientation.fromExifOrientation = function(orientation) {
  * @param {number} rotation90 Clockwise degrees / 90.
  * @return {!ImageOrientation}
  */
-ImageOrientation.fromClockwiseRotation = function(rotation90) {
+ImageOrientation.fromClockwiseRotation = rotation90 => {
   switch (~~(rotation90 % 4)) {
     case 0:
       return new ImageOrientation(1, 0, 0, 1);
@@ -103,7 +103,7 @@ ImageOrientation.fromClockwiseRotation = function(rotation90) {
  * @param {ImageTransformParam} transform
  * @return {!ImageOrientation}
  */
-ImageOrientation.fromRotationAndScale = function(transform) {
+ImageOrientation.fromRotationAndScale = transform => {
   const scaleX = transform.scaleX;
   const scaleY = transform.scaleY;
   const rotate90 = transform.rotate90;
