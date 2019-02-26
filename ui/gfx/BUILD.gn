@@ -792,6 +792,7 @@ test("gfx_unittests") {
 
   if (is_linux) {
     sources += [ "linux/native_pixmap_dmabuf_unittest.cc" ]
+    deps += [ "//third_party/fontconfig" ]
   }
 }
 
