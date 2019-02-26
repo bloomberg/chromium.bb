@@ -98,8 +98,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['nvidia'], bug=792210)
 
     # Windows only.
-    self.Fail('conformance2/glsl3/array-initialize-with-same-name-array.html',
-        ['win'], bug=757098)
     self.Flaky('conformance2/textures/svg_image/' +
         'tex-2d-rgb565-rgb-unsigned_short_5_6_5.html',
         ['win'], bug=736926)
