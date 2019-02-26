@@ -2572,12 +2572,17 @@
     "expiry_milestone": 80
   },
   {
-    "name": "omnibox-ui-use-generic-search-engine-icon",
+    "name": "omnibox-ui-show-suffix-on-all-search-suggestions",
     "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 80
   },
   {
-    "name": "omnibox-ui-show-suffix-on-all-search-suggestions",
+    "name": "omnibox-ui-white-background-on-blur",
+    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 80
+  },
+  {
+    "name": "omnibox-ui-use-generic-search-engine-icon",
     "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 80
   },

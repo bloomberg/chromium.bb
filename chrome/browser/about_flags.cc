@@ -2994,18 +2994,23 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kUIExperimentBlueTitlesOnPageSuggestions)},
 
-    {"omnibox-ui-use-generic-search-engine-icon",
-     flag_descriptions::kOmniboxUIUseGenericSearchEngineIconName,
-     flag_descriptions::kOmniboxUIUseGenericSearchEngineIconDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(omnibox::kUIExperimentUseGenericSearchEngineIcon)},
-
     {"omnibox-ui-show-suffix-on-all-search-suggestions",
      flag_descriptions::kOmniboxUIShowSuffixOnAllSearchSuggestionsName,
      flag_descriptions::kOmniboxUIShowSuffixOnAllSearchSuggestionsDescription,
      kOsDesktop,
      FEATURE_VALUE_TYPE(
          omnibox::kUIExperimentShowSuffixOnAllSearchSuggestions)},
+
+    {"omnibox-ui-white-background-on-blur",
+     flag_descriptions::kOmniboxUIWhiteBackgroundOnBlurName,
+     flag_descriptions::kOmniboxUIWhiteBackgroundOnBlurDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kUIExperimentWhiteBackgroundOnBlur)},
+
+    {"omnibox-ui-use-generic-search-engine-icon",
+     flag_descriptions::kOmniboxUIUseGenericSearchEngineIconName,
+     flag_descriptions::kOmniboxUIUseGenericSearchEngineIconDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kUIExperimentUseGenericSearchEngineIcon)},
 
     {"omnibox-material-design-weather-icons",
      flag_descriptions::kOmniboxMaterialDesignWeatherIconsName,

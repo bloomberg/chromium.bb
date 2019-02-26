@@ -1422,6 +1422,11 @@ const char kOmniboxUIVerticalMarginName[] = "Omnibox UI Vertical Margin";
 const char kOmniboxUIVerticalMarginDescription[] =
     "Changes the vertical margin in the Omnibox UI.";
 
+const char kOmniboxUIWhiteBackgroundOnBlurName[] =
+    "Omnibox UI White Background On Blur";
+const char kOmniboxUIWhiteBackgroundOnBlurDescription[] =
+    "Set the omnibox background white when it's unfocused.";
+
 const char kOmniboxVoiceSearchAlwaysVisibleName[] =
     "Omnibox Voice Search Always Visible";
 const char kOmniboxVoiceSearchAlwaysVisibleDescription[] =
