@@ -1044,4 +1044,13 @@ const char kAnomalyEventServiceInterface[] =
 const char kAnomalyEventSignalName[] = "AnomalyEvent";
 }  // namespace anomaly_collector
 
+namespace libvda {
+const char kLibvdaServiceInterface[] = "org.chromium.LibvdaService";
+const char kLibvdaServiceName[] = "org.chromium.LibvdaService";
+const char kLibvdaServicePath[] = "/org/chromium/LibvdaService";
+
+// Method names.
+const char kProvideMojoConnectionMethod[] = "ProvideMojoConnection";
+}  // namespace libvda
+
 #endif  // SYSTEM_API_DBUS_SERVICE_CONSTANTS_H_
