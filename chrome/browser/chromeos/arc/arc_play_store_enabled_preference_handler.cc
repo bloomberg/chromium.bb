@@ -163,10 +163,14 @@ void ArcPlayStoreEnabledPreferenceHandler::UpdateArcSessionManager() {
         IsArcPlayStoreEnabledPreferenceManagedForProfile(profile_));
   }
 
-  if (ShouldArcAlwaysStart() || IsArcPlayStoreEnabledForProfile(profile_))
+  if (ShouldArcAlwaysStart() || IsArcPlayStoreEnabledForProfile(profile_)) {
     arc_session_manager_->RequestEnable();
-  else
+  } else {
+    const bool enable_requested = arc_session_manager_->enable_requested();
     arc_session_manager_->RequestDisable();
+    if (enable_requested)
+      arc_session_manager_->RequestArcDataRemoval();
+  }
 }
 
 }  // namespace arc
