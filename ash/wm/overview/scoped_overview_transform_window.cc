@@ -560,6 +560,7 @@ void ScopedOverviewTransformWindow::CreateMirrorWindowForMinimizedState() {
   minimized_widget_->SetVisibilityAnimationTransition(
       views::Widget::ANIMATE_NONE);
   minimized_widget_->Show();
+  minimized_widget_->SetOpacity(0.f);
 
   // Stack the minimized window at the bottom since it is never transformed in
   // and only faded in, so it should always be underneath non minimized windows.
