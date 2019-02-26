@@ -598,6 +598,14 @@ template &lt;typename T&gt;<br/>void Function(T&amp;&amp; t) { ... }</code></td>
 </tr>
 
 <tr>
+<td>Reference Wrapper Classes</td>
+<td><code>std::reference_wrapper</code> and <code>std::ref()</code>, <code>std::cref()</code></td>
+<td>Allows you to wrap a reference within a standard object (and use those within containers)</td>
+<td><a href="http://en.cppreference.com/w/cpp/utility/functional/reference_wrapper">std::reference_wrapper</a>, <a href="http://en.cppreference.com/w/cpp/utility/functional/ref">std::ref, std::cref</a></td>
+<td><a href="https://groups.google.com/a/chromium.org/d/msg/cxx/oVdPIhPji3E/sr4Dv0geAgAJ">Discussion thread</a></td>
+</tr>
+
+<tr>
 <td>String Direct Reference Functions</td>
 <td><code>std::string::front()</code>, <code>std::string::back()</code></td>
 <td>Returns a reference to the front or back of a string</td>
@@ -1129,14 +1137,6 @@ something, remove all callers and remove the function instead.</td>
 <td>Provides a standard way to access properties of pointers and pointer-like types</td>
 <td><a href="http://en.cppreference.com/w/cpp/memory/pointer_traits">std::pointer_traits</a></td>
 <td>Useful for determining the element type pointed at by a (possibly smart) pointer.</td>
-</tr>
-
-<tr>
-<td>Reference Wrapper Classes</td>
-<td><code>std::reference_wrapper</code> and <code>std::ref()</code>, <code>std::cref()</code></td>
-<td>Allows you to wrap a reference within a standard object (and use those within containers)</td>
-<td><a href="http://en.cppreference.com/w/cpp/utility/functional/reference_wrapper">std::reference_wrapper</a></td>
-<td></td>
 </tr>
 
 <tr>

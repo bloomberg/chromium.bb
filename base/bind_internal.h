@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <functional>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -81,16 +82,6 @@ class UnretainedWrapper {
 
  private:
   T* ptr_;
-};
-
-template <typename T>
-class ConstRefWrapper {
- public:
-  explicit ConstRefWrapper(const T& o) : ptr_(&o) {}
-  const T& get() const { return *ptr_; }
-
- private:
-  const T* ptr_;
 };
 
 template <typename T>
@@ -941,7 +932,7 @@ template <typename T>
 struct IsWeakReceiver : std::false_type {};
 
 template <typename T>
-struct IsWeakReceiver<internal::ConstRefWrapper<T>> : IsWeakReceiver<T> {};
+struct IsWeakReceiver<std::reference_wrapper<T>> : IsWeakReceiver<T> {};
 
 template <typename T>
 struct IsWeakReceiver<WeakPtr<T>> : std::true_type {};
@@ -963,10 +954,8 @@ struct BindUnwrapTraits<internal::UnretainedWrapper<T>> {
 };
 
 template <typename T>
-struct BindUnwrapTraits<internal::ConstRefWrapper<T>> {
-  static const T& Unwrap(const internal::ConstRefWrapper<T>& o) {
-    return o.get();
-  }
+struct BindUnwrapTraits<std::reference_wrapper<T>> {
+  static T& Unwrap(std::reference_wrapper<T> o) { return o.get(); }
 };
 
 template <typename T>

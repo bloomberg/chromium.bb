@@ -5,6 +5,7 @@
 #ifndef BASE_BIND_H_
 #define BASE_BIND_H_
 
+#include <functional>
 #include <utility>
 
 #include "base/bind_internal.h"
@@ -356,8 +357,8 @@ static inline internal::RetainedRefWrapper<T> RetainedRef(scoped_refptr<T> o) {
 // Note that because ConstRef() takes a reference on |n|, |n| must outlive all
 // its bound callbacks.
 template <typename T>
-static inline internal::ConstRefWrapper<T> ConstRef(const T& o) {
-  return internal::ConstRefWrapper<T>(o);
+inline std::reference_wrapper<const T> ConstRef(const T& o) {
+  return std::cref(o);
 }
 
 // Owned() transfers ownership of an object to the Callback resulting from
