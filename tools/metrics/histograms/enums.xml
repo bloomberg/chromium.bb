@@ -31969,6 +31969,8 @@ from previous Chrome versions.
   <int value="-192389983" label="NoStatePrefetch:enabled"/>
   <int value="-191256027" label="AvoidFlashBetweenNavigation:disabled"/>
   <int value="-185162926" label="IncreaseInputAudioBufferSize:enabled"/>
+  <int value="-184091779"
+      label="OmniboxUIExperimentWhiteBackgroundOnBlur:enabled"/>
   <int value="-183246373" label="enable-multilingual-spellchecker"/>
   <int value="-181590721"
       label="AutofillEnforceMinRequiredFieldsForHeuristics:enabled"/>
@@ -33033,6 +33035,8 @@ from previous Chrome versions.
   <int value="1614309501" label="DataSaverLiteModeRebranding:enabled"/>
   <int value="1614596813" label="CloseButtonsInactiveTabs:disabled"/>
   <int value="1615988672" label="GrantNotificationsToDSE:enabled"/>
+  <int value="1616938915"
+      label="OmniboxUIExperimentWhiteBackgroundOnBlur:disabled"/>
   <int value="1617187093" label="enable-improved-a2hs"/>
   <int value="1618633341" label="MashOopViz:enabled"/>
   <int value="1621298798" label="VrBrowserKeyboard:enabled"/>
