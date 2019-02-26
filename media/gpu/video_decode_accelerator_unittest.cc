@@ -1463,7 +1463,7 @@ TEST_P(VideoDecodeAcceleratorParamTest, MAYBE_TestSimpleDecode) {
       clients_[i]->OutputFrameDeliveryTimes(&output_file);
     }
   }
-};
+}
 
 // Test that replay after EOS works fine.
 INSTANTIATE_TEST_SUITE_P(
