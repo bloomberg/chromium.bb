@@ -20,8 +20,28 @@
 #include "components/gwp_asan/common/crash_key_name.h"
 #include "components/gwp_asan/common/pack_stack_trace.h"
 
+#if defined(OS_MACOSX)
+#include <pthread.h>
+#endif
+
 namespace gwp_asan {
 namespace internal {
+
+namespace {
+
+// Report a tid that matches what crashpad collects which may differ from what
+// base::PlatformThread::CurrentId() returns.
+uint64_t ReportTid() {
+#if !defined(OS_MACOSX)
+  return base::PlatformThread::CurrentId();
+#else
+  uint64_t tid = base::kInvalidThreadId;
+  pthread_threadid_np(nullptr, &tid);
+  return tid;
+#endif
+}
+
+}  // namespace
 
 // TODO: Delete out-of-line constexpr defininitons once C++17 is in use.
 constexpr size_t GuardedPageAllocator::kGpaAllocAlignment;
@@ -182,7 +202,7 @@ void GuardedPageAllocator::RecordAllocationInSlot(size_t slot,
   slots_[slot].alloc.trace_len = Pack(reinterpret_cast<uintptr_t*>(trace), len,
                                       slots_[slot].alloc.packed_trace,
                                       sizeof(slots_[slot].alloc.packed_trace));
-  slots_[slot].alloc.tid = base::PlatformThread::CurrentId();
+  slots_[slot].alloc.tid = ReportTid();
   slots_[slot].alloc.trace_collected = true;
 
   slots_[slot].dealloc.tid = base::kInvalidThreadId;
@@ -199,7 +219,7 @@ void GuardedPageAllocator::RecordDeallocationInSlot(size_t slot) {
       Pack(reinterpret_cast<uintptr_t*>(trace), len,
            slots_[slot].dealloc.packed_trace,
            sizeof(slots_[slot].dealloc.packed_trace));
-  slots_[slot].dealloc.tid = base::PlatformThread::CurrentId();
+  slots_[slot].dealloc.tid = ReportTid();
   slots_[slot].dealloc.trace_collected = true;
 }
 
