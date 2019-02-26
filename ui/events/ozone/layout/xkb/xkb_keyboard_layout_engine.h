@@ -68,6 +68,8 @@ class EVENTS_OZONE_LAYOUT_EXPORT XkbKeyboardLayoutEngine
   // Flag mask for num lock, which is always considered enabled in ChromeOS.
   xkb_mod_mask_t num_lock_mod_mask_ = 0;
 #endif
+  xkb_mod_mask_t shift_mod_mask_ = 0;
+  xkb_mod_mask_t altgr_mod_mask_ = 0;
 
   // Determines the Windows-based KeyboardCode (VKEY) for a character key,
   // accounting for non-US layouts. May return VKEY_UNKNOWN, in which case the
@@ -114,7 +116,7 @@ class EVENTS_OZONE_LAYOUT_EXPORT XkbKeyboardLayoutEngine
   base::char16 XkbSubCharacter(xkb_keycode_t xkb_keycode,
                                xkb_mod_mask_t base_flags,
                                base::char16 base_character,
-                               int ui_flags) const;
+                               xkb_mod_mask_t flags) const;
 
   // Callback when keymap file is loaded complete.
   void OnKeymapLoaded(const std::string& layout_name,
