@@ -45,9 +45,9 @@ class ScriptTracker : public ScriptExecutor::Listener {
     //
     // This is not called if a DOM change could make some scripts runnable.
     //
-    // This is not called until some scripts have been reported runnable to
-    // OnRunnableScriptsChanged at least once.
-    virtual void OnNoRunnableScriptsAnymore() = 0;
+    // This is only called when there are scripts. That is, SetScripts was last
+    // passed a non-empty vector.
+    virtual void OnNoRunnableScripts() = 0;
   };
 
   // |delegate| and |listener| should outlive this object and should not be
@@ -144,11 +144,6 @@ class ScriptTracker : public ScriptExecutor::Listener {
   // NOTE 2: Set of runnable scripts should be in sync with what is displayed on
   // the bottom bar.
   std::vector<ScriptHandle> runnable_scripts_;
-
-  // True if OnRunnableScriptsChanged was called at least once - necessarily
-  // with a non-empty set of scripts the first time, since the tracker starts
-  // with an empty set of scripts.
-  bool reported_runnable_scripts_;
 
   // Sets of available scripts. SetScripts resets this and interrupts
   // any pending check.

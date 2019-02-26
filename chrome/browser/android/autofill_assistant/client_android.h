@@ -86,6 +86,7 @@ class ClientAndroid : public Client,
 
   explicit ClientAndroid(content::WebContents* web_contents);
   void CreateController();
+  void DestroyController();
   bool NeedsUI();
   void SetUI(std::unique_ptr<UiControllerAndroid> ui_controller_android);
 

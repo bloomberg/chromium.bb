@@ -33,6 +33,8 @@ using ::testing::UnorderedElementsAre;
 class ScriptTrackerTest : public testing::Test, public ScriptTracker::Listener {
  public:
   void SetUp() override {
+    delegate_.SetCurrentURL(GURL("http://www.example.com/"));
+
     ON_CALL(mock_web_controller_,
             OnElementCheck(kExistenceCheck, Eq(Selector({"exists"})), _))
         .WillByDefault(RunOnceCallback<2>(true));
@@ -40,7 +42,6 @@ class ScriptTrackerTest : public testing::Test, public ScriptTracker::Listener {
         mock_web_controller_,
         OnElementCheck(kExistenceCheck, Eq(Selector({"does_not_exist"})), _))
         .WillByDefault(RunOnceCallback<2>(false));
-    ON_CALL(mock_web_controller_, GetUrl()).WillByDefault(ReturnRef(url_));
 
     // Scripts run, but have no actions.
     ON_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
@@ -64,7 +65,7 @@ class ScriptTrackerTest : public testing::Test, public ScriptTracker::Listener {
     runnable_scripts_ = runnable_scripts;
   }
 
-  void OnNoRunnableScriptsAnymore() override { no_runnable_scripts_anymore_++; }
+  void OnNoRunnableScripts() override { no_runnable_scripts_anymore_++; }
 
   void SetAndCheckScripts(const SupportsScriptResponseProto& response) {
     std::string response_str;
@@ -149,6 +150,7 @@ TEST_F(ScriptTrackerTest, SomeRunnableScripts) {
   ASSERT_THAT(runnable_scripts(), SizeIs(1));
   EXPECT_EQ("runnable name", runnable_scripts()[0].name);
   EXPECT_EQ("runnable path", runnable_scripts()[0].path);
+  EXPECT_EQ(0, no_runnable_scripts_anymore_);
 }
 
 TEST_F(ScriptTrackerTest, DoNotCheckInterruptWithNoName) {
@@ -386,6 +388,26 @@ TEST_F(ScriptTrackerTest, UpdateScriptListFromInterrupt) {
   EXPECT_EQ("update path", runnable_scripts()[0].path);
   EXPECT_EQ("update name 2", runnable_scripts()[1].name);
   EXPECT_EQ("update path 2", runnable_scripts()[1].path);
+}
+
+TEST_F(ScriptTrackerTest, NoRunnableScriptsEvenWithDOMChanges) {
+  SupportsScriptResponseProto scripts;
+  auto* script = AddScript(&scripts, "name", "path", "");
+  script->mutable_presentation()->mutable_precondition()->add_path_pattern(
+      "doesnotmatch");
+  SetAndCheckScripts(scripts);
+
+  EXPECT_THAT(runnable_scripts(), SizeIs(0));
+  EXPECT_EQ(1, no_runnable_scripts_anymore_);
+}
+
+TEST_F(ScriptTrackerTest, NoRunnableScriptsWaitingForDOMChanges) {
+  SupportsScriptResponseProto scripts;
+  AddScript(&scripts, "runnable name", "runnable path", "does_not_exist");
+  SetAndCheckScripts(scripts);
+
+  EXPECT_THAT(runnable_scripts(), SizeIs(0));
+  EXPECT_EQ(0, no_runnable_scripts_anymore_);
 }
 
 }  // namespace autofill_assistant

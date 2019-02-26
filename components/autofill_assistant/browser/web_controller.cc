@@ -377,10 +377,6 @@ WebController::FillFormInputData::FillFormInputData() {}
 
 WebController::FillFormInputData::~FillFormInputData() {}
 
-const GURL& WebController::GetUrl() {
-  return web_contents_->GetLastCommittedURL();
-}
-
 void WebController::LoadURL(const GURL& url) {
   DVLOG(3) << __func__ << " " << url;
   web_contents_->GetController().LoadURLWithParams(

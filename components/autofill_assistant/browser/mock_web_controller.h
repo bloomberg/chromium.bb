@@ -20,8 +20,6 @@ class MockWebController : public WebController {
   MockWebController();
   ~MockWebController() override;
 
-  MOCK_METHOD0(GetUrl, const GURL&());
-
   MOCK_METHOD1(LoadURL, void(const GURL&));
 
   void ClickOrTapElement(const Selector& selector,

@@ -35,7 +35,11 @@ class Metrics {
     SAFETY_NET_TERMINATE = 14,  // This is a "should never happen" entry.
     TAB_DETACHED = 15,
     TAB_CHANGED = 16,
-    NUM_ENTRIES = 17,
+    GET_SCRIPTS_FAILED = 17,
+    GET_SCRIPTS_UNPARSABLE = 18,
+    NO_INITIAL_SCRIPTS = 19,
+
+    NUM_ENTRIES = 20,
   };
 
   static void RecordDropOut(DropOutReason reason);
@@ -101,8 +105,21 @@ class Metrics {
       case TAB_CHANGED:
         out << "TAB_CHANGED";
         break;
+
       case NUM_ENTRIES:
         out << "NUM_ENTRIES";
+        break;
+
+      case GET_SCRIPTS_FAILED:
+        out << "GET_SCRIPTS_FAILED";
+        break;
+
+      case GET_SCRIPTS_UNPARSABLE:
+        out << "GET_SCRIPTS_UNPARSEABLE";
+        break;
+
+      case NO_INITIAL_SCRIPTS:
+        out << "NO_INITIAL_SCRIPTS";
         // Intentionally no default case to make compilation fail if a new value
         // was added to the enum but not to this list.
     }

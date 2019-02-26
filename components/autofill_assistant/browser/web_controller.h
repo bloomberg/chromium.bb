@@ -20,6 +20,7 @@
 #include "components/autofill_assistant/browser/devtools/devtools_client.h"
 #include "components/autofill_assistant/browser/rectf.h"
 #include "components/autofill_assistant/browser/selector.h"
+#include "url/gurl.h"
 
 namespace autofill {
 class AutofillProfile;
@@ -57,9 +58,6 @@ class WebController {
   WebController(content::WebContents* web_contents,
                 std::unique_ptr<DevtoolsClient> devtools_client);
   virtual ~WebController();
-
-  // Returns the last committed URL of the associated |web_contents_|.
-  virtual const GURL& GetUrl();
 
   // Load |url| in the current tab. Returns immediately, before the new page has
   // been loaded.
