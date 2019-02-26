@@ -432,8 +432,8 @@ TEST_F(IdentityManagerImplTest,
   // the primary account is now considered available). Note that it is necessary
   // to call SignIn() here to ensure that GoogleSigninSucceeded() is fired by
   // the fake signin manager.
-  static_cast<FakeSigninManager*>(signin_manager())
-      ->SignIn(kTestGaiaId, kTestEmail);
+  SigninManager::FromSigninManagerBase(signin_manager())
+      ->OnExternalSigninCompleted(kTestEmail);
 
   run_loop.Run();
 

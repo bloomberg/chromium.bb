@@ -34,8 +34,6 @@ class FakeSigninManager : public SigninManager {
 
   ~FakeSigninManager() override;
 
-  void SignIn(const std::string& gaia_id, const std::string& username);
-
  protected:
   void OnSignoutDecisionReached(
       signin_metrics::ProfileSignout signout_source_metric,

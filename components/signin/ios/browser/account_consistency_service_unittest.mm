@@ -227,7 +227,8 @@ class AccountConsistencyServiceTest : public PlatformTest {
   }
 
   void SignIn() {
-    signin_manager_->SignIn("12345", "user@gmail.com");
+    identity::MakePrimaryAccountAvailable(
+        identity_test_env_->identity_manager(), "user@gmail.com");
     EXPECT_EQ(0, web_view_load_expection_count_);
   }
 

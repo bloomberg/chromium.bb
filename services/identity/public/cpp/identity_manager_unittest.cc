@@ -501,12 +501,7 @@ TEST_F(IdentityManagerTest, PrimaryAccountInfoAtStartup) {
 TEST_F(IdentityManagerTest, PrimaryAccountInfoAfterSignin) {
   ClearPrimaryAccount(identity_manager(), ClearPrimaryAccountPolicy::DEFAULT);
 
-  base::RunLoop run_loop;
-  identity_manager_observer()->SetOnPrimaryAccountSetCallback(
-      run_loop.QuitClosure());
-
-  signin_manager()->SignIn(kTestGaiaId, kTestEmail);
-  run_loop.Run();
+  SetPrimaryAccount(identity_manager(), kTestEmail);
 
   CoreAccountInfo primary_account_from_set_callback =
       identity_manager_observer()->PrimaryAccountFromSetCallback();
@@ -529,11 +524,7 @@ TEST_F(IdentityManagerTest, PrimaryAccountInfoAfterSigninAndSignout) {
   ClearPrimaryAccount(identity_manager(), ClearPrimaryAccountPolicy::DEFAULT);
   // First ensure that the user is signed in from the POV of the
   // IdentityManager.
-  base::RunLoop run_loop;
-  identity_manager_observer()->SetOnPrimaryAccountSetCallback(
-      run_loop.QuitClosure());
-  signin_manager()->SignIn(kTestGaiaId, kTestEmail);
-  run_loop.Run();
+  SetPrimaryAccount(identity_manager(), kTestEmail);
 
   // Sign the user out and check that the IdentityManager responds
   // appropriately.
@@ -560,11 +551,7 @@ TEST_F(IdentityManagerTest, PrimaryAccountInfoAfterSigninAndAccountRemoval) {
   ClearPrimaryAccount(identity_manager(), ClearPrimaryAccountPolicy::DEFAULT);
   // First ensure that the user is signed in from the POV of the
   // IdentityManager.
-  base::RunLoop run_loop;
-  identity_manager_observer()->SetOnPrimaryAccountSetCallback(
-      run_loop.QuitClosure());
-  signin_manager()->SignIn(kTestGaiaId, kTestEmail);
-  run_loop.Run();
+  SetPrimaryAccount(identity_manager(), kTestEmail);
 
   // Remove the account from the AccountTrackerService and check that
   // the returned AccountInfo won't have a valid ID anymore, even if
@@ -1462,7 +1449,8 @@ TEST_F(
   RecreateIdentityManager();
   signin_manager_observer.set_identity_manager(identity_manager());
 
-  signin_manager()->SignIn(kTestGaiaId, kTestEmail);
+  signin_manager()->OnExternalSigninCompleted(kTestEmail);
+
   run_loop.Run();
 
   CoreAccountInfo primary_account_from_signin_callback =
