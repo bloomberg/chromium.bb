@@ -1,0 +1,18 @@
+[document web]
+++[internal frame]
+++++[document web]
+++++++[paragraph]
+++++++++[text] name='My favorite browser is '
+++++++++[section]
+++++++++++[text] name='ABC'
+++++++++[text] name=' '
+++++++++[section]
+++++++++++[text] name='Chrome'
+++++++++[text] name='!'
+++[internal frame]
+++++[document web]
+++++++[paragraph]
+++++++++[text] name='This test is to check '
+++++++++[static]
+++++++++++[text] name='mark tag'
+++++++++[text] name='.'

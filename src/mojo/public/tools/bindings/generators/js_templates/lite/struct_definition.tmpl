@@ -1,0 +1,29 @@
+{#--- Begin #}
+mojo.mojom.Struct(
+    {{struct.name}},
+    '{{struct.name}}',
+    {{struct.packed|payload_size}},
+    [
+{%- for packed_field in struct.packed.packed_fields_in_ordinal_order %}
+      mojo.mojom.StructField(
+        '{{packed_field.field.name}}', {{packed_field.offset}},
+        {% if packed_field.field.kind|is_bool_kind %}{{packed_field.bit}}
+        {%- else %}0{% endif %},
+        {{packed_field.field.kind|lite_js_type}},
+        {{packed_field.field|lite_default_value}},
+{%-   if packed_field.field.kind.is_nullable %}
+        true /* nullable */),
+{%-   else %}
+        false /* nullable */),
+{%-   endif %}
+{%- endfor %}
+    ]);
+
+{%  for constant in struct.constants %}
+{{struct.name}}.{{constant.name}} = {{constant.value|expression_to_text}};
+{%-  endfor %}
+
+{%- from "lite/enum_definition.tmpl" import enum_def %}
+{%  for enum in struct.enums %}
+{{enum_def("%s.%s"|format(struct.name, enum.name), enum)}}
+{%- endfor %}

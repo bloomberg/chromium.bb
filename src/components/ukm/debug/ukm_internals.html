@@ -1,0 +1,54 @@
+<!-- Copyright 2018 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file.-->
+<!doctype html>
+<html lang="en">
+  <meta charset="utf-8">
+  <script src="chrome://resources/js/cr.js"></script>
+  <script src="chrome://resources/js/promise_resolver.js"></script>
+  <script src="chrome://resources/js/util.js"></script>
+  <if expr="is_ios">
+      <!-- TODO(crbug.com/487000): Remove this once injected by web. -->
+      <script src="chrome://resources/js/ios/web_ui.js"></script>
+  </if>
+  <link rel="stylesheet" type="text/css" href="ukm_internals.css">
+  <title>UKM Debug page</title>
+  <div class="ukm_collection_status">
+    <div>
+      <div class="left_align"> Metrics Collection is
+        <span id="state"></span>
+        (Session: <span id="sessionid"></span>)
+      </div>
+      <div class="right_align">ClientId:
+        <span id="clientid"/>
+      </div>
+    </div>
+  </div>
+  <div id="warnings"></div>
+  <div id="sources"></div>
+  <div>
+    <div class='labels'> Recorder Ids: </div>
+    <select id="thread_ids" class="hex_list"></select>
+  </div>
+  <div>
+    <div class='labels'> Metrics Filter: </div>
+    <input id="metrics_select" type="text" value=".*" class="text" pattern="[A-Za-z0-9\._\*\|\?\+]*" maxlength="256"></input>
+  </div>
+  <div>
+    <div class='labels'> URL Filter: </div>
+    <input id="url_select" type="text" value=".*" class="text" pattern="[A-Za-z0-9\._\*\|\?\+]*" maxlength="256"></input>
+  </div>
+  <div>
+    <input id="hide_no_metrics" class="checkbox" type="checkbox" checked> Hide Sources With No Metric </input>
+  </div>
+  <div>
+    <input id="hide_no_url" class="checkbox" type="checkbox" checked> Hide Sources With No URL </input>
+  </div>
+  <div>
+    <input id="include_cache" class="checkbox" type="checkbox" checked> Include Cached Sources (since this page load) </input>
+  </div>
+  <button id="toggle_expand"></button>
+  <button id="clear">Clear</button>
+  <button id="refresh">Refresh</button>
+  <script src="ukm_internals.js"></script>
+</html>

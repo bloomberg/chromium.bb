@@ -1,0 +1,19 @@
+# COMPONENT: Internals>Services>WindowService
+
+msw@chromium.org
+mukai@chromium.org
+sadrul@chromium.org
+sky@chromium.org
+xiyuan@chromium.org
+
+per-file *_type_converter*.*=set noparent
+per-file *_type_converter*.*=file://ipc/SECURITY_OWNERS
+
+per-file manifest.json=set noparent
+per-file manifest.json=file://ipc/SECURITY_OWNERS
+
+per-file test_manifest.json=set noparent
+per-file test_manifest.json=file://ipc/SECURITY_OWNERS
+
+per-file *.mojom=set noparent
+per-file *.mojom=file://ipc/SECURITY_OWNERS

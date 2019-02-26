@@ -1,0 +1,15 @@
+{
+  "name": "removable_storage_writer",
+  "display_name": "Removable Storage Writer",
+  "sandbox_type": "none_and_elevated",
+  "options" : {
+    "instance_sharing" : "shared_instance_across_users"
+  },
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        "removable_storage_writer": [ "chrome.mojom.RemovableStorageWriter" ]
+       }
+     }
+  }
+}

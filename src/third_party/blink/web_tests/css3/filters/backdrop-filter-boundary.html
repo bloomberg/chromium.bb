@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<style>
+.bg {
+    position: relative;
+    display: inline-block;
+    width: 160px;
+    height: 90px;
+    background-image: url("resources/reference.png");
+}
+.fg {
+    position: absolute;
+    left: 5px;
+    top: 5px;
+    width: 150px;
+    height: 80px;
+}
+</style>
+<div class="bg"><div class="fg" style="backdrop-filter: blur(3px);"></div></div>
+<div class="bg"><div class="fg" style="backdrop-filter: blur(6px);"></div></div>
+<div class="bg"><div class="fg" style="backdrop-filter: blur(12px);"></div></div>
+<div class="bg"><div class="fg" style="backdrop-filter: blur(24px);"></div></div>
+<div class="bg"><div class="fg" style="backdrop-filter: blur(48px);"></div></div>

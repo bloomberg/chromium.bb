@@ -1,0 +1,47 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_DATA_SAVER_SITE_BREAKDOWN_METRICS_OBSERVER_H_
+#define CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_DATA_SAVER_SITE_BREAKDOWN_METRICS_OBSERVER_H_
+
+#include <stdint.h>
+#include <string>
+
+#include "base/macros.h"
+#include "base/sequence_checker.h"
+#include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
+
+namespace content {
+class BrowserContext;
+class NavigationHandle;
+}  // namespace content
+
+// Observer responsible for recording data usage per site to the data reduction
+// proxy database.
+class DataSaverSiteBreakdownMetricsObserver
+    : public page_load_metrics::PageLoadMetricsObserver {
+ public:
+  DataSaverSiteBreakdownMetricsObserver();
+  ~DataSaverSiteBreakdownMetricsObserver() override;
+
+ private:
+  ObservePolicy OnCommit(content::NavigationHandle* navigation_handle,
+                         ukm::SourceId source_id) override;
+
+  void OnResourceDataUseObserved(
+      const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
+          resources) override;
+
+  std::string committed_host_;
+
+  // The browser context this navigation is operating in.
+  content::BrowserContext* browser_context_ = nullptr;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  DISALLOW_COPY_AND_ASSIGN(DataSaverSiteBreakdownMetricsObserver);
+};
+
+#endif  // CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_DATA_SAVER_SITE_BREAKDOWN_METRICS_OBSERVER_H_

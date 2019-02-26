@@ -1,0 +1,11 @@
+{
+  "name": "ash_unittests",
+  "display_name": "Ash Unittests",
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "requires": {
+        "*": [ "app", "test" ]
+      }
+    }
+  }
+}

@@ -1,0 +1,18 @@
+[document web]
+++[section]
+++++[label]
+++++++[text] name='l1'
+++++[entry] name='l1' single-line
+++++[label]
+++++++[text] name='l2'
+++++[entry] name='l2' single-line
+++++[entry] name='l2' single-line
+++++[entry] name='l2' single-line
+++++[label]
+++++++[text] name='Email'
+++++[section]
+++++[entry] name='Email' single-line
+++++[entry] name='Email' single-line
+++++[entry] name='l5' multi-line
+++++[entry] name='l6' multi-line
+++++[entry] name='Name' description='Description' single-line

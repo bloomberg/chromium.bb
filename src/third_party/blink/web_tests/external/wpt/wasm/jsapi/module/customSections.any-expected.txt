@@ -1,0 +1,12 @@
+This is a testharness.js-based test.
+FAIL Missing arguments assert_throws: function "() => WebAssembly.Module.customSections(module)" did not throw
+PASS Non-Module arguments
+PASS Branding
+PASS Empty module
+PASS Empty module: array caching
+PASS Custom sections
+PASS Custom sections with surrogate pairs
+FAIL Custom sections with U+FFFD assert_equals: expected 1 but got 0
+PASS Stray argument
+Harness: the test ran to completion.
+

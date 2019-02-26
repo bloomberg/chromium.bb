@@ -1,0 +1,21 @@
+[document web] name='Table example with rowspan and colspan'
+++[table]
+++++[table row]
+++++++[table cell] name='AD'
+++++++++[text] name='AD'
+++++++[table cell] name='BC'
+++++++++[text] name='BC'
+++++[table row]
+++++++[table cell] name='EF'
+++++++++[text] name='EF'
+++[table]
+++++[table row]
+++++++[table cell] name='AD'
+++++++++[text] name='AD'
+++++++[table cell] name='BC'
+++++++++[text] name='BC'
+++++[table row]
+++++++[table cell] name='EF'
+++++++++[text] name='EF'
+++++++[table cell] name='GH'
+++++++++[text] name='GH'

@@ -1,0 +1,6 @@
+specific_include_rules = {
+  # mash-ok
+  "window_finder_chromeos\.cc": [
+    "+ash/wm/window_finder.h",
+  ],
+}

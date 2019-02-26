@@ -1,0 +1,230 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// API for integration testing. To be used on test images with a test component
+// extension.
+[platforms=("chromeos"),
+ implemented_in="chrome/browser/chromeos/extensions/autotest_private/autotest_private_api.h"]
+namespace autotestPrivate {
+
+  dictionary LoginStatusDict {
+    // Are we logged in?
+    boolean isLoggedIn;
+    // Is the logged-in user the owner?
+    boolean isOwner;
+    // Is the screen locked?
+    boolean isScreenLocked;
+    // Is the screen ready for password?
+    boolean isReadyForPassword;
+
+    // Is the logged-in user a regular user?
+    boolean isRegularUser;
+    // Are we logged into the guest account?
+    boolean isGuest;
+    // Are we logged into kiosk-app mode?
+    boolean isKiosk;
+
+    DOMString email;
+    DOMString displayEmail;
+    // User image: 'file', 'profile' or a number.
+    DOMString userImage;
+  };
+  callback LoginStatusCallback = void (LoginStatusDict status);
+
+  dictionary ExtensionInfoDict {
+    DOMString id;
+    DOMString version;
+    DOMString name;
+    DOMString publicKey;
+    DOMString description;
+    DOMString backgroundUrl;
+    DOMString optionsUrl;
+
+    DOMString[] hostPermissions;
+    DOMString[] effectiveHostPermissions;
+    DOMString[] apiPermissions;
+
+    boolean isComponent;
+    boolean isInternal;
+    boolean isUserInstalled;
+    boolean isEnabled;
+    boolean allowedInIncognito;
+    boolean hasPageAction;
+  };
+  dictionary ExtensionsInfoArray {
+    ExtensionInfoDict[] extensions;
+  };
+  callback ExtensionsInfoCallback = void (ExtensionsInfoArray info);
+
+  dictionary Notification {
+    DOMString id;
+    DOMString type;
+    DOMString title;
+    DOMString message;
+    long priority;
+    long progress;
+  };
+  callback NotificationArrayCallback = void (Notification[] notifications);
+
+  dictionary Printer {
+    DOMString printerName;
+    DOMString? printerId;
+    DOMString? printerType;
+    DOMString? printerDesc;
+    DOMString? printerMakeAndModel;
+    DOMString? printerUri;
+    DOMString? printerPpd;
+  };
+  callback PrinterArrayCallback = void (Printer[] printers);
+
+  dictionary PlayStoreState {
+    // Whether the Play Store allowed for the current user.
+    boolean allowed;
+    // Whether the Play Store currently enabled.
+    boolean? enabled;
+    // Whether the Play Store managed by policy.
+    boolean? managed;
+  };
+  callback PlayStoreStateCallback = void (PlayStoreState result);
+
+  dictionary HistogramBucket {
+    // Minimum sample value that can be stored in this bucket (i.e. inclusive).
+    long min;
+    // Exclusive maximum value for samples stored this bucket.
+    long max;
+    // Number of samples stored in this bucket.
+    long count;
+  };
+  dictionary Histogram {
+    // Buckets containing samples.
+    HistogramBucket[] buckets;
+  };
+  callback HistogramCallback = void (Histogram histogram);
+
+  callback IsAppShownCallback = void (boolean appShown);
+
+  callback IsArcProvisionedCallback = void (boolean arcProvisioned);
+
+  callback TakeScreenshotCallback = void (DOMString base64Png);
+
+  callback VoidCallback = void ();
+
+  interface Functions {
+    // Logout of a user session.
+    static void logout();
+
+    // Restart the browser.
+    static void restart();
+
+    // Shutdown the browser.
+    // |force|: if set, ignore ongoing downloads and onunbeforeunload handlers.
+    static void shutdown(boolean force);
+
+    // Get login status.
+    static void loginStatus(LoginStatusCallback callback);
+
+    // Locks the screen.
+    static void lockScreen();
+
+    // Get info about installed extensions.
+    static void getExtensionsInfo(ExtensionsInfoCallback callback);
+
+    // Simulates a memory access bug for asan testing.
+    static void simulateAsanMemoryBug();
+
+    // Set the touchpad pointer sensitivity setting.
+    // |value|: the pointer sensitivity setting index.
+    static void setTouchpadSensitivity(long value);
+
+    // Turn on/off tap-to-click for the touchpad.
+    // |enabled|: if set, enable tap-to-click.
+    static void setTapToClick(boolean enabled);
+
+    // Turn on/off three finger click for the touchpad.
+    // |enabled|: if set, enable three finger click.
+    static void setThreeFingerClick(boolean enabled);
+
+    // Turn on/off tap dragging for the touchpad.
+    // |enabled|: if set, enable tap dragging.
+    static void setTapDragging(boolean enabled);
+
+    // Turn on/off Australian scrolling for devices other than wheel mouse.
+    // |enabled|: if set, enable Australian scrolling.
+    static void setNaturalScroll(boolean enabled);
+
+    // Set the mouse pointer sensitivity setting.
+    // |value|: the pointer sensitivity setting index.
+    static void setMouseSensitivity(long value);
+
+    // Swap the primary mouse button for left click.
+    // |right|: if set, swap the primary mouse button.
+    static void setPrimaryButtonRight(boolean right);
+
+    // Turn on/off reverse scrolling for mice.
+    // |enabled|: if set, enable reverse scrolling.
+    static void setMouseReverseScroll(boolean enabled);
+
+    // Get visible notifications on the system.
+    static void getVisibleNotifications(NotificationArrayCallback callback);
+
+    // Get state of the Play Store.
+    static void getPlayStoreState(PlayStoreStateCallback callback);
+
+    // Get list of available printers
+    static void getPrinterList(PrinterArrayCallback callback);
+
+    // Returns true if requested app is shown in Chrome.
+    static void isAppShown(DOMString appId, IsAppShownCallback callback);
+
+    // Returns true if ARC is provisioned.
+    static void isArcProvisioned(IsArcProvisionedCallback callback);
+
+    // Launches an application from the launcher with the given appId.
+    static void launchApp(DOMString appId, VoidCallback callback);
+
+    // Update printer. Printer with empty ID is considered new.
+    static void updatePrinter(Printer printer);
+
+    // Remove printer.
+    static void removePrinter(DOMString printerId);
+
+    // Enable/disable the Play Store.
+    // |enabled|: if set, enable the Play Store.
+    // |callback|: Called when the operation has completed.
+    static void setPlayStoreEnabled(boolean enabled, VoidCallback callback);
+
+    // Get details about a histogram displayed at chrome://histogram.
+    // |name|: Histogram name, e.g. "Accessibility.CrosAutoclick".
+    // |callback|: Invoked with details.
+    static void getHistogram(DOMString name, HistogramCallback callback);
+
+    // Run the crostini installer GUI to install the default crostini
+    // vm / container and create sshfs mount.  The installer launches the
+    // crostini terminal app on completion.  The installer expects that
+    // crostini is not already installed.
+    // |callback|: Called when the operation has completed.
+    static void runCrostiniInstaller(VoidCallback callback);
+
+    // Run the crostini uninstaller GUI to remove the default crostini
+    // vm / container. The callback is invoked upon completion.
+    static void runCrostiniUninstaller(VoidCallback callback);
+
+    // Enable/disable Crostini in preferences.
+    // |enabled|: Enable Crostini.
+    // |callback|: Called when the operation has completed.
+    static void setCrostiniEnabled(boolean enabled, VoidCallback callback);
+
+    // Takes a screenshot and returns the data in base64 encoded PNG format.
+    static void takeScreenshot(TakeScreenshotCallback callback);
+
+    // Makes a basic request to ML Service, triggering 1. ML Service
+    // daemon startup, and 2. the initial D-Bus -> Mojo IPC bootstrap.
+    // |callback|: Called when the operation has completed.
+    static void bootstrapMachineLearningService(VoidCallback callback);
+
+    // Enable/disable the Google Assistant
+    // |callback|: Called when the operation has completed.
+    static void setAssistantEnabled(boolean enabled, long timeout_ms, VoidCallback callback);
+  };
+};

@@ -1,0 +1,2 @@
+per-file *sync_bridge*=jkrcal@chromium.org
+per-file *sync_bridge*=file://components/sync/OWNERS

@@ -1,0 +1,20 @@
+[document web]
+++[list]
+++++[list item]
+++++++[static] name='• '
+++++++[text] name='tic'
+++++[list item]
+++++++[static] name='• '
+++++++[text] name='tac'
+++++[list item]
+++++++[static] name='• '
+++++++[text] name='toe'
+++[list]
+++++[list item]
+++++++[text] name='tic'
+++++[text] name=' '
+++++[list item]
+++++++[text] name='tac'
+++++[text] name=' '
+++++[list item]
+++++++[text] name='toe'

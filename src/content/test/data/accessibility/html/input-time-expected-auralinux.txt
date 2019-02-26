@@ -1,0 +1,13 @@
+[document web]
+++[section]
+++++[dateeditor]
+++++++[section]
+++++++++[section]
+++++++++++[spin button] name='Hours' xml-roles:spinbutton
+++++++++++++[text] name='12'
+++++++++++[text] name=':'
+++++++++++[spin button] name='Minutes' xml-roles:spinbutton
+++++++++++++[text] name='00'
+++++++++++[text] name=' '
+++++++++++[spin button] name='AM/PM' xml-roles:spinbutton
+++++++++++++[text] name='AM'

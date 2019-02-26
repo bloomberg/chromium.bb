@@ -1,0 +1,36 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://w3c.github.io/webrtc-quic/#rtcquicstreamstate*
+enum RTCQuicStreamState {
+    "new",
+    "opening",
+    "open",
+    "closing",
+    "closed",
+};
+
+// https://w3c.github.io/webrtc-quic/#quicstream*
+[
+   Exposed=Window,
+   RuntimeEnabled=RTCQuicTransport
+] interface RTCQuicStream : EventTarget {
+    readonly attribute RTCQuicTransport transport;
+    readonly attribute RTCQuicStreamState state;
+    readonly attribute unsigned long readBufferedAmount;
+    readonly attribute unsigned long maxReadBufferedAmount;
+    readonly attribute unsigned long writeBufferedAmount;
+    readonly attribute unsigned long maxWriteBufferedAmount;
+    [RaisesException] RTCQuicStreamReadResult readInto(Uint8Array data);
+    [RaisesException] void write(Uint8Array data);
+    void finish();
+    void reset();
+    [CallWith=ScriptState, RaisesException]
+    Promise<void> waitForWriteBufferedAmountBelow(unsigned long amount);
+    [CallWith=ScriptState, RaisesException]
+    Promise<void> waitForReadable(unsigned long amount);
+    attribute EventHandler onstatechange;
+    // TODO(crbug.com/868068): Implement remaining methods, attributes, and events.
+};
+
