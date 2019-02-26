@@ -329,5 +329,30 @@ TEST_F(LocalFrameViewSimTest, FragmentNavChangesFocusWhileRenderingBlocked) {
       << "Scroll offset wasn't changed after load completed.";
 }
 
+TEST_F(LocalFrameViewSimTest, ForcedLayoutWithIncompleteSVGChildFrame) {
+  SimRequest main_resource("https://example.com/test.html", "text/html");
+  SimRequest svg_resource("https://example.com/file.svg", "image/svg+xml");
+
+  LoadURL("https://example.com/test.html");
+
+  main_resource.Complete(R"HTML(
+      <!DOCTYPE html>
+      <object data="file.svg"></object>
+    )HTML");
+
+  // Write the SVG document so that there is something to layout, but don't let
+  // the resource finish loading.
+  svg_resource.Write(R"SVG(
+      <svg xmlns="http://www.w3.org/2000/svg"></svg>
+    )SVG");
+
+  // Mark the top-level document for layout and then force layout. This will
+  // cause the layout tree in the <object> object to be built.
+  GetDocument().View()->SetNeedsLayout();
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+
+  svg_resource.Finish();
+}
+
 }  // namespace
 }  // namespace blink

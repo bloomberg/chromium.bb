@@ -654,6 +654,16 @@ void LocalFrameView::PerformPreLayoutTasks() {
   }
 
   document->UpdateStyleAndLayoutTree();
+
+  // Update style for all embedded SVG documents underneath this frame, so
+  // that intrinsic size computation for any embedded objects has up-to-date
+  // information before layout.
+  ForAllChildLocalFrameViews([](LocalFrameView& view) {
+    Document& document = *view.GetFrame().GetDocument();
+    if (document.IsSVGDocument())
+      document.UpdateStyleAndLayoutTree();
+  });
+
   Lifecycle().AdvanceTo(DocumentLifecycle::kStyleClean);
 
   if (was_resized)
